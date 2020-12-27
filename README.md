@@ -1,12 +1,11 @@
-# Kenya crop mapping
-Annual and in-season mapping of cropland in Kenya
-
-## Introduction
-This repository contains code and data to generate an annual and in-season crop mask for Kenya. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
+# Crop Mask Repository
+This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="diagrams/models.png" alt="models" height="200px"/>
 
-These can be used to create annual and in season crop maps. This repository contains the code to do this for Kenya, and Busia county in Kenya:
+These can be used to create annual and in season crop maps. 
+
+This repository currently contains the code to do this for Kenya, and Busia county in Kenya:
 
 <img src="diagrams/kenya_busia_maps.png" alt="models" height="400px"/>
 
