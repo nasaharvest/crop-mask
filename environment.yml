@@ -1,0 +1,25 @@
+name: landcover-mapping
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.6  # earthengine doesn't work with python 3.7
+  - dataclasses  # only introduced in python 3.7
+  - earthengine-api
+  - mypy
+  - black
+  - pandas
+  - xarray
+  - netcdf4
+  - rasterio
+  - jupyter
+  - matplotlib
+  - pip
+  - pytorch=1.6.0
+  - pyproj
+  - tqdm
+  - geopandas
+  - cartopy
+  - scikit-learn
+  - pip:
+      - pytorch-lightning==0.7.1  # lots of API changes
