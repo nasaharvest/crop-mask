@@ -186,5 +186,5 @@ files
 .mypy_cache/
 
 # the data folder
-data
+
 scripts/lightning_logs
