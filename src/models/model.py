@@ -62,13 +62,13 @@ class Model(pl.LightningModule):
         is equally represented in the training and validation dataset. Default = True
     """
 
-    def __init__(self, hparams: Namespace) -> None:
+    def __init__(self, hparams: Namespace, datasets: List[str]) -> None:
         super().__init__()
         set_seed()
         self.hparams = hparams
 
         self.data_folder = Path(hparams.data_folder)
-
+        self.datasets = datasets
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
@@ -107,6 +107,7 @@ class Model(pl.LightningModule):
         return CropDataset(
             data_folder=self.data_folder,
             subset=subset,
+            datasets=self.datasets,
             probability_threshold=self.hparams.probability_threshold,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,

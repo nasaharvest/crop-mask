@@ -68,6 +68,18 @@ Running exports can be viewed (and individually cancelled) in the `Tabs` bar on 
 
 Exports from Google Drive should be saved in [`data/raw`](data/raw).
 
+#### Accessing the data
+This project uses an AWS S3 bucket to store the training data and `dvc` to manage and fetch the training data. 
+
+To have access to training data:
+1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
+2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
+3. Setup a named profile by running `aws configure --profile nasaharvest` and entering your AWS credentials
+
+To pull the latest training:
+1. Ensure you have [dvc](https://dvc.org/doc) installed
+2. Run `dvc pull` from the project root directory
+
 #### Tests
 
 The following tests can be run against the pipeline:

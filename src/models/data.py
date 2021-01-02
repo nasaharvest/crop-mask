@@ -1,7 +1,6 @@
 from pathlib import Path
 import numpy as np
 import pickle
-import geopandas
 import random
 import math
 
@@ -10,13 +9,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.exporters import GeoWikiExporter
 from src.exporters.sentinel.cloudfree import BANDS
-from src.processors import (
-    KenyaPVProcessor,
-    KenyaNonCropProcessor,
-    KenyaOAFProcessor,
-)
 
 from src.engineer.pv_kenya import PVKenyaDataInstance
 from src.engineer.kenya_non_crop import KenyaNonCropDataInstance
@@ -34,6 +27,7 @@ class CropDataset(Dataset):
         self,
         data_folder: Path,
         subset: str,
+        datasets: List[str],
         probability_threshold: float,
         remove_b1_b10: bool,
         include_geowiki: bool,
@@ -65,12 +59,7 @@ class CropDataset(Dataset):
         self.noise_factor = 0
 
         files_and_nds: List[Tuple] = []
-        for dataset in [
-            KenyaPVProcessor.dataset,
-            KenyaNonCropProcessor.dataset,
-            GeoWikiExporter.dataset,
-            KenyaOAFProcessor.dataset,
-        ]:
+        for dataset in datasets:
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
                     self.data_folder / "features" / dataset, self.subset_name,
@@ -116,11 +105,17 @@ class CropDataset(Dataset):
     def load_files_and_normalizing_dicts(
         features_dir: Path, subset_name: str, file_suffix: str = "pkl"
     ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
-        pickle_files = list((features_dir / subset_name).glob(f"*.{file_suffix}"))
+
+        pickle_files_dir = features_dir / subset_name
+        if not pickle_files_dir.exists():
+            raise Exception(f'Directory: {pickle_files_dir} not found. Use command: `dvc pull` to get the latest data.')
+
+        pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
 
         # try loading the normalizing dict. By default, if it exists we will use it
-        if (features_dir / "normalizing_dict.pkl").exists():
-            with (features_dir / "normalizing_dict.pkl").open("rb") as f:
+        normalizing_dict_path = features_dir / "normalizing_dict.pkl"
+        if normalizing_dict_path.exists():
+            with normalizing_dict_path.open("rb") as f:
                 normalizing_dict = pickle.load(f)
         else:
             normalizing_dict = None
@@ -260,32 +255,6 @@ class CropDataset(Dataset):
             return 1, 1
         else:
             return 1
-
-    def filter_min_occurences(
-        self, files: List[Path], min_occurences: int, ignore_intercropped: bool
-    ) -> Tuple[List[Path], List[str]]:
-
-        org_data = geopandas.read_file(
-            self.data_folder / "processed" / KenyaPVProcessor.dataset / "data.geojson"
-        )
-
-        counts = org_data.crop_type.value_counts().to_dict()
-
-        crops_to_ignore = [crop for crop, count in counts.items() if count < min_occurences]
-
-        if ignore_intercropped:
-            crops_to_ignore.extend([crop for crop, count in counts.items() if "intercrop" in crop])
-            crops_to_ignore = list(set(crops_to_ignore))
-
-        output_files: List[Path] = []
-        for target_file in files:
-            with target_file.open("rb") as f:
-                target_datainstance = pickle.load(f)
-            if target_datainstance.crop_label in crops_to_ignore:
-                continue
-            else:
-                output_files.append(target_file)
-        return output_files, crops_to_ignore
 
     @property
     def instances_per_class(self) -> List[int]:
