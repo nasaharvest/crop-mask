@@ -1,12 +1,11 @@
-# Kenya crop mapping
-Annual and in-season mapping of cropland in Kenya
-
-## Introduction
-This repository contains code and data to generate an annual and in-season crop mask for Kenya. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
+# Crop Mask Repository
+This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="diagrams/models.png" alt="models" height="200px"/>
 
-These can be used to create annual and in season crop maps. This repository contains the code to do this for Kenya, and Busia county in Kenya:
+These can be used to create annual and in season crop maps. 
+
+This repository currently contains the code to do this for Kenya, and Busia county in Kenya:
 
 <img src="diagrams/kenya_busia_maps.png" alt="models" height="400px"/>
 
@@ -68,6 +67,18 @@ Note that Earth Engine exports files to Google Drive by default (to the same goo
 Running exports can be viewed (and individually cancelled) in the `Tabs` bar on the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 
 Exports from Google Drive should be saved in [`data/raw`](data/raw).
+
+#### Accessing the data
+This project uses an AWS S3 bucket to store the training data and `dvc` to manage and fetch the training data. 
+
+To have access to training data:
+1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
+2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
+3. Setup a named profile by running `aws configure --profile nasaharvest` and entering your AWS credentials
+
+To pull the latest training:
+1. Ensure you have [dvc](https://dvc.org/doc) installed
+2. Run `dvc pull` from the project root directory
 
 #### Tests
 

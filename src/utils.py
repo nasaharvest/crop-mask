@@ -28,4 +28,8 @@ STR2BB = {
         max_lon=34.44007873535156,
         max_lat=0.7779454563313616,
     ),
+    "NorthMalawi": BoundingBox(min_lon=32.688, max_lon=35.772, min_lat=-14.636, max_lat=-9.231),
+    "SouthMalawi": BoundingBox(min_lon=34.211, max_lon=35.772, min_lat=-17.07, max_lat=-14.636),
+    "Rwanda": BoundingBox(min_lon=28.841, max_lon=30.909, min_lat=-2.854, max_lat=-1.034),
+    "Togo": BoundingBox(min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625),
 }
