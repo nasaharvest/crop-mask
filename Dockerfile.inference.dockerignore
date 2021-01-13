@@ -1,0 +1,14 @@
+mypy.ini
+pyproject.toml
+README.md
+
+.dvc/
+.mypy_cache/
+diagrams/
+data/*/**
+scripts/
+src/data_classes
+src/engineer
+src/exporters
+src/processors
+test/

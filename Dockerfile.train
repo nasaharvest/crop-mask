@@ -1,4 +1,4 @@
-FROM cropmask/dependencies
+FROM cropmask/dependencies as build-stage
 
 COPY . /crop-mask
 WORKDIR /crop-mask/scripts
@@ -16,3 +16,6 @@ RUN --mount=type=secret,id=clearml,target=/root/clearml.conf python model.py --m
 
 # Push model to storage
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc add ../data/models && dvc push
+
+FROM scratch AS export-stage
+COPY --from=build-stage ../data/models/data.dvc .

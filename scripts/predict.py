@@ -21,11 +21,10 @@ if __name__ == "__main__":
 
     test_folder = Path(params.path_to_tif_files)
     test_files = test_folder.glob("*.tif")
-    print(test_files)
 
     task = Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
-    print(f"Using model {params.ckpt_path}")
-    model = Model.load_from_checkpoint(f"{data_dir}")
+    print(f"Using model {params.model_name}")
+    model = Model.load_from_checkpoint(f"{data_dir}/models/{params.model_name}")
 
     for test_path in test_files:
 

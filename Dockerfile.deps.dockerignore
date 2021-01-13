@@ -1,8 +1,12 @@
-Dockerfile.train.dockerignore
 .dvcignore
 .gitignore
-data.dvc
-model.ckpt
+
+train.sh
+Dockerfile.train
+Dockerfile.train.dockerignore
+Dockerfile.inference
+Dockerfile.inference.dockerignore
+inference.sh
 mypy.ini
 pyproject.toml
 README.md
