@@ -3,10 +3,10 @@ export DOCKER_BUILDKIT=1
 # Builds docker image with landcover-mapping conda environment to avoid reinstalling dependencies often
 docker build -f Dockerfile.deps -t cropmask/dependencies .
 
-export AWS_CREDENTIALS=$HOME/.aws/credentials
-export CLEARML_CREDENTIALS=$HOME/clearml.conf
-export DATASETS="all"
-export MODEL_NAME="kenya"
+export AWS_CREDENTIALS=<PATH TO AWS CREDENTIALS FILE> # ie.$HOME/.aws/credentials
+export CLEARML_CREDENTIALS=<PATH TO CLEARML CREDENTIALS FILE> # ie. $HOME/clearml.conf
+export DATASETS=<DATASETS> #ie. "all"
+export MODEL_NAME=<MODEL NAME> # ie. "kenya"
 
 printf "Once model begins training, you can view progress here:\n\
 https://app.community.clear.ml/projects/15e0af16e2954760b5acf7d0117d4cdc"
