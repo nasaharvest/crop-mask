@@ -18,4 +18,4 @@ RUN --mount=type=secret,id=clearml,target=/root/clearml.conf python model.py --m
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc add ../data/models && dvc push
 
 FROM scratch AS export-stage
-COPY --from=build-stage ../data/models/data.dvc .
+COPY --from=build-stage /crop-mask/data/models.dvc .
