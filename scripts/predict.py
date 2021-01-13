@@ -3,21 +3,29 @@ import sys
 
 sys.path.append("..")
 
+from clearml import Task
+from argparse import ArgumentParser
 from src.models import Model
 from src.analysis import plot_results
 
+if __name__ == "__main__":
 
-def kenya_crop_type_mapper():
+    parser = ArgumentParser()
+
+    parser.add_argument('--model_name', type=str)
+    parser.add_argument("--path_to_tif_files", type=str)
+
+    params = parser.parse_args()
+
     data_dir = "../data"
 
-    test_folder = Path("PATH_TO_TIF_FILES")
+    test_folder = Path(params.path_to_tif_files)
     test_files = test_folder.glob("*.tif")
     print(test_files)
 
-    model_path = "PATH_TO_MODEL_CKPT"
-    print(f"Using model {model_path}")
-
-    model = Model.load_from_checkpoint(model_path)
+    task = Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
+    print(f"Using model {params.ckpt_path}")
+    model = Model.load_from_checkpoint(f"{data_dir}")
 
     for test_path in test_files:
 
@@ -39,7 +47,3 @@ def kenya_crop_type_mapper():
 
         out_forecasted.to_netcdf(save_dir / f"preds_forecasted_{test_path.name}.nc")
         out_normal.to_netcdf(save_dir / f"preds_normal_{test_path.name}.nc")
-
-
-if __name__ == "__main__":
-    kenya_crop_type_mapper()

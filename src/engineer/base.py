@@ -1,36 +1,14 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 from pathlib import Path
 import numpy as np
 import pickle
 from tqdm import tqdm
-import random
-import warnings
-import xarray as xr
 
 from typing import Dict, List, Tuple, Optional, Union
-from src.exporters.sentinel.cloudfree import BANDS
-from src.utils import set_seed
-from src.utils import BoundingBox
-
-
-@dataclass
-class BaseDataInstance:
-    label_lat: float
-    label_lon: float
-    instance_lat: float
-    instance_lon: float
-    labelled_array: np.ndarray
-
-    def isin(self, bounding_box: BoundingBox) -> bool:
-        return (
-            (self.instance_lon <= bounding_box.max_lon)
-            & (self.instance_lon >= bounding_box.min_lon)
-            & (self.instance_lat <= bounding_box.max_lat)
-            & (self.instance_lat >= bounding_box.min_lat)
-        )
+from src.utils import set_seed, process_filename
+from src.data_classes import BaseDataInstance
 
 
 class BaseEngineer(ABC):
@@ -72,85 +50,6 @@ class BaseEngineer(ABC):
         array = np.asarray(array)
         idx = (np.abs(array - value)).argmin()
         return array[idx], idx
-
-    @staticmethod
-    def process_filename(
-        filename: str, include_extended_filenames: bool
-    ) -> Optional[Tuple[str, datetime, datetime]]:
-        r"""
-        Given an exported sentinel file, process it to get the start
-        and end dates of the data. This assumes the filename ends with '.tif'
-        """
-        date_format = "%Y-%m-%d"
-
-        identifier, start_date_str, end_date_str = filename[:-4].split("_")
-
-        start_date = datetime.strptime(start_date_str, date_format)
-
-        try:
-            end_date = datetime.strptime(end_date_str, date_format)
-            return identifier, start_date, end_date
-
-        except ValueError:
-            if include_extended_filenames:
-                end_list = end_date_str.split("-")
-                end_year, end_month, end_day = (
-                    end_list[0],
-                    end_list[1],
-                    end_list[2],
-                )
-
-                # if we allow extended filenames, we want to
-                # differentiate them too
-                id_number = end_list[3]
-                identifier = f"{identifier}-{id_number}"
-
-                return (
-                    identifier,
-                    start_date,
-                    datetime(int(end_year), int(end_month), int(end_day)),
-                )
-            else:
-                print(f"Unexpected filename {filename} - skipping")
-                return None
-
-    @staticmethod
-    def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr.DataArray:
-        r"""
-        The sentinel files exported from google earth have all the timesteps
-        concatenated together. This function loads a tif files and splits the
-        timesteps
-        """
-
-        # this mirrors the eo-learn approach
-        # also, we divide by 10,000, to remove the scaling factor
-        # https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2
-        da = xr.open_rasterio(filepath).rename("FEATURES") / 10000
-
-        da_split_by_time: List[xr.DataArray] = []
-
-        bands_per_timestep = len(BANDS)
-        num_bands = len(da.band)
-
-        assert (
-            num_bands % bands_per_timestep == 0
-        ), f"Total number of bands not divisible by the expected bands per timestep"
-
-        cur_band = 0
-        while cur_band + bands_per_timestep <= num_bands:
-            time_specific_da = da.isel(band=slice(cur_band, cur_band + bands_per_timestep))
-            time_specific_da["band"] = range(bands_per_timestep)
-            da_split_by_time.append(time_specific_da)
-            cur_band += bands_per_timestep
-
-        timesteps = [
-            start_date + timedelta(days=days_per_timestep) * i for i in range(len(da_split_by_time))
-        ]
-
-        combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
-        combined.attrs["band_descriptions"] = BANDS
-
-        return combined
 
     @staticmethod
     def update_normalizing_values(
@@ -198,17 +97,6 @@ class BaseEngineer(ABC):
         std = np.sqrt(variance)
         return {"mean": norm_dict["mean"], "std": std}
 
-    @staticmethod
-    def maxed_nan_to_num(
-        array: np.ndarray, nan: float, max_ratio: Optional[float] = None
-    ) -> Optional[np.ndarray]:
-
-        if max_ratio is not None:
-            num_nan = np.count_nonzero(np.isnan(array))
-            if (num_nan / array.size) > max_ratio:
-                return None
-        return np.nan_to_num(array, nan=nan)
-
     @abstractmethod
     def process_single_file(
         self,
@@ -223,52 +111,6 @@ class BaseEngineer(ABC):
         is_test: bool,
     ) -> Optional[BaseDataInstance]:
         raise NotImplementedError
-
-    @staticmethod
-    def _calculate_difference_index(
-        input_array: np.ndarray, num_dims: int, band_1: str, band_2: str
-    ) -> np.ndarray:
-
-        if num_dims == 2:
-            band_1_np = input_array[:, BANDS.index(band_1)]
-            band_2_np = input_array[:, BANDS.index(band_2)]
-        elif num_dims == 3:
-            band_1_np = input_array[:, :, BANDS.index(band_1)]
-            band_2_np = input_array[:, :, BANDS.index(band_2)]
-        else:
-            raise ValueError(f"Expected num_dims to be 2 or 3 - got {num_dims}")
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
-            # suppress the following warning
-            # RuntimeWarning: invalid value encountered in true_divide
-            # for cases where near_infrared + red == 0
-            # since this is handled in the where condition
-            ndvi = np.where(
-                (band_1_np + band_2_np) > 0, (band_1_np - band_2_np) / (band_1_np + band_2_np), 0,
-            )
-        return np.append(input_array, np.expand_dims(ndvi, -1), axis=-1)
-
-    @classmethod
-    def calculate_ndvi(cls, input_array: np.ndarray, num_dims: int = 2) -> np.ndarray:
-        r"""
-        Given an input array of shape [timestep, bands] or [batches, timesteps, bands]
-        where bands == len(BANDS), returns an array of shape
-        [timestep, bands + 1] where the extra band is NDVI,
-        (b08 - b04) / (b08 + b04)
-        """
-
-        return cls._calculate_difference_index(input_array, num_dims, "B8", "B4")
-
-    @classmethod
-    def calculate_ndwi(cls, input_array: np.ndarray, num_dims: int = 2) -> np.ndarray:
-        r"""
-        Given an input array of shape [timestep, bands] or [batches, timesteps, bands]
-        where bands == len(BANDS), returns an array of shape
-        [timestep, bands + 1] where the extra band is NDVI,
-        (b03 - b8A) / (b3 + b8a)
-        """
-        return cls._calculate_difference_index(input_array, num_dims, "B3", "B8A")
 
     def engineer(
         self,
@@ -285,7 +127,7 @@ class BaseEngineer(ABC):
     ):
         for file_path in tqdm(self.geospatial_files):
 
-            file_info = self.process_filename(
+            file_info = process_filename(
                 file_path.name, include_extended_filenames=include_extended_filenames
             )
 

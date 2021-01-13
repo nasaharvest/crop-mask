@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import pandas as pd
 from pathlib import Path
 import numpy as np
@@ -8,23 +7,22 @@ from datetime import datetime
 
 from typing import Optional
 
-
-from src.processors import KenyaPVProcessor
+from src.data_classes import KenyaPV
 from src.exporters import KenyaPVSentinelExporter
-from .base import BaseEngineer, BaseDataInstance
+from src.utils import load_tif
+from src.band_calculations import process_bands
+from .base import BaseEngineer
 
 
-@dataclass
-class PVKenyaDataInstance(BaseDataInstance):
-
-    crop_label: str
-    crop_int: int
+# Pickled feature data relies on this class so it is temporarily necessary
+class PVKenyaDataInstance(KenyaPV.instance):
+    pass
 
 
 class PVKenyaEngineer(BaseEngineer):
 
     sentinel_dataset = KenyaPVSentinelExporter.dataset
-    dataset = KenyaPVProcessor.dataset
+    dataset = KenyaPV.name
 
     def __init__(self, data_folder: Path) -> None:
         super().__init__(data_folder)
@@ -39,7 +37,7 @@ class PVKenyaEngineer(BaseEngineer):
 
     @staticmethod
     def read_labels(data_folder: Path) -> pd.DataFrame:
-        pv_kenya = data_folder / "processed" / KenyaPVProcessor.dataset / "data.geojson"
+        pv_kenya = data_folder / "processed" / KenyaPV.name / "data.geojson"
         assert pv_kenya.exists(), "Kenya Plant Village processor must be run to load labels"
         return geopandas.read_file(pv_kenya)
 
@@ -54,13 +52,13 @@ class PVKenyaEngineer(BaseEngineer):
         start_date: datetime,
         days_per_timestep: int,
         is_test: bool,
-    ) -> Optional[PVKenyaDataInstance]:
+    ) -> Optional[KenyaPV.instance]:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
         """
 
-        da = self.load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
+        da = load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
 
         # first, we find the label encompassed within the da
 
@@ -92,21 +90,17 @@ class PVKenyaEngineer(BaseEngineer):
                 closest_lat, _ = self.find_nearest(da.y, label_lat)
 
                 labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-
-                if add_ndvi:
-                    labelled_np = self.calculate_ndvi(labelled_np)
-                if add_ndwi:
-                    labelled_np = self.calculate_ndwi(labelled_np)
-
-                labelled_array = self.maxed_nan_to_num(
-                    labelled_np, nan=nan_fill, max_ratio=max_nan_ratio
-                )
+                labelled_array = process_bands(labelled_np,
+                                               nan_fill=nan_fill,
+                                               max_nan_ratio=max_nan_ratio,
+                                               add_ndvi=add_ndvi,
+                                               add_ndwi=add_ndwi)
 
                 if (not is_test) and calculate_normalizing_dict:
                     self.update_normalizing_values(self.normalizing_dict_interim, labelled_array)
 
                 if labelled_array is not None:
-                    return PVKenyaDataInstance(
+                    return KenyaPV.instance(
                         label_lat=label_lat,
                         label_lon=label_lon,
                         instance_lat=closest_lat,

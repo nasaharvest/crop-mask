@@ -4,13 +4,14 @@ import pandas as pd
 from pyproj import Transformer
 
 from .base import BaseProcessor
+from src.data_classes import KenyaNonCrop
 
 from typing import List
 
 
 class KenyaNonCropProcessor(BaseProcessor):
 
-    dataset = "kenya_non_crop"
+    dataset = KenyaNonCrop.name
 
     @staticmethod
     def process_set(filepath: Path, latlon: bool, reversed: bool) -> geopandas.GeoDataFrame:

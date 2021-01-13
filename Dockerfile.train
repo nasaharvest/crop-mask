@@ -1,0 +1,18 @@
+FROM cropmask/dependencies
+
+COPY . /crop-mask
+WORKDIR /crop-mask/scripts
+
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
+
+# Pull in training data
+RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull
+
+# Train model
+ARG DATASETS
+ARG MODEL_NAME
+RUN --mount=type=secret,id=clearml,target=/root/clearml.conf python model.py --model_name $MODEL_NAME --datasets $DATASETS
+
+# Push model to storage
+#RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc add ../data/models && dvc push

@@ -2,10 +2,11 @@ import geopandas
 from pyproj import Transformer
 
 from .base import BaseProcessor
+from src.data_classes import KenyaPV
 
 
 class KenyaPVProcessor(BaseProcessor):
-    dataset = "plant_village_kenya"
+    dataset = KenyaPV.name
 
     def process(self) -> None:
 

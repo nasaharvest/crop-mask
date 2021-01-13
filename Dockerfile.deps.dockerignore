@@ -1,0 +1,16 @@
+Dockerfile.train.dockerignore
+.dvcignore
+.gitignore
+data.dvc
+model.ckpt
+mypy.ini
+pyproject.toml
+README.md
+
+.dvc/
+.mypy_cache/
+data/
+diagrams/
+scripts/
+src/
+test/

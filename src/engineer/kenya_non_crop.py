@@ -1,31 +1,29 @@
-from dataclasses import dataclass
 import pandas as pd
 from pathlib import Path
 import geopandas
 from datetime import datetime
-import numpy as np
 
 from typing import Optional
 
-
-from src.processors import KenyaNonCropProcessor
 from src.exporters import KenyaNonCropSentinelExporter
-from .base import BaseEngineer, BaseDataInstance
+from src.data_classes import KenyaNonCrop
+from src.utils import load_tif
+from src.band_calculations import process_bands
+from .base import BaseEngineer
 
 
-@dataclass
-class KenyaNonCropDataInstance(BaseDataInstance):
-    is_crop: bool = False
-
+# Pickled feature data relies on this class so it is temporarily necessary
+class KenyaNonCropDataInstance(KenyaNonCrop.instance):
+    pass
 
 class KenyaNonCropEngineer(BaseEngineer):
 
     sentinel_dataset = KenyaNonCropSentinelExporter.dataset
-    dataset = KenyaNonCropProcessor.dataset
+    dataset = KenyaNonCrop.name
 
     @staticmethod
     def read_labels(data_folder: Path) -> pd.DataFrame:
-        pv_kenya = data_folder / "processed" / KenyaNonCropProcessor.dataset / "data.geojson"
+        pv_kenya = data_folder / "processed" / KenyaNonCrop.name / "data.geojson"
         assert pv_kenya.exists(), "Kenya Non Crop processor must be run to load labels"
         return geopandas.read_file(pv_kenya)
 
@@ -40,13 +38,13 @@ class KenyaNonCropEngineer(BaseEngineer):
         start_date: datetime,
         days_per_timestep: int,
         is_test: bool,
-    ) -> Optional[KenyaNonCropDataInstance]:
+    ) -> Optional[KenyaNonCrop.instance]:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
         """
 
-        da = self.load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
+        da = load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
 
         # first, we find the label encompassed within the da
 
@@ -69,19 +67,17 @@ class KenyaNonCropEngineer(BaseEngineer):
         closest_lat, _ = self.find_nearest(da.y, label_lat)
 
         labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-
-        if add_ndvi:
-            labelled_np = self.calculate_ndvi(labelled_np)
-        if add_ndwi:
-            labelled_np = self.calculate_ndwi(labelled_np)
-
-        labelled_array = self.maxed_nan_to_num(labelled_np, nan=nan_fill, max_ratio=max_nan_ratio)
+        labelled_array = process_bands(labelled_np,
+                                       nan_fill=nan_fill,
+                                       max_nan_ratio=max_nan_ratio,
+                                       add_ndvi=add_ndvi,
+                                       add_ndwi=add_ndwi)
 
         if (not is_test) and calculate_normalizing_dict:
             self.update_normalizing_values(self.normalizing_dict_interim, labelled_array)
 
         if labelled_array is not None:
-            return KenyaNonCropDataInstance(
+            return KenyaNonCrop.instance(
                 label_lat=label_lat,
                 label_lon=label_lon,
                 instance_lat=closest_lat,

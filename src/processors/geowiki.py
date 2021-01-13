@@ -1,11 +1,12 @@
 import pandas as pd
 
 from .base import BaseProcessor
+from src.data_classes import GeoWiki
 
 
 class GeoWikiProcessor(BaseProcessor):
 
-    dataset = "geowiki_landcover_2017"
+    dataset = GeoWiki.name
 
     def load_raw_data(self, participants: str) -> pd.DataFrame:
 
