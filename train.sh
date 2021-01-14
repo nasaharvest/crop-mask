@@ -11,7 +11,7 @@ export MODEL_NAME=<MODEL NAME> # ie. kenya
 printf "Once model begins training, you can view progress here:\n\
 https://app.community.clear.ml/projects/15e0af16e2954760b5acf7d0117d4cdc\n"
 
-# Trains model
+# Trains model 
 docker build -f Dockerfile.train \
 -t cropmask/train-$MODEL_NAME \
 --secret id=aws,src=$AWS_CREDENTIALS \
