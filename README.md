@@ -90,6 +90,13 @@ mypy src  # type checking
 ```
 
 ## Using with docker
+#### Training
+To train a model specify the necessary variables in [train.sh](train.sh) and execute the script with bash. 
+
+This script will setup the necessary environment, import the necessary data for training, train the model, and upload the model to remote storage. 
+
+#### Inference
+Work in progress.
 
 
 ## Reference

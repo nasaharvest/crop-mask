@@ -69,10 +69,7 @@ class Model(pl.LightningModule):
         self.hparams = hparams
 
         self.data_folder = Path(hparams.data_folder)
-        if hparams.datasets == 'all':
-            self.datasets = all_datasets
-        else:
-            self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
+        self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps

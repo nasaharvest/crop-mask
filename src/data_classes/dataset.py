@@ -48,9 +48,9 @@ class DatasetMetadata:
 
 
 # Available datasets
-GeoWiki = DatasetMetadata("geowiki_landcover_2017", _GeoWikiDataInstance)
-KenyaNonCrop = DatasetMetadata("kenya_non_crop", _KenyaNonCropDataInstance)
-KenyaOAF = DatasetMetadata("one_acre_fund_kenya", _KenyaOneAcreFundDataInstance)
-KenyaPV = DatasetMetadata("plant_village_kenya", _PVKenyaDataInstance)
+GeoWiki = DatasetMetadata(name="geowiki_landcover_2017", instance=_GeoWikiDataInstance)
+KenyaNonCrop = DatasetMetadata(name="kenya_non_crop", instance=_KenyaNonCropDataInstance)
+KenyaOAF = DatasetMetadata(name="one_acre_fund_kenya", instance=_KenyaOneAcreFundDataInstance)
+KenyaPV = DatasetMetadata(name="plant_village_kenya", instance=_PVKenyaDataInstance)
 
 all_datasets = [GeoWiki, KenyaNonCrop, KenyaOAF, KenyaPV]
