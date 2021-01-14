@@ -1,4 +1,5 @@
 from argparse import Namespace
+from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
@@ -20,6 +21,9 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     trainer.fit(model)
 
     if hparams.model_name:
-        trainer.save_checkpoint(f'{hparams.data_folder}/models/{hparams.model_name}.ckpt')
+        model_path = Path(f'{hparams.data_folder}/models/{hparams.model_name}.ckpt')
+        if model_path.exists():
+            model_path.unlink()
+        trainer.save_checkpoint(model_path)
 
     return model
