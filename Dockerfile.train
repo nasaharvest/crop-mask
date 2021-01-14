@@ -7,7 +7,7 @@ WORKDIR /crop-mask/scripts
 SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
 
 # Pull in training data
-RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull data/features
+RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull ../data/features
 
 # Train model
 ARG DATASETS
