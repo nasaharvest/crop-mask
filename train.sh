@@ -5,7 +5,7 @@ docker build -f Dockerfile.deps -t cropmask/dependencies .
 
 export AWS_CREDENTIALS=<PATH TO AWS CREDENTIALS FILE> # ie.$HOME/.aws/credentials
 export CLEARML_CREDENTIALS=<PATH TO CLEARML CREDENTIALS FILE> # ie. $HOME/clearml.conf
-export DATASETS=<DATASETS> #ie. "geowiki_landcover_2017, kenya_non_crop, one_acre_fund_kenya, plant_village_kenya"
+export DATASETS=<DATASETS> #ie. "geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
 export MODEL_NAME=<MODEL NAME> # ie. kenya
 
 printf "Once model begins training, you can view progress here:\n\
