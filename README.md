@@ -99,6 +99,9 @@ This script will setup the necessary environment, import the necessary data for 
 Work in progress.
 
 
+#### Monitoring Training and Inference
+ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)
+
 ## Reference
 
 If you find this code useful, please cite the following paper:
