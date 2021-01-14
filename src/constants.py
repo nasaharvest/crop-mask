@@ -1,5 +1,3 @@
-from pathlib import Path
-
 BANDS = [
     "B1",
     "B2",
@@ -15,5 +13,3 @@ BANDS = [
     "B11",
     "B12",
 ]
-
-DEFAULT_MODEL_CKPT = str(Path(__file__).parent.parent / 'model.ckpt')
