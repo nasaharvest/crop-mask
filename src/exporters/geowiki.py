@@ -3,14 +3,14 @@ import urllib.request
 import zipfile
 
 from .base import BaseExporter
-
+from src.data_classes import GeoWiki
 
 class GeoWikiExporter(BaseExporter):
     r"""
     Download the GeoWiki labels
     """
 
-    dataset = "geowiki_landcover_2017"
+    dataset = GeoWiki.name
 
     download_urls = [
         "http://store.pangaea.de/Publications/See_2017/crop_all.zip",

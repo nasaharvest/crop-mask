@@ -1,10 +1,11 @@
 import geopandas
 
 from .base import BaseProcessor
+from src.data_classes import KenyaOAF
 
 
 class KenyaOAFProcessor(BaseProcessor):
-    dataset = "one_acre_fund_kenya"
+    dataset = KenyaOAF.name
 
     def process(self) -> None:
 

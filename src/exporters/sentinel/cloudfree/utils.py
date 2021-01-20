@@ -4,7 +4,7 @@ cloudfree algorithm
 """
 import ee
 from datetime import date
-from .constants import BANDS
+from src.constants import BANDS
 
 from typing import Union
 
