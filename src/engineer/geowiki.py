@@ -1,19 +1,20 @@
-from dataclasses import dataclass
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
-import numpy as np
 import xarray as xr
 
 from typing import Optional
 
 from src.exporters import GeoWikiExporter, GeoWikiSentinelExporter
-from .base import BaseEngineer, BaseDataInstance
+from src.data_classes import GeoWiki
+from src.utils import load_tif
+from src.band_calculations import process_bands
+from .base import BaseEngineer
 
 
-@dataclass
-class GeoWikiDataInstance(BaseDataInstance):
-    crop_probability: float
+# Pickled feature data relies on this class so it is temporarily necessary
+class GeoWikiDataInstance(GeoWiki.instance):
+    pass
 
 
 class GeoWikiEngineer(BaseEngineer):
@@ -38,13 +39,13 @@ class GeoWikiEngineer(BaseEngineer):
         start_date: datetime,
         days_per_timestep: int,
         is_test: bool,
-    ) -> Optional[GeoWikiDataInstance]:
+    ) -> Optional[GeoWiki.instance]:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
         """
 
-        da = self.load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
+        da = load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
 
         # first, we find the label encompassed within the da
 
@@ -71,13 +72,11 @@ class GeoWikiEngineer(BaseEngineer):
         closest_lat, _ = self.find_nearest(da.y, label_lat)
 
         labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-
-        if add_ndvi:
-            labelled_np = self.calculate_ndvi(labelled_np)
-        if add_ndwi:
-            labelled_np = self.calculate_ndwi(labelled_np)
-
-        labelled_array = self.maxed_nan_to_num(labelled_np, nan=nan_fill, max_ratio=max_nan_ratio)
+        labelled_array = process_bands(labelled_np,
+                                       nan_fill=nan_fill,
+                                       max_nan_ratio=max_nan_ratio,
+                                       add_ndvi=add_ndvi,
+                                       add_ndwi=add_ndwi)
 
         if (not is_test) and calculate_normalizing_dict:
             # we won't use the neighbouring array for now, since tile2vec is
@@ -85,7 +84,7 @@ class GeoWikiEngineer(BaseEngineer):
             self.update_normalizing_values(self.normalizing_dict_interim, labelled_array)
 
         if labelled_array is not None:
-            return GeoWikiDataInstance(
+            return GeoWiki.instance(
                 label_lat=label_lat,
                 label_lon=label_lon,
                 crop_probability=crop_probability,

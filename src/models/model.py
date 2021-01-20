@@ -19,9 +19,10 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
+from src.utils import set_seed
+from src.data_classes import all_datasets
 from .data import CropDataset
 from .utils import tif_to_np, preds_to_xr
-from src.utils import set_seed
 from .forecaster import Forecaster
 from .classifier import Classifier
 
@@ -62,13 +63,14 @@ class Model(pl.LightningModule):
         is equally represented in the training and validation dataset. Default = True
     """
 
-    def __init__(self, hparams: Namespace, datasets: List[str]) -> None:
+    def __init__(self, hparams: Namespace) -> None:
         super().__init__()
         set_seed()
         self.hparams = hparams
 
         self.data_folder = Path(hparams.data_folder)
-        self.datasets = datasets
+        self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
+        print(f'Training on datasets: {[d.name for d in self.datasets]}')
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps

@@ -10,8 +10,7 @@ from src.exporters import (
     KenyaPVSentinelExporter,
     KenyaNonCropSentinelExporter,
     RegionalExporter,
-    KenyaOAFSentinelExporter,
-    cancel_all_tasks,
+    KenyaOAFSentinelExporter
 )
 
 

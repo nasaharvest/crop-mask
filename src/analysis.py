@@ -4,9 +4,7 @@ import numpy as np
 import cartopy.crs as ccrs
 from datetime import datetime
 import xarray as xr
-
-
-from src.engineer.base import BaseEngineer
+from src.utils import load_tif
 
 
 def sentinel_as_tci(sentinel_ds: xr.DataArray, scale: bool = True) -> xr.DataArray:
@@ -32,7 +30,7 @@ def plot_results(model_preds: xr.Dataset, tci_path: Path, savepath: Path, prefix
     multi_output = len(model_preds.data_vars) > 1
 
     tci = sentinel_as_tci(
-        BaseEngineer.load_tif(tci_path, start_date=datetime(2020, 1, 1), days_per_timestep=30),
+        load_tif(tci_path, start_date=datetime(2020, 1, 1), days_per_timestep=30),
         scale=False,
     ).isel(time=-1)
 

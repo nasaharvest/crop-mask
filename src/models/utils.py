@@ -5,7 +5,8 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-from src.engineer.base import BaseEngineer
+from src.utils import process_filename, load_tif
+from src.band_calculations import process_bands
 
 from typing import cast, Dict, Optional, Tuple
 
@@ -28,10 +29,10 @@ def tif_to_np(
 
     _, start_date, _ = cast(
         Tuple[str, datetime, datetime],
-        BaseEngineer.process_filename(path_to_dataset.name, include_extended_filenames=True),
+        process_filename(path_to_dataset.name, include_extended_filenames=True),
     )
 
-    x = BaseEngineer.load_tif(
+    x = load_tif(
         path_to_dataset, days_per_timestep=days_per_timestep, start_date=start_date
     )
 
@@ -45,12 +46,7 @@ def tif_to_np(
     x_np = x_np.reshape(x_np.shape[0], x_np.shape[1], x_np.shape[2] * x_np.shape[3])
     x_np = np.moveaxis(x_np, -1, 0)
 
-    if add_ndvi:
-        x_np = BaseEngineer.calculate_ndvi(x_np, num_dims=3)
-    if add_ndwi:
-        x_np = BaseEngineer.calculate_ndwi(x_np, num_dims=3)
-
-    x_np = BaseEngineer.maxed_nan_to_num(x_np, nan=nan)
+    x_np = process_bands(x_np, nan_fill=nan, add_ndvi=add_ndvi, add_ndwi=add_ndwi, num_dims=3)
 
     if normalizing_dict is not None:
         x_np = (x_np - normalizing_dict["mean"]) / normalizing_dict["std"]

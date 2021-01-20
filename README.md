@@ -89,6 +89,19 @@ black .  # code formatting
 mypy src  # type checking
 ```
 
+## Using with docker
+#### Training
+To train a model specify the necessary variables in [train.sh](train.sh) and execute the script with bash. 
+
+This script will setup the necessary environment, import the necessary data for training, train the model, and upload the model to remote storage. 
+
+#### Inference
+Work in progress.
+
+
+#### Monitoring Training and Inference
+ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)
+
 ## Reference
 
 If you find this code useful, please cite the following paper:

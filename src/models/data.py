@@ -9,12 +9,15 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.exporters.sentinel.cloudfree import BANDS
+from src.constants import BANDS
 
-from src.engineer.pv_kenya import PVKenyaDataInstance
-from src.engineer.kenya_non_crop import KenyaNonCropDataInstance
-from src.engineer.geowiki import GeoWikiDataInstance
-from src.engineer.one_acre_fund_kenya import KenyaOneAcreFundDataInstance
+from src.data_classes import (
+    DatasetMetadata,
+    GeoWiki,
+    KenyaNonCrop,
+    KenyaOAF,
+    KenyaPV,
+)
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
 
@@ -27,7 +30,7 @@ class CropDataset(Dataset):
         self,
         data_folder: Path,
         subset: str,
-        datasets: List[str],
+        datasets: List[DatasetMetadata],
         probability_threshold: float,
         remove_b1_b10: bool,
         include_geowiki: bool,
@@ -62,7 +65,7 @@ class CropDataset(Dataset):
         for dataset in datasets:
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
-                    self.data_folder / "features" / dataset, self.subset_name,
+                    self.data_folder / "features" / dataset.name, self.subset_name,
                 )
             )
 
@@ -292,17 +295,17 @@ class CropDataset(Dataset):
 
         is_global: float = 0.0
 
-        if isinstance(target_datainstance, PVKenyaDataInstance) or (
-            isinstance(target_datainstance, KenyaOneAcreFundDataInstance)
+        if isinstance(target_datainstance, KenyaPV.instance) or (
+            isinstance(target_datainstance, KenyaOAF.instance)
         ):
             # then, we know it is one of the plant village instances, and
             # that it has a crop label
             crop_int: int = 1
 
-        elif isinstance(target_datainstance, KenyaNonCropDataInstance):
+        elif isinstance(target_datainstance, KenyaNonCrop.instance):
             crop_int = 0
         else:
-            assert isinstance(target_datainstance, GeoWikiDataInstance) and self.include_geowiki
+            assert isinstance(target_datainstance, GeoWiki.instance) and self.include_geowiki
             is_global = 1
             crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
 
