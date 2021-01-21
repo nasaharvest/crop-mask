@@ -3,4 +3,4 @@ mypy.ini
 
 data/*/**
 diagrams/
-test/
+tests/

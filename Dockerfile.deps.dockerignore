@@ -17,4 +17,4 @@ data/
 diagrams/
 scripts/
 src/
-test/
+tests/
