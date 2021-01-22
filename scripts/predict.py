@@ -11,18 +11,23 @@ from src.models import Model
 from src.analysis import plot_results
 
 
+def get_file_prefix(with_forecaster: bool):
+    if with_forecaster:
+        return "forecasted"
+    else:
+        return "normal"
+
+
 def make_prediction(
         model: Model,
         test_path: Path,
         save_dir: Path,
         with_forecaster: bool = False,
         plot_results_enabled: bool = False) -> Optional[Path]:
-    if with_forecaster:
-        prefix = "forecasted_"
-    else:
-        prefix = "normal_"
 
-    file_path = save_dir / f"preds_{prefix}{test_path.name}.nc"
+    prefix = get_file_prefix(with_forecaster)
+
+    file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
     if file_path.exists():
         print("File already generated. Skipping")
         return
@@ -34,10 +39,11 @@ def make_prediction(
     return file_path
 
 
-def gdal_merge(save_dir: Path) -> Path:
-    file_list = save_dir.glob('*.nc')
+def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
+    prefix = get_file_prefix(with_forecaster)
+    file_list = save_dir.glob(f'*{prefix}*.nc')
     files_string = " ".join([str(file) for file in file_list])
-    merged_file = save_dir / "merged.tif"
+    merged_file = save_dir / f"merged_{prefix}.tif"
     command = f"gdal_merge.py -o {merged_file} -of gtiff {files_string}"
     os.system(command)
     return merged_file
@@ -59,7 +65,8 @@ def main(path_to_tif_files: str, model_name: str, merge_predictions: bool = Fals
         make_prediction(model, test_path, save_dir, with_forecaster=False, plot_results_enabled=False)
 
     if merge_predictions:
-        gdal_merge(save_dir)
+        gdal_merge(save_dir, with_forecaster=True)
+        gdal_merge(save_dir, with_forecaster=False)
 
 
 if __name__ == "__main__":
