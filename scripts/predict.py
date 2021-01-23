@@ -24,7 +24,6 @@ def make_prediction(
         save_dir: Path,
         with_forecaster: bool = False,
         plot_results_enabled: bool = False) -> Optional[Path]:
-
     prefix = get_file_prefix(with_forecaster)
 
     file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
@@ -49,7 +48,16 @@ def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
     return merged_file
 
 
-def main(path_to_tif_files: str, model_name: str, merge_predictions: bool = False, data_dir: str = "../data"):
+def run_inference(path_to_tif_files: str,
+                  model_name: str,
+                  merge_predictions: bool = False,
+                  plot_results_enabled: bool = False,
+                  predict_with_forecaster: bool = True,
+                  predict_without_forecaster: bool = True,
+                  data_dir: str = "../data"):
+    if not predict_with_forecaster and not predict_without_forecaster:
+        raise ValueError("One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True")
+
     test_folder = Path(path_to_tif_files)
     test_files = test_folder.glob("*.tif")
 
@@ -61,12 +69,17 @@ def main(path_to_tif_files: str, model_name: str, merge_predictions: bool = Fals
 
     for test_path in test_files:
         print(f"Running for {test_path}")
-        make_prediction(model, test_path, save_dir, with_forecaster=True, plot_results_enabled=False)
-        make_prediction(model, test_path, save_dir, with_forecaster=False, plot_results_enabled=False)
+        if predict_with_forecaster:
+            make_prediction(model, test_path, save_dir, with_forecaster=True, plot_results_enabled=plot_results_enabled)
+        if predict_without_forecaster:
+            make_prediction(model, test_path, save_dir, with_forecaster=False,
+                            plot_results_enabled=plot_results_enabled)
 
     if merge_predictions:
-        gdal_merge(save_dir, with_forecaster=True)
-        gdal_merge(save_dir, with_forecaster=False)
+        if predict_with_forecaster:
+            gdal_merge(save_dir, with_forecaster=True)
+        if predict_without_forecaster:
+            gdal_merge(save_dir, with_forecaster=False)
 
 
 if __name__ == "__main__":
@@ -74,7 +87,15 @@ if __name__ == "__main__":
     parser.add_argument('--model_name', type=str)
     parser.add_argument("--path_to_tif_files", type=str)
     parser.add_argument("--merge_predictions", type=bool, default=False)
+    parser.add_argument("--predict_with_forecaster", type=bool, default=True)
+    parser.add_argument("--predict_without_forecaster", type=bool, default=True)
     parser.add_argument("--data_dir", type=bool, default=False)
     params = parser.parse_args()
     Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
-    main(params.path_to_tif_files, params.model_name, params.merge_predictions, params.data_dir)
+    run_inference(
+        params.path_to_tif_files,
+        params.model_name,
+        params.merge_predictions,
+        params.predict_with_forecaster,
+        params.predict_with_forecaster,
+        params.data_dir)

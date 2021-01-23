@@ -7,39 +7,7 @@ import osr
 import tempfile
 import shutil
 from typing import Tuple
-from scripts.predict import make_prediction, gdal_merge
-
-
-def generate_gtiff(file_path: Path, bbox: Tuple[int, int, int, int] = (0,10, 0,10), resolution: int = 10) -> Path:
-    """
-    Utility function for generating tif files for testing purposes
-    """
-    driver = gdal.GetDriverByName('GTiff')
-    spatref = osr.SpatialReference()
-    spatref.ImportFromEPSG(27700)
-    wkt = spatref.ExportToWkt()
-    num_bands = 13
-    xres, yres = resolution, -resolution
-    xmin, xmax, ymin, ymax = bbox
-    dtype = gdal.GDT_Int16
-
-    xsize = abs(int((xmax - xmin) / xres))
-    ysize = abs(int((ymax - ymin) / yres))
-
-    ds = driver.Create(
-        str(file_path),
-        xsize,
-        ysize,
-        num_bands,
-        dtype,
-        options=['COMPRESS=LZW', 'TILED=YES']
-    )
-    ds.SetProjection(wkt)
-    ds.SetGeoTransform([xmin, xres, 0, ymax, 0, yres])
-    ds.GetRasterBand(1).Fill(0)
-    ds.GetRasterBand(1).SetNoDataValue(255)
-    ds.FlushCache()
-    return file_path
+from scripts.predict import make_prediction, gdal_merge, run_inference
 
 
 class TestPredict(TestCase):
@@ -47,16 +15,56 @@ class TestPredict(TestCase):
 
     temp_dir = None
 
+    @staticmethod
+    def generate_gtiff(file_path: Path, bbox: Tuple[int, int, int, int] = (0,10, 0,10), resolution: int = 10) -> Path:
+        """
+        Utility function for generating tif files for testing purposes
+        """
+        driver = gdal.GetDriverByName('GTiff')
+        spatref = osr.SpatialReference()
+        spatref.ImportFromEPSG(27700)
+        wkt = spatref.ExportToWkt()
+        num_bands = 13
+        xres, yres = resolution, -resolution
+        xmin, xmax, ymin, ymax = bbox
+        dtype = gdal.GDT_Int16
+
+        xsize = abs(int((xmax - xmin) / xres))
+        ysize = abs(int((ymax - ymin) / yres))
+
+        ds = driver.Create(
+            str(file_path),
+            xsize,
+            ysize,
+            num_bands,
+            dtype,
+            options=['COMPRESS=LZW', 'TILED=YES']
+        )
+        ds.SetProjection(wkt)
+        ds.SetGeoTransform([xmin, xres, 0, ymax, 0, yres])
+        ds.GetRasterBand(1).Fill(0)
+        ds.GetRasterBand(1).SetNoDataValue(255)
+        ds.FlushCache()
+        return file_path
+
+
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = Path(tempfile.mkdtemp())
-        cls.empty_tif = generate_gtiff(cls.temp_dir / 'empty.tif')
+        cls.empty_tif = cls.generate_gtiff(cls.temp_dir / 'empty.tif')
         cls.forecasted_path = cls.predicted_file_path(cls.empty_tif.name, with_forecaster=True)
         cls.normal_path = cls.predicted_file_path(cls.empty_tif.name, with_forecaster=False)
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_dir)
+
+    @classmethod
+    def tearDown(cls):
+        paths = cls.temp_dir.glob('*')
+        for p in paths:
+            if p.is_file() and p != cls.empty_tif:
+                p.unlink()
 
     @classmethod
     def predicted_file_path(cls, origin_file: str, with_forecaster=False):
@@ -77,7 +85,6 @@ class TestPredict(TestCase):
         mock_plot_results.assert_not_called()
         self.assertEqual(output_path, self.normal_path)
         self.assertTrue(output_path.exists())
-        output_path.unlink()
 
     @patch('src.models.Model')
     @patch('scripts.predict.plot_results')
@@ -92,7 +99,6 @@ class TestPredict(TestCase):
         mock_plot_results.assert_called()
         self.assertEqual(output_path, self.forecasted_path)
         self.assertTrue(output_path.exists())
-        self.forecasted_path.unlink()
 
     @patch('src.models.Model')
     @patch('scripts.predict.plot_results')
@@ -104,22 +110,21 @@ class TestPredict(TestCase):
         mock_model.predict.assert_not_called()
         mock_plot_results.assert_not_called()
         self.assertEqual(output_path, None)
-        self.normal_path.unlink()
 
     def test_gdal_merge(self):
         for with_forecaster in [False, True]:
             # Setup
             path_1, path_2 = (self.predicted_file_path(name, with_forecaster) for name in ['1.tif', '2.tif'])
-            generate_gtiff(path_1, bbox=(0,10,0,10))
+            self.generate_gtiff(path_1, bbox=(0,10,0,10))
             self.assertTrue(path_1.exists())
-            generate_gtiff(path_2, bbox=(10,20,0,10))
+            self.generate_gtiff(path_2, bbox=(10,20,0,10))
             self.assertTrue(path_2.exists())
 
             # Use gdal_merge
             merged_path = gdal_merge(save_dir=self.temp_dir, with_forecaster=with_forecaster)
 
             # Verify merged gtiff
-            prefix = {"forecasted" if with_forecaster else "normal"}
+            prefix = "forecasted" if with_forecaster else "normal"
             self.assertEqual(merged_path, Path(self.temp_dir / f'merged_{prefix}.tif'))
             self.assertTrue(merged_path.exists())
             merged_file = gdal.Open(str(merged_path))
@@ -128,9 +133,38 @@ class TestPredict(TestCase):
             lry = uly + (merged_file.RasterYSize * yres)
             self.assertEqual((ulx, uly, lrx, lry), (0,10,20,0))
 
-            # Clean up
-            for p in [path_1, path_2, merged_path]:
-                p.unlink()
+    def test_run_inference_error(self):
+        self.assertRaises(ValueError,
+                          run_inference,
+                          path_to_tif_files=str(self.temp_dir),
+                          model_name='mock_model',
+                          predict_without_forecaster=False,
+                          predict_with_forecaster=False)
 
-    def test_main(self):
-        
+    @patch('src.models.Model.load_from_checkpoint')
+    @patch('scripts.predict.make_prediction')
+    def test_run_inference_no_merge(self, mock_make_prediction, mock_load_from_checkpoint):
+        run_inference(
+            path_to_tif_files=str(self.temp_dir),
+            model_name='mock_model',
+            data_dir=str(self.temp_dir))
+        mock_load_from_checkpoint.assert_called()
+        self.assertEqual(mock_make_prediction.call_count, 2)
+
+    @patch('src.models.Model.load_from_checkpoint')
+    @patch('scripts.predict.make_prediction')
+    @patch('scripts.predict.gdal_merge')
+    def test_run_inference_with_merge(self, mock_gdal_merge, mock_make_prediction, mock_load_from_checkpoint):
+        run_inference(
+            path_to_tif_files=str(self.temp_dir),
+            model_name='mock_model',
+            data_dir=str(self.temp_dir),
+            merge_predictions=True
+        )
+        mock_load_from_checkpoint.assert_called()
+        self.assertEqual(mock_make_prediction.call_count, 2)
+        self.assertEqual(mock_gdal_merge.call_count, 2)
+
+
+
+
