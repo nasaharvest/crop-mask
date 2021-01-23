@@ -18,12 +18,18 @@ def combine_bands(current, previous):
     current = current.select(BANDS)
     # Append it to the result (Note: only return current item on first element/iteration)
     return ee.Algorithms.If(
-        ee.Algorithms.IsEqual(previous, None), current, previous.addBands(ee.Image(current)),
+        ee.Algorithms.IsEqual(previous, None),
+        current,
+        previous.addBands(ee.Image(current)),
     )
 
 
 def export(
-    image: ee.Image, region: ee.Geometry, filename: str, drive_folder: str, monitor: bool = False,
+    image: ee.Image,
+    region: ee.Geometry,
+    filename: str,
+    drive_folder: str,
+    monitor: bool = False,
 ) -> ee.batch.Export:
 
     task = ee.batch.Export.image(

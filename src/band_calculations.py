@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def _calculate_difference_index(
-        input_array: np.ndarray, num_dims: int, band_1: str, band_2: str
+    input_array: np.ndarray, num_dims: int, band_1: str, band_2: str
 ) -> np.ndarray:
     if num_dims == 2:
         band_1_np = input_array[:, BANDS.index(band_1)]
@@ -23,7 +23,9 @@ def _calculate_difference_index(
         # for cases where near_infrared + red == 0
         # since this is handled in the where condition
         ndvi = np.where(
-            (band_1_np + band_2_np) > 0, (band_1_np - band_2_np) / (band_1_np + band_2_np), 0,
+            (band_1_np + band_2_np) > 0,
+            (band_1_np - band_2_np) / (band_1_np + band_2_np),
+            0,
         )
     return np.append(input_array, np.expand_dims(ndvi, -1), axis=-1)
 
@@ -50,7 +52,7 @@ def _calculate_ndwi(input_array: np.ndarray, num_dims: int = 2) -> np.ndarray:
 
 
 def _maxed_nan_to_num(
-        array: np.ndarray, nan: float, max_ratio: Optional[float] = None
+    array: np.ndarray, nan: float, max_ratio: Optional[float] = None
 ) -> Optional[np.ndarray]:
     if max_ratio is not None:
         num_nan = np.count_nonzero(np.isnan(array))
@@ -59,11 +61,14 @@ def _maxed_nan_to_num(
     return np.nan_to_num(array, nan=nan)
 
 
-def process_bands(x_np, nan_fill: float,
-                  max_nan_ratio: Optional[float] = None,
-                  add_ndvi: bool = False,
-                  add_ndwi: bool = False,
-                  num_dims: int = 2) -> Optional[np.ndarray]:
+def process_bands(
+    x_np,
+    nan_fill: float,
+    max_nan_ratio: Optional[float] = None,
+    add_ndvi: bool = False,
+    add_ndwi: bool = False,
+    num_dims: int = 2,
+) -> Optional[np.ndarray]:
     if add_ndvi:
         x_np = _calculate_ndvi(x_np, num_dims=num_dims)
     if add_ndwi:

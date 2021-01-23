@@ -42,7 +42,10 @@ class KenyaPVSentinelExporter(BaseSentinelExporter):
                 continue
             else:
                 overlap_dict[harvest_year + diff] = date_overlap(
-                    planting_date, harvest_date, end_date - timedelta(days=num_days), end_date,
+                    planting_date,
+                    harvest_date,
+                    end_date - timedelta(days=num_days),
+                    end_date,
                 )
         if len(overlap_dict) > 0:
             return max(overlap_dict.items(), key=lambda x: x[1])
@@ -119,7 +122,8 @@ class KenyaPVSentinelExporter(BaseSentinelExporter):
             return None
         else:
             start_date = max(
-                harvest_date - timedelta(days_per_timestep * num_timesteps), self.min_date,
+                harvest_date - timedelta(days_per_timestep * num_timesteps),
+                self.min_date,
             )
             end_date = start_date + timedelta(days_per_timestep * num_timesteps)
 

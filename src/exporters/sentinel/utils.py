@@ -112,7 +112,9 @@ def bounding_box_from_centre(
     return EEBoundingBox(max_lon=max_lon, min_lon=min_lon, max_lat=max_lat, min_lat=min_lat)
 
 
-def bounding_box_to_earth_engine_bounding_box(bounding_box: BoundingBox,) -> EEBoundingBox:
+def bounding_box_to_earth_engine_bounding_box(
+    bounding_box: BoundingBox,
+) -> EEBoundingBox:
     return EEBoundingBox(
         max_lat=bounding_box.max_lat,
         min_lat=bounding_box.min_lat,

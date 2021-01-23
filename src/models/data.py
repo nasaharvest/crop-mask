@@ -65,7 +65,8 @@ class CropDataset(Dataset):
         for dataset in datasets:
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
-                    self.data_folder / "features" / dataset.name, self.subset_name,
+                    self.data_folder / "features" / dataset.name,
+                    self.subset_name,
                 )
             )
 
@@ -111,7 +112,9 @@ class CropDataset(Dataset):
 
         pickle_files_dir = features_dir / subset_name
         if not pickle_files_dir.exists():
-            raise Exception(f'Directory: {pickle_files_dir} not found. Use command: `dvc pull` to get the latest data.')
+            raise Exception(
+                f"Directory: {pickle_files_dir} not found. Use command: `dvc pull` to get the latest data."
+            )
 
         pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
 

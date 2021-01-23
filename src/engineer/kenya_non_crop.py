@@ -6,15 +6,11 @@ from datetime import datetime
 from typing import Optional
 
 from src.exporters import KenyaNonCropSentinelExporter
-from src.data_classes import KenyaNonCrop
+from src.data_classes import KenyaNonCrop, KenyaNonCropDataInstance
 from src.utils import load_tif
 from src.band_calculations import process_bands
 from .base import BaseEngineer
 
-
-# Pickled feature data relies on this class so it is temporarily necessary
-class KenyaNonCropDataInstance(KenyaNonCrop.instance):
-    pass
 
 class KenyaNonCropEngineer(BaseEngineer):
 
@@ -38,7 +34,7 @@ class KenyaNonCropEngineer(BaseEngineer):
         start_date: datetime,
         days_per_timestep: int,
         is_test: bool,
-    ) -> Optional[KenyaNonCrop.instance]:
+    ) -> Optional[KenyaNonCropDataInstance]:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
@@ -67,17 +63,19 @@ class KenyaNonCropEngineer(BaseEngineer):
         closest_lat, _ = self.find_nearest(da.y, label_lat)
 
         labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-        labelled_array = process_bands(labelled_np,
-                                       nan_fill=nan_fill,
-                                       max_nan_ratio=max_nan_ratio,
-                                       add_ndvi=add_ndvi,
-                                       add_ndwi=add_ndwi)
+        labelled_array = process_bands(
+            labelled_np,
+            nan_fill=nan_fill,
+            max_nan_ratio=max_nan_ratio,
+            add_ndvi=add_ndvi,
+            add_ndwi=add_ndwi,
+        )
 
         if (not is_test) and calculate_normalizing_dict:
             self.update_normalizing_values(self.normalizing_dict_interim, labelled_array)
 
         if labelled_array is not None:
-            return KenyaNonCrop.instance(
+            return KenyaNonCropDataInstance(
                 label_lat=label_lat,
                 label_lon=label_lon,
                 instance_lat=closest_lat,

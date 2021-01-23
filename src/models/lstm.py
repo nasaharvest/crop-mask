@@ -68,7 +68,9 @@ class UnrolledLSTMCell(nn.Module):
         self.forget_gate = nn.Sequential(
             *[
                 nn.Linear(
-                    in_features=input_size + hidden_size, out_features=hidden_size, bias=True,
+                    in_features=input_size + hidden_size,
+                    out_features=hidden_size,
+                    bias=True,
                 ),
                 nn.Sigmoid(),
             ]
@@ -77,7 +79,9 @@ class UnrolledLSTMCell(nn.Module):
         self.update_gate = nn.Sequential(
             *[
                 nn.Linear(
-                    in_features=input_size + hidden_size, out_features=hidden_size, bias=True,
+                    in_features=input_size + hidden_size,
+                    out_features=hidden_size,
+                    bias=True,
                 ),
                 nn.Sigmoid(),
             ]
@@ -86,7 +90,9 @@ class UnrolledLSTMCell(nn.Module):
         self.update_candidates = nn.Sequential(
             *[
                 nn.Linear(
-                    in_features=input_size + hidden_size, out_features=hidden_size, bias=True,
+                    in_features=input_size + hidden_size,
+                    out_features=hidden_size,
+                    bias=True,
                 ),
                 nn.Tanh(),
             ]
@@ -95,7 +101,9 @@ class UnrolledLSTMCell(nn.Module):
         self.output_gate = nn.Sequential(
             *[
                 nn.Linear(
-                    in_features=input_size + hidden_size, out_features=hidden_size, bias=True,
+                    in_features=input_size + hidden_size,
+                    out_features=hidden_size,
+                    bias=True,
                 ),
                 nn.Sigmoid(),
             ]

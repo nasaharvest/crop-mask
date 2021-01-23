@@ -19,11 +19,12 @@ def get_file_prefix(with_forecaster: bool):
 
 
 def make_prediction(
-        model: Model,
-        test_path: Path,
-        save_dir: Path,
-        with_forecaster: bool = False,
-        plot_results_enabled: bool = False) -> Optional[Path]:
+    model: Model,
+    test_path: Path,
+    save_dir: Path,
+    with_forecaster: bool = False,
+    plot_results_enabled: bool = False,
+) -> Optional[Path]:
     prefix = get_file_prefix(with_forecaster)
 
     file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
@@ -40,7 +41,7 @@ def make_prediction(
 
 def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
     prefix = get_file_prefix(with_forecaster)
-    file_list = save_dir.glob(f'*{prefix}*.nc')
+    file_list = save_dir.glob(f"*{prefix}*.nc")
     files_string = " ".join([str(file) for file in file_list])
     merged_file = save_dir / f"merged_{prefix}.tif"
     command = f"gdal_merge.py -o {merged_file} -of gtiff {files_string}"
@@ -48,15 +49,19 @@ def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
     return merged_file
 
 
-def run_inference(path_to_tif_files: str,
-                  model_name: str,
-                  merge_predictions: bool = False,
-                  plot_results_enabled: bool = False,
-                  predict_with_forecaster: bool = True,
-                  predict_without_forecaster: bool = True,
-                  data_dir: str = "../data"):
+def run_inference(
+    path_to_tif_files: str,
+    model_name: str,
+    merge_predictions: bool = False,
+    plot_results_enabled: bool = False,
+    predict_with_forecaster: bool = True,
+    predict_without_forecaster: bool = True,
+    data_dir: str = "../data",
+):
     if not predict_with_forecaster and not predict_without_forecaster:
-        raise ValueError("One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True")
+        raise ValueError(
+            "One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True"
+        )
 
     test_folder = Path(path_to_tif_files)
     test_files = test_folder.glob("*.tif")
@@ -70,10 +75,21 @@ def run_inference(path_to_tif_files: str,
     for test_path in test_files:
         print(f"Running for {test_path}")
         if predict_with_forecaster:
-            make_prediction(model, test_path, save_dir, with_forecaster=True, plot_results_enabled=plot_results_enabled)
+            make_prediction(
+                model,
+                test_path,
+                save_dir,
+                with_forecaster=True,
+                plot_results_enabled=plot_results_enabled,
+            )
         if predict_without_forecaster:
-            make_prediction(model, test_path, save_dir, with_forecaster=False,
-                            plot_results_enabled=plot_results_enabled)
+            make_prediction(
+                model,
+                test_path,
+                save_dir,
+                with_forecaster=False,
+                plot_results_enabled=plot_results_enabled,
+            )
 
     if merge_predictions:
         if predict_with_forecaster:
@@ -84,7 +100,7 @@ def run_inference(path_to_tif_files: str,
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument('--model_name', type=str)
+    parser.add_argument("--model_name", type=str)
     parser.add_argument("--path_to_tif_files", type=str)
     parser.add_argument("--merge_predictions", type=bool, default=False)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
@@ -98,4 +114,5 @@ if __name__ == "__main__":
         params.merge_predictions,
         params.predict_with_forecaster,
         params.predict_with_forecaster,
-        params.data_dir)
+        params.data_dir,
+    )

@@ -1,7 +1,7 @@
 from .boundingbox import BoundingBox
 import numpy as np
 from dataclasses import dataclass
-from typing import Type
+from typing import Type, Union
 
 
 @dataclass
@@ -14,43 +14,51 @@ class BaseDataInstance:
 
     def isin(self, bounding_box: BoundingBox) -> bool:
         return (
-                (self.instance_lon <= bounding_box.max_lon)
-                & (self.instance_lon >= bounding_box.min_lon)
-                & (self.instance_lat <= bounding_box.max_lat)
-                & (self.instance_lat >= bounding_box.min_lat)
+            (self.instance_lon <= bounding_box.max_lon)
+            & (self.instance_lon >= bounding_box.min_lon)
+            & (self.instance_lat <= bounding_box.max_lat)
+            & (self.instance_lat >= bounding_box.min_lat)
         )
 
+
 @dataclass
-class _GeoWikiDataInstance(BaseDataInstance):
+class GeoWikiDataInstance(BaseDataInstance):
     crop_probability: float
 
 
 @dataclass
-class _KenyaNonCropDataInstance(BaseDataInstance):
+class KenyaNonCropDataInstance(BaseDataInstance):
     is_crop: bool = False
 
 
 @dataclass
-class _PVKenyaDataInstance(BaseDataInstance):
+class PVKenyaDataInstance(BaseDataInstance):
     crop_label: str
     crop_int: int
 
 
 @dataclass
-class _KenyaOneAcreFundDataInstance(BaseDataInstance):
+class KenyaOneAcreFundDataInstance(BaseDataInstance):
     is_maize: bool = True
 
 
 @dataclass
 class DatasetMetadata:
     name: str
-    instance: Type[BaseDataInstance]
+    instance: Type[
+        Union[
+            GeoWikiDataInstance,
+            KenyaOneAcreFundDataInstance,
+            KenyaNonCropDataInstance,
+            PVKenyaDataInstance,
+        ]
+    ]
 
 
 # Available datasets
-GeoWiki = DatasetMetadata(name="geowiki_landcover_2017", instance=_GeoWikiDataInstance)
-KenyaNonCrop = DatasetMetadata(name="kenya_non_crop", instance=_KenyaNonCropDataInstance)
-KenyaOAF = DatasetMetadata(name="one_acre_fund_kenya", instance=_KenyaOneAcreFundDataInstance)
-KenyaPV = DatasetMetadata(name="plant_village_kenya", instance=_PVKenyaDataInstance)
+GeoWiki = DatasetMetadata(name="geowiki_landcover_2017", instance=GeoWikiDataInstance)
+KenyaNonCrop = DatasetMetadata(name="kenya_non_crop", instance=KenyaNonCropDataInstance)
+KenyaOAF = DatasetMetadata(name="one_acre_fund_kenya", instance=KenyaOneAcreFundDataInstance)
+KenyaPV = DatasetMetadata(name="plant_village_kenya", instance=PVKenyaDataInstance)
 
 all_datasets = [GeoWiki, KenyaNonCrop, KenyaOAF, KenyaPV]
