@@ -13,7 +13,7 @@ from scripts.predict import make_prediction, gdal_merge, run_inference
 class TestPredict(TestCase):
     """Tests the predict script"""
 
-    temp_dir = None
+    temp_dir: Path = Path('')
 
     @staticmethod
     def generate_gtiff(
@@ -63,12 +63,13 @@ class TestPredict(TestCase):
                 p.unlink()
 
     @classmethod
-    def predicted_file_path(cls, origin_file: str, with_forecaster=False):
+    def predicted_file_path(cls, origin_file: str, with_forecaster=False) -> Path:
         if with_forecaster:
             prefix = "forecasted"
         else:
             prefix = "normal"
-        return cls.temp_dir / f"preds_{prefix}_{origin_file}.nc"
+        p = cls.temp_dir / f"preds_{prefix}_{origin_file}.nc"
+        return p
 
     @patch("src.models.Model")
     @patch("scripts.predict.plot_results")

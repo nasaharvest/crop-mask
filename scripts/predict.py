@@ -30,7 +30,7 @@ def make_prediction(
     file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
     if file_path.exists():
         print("File already generated. Skipping")
-        return
+        return None
 
     out = model.predict(test_path, with_forecaster=with_forecaster)
     if plot_results_enabled:
