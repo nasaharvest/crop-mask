@@ -113,6 +113,6 @@ if __name__ == "__main__":
         params.model_name,
         params.merge_predictions,
         params.predict_with_forecaster,
-        params.predict_with_forecaster,
+        params.predict_without_forecaster,
         params.data_dir,
     )
