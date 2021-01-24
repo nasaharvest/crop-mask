@@ -3,14 +3,27 @@ from unittest.mock import patch
 from datetime import date
 from src.exporters.sentinel.region import RegionalExporter, Season
 from src.data_classes import BoundingBox
+from pathlib import Path
+import tempfile
+import shutil
 
 
 class TestRegionalExporter(TestCase):
     """Tests for the RegionalExporter"""
 
+    temp_dir: Path = Path("")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir = Path(tempfile.mkdtemp())
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.temp_dir)
+
     @patch("src.exporters.sentinel.base.ee.Initialize")
     def test_init(self, mock_ee_initialize):
-        exporter = RegionalExporter()
+        exporter = RegionalExporter(self.temp_dir)
         mock_ee_initialize.assert_called()
         self.assertTrue(exporter.labels.empty)
 
@@ -59,8 +72,7 @@ class TestRegionalExporter(TestCase):
     def test_export_for_region_metres_per_polygon_none(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        exporter = RegionalExporter()
-        func_to_test = exporter.export_for_region
+        func_to_test = RegionalExporter(self.temp_dir).export_for_region
         mock_base_ee.Initialize.assert_called()
         region_name = "test_region_name"
         region_bbox = BoundingBox(0, 1, 0, 1)
@@ -93,8 +105,7 @@ class TestRegionalExporter(TestCase):
     def test_export_for_region_metres_per_polygon_set(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        exporter = RegionalExporter()
-        func_to_test = exporter.export_for_region
+        func_to_test = RegionalExporter(self.temp_dir).export_for_region
         mock_base_ee.Initialize.assert_called()
         region_name = "test_region_name"
         region_bbox = BoundingBox(0, 1, 0, 1)
