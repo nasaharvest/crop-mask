@@ -57,8 +57,7 @@ def run_inference(
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
     predict_without_forecaster: bool = True,
-    predict_dir: str = "../data/predictions"
-
+    predict_dir: str = "../data/predictions",
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
         raise ValueError(
@@ -103,12 +102,12 @@ def run_inference(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str)
-    parser.add_argument("--model_dir", type=bool, default='../data')
+    parser.add_argument("--model_dir", type=bool, default="../data")
     parser.add_argument("--path_to_tif_files", type=str)
     parser.add_argument("--merge_predictions", type=bool, default=False)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
     parser.add_argument("--predict_without_forecaster", type=bool, default=True)
-    parser.add_argument("--predict_dir", type=bool, default='../data/predictions')
+    parser.add_argument("--predict_dir", type=bool, default="../data/predictions")
 
     params = parser.parse_args()
     Task.init(
@@ -123,5 +122,5 @@ if __name__ == "__main__":
         predict_with_forecaster=params.predict_with_forecaster,
         predict_without_forecaster=params.predict_without_forecaster,
         model_dir=params.model_dir,
-        predict_dir=params.predict_dir
+        predict_dir=params.predict_dir,
     )
