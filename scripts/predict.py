@@ -52,11 +52,13 @@ def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
 def run_inference(
     path_to_tif_files: str,
     model_name: str,
+    model_dir: str = "../data",
     merge_predictions: bool = False,
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
     predict_without_forecaster: bool = True,
-    data_dir: str = "../data",
+    predict_dir: str = "../data/predictions"
+
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
         raise ValueError(
@@ -67,9 +69,9 @@ def run_inference(
     test_files = test_folder.glob("*.tif")
 
     print(f"Using model {model_name}")
-    model = Model.load_from_checkpoint(f"{data_dir}/models/{model_name}")
+    model = Model.load_from_checkpoint(f"{model_dir}/models/{model_name}.ckpt")
 
-    save_dir = Path(data_dir) / "predictions"
+    save_dir = Path(predict_dir)
     save_dir.mkdir(exist_ok=True)
 
     for test_path in test_files:
@@ -101,18 +103,25 @@ def run_inference(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str)
+    parser.add_argument("--model_dir", type=bool, default='../data')
     parser.add_argument("--path_to_tif_files", type=str)
     parser.add_argument("--merge_predictions", type=bool, default=False)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
     parser.add_argument("--predict_without_forecaster", type=bool, default=True)
-    parser.add_argument("--data_dir", type=bool, default=False)
+    parser.add_argument("--predict_dir", type=bool, default='../data/predictions')
+
     params = parser.parse_args()
-    Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
+    Task.init(
+        project_name="NASA Harvest",
+        task_name=f"Inference with model {params.model_name}",
+        task_type=Task.TaskTypes.inference,
+    )
     run_inference(
-        params.path_to_tif_files,
-        params.model_name,
-        params.merge_predictions,
-        params.predict_with_forecaster,
-        params.predict_without_forecaster,
-        params.data_dir,
+        path_to_tif_files=params.path_to_tif_files,
+        model_name=params.model_name,
+        merge_predictions=params.merge_predictions,
+        predict_with_forecaster=params.predict_with_forecaster,
+        predict_without_forecaster=params.predict_without_forecaster,
+        model_dir=params.model_dir,
+        predict_dir=params.predict_dir
     )

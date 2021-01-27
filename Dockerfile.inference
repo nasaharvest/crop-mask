@@ -4,17 +4,25 @@ FROM cropmask/gpudependencies
 SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
 
 VOLUME vol
+RUN mkdir /vol/input && /vol/predictions
 
 # rclone pull
 ARG GDRIVE_TIF_DIR
-RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf rclone copy remote:$GDRIVE_TIF_DIR/ /vol/
+RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf \
+    rclone copy remote:$GDRIVE_TIF_DIR/ /vol/input/
 
 COPY . /crop-mask
 WORKDIR /crop-mask/scripts
 
 # Pull in model data
-RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull
+RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
+    dvc pull ../data/features && dvc pull ../data/models
 
 # Do inference model
 ARG MODEL_NAME
-RUN --mount=type=secret,id=clearml,target=/root/clearml.conf python predict.py --model_name $MODEL_NAME --path_to_tif_files /vol/
+RUN --mount=type=secret,id=clearml,target=/root/clearml.conf \
+    python predict.py \
+    --model_name $MODEL_NAME \
+    --path_to_tif_files /vol/input/ \
+    --predict_dir /vol/predictions \
+    --merge_predictions true
