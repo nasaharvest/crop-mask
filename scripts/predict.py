@@ -1,5 +1,7 @@
 from pathlib import Path
 import sys
+import os
+from typing import Optional
 
 sys.path.append("..")
 
@@ -8,41 +10,109 @@ from argparse import ArgumentParser
 from src.models import Model
 from src.analysis import plot_results
 
-if __name__ == "__main__":
 
-    parser = ArgumentParser()
+def get_file_prefix(with_forecaster: bool):
+    if with_forecaster:
+        return "forecasted"
+    else:
+        return "normal"
 
-    parser.add_argument('--model_name', type=str)
-    parser.add_argument("--path_to_tif_files", type=str)
 
-    params = parser.parse_args()
+def make_prediction(
+    model: Model,
+    test_path: Path,
+    save_dir: Path,
+    with_forecaster: bool = False,
+    plot_results_enabled: bool = False,
+) -> Optional[Path]:
+    prefix = get_file_prefix(with_forecaster)
 
-    data_dir = "../data"
+    file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
+    if file_path.exists():
+        print("File already generated. Skipping")
+        return None
 
-    test_folder = Path(params.path_to_tif_files)
+    out = model.predict(test_path, with_forecaster=with_forecaster)
+    if plot_results_enabled:
+        plot_results(out, test_path, savepath=save_dir, prefix=prefix)
+    out.to_netcdf(file_path)
+    return file_path
+
+
+def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
+    prefix = get_file_prefix(with_forecaster)
+    file_list = save_dir.glob(f"*{prefix}*.nc")
+    files_string = " ".join([str(file) for file in file_list])
+    merged_file = save_dir / f"merged_{prefix}.tif"
+    command = f"gdal_merge.py -o {merged_file} -of gtiff {files_string}"
+    os.system(command)
+    return merged_file
+
+
+def run_inference(
+    path_to_tif_files: str,
+    model_name: str,
+    merge_predictions: bool = False,
+    plot_results_enabled: bool = False,
+    predict_with_forecaster: bool = True,
+    predict_without_forecaster: bool = True,
+    data_dir: str = "../data",
+):
+    if not predict_with_forecaster and not predict_without_forecaster:
+        raise ValueError(
+            "One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True"
+        )
+
+    test_folder = Path(path_to_tif_files)
     test_files = test_folder.glob("*.tif")
 
-    task = Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
-    print(f"Using model {params.model_name}")
-    model = Model.load_from_checkpoint(f"{data_dir}/models/{params.model_name}")
+    print(f"Using model {model_name}")
+    model = Model.load_from_checkpoint(f"{data_dir}/models/{model_name}")
+
+    save_dir = Path(data_dir) / "predictions"
+    save_dir.mkdir(exist_ok=True)
 
     for test_path in test_files:
-
-        save_dir = Path(data_dir) / "Autoencoder"
-        save_dir.mkdir(exist_ok=True)
-
         print(f"Running for {test_path}")
+        if predict_with_forecaster:
+            make_prediction(
+                model,
+                test_path,
+                save_dir,
+                with_forecaster=True,
+                plot_results_enabled=plot_results_enabled,
+            )
+        if predict_without_forecaster:
+            make_prediction(
+                model,
+                test_path,
+                save_dir,
+                with_forecaster=False,
+                plot_results_enabled=plot_results_enabled,
+            )
 
-        savepath = save_dir / f"preds_{test_path.name}"
-        if savepath.exists():
-            print("File already generated. Skipping")
-            continue
+    if merge_predictions:
+        if predict_with_forecaster:
+            gdal_merge(save_dir, with_forecaster=True)
+        if predict_without_forecaster:
+            gdal_merge(save_dir, with_forecaster=False)
 
-        out_forecasted = model.predict(test_path, with_forecaster=True)
-        plot_results(out_forecasted, test_path, savepath=save_dir, prefix="forecasted_")
 
-        out_normal = model.predict(test_path, with_forecaster=False)
-        plot_results(out_normal, test_path, savepath=save_dir, prefix="full_input_")
-
-        out_forecasted.to_netcdf(save_dir / f"preds_forecasted_{test_path.name}.nc")
-        out_normal.to_netcdf(save_dir / f"preds_normal_{test_path.name}.nc")
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--model_name", type=str)
+    parser.add_argument("--path_to_tif_files", type=str)
+    parser.add_argument("--merge_predictions", type=bool, default=False)
+    parser.add_argument("--predict_with_forecaster", type=bool, default=True)
+    parser.add_argument("--predict_without_forecaster", type=bool, default=True)
+    parser.add_argument("--data_dir", type=bool, default=False)
+    params = parser.parse_args()
+    Task.init(project_name="NASA Harvest", task_name=f"Inference with model {params.model_name}")
+    run_inference(
+        params.path_to_tif_files,
+        params.model_name,
+        params.merge_predictions,
+        params.predict_with_forecaster,
+        params.predict_without_forecaster,
+        params.data_dir,
+    )

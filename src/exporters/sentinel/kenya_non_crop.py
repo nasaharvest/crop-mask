@@ -34,7 +34,9 @@ class KenyaNonCropSentinelExporter(BaseSentinelExporter):
 
             output.append(
                 bounding_box_from_centre(
-                    mid_lat=row["lat"], mid_lon=row["lon"], surrounding_metres=surrounding_metres,
+                    mid_lat=row["lat"],
+                    mid_lon=row["lon"],
+                    surrounding_metres=surrounding_metres,
                 ),
             )
 
@@ -69,7 +71,8 @@ class KenyaNonCropSentinelExporter(BaseSentinelExporter):
         """
 
         bounding_boxes_to_download = self.labels_to_bounding_boxes(
-            num_labelled_points=num_labelled_points, surrounding_metres=surrounding_metres,
+            num_labelled_points=num_labelled_points,
+            surrounding_metres=surrounding_metres,
         )
 
         start_date = self.data_date - num_timesteps * timedelta(days=days_per_timestep)

@@ -32,9 +32,7 @@ def tif_to_np(
         process_filename(path_to_dataset.name, include_extended_filenames=True),
     )
 
-    x = load_tif(
-        path_to_dataset, days_per_timestep=days_per_timestep, start_date=start_date
-    )
+    x = load_tif(path_to_dataset, days_per_timestep=days_per_timestep, start_date=start_date)
 
     lon, lat = np.meshgrid(x.x.values, x.y.values)
     flat_lat, flat_lon = (

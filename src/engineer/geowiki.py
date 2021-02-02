@@ -6,15 +6,10 @@ import xarray as xr
 from typing import Optional
 
 from src.exporters import GeoWikiExporter, GeoWikiSentinelExporter
-from src.data_classes import GeoWiki
+from src.data_classes import GeoWikiDataInstance
 from src.utils import load_tif
 from src.band_calculations import process_bands
 from .base import BaseEngineer
-
-
-# Pickled feature data relies on this class so it is temporarily necessary
-class GeoWikiDataInstance(GeoWiki.instance):
-    pass
 
 
 class GeoWikiEngineer(BaseEngineer):
@@ -39,7 +34,7 @@ class GeoWikiEngineer(BaseEngineer):
         start_date: datetime,
         days_per_timestep: int,
         is_test: bool,
-    ) -> Optional[GeoWiki.instance]:
+    ) -> Optional[GeoWikiDataInstance]:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
@@ -72,11 +67,13 @@ class GeoWikiEngineer(BaseEngineer):
         closest_lat, _ = self.find_nearest(da.y, label_lat)
 
         labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-        labelled_array = process_bands(labelled_np,
-                                       nan_fill=nan_fill,
-                                       max_nan_ratio=max_nan_ratio,
-                                       add_ndvi=add_ndvi,
-                                       add_ndwi=add_ndwi)
+        labelled_array = process_bands(
+            labelled_np,
+            nan_fill=nan_fill,
+            max_nan_ratio=max_nan_ratio,
+            add_ndvi=add_ndvi,
+            add_ndwi=add_ndwi,
+        )
 
         if (not is_test) and calculate_normalizing_dict:
             # we won't use the neighbouring array for now, since tile2vec is
@@ -84,7 +81,7 @@ class GeoWikiEngineer(BaseEngineer):
             self.update_normalizing_values(self.normalizing_dict_interim, labelled_array)
 
         if labelled_array is not None:
-            return GeoWiki.instance(
+            return GeoWikiDataInstance(
                 label_lat=label_lat,
                 label_lon=label_lon,
                 crop_probability=crop_probability,

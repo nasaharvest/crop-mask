@@ -5,6 +5,7 @@ import zipfile
 from .base import BaseExporter
 from src.data_classes import GeoWiki
 
+
 class GeoWikiExporter(BaseExporter):
     r"""
     Download the GeoWiki labels

@@ -28,12 +28,14 @@ STR2BB = {
     "NorthMalawi": BoundingBox(min_lon=32.688, max_lon=35.772, min_lat=-14.636, max_lat=-9.231),
     "SouthMalawi": BoundingBox(min_lon=34.211, max_lon=35.772, min_lat=-17.07, max_lat=-14.636),
     "Rwanda": BoundingBox(min_lon=28.841, max_lon=30.909, min_lat=-2.854, max_lat=-1.034),
-    "Togo": BoundingBox(min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625),
+    "Togo": BoundingBox(
+        min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
+    ),
 }
 
 
 def process_filename(
-        filename: str, include_extended_filenames: bool
+    filename: str, include_extended_filenames: bool
 ) -> Optional[Tuple[str, datetime, datetime]]:
     r"""
     Given an exported sentinel file, process it to get the start
@@ -91,7 +93,7 @@ def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr
     num_bands = len(da.band)
 
     assert (
-            num_bands % bands_per_timestep == 0
+        num_bands % bands_per_timestep == 0
     ), f"Total number of bands not divisible by the expected bands per timestep"
 
     cur_band = 0

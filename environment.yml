@@ -22,6 +22,7 @@ dependencies:
   - cartopy
   - scikit-learn
   - dvc-s3
+  - gdal
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
       - clearml

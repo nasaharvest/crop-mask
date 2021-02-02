@@ -33,7 +33,11 @@ class Classifier(pl.LightningModule):
         all pixels. Default = True
     """
 
-    def __init__(self, input_size: int, hparams: Namespace,) -> None:
+    def __init__(
+        self,
+        input_size: int,
+        hparams: Namespace,
+    ) -> None:
         super().__init__()
 
         self.hparams = hparams
@@ -91,7 +95,9 @@ class Classifier(pl.LightningModule):
                 if i < (num_local_layers - 1):
                     local_classification_layers.append(nn.ReLU())
                     local_classification_layers.append(
-                        nn.BatchNorm1d(num_features=hparams.classifier_vector_size,)
+                        nn.BatchNorm1d(
+                            num_features=hparams.classifier_vector_size,
+                        )
                     )
 
             self.local_classifier = nn.Sequential(*local_classification_layers)

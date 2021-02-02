@@ -11,7 +11,11 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     Task.init(project_name="NASA Harvest", task_name=f"training model: {hparams.model_name}")
 
     early_stop_callback = EarlyStopping(
-        monitor="val_loss", min_delta=0.00, patience=hparams.patience, verbose=True, mode="min",
+        monitor="val_loss",
+        min_delta=0.00,
+        patience=hparams.patience,
+        verbose=True,
+        mode="min",
     )
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
@@ -21,7 +25,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     trainer.fit(model)
 
     if hparams.model_name:
-        model_path = Path(f'{hparams.data_folder}/models/{hparams.model_name}.ckpt')
+        model_path = Path(f"{hparams.data_folder}/models/{hparams.model_name}.ckpt")
         if model_path.exists():
             model_path.unlink()
         trainer.save_checkpoint(model_path)

@@ -30,7 +30,9 @@ class GeoWikiSentinelExporter(BaseSentinelExporter):
         for idx, row in tqdm(self.labels.iterrows()):
             output.append(
                 bounding_box_from_centre(
-                    mid_lat=row["lat"], mid_lon=row["lon"], surrounding_metres=surrounding_metres,
+                    mid_lat=row["lat"],
+                    mid_lon=row["lon"],
+                    surrounding_metres=surrounding_metres,
                 )
             )
 
@@ -69,7 +71,8 @@ class GeoWikiSentinelExporter(BaseSentinelExporter):
         assert start_date >= self.min_date, f"Sentinel data does not exist before {self.min_date}"
 
         bounding_boxes_to_download = self.labels_to_bounding_boxes(
-            num_labelled_points=num_labelled_points, surrounding_metres=surrounding_metres,
+            num_labelled_points=num_labelled_points,
+            surrounding_metres=surrounding_metres,
         )
 
         for idx, bounding_box in enumerate(bounding_boxes_to_download):
