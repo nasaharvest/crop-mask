@@ -27,11 +27,13 @@ class TestRegionalExporter(TestCase):
         mock_ee_initialize.assert_called()
         self.assertTrue(exporter.labels.empty)
 
+    @patch("src.exporters.sentinel.region.get_user_input")
     @patch("src.exporters.sentinel.region.date")
-    def test_determine_start_end_dates_in_season(self, mock_date):
+    def test_determine_start_end_dates_in_season(self, mock_date, get_user_input):
         mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
 
         mock_date.today.return_value = date(2021, 1, 23)
+
         start, end = RegionalExporter.determine_start_end_dates(Season.in_season)
         self.assertEqual(start, date(2020, 4, 1))
         self.assertEqual(end, date(2021, 1, 23))
@@ -41,10 +43,24 @@ class TestRegionalExporter(TestCase):
         self.assertEqual(start, date(2020, 4, 1))
         self.assertEqual(end, date(2021, 4, 1))
 
+        # 1 month span should produce a warning and proceed if user input is yes
         mock_date.today.return_value = date(2021, 5, 1)
+        get_user_input.return_value = "yes"
         start, end = RegionalExporter.determine_start_end_dates(Season.in_season)
         self.assertEqual(start, date(2021, 4, 1))
         self.assertEqual(end, date(2021, 5, 1))
+
+        # 1 month span should produce a warning and exit if user input is no
+        get_user_input.return_value = "no"
+        self.assertRaises(SystemExit, RegionalExporter.determine_start_end_dates, Season.in_season)
+
+        # 6 month span should produce a warning and exit if user input is no
+        mock_date.today.return_value = date(2021, 10, 1)
+        get_user_input.return_value = "no"
+        self.assertRaises(SystemExit, RegionalExporter.determine_start_end_dates, Season.in_season)
+        self.assertEqual(
+            get_user_input.call_count, 3, "get_user_input should have been called thrice."
+        )
 
     @patch("src.exporters.sentinel.region.date")
     def test_determine_start_end_dates_post_season(self, mock_date):
