@@ -26,7 +26,12 @@ class Forecaster(pl.LightningModule):
         the LSTM base. Default = 0.2
     """
 
-    def __init__(self, num_bands: int, output_timesteps: int, hparams: Namespace,) -> None:
+    def __init__(
+        self,
+        num_bands: int,
+        output_timesteps: int,
+        hparams: Namespace,
+    ) -> None:
         super().__init__()
         self.output_timesteps = output_timesteps
         self.lstm = UnrolledLSTM(

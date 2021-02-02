@@ -17,7 +17,10 @@ from .utils import date_to_string, rescale
 
 def get_single_image(region: ee.Geometry, start_date: date, end_date: date) -> ee.Image:
 
-    dates = ee.DateRange(date_to_string(start_date), date_to_string(end_date),)
+    dates = ee.DateRange(
+        date_to_string(start_date),
+        date_to_string(end_date),
+    )
 
     startDate = ee.DateRange(dates).start()
     endDate = ee.DateRange(dates).end()
@@ -79,7 +82,21 @@ def computeQualityScore(img):
 
 def computeS2CloudScore(img):
     toa = img.select(
-        ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B8A", "B9", "B10", "B11", "B12",]
+        [
+            "B1",
+            "B2",
+            "B3",
+            "B4",
+            "B5",
+            "B6",
+            "B7",
+            "B8",
+            "B8A",
+            "B9",
+            "B10",
+            "B11",
+            "B12",
+        ]
     ).divide(10000)
 
     toa = toa.addBands(img.select(["QA60"]))

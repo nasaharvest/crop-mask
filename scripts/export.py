@@ -10,7 +10,7 @@ from src.exporters import (
     KenyaPVSentinelExporter,
     KenyaNonCropSentinelExporter,
     RegionalExporter,
-    KenyaOAFSentinelExporter
+    KenyaOAFSentinelExporter,
 )
 
 

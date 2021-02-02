@@ -86,7 +86,8 @@ The following tests can be run against the pipeline:
 
 ```bash
 black .  # code formatting
-mypy src  # type checking
+mypy src scripts  # type checking
+python -m unittest
 ```
 
 ## Using with docker

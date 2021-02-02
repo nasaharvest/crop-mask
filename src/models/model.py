@@ -70,7 +70,7 @@ class Model(pl.LightningModule):
 
         self.data_folder = Path(hparams.data_folder)
         self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
-        print(f'Training on datasets: {[d.name for d in self.datasets]}')
+        print(f"Training on datasets: {[d.name for d in self.datasets]}")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
@@ -87,7 +87,9 @@ class Model(pl.LightningModule):
             num_output_timesteps = self.num_timesteps - self.hparams.input_months
             print(f"Predicting {num_output_timesteps} timesteps in the forecaster")
             self.forecaster = Forecaster(
-                num_bands=self.input_size, output_timesteps=num_output_timesteps, hparams=hparams,
+                num_bands=self.input_size,
+                output_timesteps=num_output_timesteps,
+                hparams=hparams,
             )
 
             self.forecaster_loss = F.smooth_l1_loss
@@ -104,7 +106,10 @@ class Model(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
 
     def get_dataset(
-        self, subset: str, normalizing_dict: Optional[Dict] = None, cache: Optional[bool] = None,
+        self,
+        subset: str,
+        normalizing_dict: Optional[Dict] = None,
+        cache: Optional[bool] = None,
     ) -> CropDataset:
         return CropDataset(
             data_folder=self.data_folder,
@@ -121,18 +126,26 @@ class Model(pl.LightningModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.get_dataset(subset="training"), shuffle=True, batch_size=self.hparams.batch_size,
+            self.get_dataset(subset="training"),
+            shuffle=True,
+            batch_size=self.hparams.batch_size,
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.get_dataset(subset="validation", normalizing_dict=self.normalizing_dict,),
+            self.get_dataset(
+                subset="validation",
+                normalizing_dict=self.normalizing_dict,
+            ),
             batch_size=self.hparams.batch_size,
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.get_dataset(subset="testing", normalizing_dict=self.normalizing_dict,),
+            self.get_dataset(
+                subset="testing",
+                normalizing_dict=self.normalizing_dict,
+            ),
             batch_size=self.hparams.batch_size,
         )
 
@@ -213,7 +226,11 @@ class Model(pl.LightningModule):
         if len(all_preds.shape) == 1:
             all_preds = np.expand_dims(all_preds, axis=-1)
 
-        return preds_to_xr(all_preds, lats=input_data.lat, lons=input_data.lon,)
+        return preds_to_xr(
+            all_preds,
+            lats=input_data.lat,
+            lons=input_data.lon,
+        )
 
     def _output_metrics(
         self, preds: np.ndarray, labels: np.ndarray, prefix: str = ""
@@ -283,7 +300,10 @@ class Model(pl.LightningModule):
             output_dict = {}
             if add_preds:
                 output_dict.update(
-                    {"encoder_prediction": encoder_output, "encoder_target": output_to_predict,}
+                    {
+                        "encoder_prediction": encoder_output,
+                        "encoder_target": output_to_predict,
+                    }
                 )
             if log_loss:
                 output_dict["log"] = {}
@@ -308,11 +328,17 @@ class Model(pl.LightningModule):
             local_labels = label[is_global == 0]
 
             if local_preds.shape[0] > 0:
-                local_loss = self.local_loss_function(local_preds.squeeze(-1), local_labels,)
+                local_loss = self.local_loss_function(
+                    local_preds.squeeze(-1),
+                    local_labels,
+                )
                 loss += local_loss
 
             if global_preds.shape[0] > 0:
-                global_loss = self.global_loss_function(global_preds.squeeze(-1), global_labels,)
+                global_loss = self.global_loss_function(
+                    global_preds.squeeze(-1),
+                    global_labels,
+                )
 
                 num_local_labels = local_preds.shape[0]
                 if num_local_labels == 0:
@@ -338,7 +364,10 @@ class Model(pl.LightningModule):
         else:
             preds = cast(torch.Tensor, self.classifier(x))
 
-            loss += self.global_loss_function(input=preds.squeeze(-1), target=label,)
+            loss += self.global_loss_function(
+                input=preds.squeeze(-1),
+                target=label,
+            )
 
             output_dict = {loss_label: loss}
             if log_loss:
@@ -406,7 +435,8 @@ class Model(pl.LightningModule):
         if self.hparams.forecast:
             encoder_pred = (
                 torch.cat(
-                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs], dim=0,
+                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
+                    dim=0,
                 )
                 .detach()
                 .cpu()
@@ -414,7 +444,8 @@ class Model(pl.LightningModule):
             )
             encoder_target = (
                 torch.cat(
-                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs], dim=0,
+                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs],
+                    dim=0,
                 )
                 .detach()
                 .cpu()
@@ -438,7 +469,8 @@ class Model(pl.LightningModule):
         if self.hparams.forecast:
             encoder_pred = (
                 torch.cat(
-                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs], dim=0,
+                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
+                    dim=0,
                 )
                 .detach()
                 .cpu()
@@ -446,7 +478,8 @@ class Model(pl.LightningModule):
             )
             encoder_target = (
                 torch.cat(
-                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs], dim=0,
+                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs],
+                    dim=0,
                 )
                 .detach()
                 .cpu()

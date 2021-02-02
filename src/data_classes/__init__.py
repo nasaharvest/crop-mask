@@ -4,7 +4,11 @@ from .dataset import (
     BaseDataInstance,
     DatasetMetadata,
     GeoWiki,
+    GeoWikiDataInstance,
     KenyaNonCrop,
+    KenyaNonCropDataInstance,
     KenyaOAF,
-    KenyaPV
+    KenyaOneAcreFundDataInstance,
+    KenyaPV,
+    PVKenyaDataInstance,
 )
