@@ -9,6 +9,7 @@ from clearml import Task
 from argparse import ArgumentParser
 from src.models import Model
 from src.analysis import plot_results
+from src.split_tiff import run_split_tiff
 
 
 def get_file_prefix(with_forecaster: bool):
@@ -53,6 +54,7 @@ def run_inference(
     path_to_tif_files: str,
     model_name: str,
     model_dir: str = "../data",
+    split_tif_files: bool = False,
     merge_predictions: bool = False,
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
@@ -63,6 +65,9 @@ def run_inference(
         raise ValueError(
             "One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True"
         )
+
+    if split_tif_files:
+        path_to_tif_files = run_split_tiff(path_to_tif_files)
 
     test_folder = Path(path_to_tif_files)
     test_files = test_folder.glob("*.tif")
