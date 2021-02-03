@@ -18,7 +18,7 @@ pull_credentials_from_secrets () {
 check_aws_credentials () {
   if test ! -f "$AWS_CREDENTIALS"
     then
-      touch "$AWS_CREDENTIALS"
+      mkdir -p $( dirname "$AWS_CREDENTIALS") && touch "$AWS_CREDENTIALS"
   fi
 }
 
