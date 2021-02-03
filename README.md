@@ -74,7 +74,7 @@ This project uses an AWS S3 bucket to store the training data and `dvc` to manag
 To have access to training data:
 1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
 2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
-3. Setup a named profile by running `aws configure --profile nasaharvest` and entering your AWS credentials
+3. Setup a named profile by running `aws configure` and entering your AWS credentials
 
 To pull the latest training:
 1. Ensure you have [dvc](https://dvc.org/doc) installed
