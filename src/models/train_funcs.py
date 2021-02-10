@@ -26,6 +26,8 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
 
     if hparams.model_name:
         model_path = Path(f"{hparams.data_folder}/models/{hparams.model_name}.ckpt")
+        if model_path.exists():
+            model_path.unlink()
         trainer.save_checkpoint(model_path)
 
     return model
