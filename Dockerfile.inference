@@ -14,8 +14,7 @@ WORKDIR /crop-mask
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     dvc pull data/features && dvc pull data/models
 
-#VOLUME vol
-#RUN mkdir /vol/input && /vol/predictions
+RUN mkdir /vol && /vol/input && /vol/predictions
 
 # ARG GDRIVE_TIF_DIR
 # RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf \
