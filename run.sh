@@ -8,6 +8,7 @@ export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
 pull_credentials_from_secrets () {
   if test ! -f "$1"
     then
+      mkdir -p $( dirname "$1")
       aws secretsmanager get-secret-value --secret-id $2 --region us-east-1  --query SecretString --output text > $1
   fi
 }

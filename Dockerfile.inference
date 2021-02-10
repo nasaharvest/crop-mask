@@ -14,23 +14,23 @@ WORKDIR /crop-mask
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     dvc pull data/features && dvc pull data/models
 
-VOLUME vol
-RUN mkdir /vol/input && /vol/predictions
+#VOLUME vol
+#RUN mkdir /vol/input && /vol/predictions
 
-ARG GDRIVE_TIF_DIR
-RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf \
-    rclone copy remote:$GDRIVE_TIF_DIR/ /vol/input/
+# ARG GDRIVE_TIF_DIR
+# RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf \
+#     rclone copy remote:$GDRIVE_TIF_DIR/ /vol/input/
 
 
-FROM get-data-stage as inference-stage
-COPY scripts /crop-mask/scripts
-COPY src /crop-mask/src
-WORKDIR /crop-mask/scripts
+# FROM get-data-stage as inference-stage
+# COPY scripts /crop-mask/scripts
+# COPY src /crop-mask/src
+# WORKDIR /crop-mask/scripts
 
-ARG MODEL_NAME
-RUN --mount=type=secret,id=clearml,target=/root/clearml.conf \
-    python predict.py \
-    --model_name $MODEL_NAME \
-    --path_to_tif_files /vol/input/ \
-    --predict_dir /vol/predictions \
-    --merge_predictions true
+# ARG MODEL_NAME
+# RUN --mount=type=secret,id=clearml,target=/root/clearml.conf \
+#     python predict.py \
+#     --model_name $MODEL_NAME \
+#     --path_to_tif_files /vol/input/ \
+#     --predict_dir /vol/predictions \
+#     --merge_predictions true
