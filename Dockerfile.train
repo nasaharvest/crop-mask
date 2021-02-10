@@ -5,17 +5,17 @@ COPY environment.yml environment.yml
 RUN conda env create -f environment.yml
 SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
 
-FROM reqs as get-data-stage
-COPY .dvc /crop-mask/.dvc
-COPY .git /crop-mask/.git
-COPY data /crop-mask/data
-WORKDIR /crop-mask
-RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull data/features
+#FROM reqs as get-data-stage
+#COPY .dvc /crop-mask/.dvc
+#COPY .git /crop-mask/.git
+#COPY data /crop-mask/data
+#WORKDIR /crop-mask
+#RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc pull data/features
 
-FROM get-data-stage as train-stage
-COPY scripts /crop-mask/scripts
-COPY src /crop-mask/src
-WORKDIR /crop-mask/scripts
+#FROM get-data-stage as train-stage
+#COPY scripts /crop-mask/scripts
+#COPY src /crop-mask/src
+#WORKDIR /crop-mask/scripts
 
 # Train model
 #ARG DATASETS

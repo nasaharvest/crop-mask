@@ -33,23 +33,24 @@ export DOCKER_BUILDKIT=1
 
 if [ $1 = "train" ]
 then 
-  intro_message "TRAINING"
-  docker build -f Dockerfile.train \
-   -t cropmask/train-$MODEL_NAME \
-   --secret id=aws,src=$AWS_CREDENTIALS \
-   --secret id=clearml,src=$CLEARML_CREDENTIALS \
-   --build-arg DATASETS=$DATASETS \
-   --build-arg MODEL_NAME=$MODEL_NAME \
-   --output data \
-   .
+intro_message "TRAINING"
+docker build -f Dockerfile.train \
+  -t cropmask/train2-$MODEL_NAME \
+  --secret id=aws,src=$AWS_CREDENTIALS \
+  --secret id=clearml,src=$CLEARML_CREDENTIALS \
+  --build-arg DATASETS=$DATASETS \
+  --build-arg MODEL_NAME=$MODEL_NAME \
+  --output data \
+.
+
 else
-  intro_message 'INFERENCE'
-  docker build -f Dockerfile.inference \
-   -t cropmask/inference-$MODEL_NAME \
-   --secret id=aws,src=$AWS_CREDENTIALS \
-   --secret id=rclone,src=$RCLONE_CREDENTIALS \
-   --secret id=clearml,src=$CLEARML_CREDENTIALS \
-   --build-arg MODEL_NAME=$MODEL_NAME \
-   --build-arg GDRIVE_TIF_DIR=$GDRIVE_TIF_DIR \
-   .
+intro_message 'INFERENCE'
+docker build -f Dockerfile.inference \
+  -t cropmask/inference-$MODEL_NAME \
+  --secret id=aws,src=$AWS_CREDENTIALS \
+  --secret id=rclone,src=$RCLONE_CREDENTIALS \
+  --secret id=clearml,src=$CLEARML_CREDENTIALS \
+  --build-arg MODEL_NAME=$MODEL_NAME \
+  --build-arg GDRIVE_TIF_DIR=$GDRIVE_TIF_DIR \
+.
 fi
