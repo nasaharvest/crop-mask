@@ -1,24 +1,32 @@
-FROM cropmask/gpudependencies
+FROM gpuci/miniconda-cuda:10.2-runtime-ubuntu18.04 as base
 
-# Make RUN commands use the new environment:
+FROM base as reqs
+COPY environment.gpu.yml environment.gpu.yml
+RUN conda env create -f environment.gpu.yml
 SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
+
+
+FROM reqs as get-data-stage
+COPY .dvc /crop-mask/.dvc
+COPY .git /crop-mask/.git
+COPY data /crop-mask/data
+WORKDIR /crop-mask
+RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
+    dvc pull data/features && dvc pull data/models
 
 VOLUME vol
 RUN mkdir /vol/input && /vol/predictions
 
-# rclone pull
 ARG GDRIVE_TIF_DIR
 RUN --mount=type=secret,id=rclone,target=/root/.config/rclone/rclone.conf \
     rclone copy remote:$GDRIVE_TIF_DIR/ /vol/input/
 
-COPY . /crop-mask
+
+FROM get-data-stage as inference-stage
+COPY scripts /crop-mask/scripts
+COPY src /crop-mask/src
 WORKDIR /crop-mask/scripts
 
-# Pull in model data
-RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
-    dvc pull ../data/features && dvc pull ../data/models
-
-# Do inference model
 ARG MODEL_NAME
 RUN --mount=type=secret,id=clearml,target=/root/clearml.conf \
     python predict.py \
