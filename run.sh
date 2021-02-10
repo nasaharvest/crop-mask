@@ -40,8 +40,8 @@ docker build -f Dockerfile.train \
   --secret id=clearml,src=$CLEARML_CREDENTIALS \
   --build-arg DATASETS=$DATASETS \
   --build-arg MODEL_NAME=$MODEL_NAME \
+  --output data \
 .
-#  --output data \
 
 else
 intro_message 'INFERENCE'
