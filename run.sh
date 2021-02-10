@@ -35,7 +35,7 @@ if [ $1 = "train" ]
 then 
 intro_message "TRAINING"
 docker build -f Dockerfile.train \
-  -t cropmask/train2-$MODEL_NAME \
+  -t cropmask/train-$MODEL_NAME \
   --secret id=aws,src=$AWS_CREDENTIALS \
   --secret id=clearml,src=$CLEARML_CREDENTIALS \
   --build-arg DATASETS=$DATASETS \
