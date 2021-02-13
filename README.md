@@ -130,15 +130,16 @@ docker build -f Dockerfile.inference -t cropmask/inference --secret id=aws,src=$
 Running inference:
 ```
 export MODEL_NAME="kenya"
-export EBS_VOLUME="/dev/sda"
+export EBS_VOLUME="/data"
 export GDRIVE_DIR="remote2:nasaharvest"
 docker run \
   -v $RCLONE_CREDENTIALS:/root/.config/rclone/rclone.conf \
   -v $HOME/clearml.conf:/root/clearml.conf \
-  --mount type=bind,source=EBS_VOLUME,target=/vol \
+  --mount type=bind,source=$EBS_VOLUME,target=/vol \
   -it cropmask/inference \
   --model_name $MODEL_NAME \
-  --gdrive_path_to_tif_files $GDRIVE_DIR 
+  --gdrive_path_to_tif_files $GDRIVE_DIR \
+. 
 ```
 
 
