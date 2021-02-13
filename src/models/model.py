@@ -70,7 +70,7 @@ class Model(pl.LightningModule):
 
         self.data_folder = Path(hparams.data_folder)
         self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
-        print(f"Training on datasets: {[d.name for d in self.datasets]}")
+        print(f"Datasets: {[d.name for d in self.datasets]}")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps

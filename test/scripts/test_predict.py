@@ -150,7 +150,8 @@ class TestPredict(TestCase):
         run_inference(
             path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            data_dir=str(self.temp_dir),
+            model_dir=str(self.temp_dir),
+            predict_dir=str(self.temp_dir),
         )
         mock_load_from_checkpoint.assert_called()
         self.assertEqual(mock_make_prediction.call_count, 2)
@@ -164,7 +165,8 @@ class TestPredict(TestCase):
         run_inference(
             path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            data_dir=str(self.temp_dir),
+            model_dir=str(self.temp_dir),
+            predict_dir=str(self.temp_dir),
             merge_predictions=True,
         )
         mock_load_from_checkpoint.assert_called()
