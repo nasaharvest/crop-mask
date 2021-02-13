@@ -115,6 +115,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_dir", type=str, default="../data")
     parser.add_argument("--gdrive_path_to_tif_files", type=str, default=None)
     parser.add_argument("--local_path_to_tif_files", type=str)
+    parser.add_argument("--split_tif_files", type=bool, default=False)
     parser.add_argument("--merge_predictions", type=bool, default=True)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
     parser.add_argument("--predict_without_forecaster", type=bool, default=False)
@@ -131,6 +132,7 @@ if __name__ == "__main__":
         model_dir=params.model_dir,
         gdrive_path_to_tif_files=params.gdrive_path_to_tif_files,
         local_path_to_tif_files=params.local_path_to_tif_files,
+        split_tif_files=params.split_tif_files,
         merge_predictions=params.merge_predictions,
         predict_with_forecaster=params.predict_with_forecaster,
         predict_without_forecaster=params.predict_without_forecaster,
