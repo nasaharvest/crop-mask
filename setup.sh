@@ -1,10 +1,17 @@
-export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
-export MODEL_NAME=kenya
+export DOCKER_BUILDKIT=1
+
+# Credential locations
 export AWS_CREDENTIALS=$HOME/.aws/credentials
 export CLEARML_CREDENTIALS=$HOME/clearml.conf
-export GDRIVE_TIF_DIR="nasaharvest/test"
 export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
 
+# Check for AWS credentials
+if test ! -f "$AWS_CREDENTIALS"
+  then
+    mkdir -p $( dirname "$AWS_CREDENTIALS") && touch "$AWS_CREDENTIALS" # Creates empty stub credential file
+fi
+
+# Function to pull credentials from AWS
 pull_credentials_from_secrets () {
   if test ! -f "$1"
     then

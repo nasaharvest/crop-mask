@@ -91,13 +91,52 @@ python -m unittest
 ```
 
 ## Using with docker
-#### Training
-To train a model specify the necessary variables in [train.sh](train.sh) and execute the script with bash. 
+Prior to building any docker image execute:
+```
+source setup.sh
+```
+This command sets up the necessary credentials.
 
-This script will setup the necessary environment, import the necessary data for training, train the model, and upload the model to remote storage. 
+#### Training
+You must specify the build arguments: `DATASETS` and `MODEL_NAME`.  
+The credential environment variables have been specified by the setup.sh script.
+```
+export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
+export MODEL_NAME="kenya"
+docker build -f Dockerfile.train \
+  -t cropmask/train \
+  --build-arg DATASETS=$DATASETS \
+  --build-arg MODEL_NAME=$MODEL_NAME \
+  --secret id=aws,src=$AWS_CREDENTIALS \
+  --secret id=clearml,src=$CLEARML_CREDENTIALS \
+  --output data \
+.
+```
+This command does the following:
+- Sets up the environment for training
+- Pulls in the necessary data
+- Trains the model and logs to ClearML
+- Uploads the model to remote storage
+- Outputs a models.dvc file which must be git committed to make the model accessible to collaborators
 
 #### Inference
-Work in progress.
+Building the docker image:
+```
+docker build -f Dockerfile.inference -t cropmask/inference --secret id=aws,src=$AWS_CREDENTIALS .
+```
+Running inference:
+```
+export MODEL_NAME="kenya"
+export EBS_VOLUME="/dev/sda"
+export GDRIVE_DIR="remote2:nasaharvest"
+docker run \
+  -v $RCLONE_CREDENTIALS:/root/.config/rclone/rclone.conf \
+  -v $HOME/clearml.conf:/root/clearml.conf \
+  --mount type=bind,source=EBS_VOLUME,target=/vol \
+  -it cropmask/inference \
+  --model_name $MODEL_NAME \
+  --gdrive_path_to_tif_files $GDRIVE_DIR 
+```
 
 
 #### Monitoring Training and Inference

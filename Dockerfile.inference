@@ -5,7 +5,6 @@ COPY environment.gpu.yml environment.gpu.yml
 RUN conda env create -f environment.gpu.yml
 SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
 
-
 FROM reqs as get-data-stage
 COPY .dvc /crop-mask/.dvc
 COPY .git /crop-mask/.git
@@ -14,17 +13,13 @@ WORKDIR /crop-mask
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     dvc pull data/features && dvc pull data/models
 
-RUN mkdir /vol && /vol/input && /vol/predictions
+RUN mkdir /vol && /vol/input && /vol/predict
 
 FROM get-data-stage as inference-stage
 COPY scripts /crop-mask/scripts
 COPY src /crop-mask/src
 WORKDIR /crop-mask/scripts
 
-# ARG MODEL_NAME
-# RUN --mount=type=secret,id=clearml,target=/root/clearml.conf \
-#     python predict.py \
-#     --model_name $MODEL_NAME \
-#     --path_to_tif_files /vol/input/ \
-#     --predict_dir /vol/predictions \
-#     --merge_predictions true
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "landcover-mapping", "python", "predict.py",
+            "--local_path_to_tif_files", "/vol/input",
+            "--predict_dir", "/vol/predict"]

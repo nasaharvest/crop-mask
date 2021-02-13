@@ -52,29 +52,29 @@ def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
 
 
 def run_inference(
-    path_to_tif_files: str,
     model_name: str,
-    model_dir: str = "../data",
+    model_dir: str,
+    local_path_to_tif_files: str,
+    gdrive_path_to_tif_files: Optional[str] = None,
     split_tif_files: bool = False,
     merge_predictions: bool = False,
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
     predict_without_forecaster: bool = True,
-    predict_dir: str = "../data/predictions",
-    gdrive_dir: Optional[str] = None,
+    predict_dir: str = "../data/predictions"
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
         raise ValueError(
             "One of 'predict_with_forecaster' and 'predict_without_forecaster' must be True"
         )
 
-    if gdrive_dir:
-        subprocess.run(["rclone", "copy", gdrive_dir, path_to_tif_files])
+    if gdrive_path_to_tif_files:
+        subprocess.run(["rclone", "copy", gdrive_path_to_tif_files, local_path_to_tif_files])
 
     if split_tif_files:
-        path_to_tif_files = run_split_tiff(path_to_tif_files)
+        local_path_to_tif_files = run_split_tiff(local_path_to_tif_files)
 
-    test_folder = Path(path_to_tif_files)
+    test_folder = Path(local_path_to_tif_files)
     test_files = test_folder.glob("*.tif")
 
     print(f"Using model {model_name}")
@@ -113,12 +113,12 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str)
     parser.add_argument("--model_dir", type=str, default="../data")
-    parser.add_argument("--path_to_tif_files", type=str)
-    parser.add_argument("--merge_predictions", type=bool, default=False)
+    parser.add_argument("--gdrive_path_to_tif_files", type=str, default=None)
+    parser.add_argument("--local_path_to_tif_files", type=str)
+    parser.add_argument("--merge_predictions", type=bool, default=True)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
-    parser.add_argument("--predict_without_forecaster", type=bool, default=True)
+    parser.add_argument("--predict_without_forecaster", type=bool, default=False)
     parser.add_argument("--predict_dir", type=str, default="../data/predictions")
-    parser.add_argument("--gdrive_dir", type=str, default=None)
 
     params = parser.parse_args()
     Task.init(
@@ -127,12 +127,12 @@ if __name__ == "__main__":
         task_type=Task.TaskTypes.inference,
     )
     run_inference(
-        path_to_tif_files=params.path_to_tif_files,
         model_name=params.model_name,
+        model_dir=params.model_dir,
+        gdrive_path_to_tif_files=params.gdrive_path_to_tif_files,
+        local_path_to_tif_files=params.local_path_to_tif_files,
         merge_predictions=params.merge_predictions,
         predict_with_forecaster=params.predict_with_forecaster,
         predict_without_forecaster=params.predict_without_forecaster,
-        model_dir=params.model_dir,
-        predict_dir=params.predict_dir,
-        gdrive_dir=params.gdrive_dir
+        predict_dir=params.predict_dir
     )
