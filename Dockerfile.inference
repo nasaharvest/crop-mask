@@ -20,6 +20,6 @@ COPY scripts /crop-mask/scripts
 COPY src /crop-mask/src
 WORKDIR /crop-mask/scripts
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "landcover-mapping", "python", "predict.py",
-            "--local_path_to_tif_files", "/vol/input",
-            "--predict_dir", "/vol/predict"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "landcover-mapping", "python", "predict.py", \
+    "--local_path_to_tif_files", "/vol/input", \
+    "--predict_dir", "/vol/predict"]
