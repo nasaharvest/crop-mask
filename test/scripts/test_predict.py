@@ -13,7 +13,7 @@ from scripts.predict import make_prediction, gdal_merge, run_inference
 class TestPredict(TestCase):
     """Tests the predict script"""
 
-    temp_dir: Path = Path('')
+    temp_dir: Path = Path("")
 
     @staticmethod
     def generate_gtiff(
