@@ -5,7 +5,7 @@ import ee
 
 from typing import List, Tuple, Union
 
-from src.utils import BoundingBox
+from src.data_classes import BoundingBox
 
 
 def date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
