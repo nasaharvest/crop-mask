@@ -1,0 +1,7 @@
+FROM gpuci/miniconda-cuda:10.2-runtime-ubuntu18.04
+
+WORKDIR /app
+COPY environment.gpu.yml /app
+
+# Create the environment:
+RUN conda env create -f environment.gpu.yml
