@@ -91,6 +91,9 @@ python -m unittest
 ```
 
 ## Using with docker
+#### Prerequisites
+You must have docker and awscli installed on the machine.
+
 Prior to building any docker image execute:
 ```
 source setup.sh
