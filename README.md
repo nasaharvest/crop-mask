@@ -100,7 +100,7 @@ source setup.sh
 ```
 This command sets up the necessary credentials.
 
-#### Training
+#### Training a model
 You must specify the build arguments: `DATASETS` and `MODEL_NAME`.  
 The credential environment variables have been specified by the setup.sh script.
 ```
@@ -120,14 +120,20 @@ This command does the following:
 - Pulls in the necessary data
 - Trains the model and logs to ClearML
 - Uploads the model to remote storage
-- Outputs a models.dvc file which must be git committed to make the model accessible to collaborators
+- Produces a models.dvc file which must be git committed to make the model accessible to collaborators
 
 #### Inference
-Building the docker image:
+**Obtaining the inference image**
+You can either pull the docker image from DockerHub
+```
+
+```
+OR build it yourself with:
 ```
 docker build -f Dockerfile.inference -t cropmask/inference --secret id=aws,src=$AWS_CREDENTIALS .
 ```
-Running inference:
+
+**Running inference:**
 ```
 export MODEL_NAME="kenya"
 export EBS_VOLUME="/data"
@@ -138,8 +144,7 @@ docker run \
   --mount type=bind,source=$EBS_VOLUME,target=/vol \
   -it cropmask/inference \
   --model_name $MODEL_NAME \
-  --gdrive_path_to_tif_files $GDRIVE_DIR \
-. 
+  --gdrive_path_to_tif_files $GDRIVE_DIR
 ```
 
 

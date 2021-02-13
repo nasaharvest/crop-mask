@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:experimental
 FROM continuumio/miniconda3 as base
 
 FROM base as reqs
@@ -16,15 +17,12 @@ FROM get-data-stage as train-stage
 COPY scripts /crop-mask/scripts
 COPY src /crop-mask/src
 WORKDIR /crop-mask/scripts
-
 # Train model
 ARG DATASETS
 ARG MODEL_NAME
 RUN --mount=type=secret,id=clearml,target=/root/clearml.conf python model.py --model_name $MODEL_NAME --datasets $DATASETS --max_epochs 2
-
 # Push model to remote storage
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials dvc add ../data/models && dvc push
 
-# Output models.dvc file to track new model in remote storage
-FROM scratch AS export-stage
+FROM scratch AS export-model
 COPY --from=train-stage /crop-mask/data/models.dvc .
