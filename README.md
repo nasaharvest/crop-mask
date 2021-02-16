@@ -146,7 +146,7 @@ export GDRIVE_DIR="remote2:earth_engine_region_rwanda"
 ```
 Specify the `VOLUME` to indicate a directory on the machine with a lot of space for storing the inputs and predictions. If using an Amazon Linux machine it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable. Example:
 ```
-export EBS_VOLUME="/data"
+export VOLUME="/data"
 ```
 Begin inference:
 ```
