@@ -4,7 +4,8 @@ FROM gpuci/miniconda-cuda:10.2-runtime-ubuntu18.04 as base
 FROM base as reqs
 COPY environment.gpu.yml environment.gpu.yml
 RUN conda env create -f environment.gpu.yml
-SHELL ["conda", "run", "-n", "landcover-mapping", "/bin/bash", "-c"]
+ENV PATH /opt/conda/envs/landcover-mapping/bin:$PATH
+RUN /bin/bash -c "source activate landcover-mapping"
 
 FROM reqs as get-data-stage
 COPY .dvc /crop-mask/.dvc
@@ -14,14 +15,9 @@ WORKDIR /crop-mask
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     dvc pull data/features && dvc pull data/models
 
-RUN mkdir /vol && /vol/input && /vol/predict
+RUN mkdir -p /vol /vol/input /vol/predict
 
-FROM get-data-stage as inference-stage
+FROM get-data-stage as final-stage
 COPY scripts /crop-mask/scripts
 COPY src /crop-mask/src
 WORKDIR /crop-mask/scripts
-
-ENTRYPOINT ["conda", "run", "-n", "landcover-mapping", "python", "predict.py", \
-    "--local_path_to_tif_files", "/vol/input", \
-    "--split_tif_files", "true", \
-    "--predict_dir", "/vol/predict"]

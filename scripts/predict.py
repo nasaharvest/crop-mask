@@ -124,7 +124,7 @@ if __name__ == "__main__":
     params = parser.parse_args()
     Task.init(
         project_name="NASA Harvest",
-        task_name=f"Inference with model {params.model_name}",
+        task_name=params.model_name,
         task_type=Task.TaskTypes.inference,
     )
     run_inference(

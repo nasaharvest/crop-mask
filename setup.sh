@@ -25,12 +25,12 @@ check_installed () {
 pull_credentials_from_secrets () {
   mkdir -p $( dirname "$1")
   secret=$(aws secretsmanager get-secret-value --secret-id $2 --region us-east-1  --query SecretString --output text)
-  if test ! $secret
+  if test ! "$secret"
     then
       echo "$2 not found."
     else
       echo "Found credentials: $2" 
-      echo "$secret" > $1
+      aws secretsmanager get-secret-value --secret-id $2 --region us-east-1  --query SecretString --output text > $1
       echo "Downloaded to $1"
   fi
 }
