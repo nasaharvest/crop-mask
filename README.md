@@ -92,7 +92,7 @@ python -m unittest
 
 ## Using with docker
 #### General Prerequisites
-You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine.
+You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
 **Setting Environment Variables**
 - If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: copy and paste the contents of setup.sh into your shell.
@@ -150,11 +150,11 @@ export VOLUME="/data"
 ```
 Begin inference:
 ```
-docker run \
+docker run --gpus all \
   -v $CLEARML_CREDENTIALS:/root/clearml.conf \
   -v $RCLONE_CREDENTIALS:/root/.config/rclone/rclone.conf \
   --mount type=bind,source=$VOLUME,target=/vol \
-  -it ivanzvonkov/cropmask python predict.py \
+  -it ivanzvonkov/cropmask conda run -n landcover-mapping python predict.py \
   --gdrive_path_to_tif_files $GDRIVE_DIR \
   --local_path_to_tif_files /vol/input \
   --split_tif_files true \
@@ -163,9 +163,10 @@ docker run \
 ```
 This command does the following:
 1. Gets latest docker image
-2. Downloads tif files from Google Drive
-3. Splits tif files so they are ready for inference
-4. Runs inference on each of the split files
+2. Attaches host GPU to docker image
+3. Downloads tif files from Google Drive
+4. Splits tif files so they are ready for inference
+5. Runs inference on each of the split files
 
 #### Building the docker image locally
 ```
