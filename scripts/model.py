@@ -18,7 +18,7 @@ def run_training(parser):
     model = Model(model_args)
     train_model(model, model_args)
 
-    output_vol = Path('/vol')
+    output_vol = Path("/vol")
     if output_vol.exists():
         # Push model to dvc, this will update the models.dvc file
         subprocess.run(["dvc", "add", str(model.data_folder / "models")])

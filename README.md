@@ -94,62 +94,35 @@ python -m unittest
 #### General Prerequisites
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
-**Setting Environment Variables**
-- If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: copy and paste the contents of setup.sh into your shell.
+#### Setup - Environment Variables (1 step)
+- If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: simply copy and paste the contents of setup.sh into your shell.
 - If you don't have the crop-mask repo, but have all the credential information locally, you can set the environment variables directly
-  ```
+  ```bash
+  # Example
   export DOCKER_BUILDKIT=1
   export AWS_CREDENTIALS=$HOME/.aws/credentials
   export CLEARML_CREDENTIALS=$HOME/clearml.conf
   export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
   ```
 - If you have the crop-mask repo available just run:
-  ```
+  ```bash
   source setup.sh
   ```
+#### Inference (2 steps)
+**Step 1:** Specify the following arguments:
+- `MODEL_NAME` - model used for inference
+- `GDRIVE_DIR` - source of the input files on Google Drive
+- `VOLUME` - a directory on the host with a lot of space for storing the inputs and predictions. If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable
 
-#### Training a model
-Specify the `DATASETS` and the `MODEL_NAME` to be used for training.
-```
-export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
+```bash
+# Example
 export MODEL_NAME="kenya"
-```
-Set a directory `MODELS_DVC_DIR` to a location where the models.dvc file will be exported.
-```
-export MODELS_DVC_DIR="$HOME/crop-mask/data"
-```
-Begin training:
-```
-docker run \
-  -v $AWS_CREDENTIALS:/root/.aws/credentials \
-  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
-  --mount type=bind,source=$MODELS_DVC_DIR,target=/vol \
-  -it ivanzvonkov/cropmask conda run -n landcover-mapping python model.py \
-  --datasets $DATASETS \
-  --model_name $MODEL_NAME
-```
-This command does the following:
-1. Gets latest docker image
-2. Uses the datasets specified to train a model 
-3. Logs model training to ClearML
-4. Pushes trained model to dvc
-5. Outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
-
-#### Inference
-Specify the `MODEL_NAME` to be used for inference. Example:
-```
-export MODEL_NAME="kenya"
-```
-Specify the `GDRIVE_DIR` to indicate the source of the input files on Google Drive. Example:
-```
 export GDRIVE_DIR="remote2:earth_engine_region_rwanda"
-```
-Specify the `VOLUME` to indicate a directory on the machine with a lot of space for storing the inputs and predictions. If using an Amazon Linux machine it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable. Example:
-```
 export VOLUME="/data"
 ```
-Begin inference:
-```
+
+**Step 2:** Begin inference:
+```bash
 docker run --gpus all \
   -v $CLEARML_CREDENTIALS:/root/clearml.conf \
   -v $RCLONE_CREDENTIALS:/root/.config/rclone/rclone.conf \
@@ -167,6 +140,35 @@ This command does the following:
 3. Downloads tif files from Google Drive
 4. Splits tif files so they are ready for inference
 5. Runs inference on each of the split files
+#### Training a new model (2 steps)
+**Step 1:** Specify the following arguments:
+- `DATASETS` - which datasets to use for trianing
+- `MODEL_NAME` - a unique identifier for the resulting model
+- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
+
+```bash
+# Example
+export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
+export MODEL_NAME="kenya"
+export MODELS_DVC_DIR="$HOME/crop-mask/data"
+```
+
+**Step 2:** Begin training:
+```bash
+docker run \
+  -v $AWS_CREDENTIALS:/root/.aws/credentials \
+  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
+  --mount type=bind,source=$MODELS_DVC_DIR,target=/vol \
+  -it ivanzvonkov/cropmask conda run -n landcover-mapping python model.py \
+  --datasets $DATASETS \
+  --model_name $MODEL_NAME
+```
+This command does the following:
+1. Gets latest docker image
+2. Uses the datasets specified to train a model 
+3. Logs model training to ClearML
+4. Pushes trained model to dvc
+5. Outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
 
 #### Building the docker image locally
 ```

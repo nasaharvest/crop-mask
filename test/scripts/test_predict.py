@@ -138,8 +138,9 @@ class TestPredict(TestCase):
         self.assertRaises(
             ValueError,
             run_inference,
-            path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
+            model_dir=str(self.temp_dir),
             predict_without_forecaster=False,
             predict_with_forecaster=False,
         )

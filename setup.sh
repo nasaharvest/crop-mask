@@ -1,3 +1,7 @@
+# This script checks prequisites and sets up the environment variables
+# for using docker with this repository.
+# Since it sets environment variables it must be executed using `source setup.sh`
+
 export DOCKER_BUILDKIT=1
 
 # Credential locations

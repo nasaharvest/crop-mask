@@ -61,7 +61,7 @@ def run_inference(
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
     predict_without_forecaster: bool = True,
-    predict_dir: str = "../data/predictions"
+    predict_dir: str = "../data/predictions",
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
         raise ValueError(
@@ -136,5 +136,5 @@ if __name__ == "__main__":
         merge_predictions=params.merge_predictions,
         predict_with_forecaster=params.predict_with_forecaster,
         predict_without_forecaster=params.predict_without_forecaster,
-        predict_dir=params.predict_dir
+        predict_dir=params.predict_dir,
     )
