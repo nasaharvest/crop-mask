@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import logging
 import random
 from datetime import datetime, timedelta
 from typing import Optional, Tuple, List
@@ -8,6 +9,8 @@ import xarray as xr
 import pandas as pd
 
 from .constants import BANDS
+
+logger = logging.getLogger(__name__)
 
 
 def set_seed(seed: int = 42) -> None:
@@ -53,7 +56,7 @@ def process_filename(
                 datetime(int(end_year), int(end_month), int(end_day)),
             )
         else:
-            print(f"Unexpected filename {filename} - skipping")
+            logger.warning(f"Unexpected filename {filename} - skipping")
             return None
 
 

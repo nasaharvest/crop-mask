@@ -2,10 +2,13 @@ from dataclasses import dataclass
 from datetime import date
 from math import cos, radians
 import ee
+import logging
 
 from typing import List, Tuple, Union
 
 from src.data_classes import BoundingBox
+
+logger = logging.getLogger(__name__)
 
 
 def date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
@@ -63,7 +66,7 @@ class EEBoundingBox(BoundingBox):
         num_cols = int(lon_metres / metres_per_patch)
         num_rows = int(lat_metres / metres_per_patch)
 
-        print(f"Splitting into {num_cols} columns and {num_rows} rows")
+        logger.info(f"Splitting into {num_cols} columns and {num_rows} rows")
 
         lon_size = (self.max_lon - self.min_lon) / num_cols
         lat_size = (self.max_lat - self.min_lat) / num_rows
@@ -128,13 +131,13 @@ def cancel_all_tasks() -> None:
     ee.Initialize()
 
     tasks = ee.batch.Task.list()
-    print(f"Cancelling up to {len(tasks)} tasks")
+    logger.info(f"Cancelling up to {len(tasks)} tasks")
     # Cancel running and ready tasks
     for task in tasks:
         task_id = task.status()["id"]
         task_state = task.status()["state"]
         if task_state == "RUNNING" or task_state == "READY":
             task.cancel()
-            print(f"Task {task_id} cancelled")
+            logger.info(f"Task {task_id} cancelled")
         else:
-            print(f"Task {task_id} state is {task_state}")
+            logger.info(f"Task {task_id} state is {task_state}")

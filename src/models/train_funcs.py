@@ -18,6 +18,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
+        show_progress_bar= hparams.show_progress_bar
     )
     trainer.fit(model)
 
