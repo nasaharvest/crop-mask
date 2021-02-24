@@ -7,7 +7,7 @@ import osr
 import tempfile
 import shutil
 from typing import Tuple
-from scripts.predict import make_prediction, gdal_merge, run_inference
+from scripts.predict import make_prediction, gdal_merge, run_inference, upload_to_s3
 
 
 class TestPredict(TestCase):
@@ -173,3 +173,33 @@ class TestPredict(TestCase):
         mock_load_from_checkpoint.assert_called()
         self.assertEqual(mock_make_prediction.call_count, 2)
         self.assertEqual(mock_gdal_merge.call_count, 2)
+
+    @patch("scripts.predict.boto3")
+    def test_s3_upload(self, boto3):
+        s3 = boto3.resource("s3")
+        upload_to_s3(merged_files=[Path("test_file")], upload_folder_name="test_folder")
+        s3.Bucket.assert_called_with("crop-mask-data")
+        s3.Bucket("crop-mask-data").upload_file.assert_called_with(
+            "test_file", "output/test_folder/test_file"
+        )
+
+    @patch("src.models.Model.load_from_checkpoint")
+    @patch("scripts.predict.make_prediction")
+    @patch("scripts.predict.gdal_merge")
+    @patch("scripts.predict.boto3")
+    def test_run_inference_with_merge_and_upload(
+        self, boto3, mock_gdal_merge, mock_make_prediction, mock_load_from_checkpoint
+    ):
+        mock_gdal_merge.return_value = Path("mock_path_1")
+        run_inference(
+            local_path_to_tif_files=str(self.temp_dir),
+            model_name="mock_model",
+            model_dir=str(self.temp_dir),
+            predict_dir=str(self.temp_dir),
+            merge_predictions=True,
+            upload_predictions=True,
+        )
+        mock_load_from_checkpoint.assert_called()
+        self.assertEqual(mock_make_prediction.call_count, 2)
+        self.assertEqual(mock_gdal_merge.call_count, 2)
+        self.assertEqual(boto3.resource("s3").Bucket("crop-mask-data").upload_file.call_count, 2)
