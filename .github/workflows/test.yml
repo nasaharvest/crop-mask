@@ -10,8 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -20,11 +19,9 @@ jobs:
     - name: Install dependencies
       run: |
         $CONDA/bin/conda env create -f environment.yml
-        $CONDA/bin/conda env list
-        $CONDA/bin/conda run -n landcover-mapping which python
-#     - name: Type Checks
-#       run: |
-#         $CONDA/bin/mypy src scripts
-#     - name: Unit tests
-#       run: |
-#         $CONDA/bin/python -m unittest
+    - name: Type Checks
+      run: |
+        $CONDA/bin/conda run -n landcover-mapping mypy src scripts
+    - name: Unit tests
+      run: |
+        $CONDA/bin/conda run -n landcover-mapping python -m unittest
