@@ -1,6 +1,8 @@
 # syntax = docker/dockerfile:experimental
 FROM gpuci/miniconda-cuda:10.2-runtime-ubuntu18.04 as base
 
+ENV PYTHONUNBUFFERED=1
+
 FROM base as reqs
 COPY environment.gpu.yml environment.gpu.yml
 RUN conda env create -f environment.gpu.yml
