@@ -74,7 +74,7 @@ This project uses an AWS S3 bucket to store the training data and `dvc` to manag
 To have access to training data:
 1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
 2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
-3. Setup a named profile by running `aws configure --profile nasaharvest` and entering your AWS credentials
+3. Setup a named profile by running `aws configure` and entering your AWS credentials
 
 To pull the latest training:
 1. Ensure you have [dvc](https://dvc.org/doc) installed
@@ -91,14 +91,89 @@ python -m unittest
 ```
 
 ## Using with docker
-#### Training
-To train a model specify the necessary variables in [train.sh](train.sh) and execute the script with bash. 
+#### General Prerequisites
+You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
-This script will setup the necessary environment, import the necessary data for training, train the model, and upload the model to remote storage. 
+#### Setup - Environment Variables (1 step)
+- If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: simply copy and paste the contents of setup.sh into your shell.
+- If you don't have the crop-mask repo, but have all the credential information locally, you can set the environment variables directly
+  ```bash
+  # Example
+  export DOCKER_BUILDKIT=1
+  export AWS_CREDENTIALS=$HOME/.aws/credentials
+  export CLEARML_CREDENTIALS=$HOME/clearml.conf
+  export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
+  ```
+- If you have the crop-mask repo available just run:
+  ```bash
+  source setup.sh
+  ```
+#### Inference (2 steps)
+**Step 1:** Specify the following arguments:
+- `MODEL_NAME` - model used for inference
+- `GDRIVE_DIR` - source of the input files on Google Drive
+- `VOLUME` - a directory on the host with a lot of space for storing the inputs and predictions. If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable
 
-#### Inference
-Work in progress.
+```bash
+# Example
+export MODEL_NAME="kenya"
+export GDRIVE_DIR="remote2:earth_engine_region_rwanda"
+export VOLUME="/data"
+```
 
+**Step 2:** Begin inference:
+```bash
+docker run --gpus all \
+  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
+  -v $RCLONE_CREDENTIALS:/root/.config/rclone/rclone.conf \
+  --mount type=bind,source=$VOLUME,target=/vol \
+  -it ivanzvonkov/cropmask conda run -n landcover-mapping python predict.py \
+  --gdrive_path_to_tif_files $GDRIVE_DIR \
+  --local_path_to_tif_files /vol/input \
+  --split_tif_files true \
+  --model_name $MODEL_NAME \
+  --predict_dir /vol/predict
+```
+This command does the following:
+1. Gets latest docker image
+2. Attaches host GPU to docker image
+3. Downloads tif files from Google Drive
+4. Splits tif files so they are ready for inference
+5. Runs inference on each of the split files
+#### Training a new model (2 steps)
+**Step 1:** Specify the following arguments:
+- `DATASETS` - which datasets to use for trianing
+- `MODEL_NAME` - a unique identifier for the resulting model
+- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
+
+```bash
+# Example
+export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
+export MODEL_NAME="kenya"
+export MODELS_DVC_DIR="$HOME/crop-mask/data"
+```
+
+**Step 2:** Begin training:
+```bash
+docker run \
+  -v $AWS_CREDENTIALS:/root/.aws/credentials \
+  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
+  --mount type=bind,source=$MODELS_DVC_DIR,target=/vol \
+  -it ivanzvonkov/cropmask conda run -n landcover-mapping python model.py \
+  --datasets $DATASETS \
+  --model_name $MODEL_NAME
+```
+This command does the following:
+1. Gets latest docker image
+2. Uses the datasets specified to train a model 
+3. Logs model training to ClearML
+4. Pushes trained model to dvc
+5. Outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
+
+#### Building the docker image locally
+```
+docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
+```
 
 #### Monitoring Training and Inference
 ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)

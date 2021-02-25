@@ -138,8 +138,9 @@ class TestPredict(TestCase):
         self.assertRaises(
             ValueError,
             run_inference,
-            path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
+            model_dir=str(self.temp_dir),
             predict_without_forecaster=False,
             predict_with_forecaster=False,
         )
@@ -148,7 +149,7 @@ class TestPredict(TestCase):
     @patch("scripts.predict.make_prediction")
     def test_run_inference_no_merge(self, mock_make_prediction, mock_load_from_checkpoint):
         run_inference(
-            path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
             model_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
@@ -163,7 +164,7 @@ class TestPredict(TestCase):
         self, mock_gdal_merge, mock_make_prediction, mock_load_from_checkpoint
     ):
         run_inference(
-            path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
             model_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
