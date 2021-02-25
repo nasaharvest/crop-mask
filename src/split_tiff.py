@@ -5,8 +5,11 @@ https://gis.stackexchange.com/questions/306861/split-geotiff-into-multiple-cells
 from shapely import geometry
 from pathlib import Path
 import math
+import logging
 import rasterio
 from rasterio.mask import mask
+
+logger = logging.getLogger(__name__)
 
 
 # Takes a  dataset and splits it into squares of dimensions squareDim * squareDim
@@ -60,7 +63,7 @@ def run_split_tiff(path_to_tif_files):
     output_folder = Path(path_to_tif_files)
     for idx, image in enumerate(images):
 
-        print(f"Splitting {image}")
+        logger.debug(f"Splitting {image}")
 
         name, start_date, end_bit = image.name.split("_")
         end_date = end_bit[:10]
@@ -70,7 +73,7 @@ def run_split_tiff(path_to_tif_files):
 
         splitImageIntoCells(image, new_filename, 1000, output_folder)
 
-        print(f"Finished {image}. Removing the original file")
+        logger.debug(f"Finished {image}. Removing the original file")
         image.unlink()
 
     return output_folder

@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 import urllib.request
 import zipfile
 
 from .base import BaseExporter
 from src.data_classes import GeoWiki
+
+logger = logging.getLogger(__name__)
 
 
 class GeoWikiExporter(BaseExporter):
@@ -30,20 +33,20 @@ class GeoWikiExporter(BaseExporter):
         output_path = output_folder / filename
 
         if output_path.exists():
-            print(f"{filename} already exists! Skipping")
+            logger.warning(f"{filename} already exists! Skipping")
             return None
 
-        print(f"Downloading {url}")
+        logger.info(f"Downloading {url}")
         urllib.request.urlretrieve(url, output_path)
 
         if filename.endswith("zip"):
 
-            print(f"Downloaded! Unzipping to {output_folder}")
+            logger.info(f"Downloaded! Unzipping to {output_folder}")
             with zipfile.ZipFile(output_path, "r") as zip_file:
                 zip_file.extractall(output_folder)
 
             if remove_zip:
-                print("Deleting zip file")
+                logger.info("Deleting zip file")
                 (output_path).unlink()
 
     def export(self, remove_zip: bool = False) -> None:

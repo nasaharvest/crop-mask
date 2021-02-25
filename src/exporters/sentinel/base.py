@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
 from datetime import date, timedelta
 from pathlib import Path
+import logging
 import pandas as pd
 import ee
 
 from . import cloudfree
 from ..base import BaseExporter
 
-
 from typing import List, Union
+
+logger = logging.getLogger(__name__)
 
 
 class BaseSentinelExporter(BaseExporter, ABC):
@@ -27,7 +29,9 @@ class BaseSentinelExporter(BaseExporter, ABC):
         try:
             ee.Initialize()
         except Exception:
-            print("This code doesn't work unless you have authenticated your earthengine account")
+            logger.error(
+                "This code doesn't work unless you have authenticated your earthengine account"
+            )
 
         self.labels = self.load_labels()
 
@@ -57,14 +61,14 @@ class BaseSentinelExporter(BaseExporter, ABC):
 
         image_collection_list: List[ee.Image] = []
 
-        print(
+        logger.info(
             f"Exporting image for polygon {polygon_identifier} from "
             f"aggregated images between {str(cur_date)} and {str(end_date)}"
         )
         filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
 
         if checkpoint and (self.output_folder / f"{filename}.tif").exists():
-            print("File already exists! Skipping")
+            logger.warning("File already exists! Skipping")
             return None
 
         while cur_end_date <= end_date:

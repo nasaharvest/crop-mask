@@ -3,10 +3,12 @@ Functions shared by both the fast and slow
 cloudfree algorithm
 """
 import ee
+import logging
 from datetime import date
 from src.constants import BANDS
-
 from typing import Union
+
+logger = logging.getLogger(__name__)
 
 
 def combine_bands(current, previous):
@@ -41,7 +43,7 @@ def export(
     try:
         task.start()
     except ee.ee_exception.EEException as e:
-        print(f"Task not started! Got exception {e}")
+        logger.error(f"Task not started! Got exception {e}")
         return task
 
     if monitor:
@@ -59,10 +61,8 @@ def date_to_string(input_date: Union[date, str]) -> str:
 
 
 def monitor_task(task: ee.batch.Export) -> None:
-
     while task.status()["state"] in ["READY", "RUNNING"]:
-        print(task.status())
-        # print(f"Running: {task.status()['state']}")
+        logger.info(task.status())
 
 
 def rescale(img, exp, thresholds):
