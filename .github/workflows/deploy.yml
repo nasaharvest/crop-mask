@@ -19,11 +19,8 @@ jobs:
         cat ~/.aws/credentials
     - name: Docker Build
       run: |
-        echo "Attempt 2"
-        ls ~/
-        ls ~/.aws
-        cat ~/.aws/credentials
-        docker build -t ivanzvonkov/cropmask --secret id=aws,src=~/.aws/credentials .
+        ls $HOME/.aws/
+        docker build -t ivanzvonkov/cropmask --secret id=aws,src=$HOME/.aws/credentials .
     - name: Docker Push
       run: |
         docker push ivanzvonkov/cropmask:latest
