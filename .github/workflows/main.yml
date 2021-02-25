@@ -42,7 +42,7 @@ jobs:
         docker build -t ivanzvonkov/cropmask:${VERSION} --secret id=aws,src=$HOME/.aws/credentials .
     - name: Docker Push
       run: |
-        docker login -u ivanzvonkov -p ${{ secrets.DOCKER_PASSWORD }}
+        docker login -u ivanzvonkov -p "${{ secrets.DOCKER_PASSWORD }}"
         docker push ivanzvonkov/cropmask:${VERSION}
       
 
