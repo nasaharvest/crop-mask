@@ -19,7 +19,7 @@ jobs:
     - name: Docker Build
       env:
         DOCKER_BUILDKIT: 1
-        AWS_CREDENTIALS: $HOME/.aws/credentials
+        AWS_CREDENTIALS: ~/.aws/credentials
       run: |
         echo $DOCKER_BUILDKIT
         echo "hello"
