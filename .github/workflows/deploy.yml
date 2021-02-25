@@ -17,9 +17,13 @@ jobs:
         aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         cat ~/.aws/credentials
+        ls ~/.aws/
+        echo "Does home work?"
+        ls $HOME
+        echo "Maybe?"
+        ls $HOME/.aws/
     - name: Docker Build
       run: |
-        ls $HOME/.aws/
         docker build -t ivanzvonkov/cropmask --secret id=aws,src=$HOME/.aws/credentials .
     - name: Docker Push
       run: |
