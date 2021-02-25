@@ -1,5 +1,5 @@
 # Crop Mask Repository
-![workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+![Build](https://github.com/nasaharvest/crop-mask/actions/workflows/main.yml/badge.svg)
 
 This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
