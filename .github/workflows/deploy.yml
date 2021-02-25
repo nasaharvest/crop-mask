@@ -18,8 +18,8 @@ jobs:
         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Docker Build
       env:
-            DOCKER_BUILDKIT: 1
-            AWS_CREDENTIALS: $HOME/.aws/credentials
+        DOCKER_BUILDKIT: 1
+        AWS_CREDENTIALS: ~/.aws/credentials
       run: |
         echo $DOCKER_BUILDKIT
         echo "hello"
