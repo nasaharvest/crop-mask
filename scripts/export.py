@@ -1,3 +1,4 @@
+import logging
 import sys
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from src.exporters import (
     Season,
 )
 from src.data_classes import BoundingBox
+
+logging.basicConfig(level=logging.INFO)
 
 
 def export_from_labeled(

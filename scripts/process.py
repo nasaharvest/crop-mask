@@ -1,3 +1,4 @@
+import logging
 import sys
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from src.processors import (
     KenyaNonCropProcessor,
     KenyaOAFProcessor,
 )
+
+logging.basicConfig(level=logging.INFO)
 
 
 def process_geowiki():
