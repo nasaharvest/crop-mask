@@ -13,7 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.9
@@ -22,8 +21,7 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
-        conda env create -f environment.yml 
+        $CONDA/bin/conda env update --file environment.yml --name base 
     - name: Unit tests
       run: |
-        conda activate landcover-mapping
-        python -m unittest
+        $CONDA/bin/python -m unittest
