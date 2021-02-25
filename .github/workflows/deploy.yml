@@ -23,3 +23,6 @@ jobs:
     - name: Test aws
       run: |
         aws configure list
+        ls ~/
+        ls ~/.aws
+        cat ~/.aws/credentials
