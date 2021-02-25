@@ -19,10 +19,12 @@ jobs:
       uses: actions/setup-python@v2
     - name: Install dependencies
       run: |
-        $CONDA/bin/conda env update --file environment.yml --name base 
-    - name: Type Checks
-      run: |
-        $CONDA/bin/mypy src scripts
-    - name: Unit tests
-      run: |
-        $CONDA/bin/python -m unittest
+        $CONDA/bin/conda env create -f environment.yml
+        $CONDA/bin/conda env list
+        $CONDA/bin/conda run -n landcover-mapping which python
+#     - name: Type Checks
+#       run: |
+#         $CONDA/bin/mypy src scripts
+#     - name: Unit tests
+#       run: |
+#         $CONDA/bin/python -m unittest
