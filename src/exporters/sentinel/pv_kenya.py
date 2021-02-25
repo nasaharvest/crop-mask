@@ -3,12 +3,15 @@ import geopandas
 from tqdm import tqdm
 import numpy as np
 from datetime import datetime, timedelta, date
+import logging
 
 from .base import BaseSentinelExporter
 from src.processors.pv_kenya import KenyaPVProcessor
 from .utils import EEBoundingBox, bounding_box_from_centre, date_overlap
 
 from typing import Dict, Optional, List, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 class KenyaPVSentinelExporter(BaseSentinelExporter):
@@ -118,7 +121,7 @@ class KenyaPVSentinelExporter(BaseSentinelExporter):
     ) -> Optional[Tuple[date, date]]:
 
         if harvest_date < self.min_date:
-            print("Harvest date < min date - skipping")
+            logger.warning("Harvest date < min date - skipping")
             return None
         else:
             start_date = max(
@@ -165,7 +168,7 @@ class KenyaPVSentinelExporter(BaseSentinelExporter):
         )
 
         if end_month_day is not None:
-            print(
+            logger.info(
                 f"Average overlapping days between planting to harvest and "
                 f"export dates: {np.mean([x[3] for x in bounding_boxes_to_download])}"
             )

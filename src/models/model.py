@@ -1,8 +1,10 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 import numpy as np
+import logging
 import xarray as xr
 from tqdm import tqdm
+from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
 
 import torch
 from torch.nn import functional as F
@@ -26,7 +28,7 @@ from .utils import tif_to_np, preds_to_xr
 from .forecaster import Forecaster
 from .classifier import Classifier
 
-from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
+logger = logging.getLogger(__name__)
 
 
 class Model(pl.LightningModule):
@@ -67,10 +69,19 @@ class Model(pl.LightningModule):
         super().__init__()
         set_seed()
         self.hparams = hparams
-
         self.data_folder = Path(hparams.data_folder)
-        self.datasets = [d for d in all_datasets if d.name in hparams.datasets]
-        print(f"Datasets: {[d.name for d in self.datasets]}")
+        input_dataset_names = hparams.datasets.replace(" ", "").split(",")
+        input_dataset_names = list(filter(None, input_dataset_names))
+        self.datasets = []
+        for d in all_datasets:
+            if d.name in input_dataset_names:
+                self.datasets.append(d)
+                input_dataset_names.remove(d.name)
+
+        for not_found_dataset in input_dataset_names:
+            logger.error(f"Could not find dataset with name: {not_found_dataset}")
+
+        logger.info(f"Using datasets: {[d.name for d in self.datasets]}")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
@@ -85,7 +96,7 @@ class Model(pl.LightningModule):
 
         if self.hparams.forecast:
             num_output_timesteps = self.num_timesteps - self.hparams.input_months
-            print(f"Predicting {num_output_timesteps} timesteps in the forecaster")
+            logger.info(f"Predicting {num_output_timesteps} timesteps in the forecaster")
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
                 output_timesteps=num_output_timesteps,
@@ -160,6 +171,7 @@ class Model(pl.LightningModule):
         days_per_timestep: int = 30,
         local_head: bool = True,
         use_gpu: bool = True,
+        disable_tqdm: bool = False,
     ) -> xr.Dataset:
 
         # check if a GPU is available, and if it is
@@ -168,7 +180,9 @@ class Model(pl.LightningModule):
         if use_gpu:
             use_cuda = torch.cuda.is_available()
             if not use_cuda:
-                print("No GPU - not using one")
+                logger.warning("No GPU - not using one")
+            else:
+                logger.info("Using GPU")
             device = torch.device("cuda" if use_cuda else "cpu")
             self.to(device)
 
@@ -189,7 +203,7 @@ class Model(pl.LightningModule):
         predictions: List[np.ndarray] = []
         cur_i = 0
 
-        pbar = tqdm(total=input_data.x.shape[0] - 1)
+        pbar = tqdm(total=input_data.x.shape[0] - 1, disable=disable_tqdm)
         while cur_i < (input_data.x.shape[0] - 1):
 
             batch_x_np = input_data.x[cur_i : cur_i + batch_size]

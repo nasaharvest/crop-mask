@@ -3,12 +3,15 @@ from datetime import datetime
 import pandas as pd
 from pathlib import Path
 import numpy as np
+import logging
 import pickle
 from tqdm import tqdm
 
 from typing import Dict, List, Tuple, Optional, Union
 from src.utils import set_seed, process_filename
 from src.data_classes import BaseDataInstance
+
+logger = logging.getLogger(__name__)
 
 
 class BaseEngineer(ABC):
@@ -90,7 +93,9 @@ class BaseEngineer(ABC):
     ) -> Optional[Dict[str, np.ndarray]]:
 
         if "mean" not in norm_dict:
-            print("No normalizing dict calculated! Make sure to call update_normalizing_values")
+            logger.warning(
+                "No normalizing dict calculated! Make sure to call update_normalizing_values"
+            )
             return None
 
         variance = norm_dict["M2"] / (norm_dict["n"] - 1)
@@ -188,4 +193,4 @@ class BaseEngineer(ABC):
                 with save_path.open("wb") as f:
                     pickle.dump(normalizing_dict, f)
             else:
-                print("No normalizing dict calculated!")
+                logger.warning("No normalizing dict calculated!")

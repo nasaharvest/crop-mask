@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import random
 import math
+import logging
 
 from tqdm import tqdm
 
@@ -20,6 +21,8 @@ from src.data_classes import (
 )
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
+
+logger = logging.getLogger(__name__)
 
 
 class CropDataset(Dataset):
@@ -146,7 +149,7 @@ class CropDataset(Dataset):
             x_list: List[torch.Tensor] = []
             y_list: List[torch.Tensor] = []
             weight_list: List[torch.Tensor] = []
-            print("Loading data into memory")
+            logger.info("Loading data into memory")
             for i in tqdm(range(len(self))):
                 x, y, weight = self[i]
                 x_list.append(x)
