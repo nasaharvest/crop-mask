@@ -16,11 +16,13 @@ jobs:
       run: |
         aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        ls ~/
-        ls ~/.aws
         cat ~/.aws/credentials
     - name: Docker Build
       run: |
+        echo "Attempt 2"
+        ls ~/
+        ls ~/.aws
+        cat ~/.aws/credentials
         docker build -t ivanzvonkov/cropmask --secret id=aws,src=~/.aws/credentials .
     - name: Docker Push
       run: |
