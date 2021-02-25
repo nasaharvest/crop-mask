@@ -15,7 +15,6 @@ dependencies:
   - jupyter
   - matplotlib
   - pip
-  - pytorch=1.6.0
   - cudatoolkit=10.2  # this is the only new thing in the GPU yml file
   - pyproj
   - tqdm
@@ -27,4 +26,5 @@ dependencies:
   - rclone
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
+      - torch==1.6.0
       - clearml

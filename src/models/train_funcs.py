@@ -3,12 +3,9 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
-from clearml import Task
 
 
 def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
-
-    Task.init(project_name="NASA Harvest", task_name=f"training model: {hparams.model_name}")
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",

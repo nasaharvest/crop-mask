@@ -23,6 +23,7 @@ dependencies:
   - scikit-learn
   - dvc-s3
   - gdal
+  - rclone
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
       - clearml

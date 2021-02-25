@@ -1,6 +1,0 @@
-analysis.py
-mypy.ini
-
-data/*/**
-diagrams/
-test/
