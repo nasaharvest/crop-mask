@@ -1,13 +1,14 @@
+from argparse import ArgumentParser
+from clearml import Task
 from pathlib import Path
-import sys
-from typing import Optional
+from typing import List, Optional
+import boto3
+import logging
 import subprocess
+import sys
 
 sys.path.append("..")
 
-from clearml import Task
-import logging
-from argparse import ArgumentParser
 from src.models import Model
 from src.analysis import plot_results
 from src.split_tiff import run_split_tiff
@@ -56,17 +57,37 @@ def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
     return merged_file
 
 
+def upload_to_s3(merged_files: List[Path], upload_folder_name: str = ""):
+    if not merged_files:
+        logger.error(
+            "upload_predictions was set to True but there are no merged predictions to upload. "
+            "Ensure merge_predictions is set to True"
+        )
+    else:
+        s3 = boto3.resource("s3")
+        s3_folder_name = upload_folder_name if upload_folder_name != "" else "various"
+        for merged_file in merged_files:
+            logger.info(
+                f"Uploading {str(merged_file)} to S3 output/{s3_folder_name}/{merged_file.name}"
+            )
+            s3.Bucket("crop-mask-data").upload_file(
+                str(merged_file), f"output/{s3_folder_name}/{merged_file.name}"
+            )
+
+
 def run_inference(
     model_name: str,
     model_dir: str,
     local_path_to_tif_files: str,
     gdrive_path_to_tif_files: Optional[str] = None,
     split_tif_files: bool = False,
-    merge_predictions: bool = False,
     plot_results_enabled: bool = False,
     predict_with_forecaster: bool = True,
     predict_without_forecaster: bool = True,
     predict_dir: str = "../data/predictions",
+    merge_predictions: bool = False,
+    upload_predictions: bool = False,
+    upload_folder_name: str = "",
     disable_tqdm=True,
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
@@ -120,12 +141,16 @@ def run_inference(
                 disable_tqdm=disable_tqdm,
             )
 
+    merged_files = []
     if merge_predictions:
         logger.info("Merge predictions enabled")
         if predict_with_forecaster:
-            gdal_merge(save_dir, with_forecaster=True)
+            merged_files.append(gdal_merge(save_dir, with_forecaster=True))
         if predict_without_forecaster:
-            gdal_merge(save_dir, with_forecaster=False)
+            merged_files.append(gdal_merge(save_dir, with_forecaster=False))
+
+    if upload_predictions:
+        upload_to_s3(merged_files, upload_folder_name)
 
 
 if __name__ == "__main__":
@@ -135,10 +160,12 @@ if __name__ == "__main__":
     parser.add_argument("--gdrive_path_to_tif_files", type=str, default=None)
     parser.add_argument("--local_path_to_tif_files", type=str)
     parser.add_argument("--split_tif_files", type=bool, default=False)
-    parser.add_argument("--merge_predictions", type=bool, default=True)
     parser.add_argument("--predict_with_forecaster", type=bool, default=True)
     parser.add_argument("--predict_without_forecaster", type=bool, default=False)
     parser.add_argument("--predict_dir", type=str, default="../data/predictions")
+    parser.add_argument("--merge_predictions", type=bool, default=True)
+    parser.add_argument("--upload_predictions", type=bool, default=True)
+    parser.add_argument("--upload_folder_name", type=str, default="")
     parser.add_argument("--disable_tqdm", type=bool, default=True)
 
     params = parser.parse_args()
@@ -153,9 +180,11 @@ if __name__ == "__main__":
         gdrive_path_to_tif_files=params.gdrive_path_to_tif_files,
         local_path_to_tif_files=params.local_path_to_tif_files,
         split_tif_files=params.split_tif_files,
-        merge_predictions=params.merge_predictions,
         predict_with_forecaster=params.predict_with_forecaster,
         predict_without_forecaster=params.predict_without_forecaster,
         predict_dir=params.predict_dir,
+        merge_predictions=params.merge_predictions,
+        upload_predictions=params.upload_predictions,
+        upload_folder_name=params.upload_folder_name,
         disable_tqdm=params.disable_tqdm,
     )
