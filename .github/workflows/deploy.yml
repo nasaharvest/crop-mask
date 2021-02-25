@@ -21,9 +21,9 @@ jobs:
         DOCKER_BUILDKIT: 1
         AWS_CREDENTIALS: ~/.aws/credentials
       run: |
-        echo $DOCKER_BUILDKIT
-        echo "hello"
         echo $AWS_CREDENTIALS
+        ls ~/.aws
+        cat $AWS_CREDENTIALS
         docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
     - name: Docker Push
       run: |
