@@ -39,31 +39,25 @@ jobs:
         environment-file: environment.yml
         auto-activate-base: false
         use-only-tar-bz2: true
-    - name: Type Checks
+    - name: Run type checks
       run: |
         mypy src scripts
-    - name: Unit tests
+    - name: Run unit tests
       run: |
         python -m unittest
     - name: Setup aws for integration test
-      # if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master'
       run: |
         aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Get data for integration test
-      # if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master'
       run: |
-        conda list
-        ls -a
-        ls .dvc -a
-        dvc status
-        dvc status --cloud
-        dvc fetch data/features
         dvc pull data/features
         dvc pull data/models
         dvc pull data/test
-    - name: Integration test
-      # if: github.ref == 'refs/heads/master'
+    - name: Run integration test
+      if: github.ref == 'refs/heads/master'
       run: |
         cd test
         python -m unittest integration_test_predict.py
