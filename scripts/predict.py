@@ -175,7 +175,7 @@ if __name__ == "__main__":
     )
     run_inference(
         model_name=params.model_name,
-        model_dir=params.data_dir,
+        data_dir=params.data_dir,
         gdrive_path_to_tif_files=params.gdrive_path_to_tif_files,
         local_path_to_tif_files=params.local_path_to_tif_files,
         split_tif_files=params.split_tif_files,
