@@ -22,6 +22,22 @@ jobs:
     - name: Unit tests
       run: |
         $CONDA/bin/conda run -n landcover-mapping python -m unittest
+    - name: Setup aws for integration test
+      # if: github.ref == 'refs/heads/master'
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
+    - name: Get data for integration test
+      # if: github.ref == 'refs/heads/master'
+      run: |
+        $CONDA/bin/conda run -n landcover-mapping dvc pull data/features
+        $CONDA/bin/conda run -n landcover-mapping dvc pull data/models
+        $CONDA/bin/conda run -n landcover-mapping dvc pull data/test
+    - name: Integration test
+      # if: github.ref == 'refs/heads/master'
+      run: | 
+        cd test
+        $CONDA/bin/conda run -n landcover-mapping python -m unittest integration_test_predict.py
 
   deploy:
     runs-on: ubuntu-latest
