@@ -77,7 +77,7 @@ def upload_to_s3(merged_files: List[Path], upload_folder_name: str = ""):
 
 def run_inference(
     model_name: str,
-    model_dir: str,
+    data_dir: str,
     local_path_to_tif_files: str,
     gdrive_path_to_tif_files: Optional[str] = None,
     split_tif_files: bool = False,
@@ -113,8 +113,7 @@ def run_inference(
     test_files = list(test_folder.glob("*.tif"))
 
     logger.info(f"Using model {model_name}")
-    model = Model.load_from_checkpoint(f"{model_dir}/models/{model_name}.ckpt")
-
+    model = Model.load_from_checkpoint(f"{data_dir}/models/{model_name}.ckpt")
     save_dir = Path(predict_dir)
     save_dir.mkdir(exist_ok=True)
 
@@ -156,7 +155,7 @@ def run_inference(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str)
-    parser.add_argument("--model_dir", type=str, default="../data")
+    parser.add_argument("--data_dir", type=str, default="../data")
     parser.add_argument("--gdrive_path_to_tif_files", type=str, default=None)
     parser.add_argument("--local_path_to_tif_files", type=str)
     parser.add_argument("--split_tif_files", type=bool, default=False)
@@ -176,7 +175,7 @@ if __name__ == "__main__":
     )
     run_inference(
         model_name=params.model_name,
-        model_dir=params.model_dir,
+        model_dir=params.data_dir,
         gdrive_path_to_tif_files=params.gdrive_path_to_tif_files,
         local_path_to_tif_files=params.local_path_to_tif_files,
         split_tif_files=params.split_tif_files,
