@@ -53,6 +53,7 @@ jobs:
     - name: Get data for integration test
       # if: github.ref == 'refs/heads/master'
       run: |
+        conda list
         ls -a
         ls .dvc -a
         dvc status
