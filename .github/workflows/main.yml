@@ -39,6 +39,8 @@ jobs:
     - run: conda info
     - run: conda list
     - run: conda config --show
+    - run: conda env list
+    - run: conda activate landcover-mapping
 #    - name: Install dependencies
 #      run: |
 #        $CONDA/bin/conda env create -f environment.yml
