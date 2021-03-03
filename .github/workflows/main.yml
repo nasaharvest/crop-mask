@@ -13,31 +13,57 @@ jobs:
     - uses: actions/checkout@v2
     - name: Setup Python
       uses: actions/setup-python@v2
-    - name: Install dependencies
-      run: |
-        $CONDA/bin/conda env create -f environment.yml
-    - name: Type Checks
-      run: |
-        $CONDA/bin/conda run -n landcover-mapping mypy src scripts
-    - name: Unit tests
-      run: |
-        $CONDA/bin/conda run -n landcover-mapping python -m unittest
-    - name: Setup aws for integration test
-      # if: github.ref == 'refs/heads/master'
-      run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
-    - name: Get data for integration test
-      # if: github.ref == 'refs/heads/master'
-      run: |
-        $CONDA/bin/conda run -n landcover-mapping dvc pull data/features
-        $CONDA/bin/conda run -n landcover-mapping dvc pull data/models
-        $CONDA/bin/conda run -n landcover-mapping dvc pull data/test
-    - name: Integration test
-      # if: github.ref == 'refs/heads/master'
-      run: | 
-        cd test
-        $CONDA/bin/conda run -n landcover-mapping python -m unittest integration_test_predict.py
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key:
+          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: landcover-mapping
+        channel-priority: strict
+        environment-file: environment.yml
+        use-only-tar-bz2: true
+    - run: conda info
+    - run: conda list
+    - run: conda config --show
+#    - name: Install dependencies
+#      run: |
+#        $CONDA/bin/conda env create -f environment.yml
+#    - name: Type Checks
+#      run: |
+#        $CONDA/bin/conda run -n landcover-mapping mypy src scripts
+#    - name: Unit tests
+#      run: |
+#        $CONDA/bin/conda run -n landcover-mapping python -m unittest
+#    - name: Setup aws for integration test
+#      # if: github.ref == 'refs/heads/master'
+#      run: |
+#        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#    - name: Get data for integration test
+#      # if: github.ref == 'refs/heads/master'
+#      run: |
+#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/features
+#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/models
+#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/test
+#    - name: Integration test
+#      # if: github.ref == 'refs/heads/master'
+#      run: |
+#        cd test
+#        $CONDA/bin/conda run -n landcover-mapping python -m unittest integration_test_predict.py
 
   deploy:
     runs-on: ubuntu-latest
