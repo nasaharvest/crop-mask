@@ -53,6 +53,9 @@ jobs:
     - name: Get data for integration test
       # if: github.ref == 'refs/heads/master'
       run: |
+        ls
+        dvc status
+        ls data
         dvc pull data/features
         dvc pull data/models
         dvc pull data/test
