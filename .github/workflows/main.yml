@@ -35,12 +35,10 @@ jobs:
         activate-environment: landcover-mapping
         channel-priority: strict
         environment-file: environment.yml
+        auto-activate-base: false
         use-only-tar-bz2: true
-    - run: conda info
-    - run: conda list
-    - run: conda config --show
     - run: conda env list
-    - run: conda activate landcover-mapping
+    - run: conda list
 #    - name: Install dependencies
 #      run: |
 #        $CONDA/bin/conda env create -f environment.yml
