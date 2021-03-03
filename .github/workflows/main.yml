@@ -55,6 +55,9 @@ jobs:
       run: |
         ls -a
         ls .dvc -a
+        dvc status
+        dvc status --cloud
+        dvc fetch data/features
         dvc pull data/features
         dvc pull data/models
         dvc pull data/test
