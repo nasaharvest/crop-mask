@@ -4,6 +4,9 @@ import tempfile
 import shutil
 import subprocess
 import xarray as xr
+import sys
+sys.path.append("..")
+
 from scripts.predict import run_inference
 
 
@@ -27,6 +30,7 @@ class IntegrationTestPredict(TestCase):
 
     def get_dvc_dir(self, dvc_dir_name: str) -> Path:
         dvc_dir = Path(__file__).parent.parent / f"data/{dvc_dir_name}"
+        print(dvc_dir)
         if not dvc_dir.exists():
             subprocess.run(["dvc", "pull", f"data/{dvc_dir_name}"], check=True)
         self.assertTrue(dvc_dir.exists(), f"{str(dvc_dir)} was not found.")
@@ -52,7 +56,7 @@ class IntegrationTestPredict(TestCase):
             run_inference(
                 local_path_to_tif_files=str(test_data_dir / "input"),
                 model_name=model_name,
-                model_dir=str(Path(__file__).parent.parent / "data"),
+                data_dir=str(Path(__file__).parent.parent / "data"),
                 predict_dir=str(predict_dir),
                 predict_with_forecaster=True,
                 predict_without_forecaster=False,
