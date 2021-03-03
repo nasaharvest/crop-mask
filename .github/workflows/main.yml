@@ -20,7 +20,6 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        # Look to see if there is a cache hit for the corresponding requirements file
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
@@ -40,34 +39,28 @@ jobs:
         environment-file: environment.yml
         auto-activate-base: false
         use-only-tar-bz2: true
-    - run: conda env list
-    - run: conda list
-    - run: conda info
-#    - name: Install dependencies
-#      run: |
-#        $CONDA/bin/conda env create -f environment.yml
-#    - name: Type Checks
-#      run: |
-#        $CONDA/bin/conda run -n landcover-mapping mypy src scripts
-#    - name: Unit tests
-#      run: |
-#        $CONDA/bin/conda run -n landcover-mapping python -m unittest
-#    - name: Setup aws for integration test
-#      # if: github.ref == 'refs/heads/master'
-#      run: |
-#        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-#        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#    - name: Get data for integration test
-#      # if: github.ref == 'refs/heads/master'
-#      run: |
-#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/features
-#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/models
-#        $CONDA/bin/conda run -n landcover-mapping dvc pull data/test
-#    - name: Integration test
-#      # if: github.ref == 'refs/heads/master'
-#      run: |
-#        cd test
-#        $CONDA/bin/conda run -n landcover-mapping python -m unittest integration_test_predict.py
+    - name: Type Checks
+      run: |
+        mypy src scripts
+    - name: Unit tests
+      run: |
+        python -m unittest
+    - name: Setup aws for integration test
+      # if: github.ref == 'refs/heads/master'
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Get data for integration test
+      # if: github.ref == 'refs/heads/master'
+      run: |
+        dvc pull data/features
+        dvc pull data/models
+        dvc pull data/test
+    - name: Integration test
+      # if: github.ref == 'refs/heads/master'
+      run: |
+        cd test
+        python -m unittest integration_test_predict.py
 
   deploy:
     runs-on: ubuntu-latest
