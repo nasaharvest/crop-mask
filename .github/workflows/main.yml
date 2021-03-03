@@ -1,0 +1,48 @@
+name: Build 
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: |
+        $CONDA/bin/conda env create -f environment.yml
+    - name: Type Checks
+      run: |
+        $CONDA/bin/conda run -n landcover-mapping mypy src scripts
+    - name: Unit tests
+      run: |
+        $CONDA/bin/conda run -n landcover-mapping python -m unittest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup aws
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Docker Build
+      env:
+        DOCKER_BUILDKIT: 1
+      run: |
+        docker build -t ivanzvonkov/cropmask:latest --secret id=aws,src=$HOME/.aws/credentials .
+    - name: Docker Push
+      run: |
+        docker login -u ivanzvonkov -p "${{ secrets.DOCKER_PASSWORD }}"
+        docker push ivanzvonkov/cropmask:latest
+      
+
+

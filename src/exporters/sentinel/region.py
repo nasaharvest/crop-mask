@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import pandas as pd
+import sys
 
 from .base import BaseSentinelExporter
 from .utils import bounding_box_to_earth_engine_bounding_box
@@ -12,6 +13,10 @@ from enum import Enum
 class Season(Enum):
     in_season = "in_season"
     post_season = "post_season"
+
+
+def get_user_input(text_prompt: str) -> str:
+    return input(text_prompt)
 
 
 class RegionalExporter(BaseSentinelExporter):
@@ -36,6 +41,16 @@ class RegionalExporter(BaseSentinelExporter):
 
         if season == Season.in_season:
             start_date = date(today.year if after_april else prev_year, 4, 1)
+            months_between = (today.year - start_date.year) * 12 + today.month - start_date.month
+            if months_between < 7:
+                user_input = get_user_input(
+                    f"WARNING: There are only {months_between} month(s) between today and the "
+                    f"start of the season (April 1st). \nAre you sure you'd like proceed "
+                    f"exporting only {months_between} months? (Y/N):\n"
+                )
+                if any(user_input == no for no in ["n", "N", "no", "NO"]):
+                    sys.exit("Exiting script.")
+
             return start_date, today
 
         if season == Season.post_season:
