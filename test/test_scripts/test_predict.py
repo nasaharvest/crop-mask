@@ -140,7 +140,7 @@ class TestPredict(TestCase):
             run_inference,
             local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            model_dir=str(self.temp_dir),
+            data_dir=str(self.temp_dir),
             predict_without_forecaster=False,
             predict_with_forecaster=False,
         )
@@ -151,7 +151,7 @@ class TestPredict(TestCase):
         run_inference(
             local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            model_dir=str(self.temp_dir),
+            data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
         )
         mock_load_from_checkpoint.assert_called()
@@ -166,7 +166,7 @@ class TestPredict(TestCase):
         run_inference(
             local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            model_dir=str(self.temp_dir),
+            data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
             merge_predictions=True,
         )
@@ -194,7 +194,7 @@ class TestPredict(TestCase):
         run_inference(
             local_path_to_tif_files=str(self.temp_dir),
             model_name="mock_model",
-            model_dir=str(self.temp_dir),
+            data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
             merge_predictions=True,
             upload_predictions=True,

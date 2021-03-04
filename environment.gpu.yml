@@ -21,7 +21,7 @@ dependencies:
   - geopandas
   - cartopy
   - scikit-learn
-  - dvc-s3
+  - dvc-s3=1.11.16 
   - gdal
   - rclone
   - pip:
