@@ -69,5 +69,5 @@ class IntegrationTestPredict(TestCase):
             xr.testing.assert_allclose(expected, predicted, atol=1)
 
             mean_difference = np.mean(np.abs(expected - predicted)).data_vars["prediction_0"]
-            print(mean_difference)
+            print(f'Expected - predicted, mean difference: {mean_difference}')
             self.assertLessEqual(mean_difference, 0.15)
