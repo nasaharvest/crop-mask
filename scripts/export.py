@@ -84,7 +84,7 @@ STR2BB = {
 if __name__ == "__main__":
     export_from_bbox(region_name_in_STR2BB="RwandaSake")
     export_from_labeled(
-        export_geowiki=True,  
+        export_geowiki=True,
         export_geowiki_sentinel_ee=False,
         export_plant_village_sentinel_ee=False,
         export_kenya_non_crop=True,
