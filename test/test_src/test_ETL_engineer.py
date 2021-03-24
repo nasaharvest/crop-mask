@@ -6,6 +6,7 @@ from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 import numpy as np
 import pandas as pd
+import shutil
 import tempfile
 import xarray as xr
 
@@ -17,9 +18,14 @@ class TestEngineer(TestCase):
     @patch("src.ETL.engineer.Engineer._read_labels")
     @patch("src.ETL.engineer.Path.glob")
     def setUpClass(cls, mock_glob, mock__read_labels):
-        mock_glob.return_value = []
+        geospatial_file =tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
+        mock_glob.return_value = [Path(geospatial_file.name)]
         mock__read_labels.return_value = pd.DataFrame({"lon": [20, 40], "lat": [30, 50]})
         cls.engineer = Engineer(dataset="mock_dataset", sentinel_dataset="sentinel_dataset")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.engineer.savedir)
 
     @staticmethod
     def generate_data_kwargs():
@@ -161,3 +167,15 @@ class TestEngineer(TestCase):
             is_maize=False,
         )
         self.assertEqual(expected_data_instance, actual_data_instance)
+
+    @patch("src.ETL.engineer.load_tif")
+    def test_create_pickled_labeled_dataset(self, mock_load_tif):
+        mock_load_tif.return_value = xr.DataArray(
+            attrs={"x": np.array([15, 45]), "y": np.array([25, 55])},
+            dims=["x", "y"],
+            data=np.zeros((55, 45)),
+        )
+        kwargs = self.generate_data_kwargs()
+        for k in ["path_to_file", "start_date", "is_test"]:
+            del kwargs[k]
+        self.engineer.create_pickled_labeled_dataset(**kwargs)
