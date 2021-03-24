@@ -35,7 +35,7 @@ def process_one_acre():
 
 
 if __name__ == "__main__":
-    process_geowiki()
+    # process_geowiki()
     process_plantvillage()
-    process_kenya_noncrop()
-    process_one_acre()
+    # process_kenya_noncrop()
+    # process_one_acre()

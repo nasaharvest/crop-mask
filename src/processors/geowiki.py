@@ -1,12 +1,12 @@
 import pandas as pd
 
 from .base import BaseProcessor
-from src.data_classes import GeoWiki
+from src.ETL.dataset_config import DatasetName
 
 
 class GeoWikiProcessor(BaseProcessor):
 
-    dataset = GeoWiki.name
+    dataset = DatasetName.GeoWiki.value
 
     def load_raw_data(self, participants: str) -> pd.DataFrame:
 

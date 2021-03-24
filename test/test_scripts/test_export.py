@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 from scripts.export import export_from_labeled, export_from_bbox, STR2BB
-from src.data_classes import BoundingBox
+from src.boundingbox import BoundingBox
 
 
 class TestExport(TestCase):

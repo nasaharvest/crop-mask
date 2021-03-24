@@ -1,11 +1,11 @@
 import geopandas
 
 from .base import BaseProcessor
-from src.data_classes import KenyaOAF
+from src.ETL.dataset_config import DatasetName
 
 
 class KenyaOAFProcessor(BaseProcessor):
-    dataset = KenyaOAF.name
+    dataset = DatasetName.KenyaOAF.value
 
     def process(self) -> None:
 
