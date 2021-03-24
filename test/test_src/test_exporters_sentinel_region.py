@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 from datetime import date
 from src.exporters.sentinel.region import RegionalExporter, Season
-from src.data_classes import BoundingBox
+from src.boundingbox import BoundingBox
 from pathlib import Path
 import tempfile
 import shutil

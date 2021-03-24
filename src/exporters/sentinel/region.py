@@ -4,7 +4,7 @@ import sys
 
 from .base import BaseSentinelExporter
 from .utils import bounding_box_to_earth_engine_bounding_box
-from src.data_classes import BoundingBox
+from src.boundingbox import BoundingBox
 
 from typing import Optional, Tuple
 from enum import Enum
