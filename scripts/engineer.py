@@ -2,7 +2,7 @@ import logging
 import sys
 
 sys.path.append("..")
-from src.ETL import datasets
+from src.dataset_config import datasets, DatasetName
 
 logging.basicConfig(level=logging.INFO)
 

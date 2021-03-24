@@ -4,7 +4,7 @@ import urllib.request
 import zipfile
 
 from .base import BaseExporter
-from src.ETL import DatasetName
+from src.dataset_config import DatasetName
 
 logger = logging.getLogger(__name__)
 

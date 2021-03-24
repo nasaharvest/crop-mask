@@ -22,7 +22,7 @@ from sklearn.metrics import (
 )
 
 from src.utils import set_seed
-from src.ETL.dataset_config import DatasetName
+from src.dataset_config import DatasetName
 from .data import CropDataset
 from .utils import tif_to_np, preds_to_xr
 from .forecaster import Forecaster

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .base import BaseProcessor
-from src.ETL.dataset_config import DatasetName
+from src.dataset_config import DatasetName
 
 
 class GeoWikiProcessor(BaseProcessor):

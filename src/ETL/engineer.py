@@ -154,7 +154,7 @@ class Engineer(ABC):
         if isinstance(crop_probability, float):
             calculated_crop_probability = crop_probability
         else:
-            calculated_crop_probability = crop_probability(overlap.iloc[0], self.labels)
+            calculated_crop_probability = crop_probability(overlap.iloc[0])
 
         if calculated_crop_probability is None:
             return None

@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 
 from src.constants import BANDS
 
-from src.ETL.dataset_config import DatasetName
+from src.dataset_config import DatasetName
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
 
