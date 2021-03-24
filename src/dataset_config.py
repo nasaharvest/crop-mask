@@ -1,4 +1,3 @@
-import numpy as np
 from enum import Enum
 from src.ETL.dataset import Dataset
 
@@ -8,6 +7,7 @@ class DatasetName(Enum):
     KenyaNonCrop = "kenya_non_crop"
     KenyaOAF = "one_acre_fund_kenya"
     KenyaPV = "plant_village_kenya"
+
 
 datasets = [
     Dataset(

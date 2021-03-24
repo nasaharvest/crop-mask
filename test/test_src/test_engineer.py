@@ -113,7 +113,7 @@ class TestEngineer(TestCase):
             attrs={"x": np.array([15, 45]), "y": np.array([25, 55])}
         )
         kwargs = self.generate_data_kwargs()
-        kwargs["crop_probability"] = lambda arg1, arg2: None
+        kwargs["crop_probability"] = lambda arg1: None
         data_instance = self.engineer._create_labeled_data_instance(**kwargs)
         self.assertIsNone(data_instance)
 
