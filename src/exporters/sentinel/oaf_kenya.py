@@ -4,7 +4,7 @@ from tqdm import tqdm
 from datetime import timedelta, date
 
 from .base import BaseSentinelExporter
-from src.processors.oaf_kenya import KenyaOAFProcessor
+from src.dataset_config import DatasetName
 from .utils import EEBoundingBox, bounding_box_from_centre
 
 from typing import Optional, List
@@ -21,7 +21,7 @@ class KenyaOAFSentinelExporter(BaseSentinelExporter):
     def load_labels(self) -> pd.DataFrame:
         # right now, this just loads geowiki data. In the future,
         # it would be neat to merge all labels together
-        oaf = self.data_folder / "processed" / KenyaOAFProcessor.dataset / "data.geojson"
+        oaf = self.data_folder / "processed" / DatasetName.KenyaOAF.value / "data.geojson"
         assert oaf.exists(), "Kenya one acre fund processor must be run to load labels"
         return geopandas.read_file(oaf)[["lat", "lon"]]
 

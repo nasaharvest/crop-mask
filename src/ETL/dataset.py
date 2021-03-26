@@ -1,6 +1,9 @@
 from dataclasses import dataclass
-from typing import Callable, Optional, Union
+from pathlib import Path
+from typing import Callable, Optional, Tuple, Union
 from .engineer import Engineer
+from .processor import Processor
+import pandas as pd
 
 
 @dataclass
@@ -8,9 +11,14 @@ class Dataset:
     dataset: str
     sentinel_dataset: str
 
-    # Engineer parameters
-    crop_probability: Union[float, Callable]
+    data_folder: Path = Path(__file__).parent.parent.parent / "data"
+
+    # Process parameters
+    processors: Tuple[Processor, ...] = ()
     labels_file: str = "data.geojson"
+
+    # Engineer parameters
+    crop_probability: Union[float, Callable] = 0.0
     is_global: bool = False
     is_maize: bool = False
     crop_type_func: Optional[Callable] = None
@@ -25,11 +33,17 @@ class Dataset:
     calculate_normalizing_dict: bool = True
     days_per_timestep: int = 30
 
+    def __post_init__(self):
+        self.raw_files_path = self.data_folder / "raw" / self.dataset
+        self.sentinel_files_path = self.data_folder / "raw" / self.sentinel_dataset
+        self.labels_path = self.data_folder / "processed" / self.dataset / self.labels_file
+        self.features_path = self.data_folder / "features" / self.dataset
+
     def create_pickled_labeled_dataset(self):
         return Engineer(
-            dataset=self.dataset,
-            sentinel_dataset=self.sentinel_dataset,
-            labels_file=self.labels_file,
+            sentinel_files_path=self.sentinel_files_path,
+            labels_path=self.labels_path,
+            features_path=self.features_path,
         ).create_pickled_labeled_dataset(
             crop_probability=self.crop_probability,
             is_global=self.is_global,
@@ -46,3 +60,13 @@ class Dataset:
             calculate_normalizing_dict=self.calculate_normalizing_dict,
             days_per_timestep=self.days_per_timestep,
         )
+
+    def process_labels(self):
+        processed_label_list = [p.process(self.raw_files_path) for p in self.processors]
+        self.labels_path.parent.mkdir(exist_ok=True, parents=True)
+        if self.labels_path.suffix == ".geojson":
+            labels = pd.concat(processed_label_list)
+            labels.to_file(self.labels_path, driver="GeoJSON")
+        elif self.labels_path.suffix == ".nc":
+            labels = processed_label_list[0]
+            labels.to_netcdf(self.labels_path)
