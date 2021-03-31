@@ -1,5 +1,5 @@
 from enum import Enum
-from src.ETL.dataset import Dataset, Processor
+from src.ETL.dataset import Dataset, Processor, RawLabels
 
 
 class DatasetName(Enum):
@@ -25,6 +25,15 @@ datasets = [
         val_set_size=0.2,
         test_set_size=0,
         is_global=True,
+        raw_labels=(
+            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_all.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_con.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_exp.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all_2.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_con.zip"),
+            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_exp.zip"),
+        ),
         processors=(Processor(file_name=geowiki_file_name(), custom_geowiki_processing=True),),
     ),
     Dataset(
