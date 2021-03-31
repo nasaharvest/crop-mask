@@ -2,8 +2,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional, Tuple, Union
 from .engineer import Engineer
+from .label_downloader import RawLabels
 from .processor import Processor
+import logging
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -12,6 +16,9 @@ class Dataset:
     sentinel_dataset: str
 
     data_folder: Path = Path(__file__).parent.parent.parent / "data"
+
+    # Raw label parameters
+    raw_labels: Tuple[RawLabels, ...] = ()
 
     # Process parameters
     processors: Tuple[Processor, ...] = ()
@@ -70,3 +77,11 @@ class Dataset:
         elif self.labels_path.suffix == ".nc":
             labels = processed_label_list[0]
             labels.to_netcdf(self.labels_path)
+
+    def download_raw_labels(self):
+        if len(self.raw_labels) == 0:
+            logger.warning(f"No raw labels set for {self.dataset}")
+        else:
+            self.raw_files_path.mkdir(parents=True, exist_ok=True)
+            for label in self.raw_labels:
+                label.download_file(output_folder=self.raw_files_path)
