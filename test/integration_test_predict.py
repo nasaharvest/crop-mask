@@ -1,5 +1,6 @@
 from unittest import TestCase
 from pathlib import Path
+import numpy as np
 import tempfile
 import shutil
 import subprocess
@@ -31,7 +32,6 @@ class IntegrationTestPredict(TestCase):
 
     def get_dvc_dir(self, dvc_dir_name: str) -> Path:
         dvc_dir = Path(__file__).parent.parent / f"data/{dvc_dir_name}"
-        print(dvc_dir)
         if not dvc_dir.exists():
             subprocess.run(["dvc", "pull", f"data/{dvc_dir_name}"], check=True)
         self.assertTrue(dvc_dir.exists(), f"{str(dvc_dir)} was not found.")
@@ -42,15 +42,11 @@ class IntegrationTestPredict(TestCase):
         test_data_dir = self.get_dvc_dir("test")
         model_dir = self.get_dvc_dir("models")
 
-        for model in model_dir.rglob("*.ckpt"):
+        for model in model_dir.rglob("*5.ckpt"):
             model_name = model.stem
             print(f"Testing model: {model_name}")
 
-            expected_dir = Path(test_data_dir / f"expected_{model_name}")
-            self.assertTrue(
-                expected_dir.exists(), f"Expected to find directory {str(expected_dir)}"
-            )
-
+            expected_dir = Path(test_data_dir / "expected")
             predict_dir = Path(self.temp_dir / model_name)
             predict_dir.mkdir(parents=True, exist_ok=True)
 
@@ -69,3 +65,9 @@ class IntegrationTestPredict(TestCase):
             self.assertEqual(
                 expected, predicted, "Expected and actual prediction are not the same."
             )
+
+            xr.testing.assert_allclose(expected, predicted, atol=1)
+
+            mean_difference = np.mean(np.abs(expected - predicted)).data_vars["prediction_0"]
+            print(f"Expected - predicted, mean difference: {mean_difference}")
+            self.assertLessEqual(mean_difference, 0.2)

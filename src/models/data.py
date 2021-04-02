@@ -12,13 +12,7 @@ from torch.utils.data import Dataset
 
 from src.constants import BANDS
 
-from src.data_classes import (
-    DatasetMetadata,
-    GeoWiki,
-    KenyaNonCrop,
-    KenyaOAF,
-    KenyaPV,
-)
+from src.dataset_config import DatasetName
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
 
@@ -33,7 +27,7 @@ class CropDataset(Dataset):
         self,
         data_folder: Path,
         subset: str,
-        datasets: List[DatasetMetadata],
+        datasets: List[DatasetName],
         probability_threshold: float,
         remove_b1_b10: bool,
         include_geowiki: bool,
@@ -68,7 +62,7 @@ class CropDataset(Dataset):
         for dataset in datasets:
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
-                    self.data_folder / "features" / dataset.name,
+                    self.data_folder / "features" / dataset.value,
                     self.subset_name,
                 )
             )
@@ -299,21 +293,21 @@ class CropDataset(Dataset):
         with target_file.open("rb") as f:
             target_datainstance = pickle.load(f)
 
-        is_global: float = 0.0
-
-        if isinstance(target_datainstance, KenyaPV.instance) or (
-            isinstance(target_datainstance, KenyaOAF.instance)
-        ):
-            # then, we know it is one of the plant village instances, and
-            # that it has a crop label
-            crop_int: int = 1
-
-        elif isinstance(target_datainstance, KenyaNonCrop.instance):
-            crop_int = 0
+        if hasattr(target_datainstance, "is_global"):
+            is_global = int(target_datainstance.is_global)
         else:
-            assert isinstance(target_datainstance, GeoWiki.instance) and self.include_geowiki
-            is_global = 1
+            logger.error(
+                "target_datainstance missing mandatory field is_global, defaulting is_global to 0"
+            )
+            is_global = 0
+
+        if hasattr(target_datainstance, "crop_probability"):
             crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
+        else:
+            logger.error(
+                "target_datainstance missing mandatory field crop_probability, defaulting crop_int to 0"
+            )
+            crop_int = 0
 
         x = self.remove_bands(x=self._normalize(target_datainstance.labelled_array))
 

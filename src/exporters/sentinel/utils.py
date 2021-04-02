@@ -6,7 +6,7 @@ import logging
 
 from typing import List, Tuple, Union
 
-from src.data_classes import BoundingBox
+from src.boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
 

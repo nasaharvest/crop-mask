@@ -22,7 +22,7 @@ dependencies:
   - cartopy
   - scikit-learn
   - dvc-s3=1.11.16 
-  - gdal
+  - gdal=3.1.4
   - rclone
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
