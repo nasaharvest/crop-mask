@@ -22,7 +22,7 @@ from sklearn.metrics import (
 )
 
 from src.utils import set_seed
-from src.data_classes import all_datasets
+from src.dataset_config import DatasetName
 from .data import CropDataset
 from .utils import tif_to_np, preds_to_xr
 from .forecaster import Forecaster
@@ -73,15 +73,15 @@ class Model(pl.LightningModule):
         input_dataset_names = hparams.datasets.replace(" ", "").split(",")
         input_dataset_names = list(filter(None, input_dataset_names))
         self.datasets = []
-        for d in all_datasets:
-            if d.name in input_dataset_names:
+        for d in DatasetName:
+            if d.value in input_dataset_names:
                 self.datasets.append(d)
-                input_dataset_names.remove(d.name)
+                input_dataset_names.remove(d.value)
 
         for not_found_dataset in input_dataset_names:
             logger.error(f"Could not find dataset with name: {not_found_dataset}")
 
-        logger.info(f"Using datasets: {[d.name for d in self.datasets]}")
+        logger.info(f"Using datasets: {[d.value for d in self.datasets]}")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps

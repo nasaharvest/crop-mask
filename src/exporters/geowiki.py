@@ -4,7 +4,7 @@ import urllib.request
 import zipfile
 
 from .base import BaseExporter
-from src.data_classes import GeoWiki
+from src.dataset_config import DatasetName
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class GeoWikiExporter(BaseExporter):
     Download the GeoWiki labels
     """
 
-    dataset = GeoWiki.name
+    dataset = DatasetName.GeoWiki.value
 
     download_urls = [
         "http://store.pangaea.de/Publications/See_2017/crop_all.zip",
