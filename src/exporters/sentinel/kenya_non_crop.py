@@ -4,7 +4,7 @@ from tqdm import tqdm
 from datetime import timedelta, date
 
 from .base import BaseSentinelExporter
-from src.processors.kenya_non_crop import KenyaNonCropProcessor
+from src.dataset_config import DatasetName
 from .utils import EEBoundingBox, bounding_box_from_centre
 
 from typing import Optional, List
@@ -20,7 +20,7 @@ class KenyaNonCropSentinelExporter(BaseSentinelExporter):
     def load_labels(self) -> pd.DataFrame:
         # right now, this just loads geowiki data. In the future,
         # it would be neat to merge all labels together
-        non_crop = self.data_folder / "processed" / KenyaNonCropProcessor.dataset / "data.geojson"
+        non_crop = self.data_folder / "processed" / DatasetName.KenyaNonCrop.value / "data.geojson"
         assert non_crop.exists(), "Kenya non crop processor must be run to load labels"
         return geopandas.read_file(non_crop)[["lat", "lon"]]
 

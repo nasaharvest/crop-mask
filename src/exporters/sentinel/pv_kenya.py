@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date
 import logging
 
 from .base import BaseSentinelExporter
-from src.processors.pv_kenya import KenyaPVProcessor
+from src.dataset_config import DatasetName
 from .utils import EEBoundingBox, bounding_box_from_centre, date_overlap
 
 from typing import Dict, Optional, List, Tuple
@@ -21,7 +21,7 @@ class KenyaPVSentinelExporter(BaseSentinelExporter):
     def load_labels(self) -> pd.DataFrame:
         # right now, this just loads geowiki data. In the future,
         # it would be neat to merge all labels together
-        plantvillage = self.data_folder / "processed" / KenyaPVProcessor.dataset / "data.geojson"
+        plantvillage = self.data_folder / "processed" / DatasetName.KenyaPV.value / "data.geojson"
         assert plantvillage.exists(), "Plant Village processor must be run to load labels"
         return geopandas.read_file(plantvillage)[
             ["lat", "lon", "index", "planting_d", "harvest_da"]

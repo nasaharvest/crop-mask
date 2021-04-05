@@ -21,7 +21,9 @@ class TestEngineer(TestCase):
         geospatial_file = tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
         mock_glob.return_value = [Path(geospatial_file.name)]
         mock__read_labels.return_value = pd.DataFrame({"lon": [20, 40], "lat": [30, 50]})
-        cls.engineer = Engineer(dataset="mock_dataset", sentinel_dataset="sentinel_dataset")
+        cls.engineer = Engineer(sentinel_files_path=Path("mock_sentinel_path"),
+                                labels_path=Path("mock_labels_path"),
+                                features_path=Path("mock_features_path"))
 
     @classmethod
     def tearDownClass(cls):
