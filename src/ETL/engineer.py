@@ -28,30 +28,23 @@ class Engineer(ABC):
     # only be used for evaluation (e.g. the TogoEvaluation dataset)
     eval_only: bool = False
 
-    data_folder = Path(__file__).parent.parent.parent / "data"
-
     def __init__(
-        self, dataset: str, sentinel_dataset: str, labels_file: str = "data.geojson"
+        self,
+        sentinel_files_path: Path,
+        labels_path: Path,
+        features_path: Path,
     ) -> None:
         set_seed()
-        self.dataset = dataset
 
-        sentinel_files = self.data_folder / "raw" / sentinel_dataset
-        self.geospatial_files = list(sentinel_files.glob("*.tif"))
-
-        labels_path = self.data_folder / "processed" / self.dataset / labels_file
+        self.geospatial_files = list(sentinel_files_path.glob("*.tif"))
         self.labels = self._read_labels(labels_path)
-
-        self.savedir = self.data_folder / "features" / self.dataset
+        self.savedir = features_path
         self.savedir.mkdir(exist_ok=True, parents=True)
-
         self.normalizing_dict_interim: Dict[str, Union[np.ndarray, int]] = {"n": 0}
 
     def _read_labels(self, labels_path: Path) -> pd.DataFrame:
         if not labels_path.exists():
-            raise FileNotFoundError(
-                f"{self.dataset} processor must be run to load labels file: {labels_path}"
-            )
+            raise FileNotFoundError(f"Processor must be run to load labels file: {labels_path}")
         if labels_path.suffix == ".geojson":
             return geopandas.read_file(labels_path)
         elif labels_path.suffix == ".nc":
@@ -212,7 +205,7 @@ class Engineer(ABC):
         calculate_normalizing_dict: bool = True,
         days_per_timestep: int = 30,
     ):
-        logger.info(f"{self.dataset}: creating pickled labeled dataset")
+        logger.info(f"Creating pickled labeled dataset: {self.savedir}")
         for file_path in tqdm(self.geospatial_files):
 
             file_info = process_filename(

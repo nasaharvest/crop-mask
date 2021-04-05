@@ -109,11 +109,12 @@ class CropDataset(Dataset):
 
         pickle_files_dir = features_dir / subset_name
         if not pickle_files_dir.exists():
-            raise Exception(
+            logger.warning(
                 f"Directory: {pickle_files_dir} not found. Use command: `dvc pull` to get the latest data."
             )
-
-        pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
+            pickle_files = []
+        else:
+            pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
 
         # try loading the normalizing dict. By default, if it exists we will use it
         normalizing_dict_path = features_dir / "normalizing_dict.pkl"
