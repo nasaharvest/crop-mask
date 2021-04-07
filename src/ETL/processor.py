@@ -18,7 +18,6 @@ class Processor:
     lat_lon_transform: bool = False
     custom_geowiki_processing: bool = False
 
-
     def __post_init__(self):
         set_seed()
 

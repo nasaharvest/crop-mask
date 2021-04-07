@@ -12,15 +12,23 @@ class TestExport(TestCase):
             self.assertIsInstance(region_key, str)
             self.assertIsInstance(region_bbox, BoundingBox)
 
-    @patch("scripts.export.GeoWikiExporter")
+    @patch("src.ETL.dataset.Dataset.download_raw_labels")
     @patch("scripts.export.GeoWikiSentinelExporter")
     @patch("scripts.export.KenyaPVSentinelExporter")
     @patch("scripts.export.KenyaNonCropSentinelExporter")
     @patch("scripts.export.KenyaOAFSentinelExporter")
-    def test_export_from_labeled(self, *mock_exporters):
+    def test_export_from_labeled(
+        self,
+        KOAFExporter,
+        KNonCropExporter,
+        KPVExporter,
+        GeoWikiSentinelExporter,
+        mock_download_raw_labels,
+    ):
         export_from_labeled()
-        for mock_exporter in mock_exporters:
+        for mock_exporter in [KOAFExporter, KNonCropExporter, KPVExporter, GeoWikiSentinelExporter]:
             mock_exporter.assert_called()
+        mock_download_raw_labels.assert_called()
 
     @patch("scripts.export.RegionalExporter")
     def test_export_from_bbox(self, mock_regional_exporter):
