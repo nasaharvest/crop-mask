@@ -6,14 +6,13 @@ import pandas as pd
 import ee
 
 from . import cloudfree
-from ..base import BaseExporter
 
 from typing import List, Union
 
 logger = logging.getLogger(__name__)
 
 
-class BaseSentinelExporter(BaseExporter, ABC):
+class BaseSentinelExporter(ABC):
 
     r"""
     Download cloud free sentinel data for countries,
@@ -25,7 +24,11 @@ class BaseSentinelExporter(BaseExporter, ABC):
     min_date = date(2017, 3, 28)
 
     def __init__(self, data_folder: Path = Path("data")) -> None:
-        super().__init__(data_folder)
+        self.data_folder = data_folder
+        self.raw_folder = self.data_folder / "raw"
+        self.output_folder = self.raw_folder / self.dataset
+        self.output_folder.mkdir(parents=True, exist_ok=True)
+
         try:
             ee.Initialize()
         except Exception:

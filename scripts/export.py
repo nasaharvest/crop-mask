@@ -5,7 +5,6 @@ from pathlib import Path
 sys.path.append("..")
 
 from src.exporters import (
-    GeoWikiExporter,
     GeoWikiSentinelExporter,
     KenyaPVSentinelExporter,
     KenyaNonCropSentinelExporter,
@@ -14,6 +13,7 @@ from src.exporters import (
     Season,
 )
 from src.boundingbox import BoundingBox
+from src.dataset_config import datasets, DatasetName
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,7 +27,9 @@ def export_from_labeled(
     data_dir: Path = Path("../data"),
 ):
     if export_geowiki:
-        GeoWikiExporter(data_dir).export()
+        geowiki_dataset = next((d for d in datasets if d.dataset == DatasetName.GeoWiki.value))
+        geowiki_dataset.download_raw_labels()
+
     if export_geowiki_sentinel_ee:
         GeoWikiSentinelExporter(data_dir).export_for_labels(
             num_labelled_points=None, monitor=False, checkpoint=True
@@ -82,11 +84,11 @@ STR2BB = {
 }
 
 if __name__ == "__main__":
-    export_from_bbox(region_name_in_STR2BB="RwandaSake")
+    # export_from_bbox(region_name_in_STR2BB="RwandaSake")
     export_from_labeled(
         export_geowiki=True,
         export_geowiki_sentinel_ee=False,
         export_plant_village_sentinel_ee=False,
-        export_kenya_non_crop=True,
+        export_kenya_non_crop=False,
         export_oaf=False,
     )

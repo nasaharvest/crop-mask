@@ -4,7 +4,7 @@ from datetime import date
 from tqdm import tqdm
 
 from .base import BaseSentinelExporter
-from src.exporters import GeoWikiExporter
+from src.dataset_config import DatasetName
 from .utils import EEBoundingBox, bounding_box_from_centre
 
 from typing import Optional, List
@@ -17,7 +17,7 @@ class GeoWikiSentinelExporter(BaseSentinelExporter):
     def load_labels(self) -> pd.DataFrame:
         # right now, this just loads geowiki data. In the future,
         # it would be neat to merge all labels together
-        geowiki = self.data_folder / "processed" / GeoWikiExporter.dataset / "data.nc"
+        geowiki = self.data_folder / "processed" / DatasetName.GeoWiki.value / "data.nc"
         assert geowiki.exists(), "GeoWiki processor must be run to load labels"
         return xr.open_dataset(geowiki).to_dataframe().dropna().reset_index()
 
