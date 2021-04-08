@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 from typing import Optional, Union
-from src.boundingbox import BoundingBox
+from .ee_boundingbox import BoundingBox
 
 
 @dataclass
