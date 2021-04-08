@@ -13,7 +13,7 @@ from .constants import BANDS
 logger = logging.getLogger(__name__)
 
 
-def set_seed(seed: int = 42) -> None:
+def set_seed(seed: int = 42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)

@@ -4,6 +4,7 @@ from typing import Callable, Optional, Tuple, Union
 from .engineer import Engineer
 from .label_downloader import RawLabels
 from .processor import Processor
+from .ee_exporter import EarthEngineExporter
 import logging
 import pandas as pd
 
@@ -12,10 +13,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Dataset:
-    dataset: str
     sentinel_dataset: str
 
+    # Exporter parameters
+    exporter: EarthEngineExporter
+
     data_folder: Path = Path(__file__).parent.parent.parent / "data"
+
+    def __post_init__(self):
+        self.sentinel_files_path = self.data_folder / "raw" / self.sentinel_dataset
+
+    def export_earth_engine_data(self):
+        raise NotImplementedError
+
+
+@dataclass
+class LabeledDataset(Dataset):
+    dataset: str = ""
 
     # Raw label parameters
     raw_labels: Tuple[RawLabels, ...] = ()
@@ -42,7 +56,6 @@ class Dataset:
 
     def __post_init__(self):
         self.raw_files_path = self.data_folder / "raw" / self.dataset
-        self.sentinel_files_path = self.data_folder / "raw" / self.sentinel_dataset
         self.labels_path = self.data_folder / "processed" / self.dataset / self.labels_file
         self.features_path = self.data_folder / "features" / self.dataset
 
@@ -85,3 +98,26 @@ class Dataset:
             self.raw_files_path.mkdir(parents=True, exist_ok=True)
             for label in self.raw_labels:
                 label.download_file(output_folder=self.raw_files_path)
+
+    def export_earth_engine_data(self):
+        self.exporter.export_for_labels(
+            labels_path=self.labels_path,
+            sentinel_dataset=self.sentinel_dataset,
+            output_folder=self.sentinel_files_path,
+            num_labelled_points=None,
+            monitor=False,
+            checkpoint=True,
+        )
+
+
+@dataclass
+class UnlabeledDataset(Dataset):
+    def export_earth_engine_data(self):
+        self.exporter.export_for_region(
+            sentinel_dataset=self.sentinel_dataset,
+            output_folder=self.sentinel_files_path,
+            monitor=False,
+            checkpoint=True,
+            metres_per_polygon=None,
+            fast=False,
+        )
