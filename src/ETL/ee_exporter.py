@@ -26,20 +26,7 @@ def get_user_input(text_prompt: str) -> str:
 
 
 class EarthEngineExporter:
-    r"""
-    Download cloud free sentinel data for countries,
-    where countries are defined by the simplified large scale
-    international boundaries.
 
-    :param start_date: The start date of the data export
-    :param end_date: The end date of the data export
-    :param end_date: The end date without specifying the year of the data export
-    :param season: The season to use to determine the start and end date
-    :param days_per_timestep: The number of days of data to use for each mosaiced image.
-    :param num_timesteps: The number of timesteps to export if season is not specified
-    :param additional_cols: The additional columns to extract when creating the dataframe
-    :param region_bbox: BoundingBox for region
-    """
     min_date = date(2017, 3, 28)
 
     def __init__(
@@ -53,6 +40,20 @@ class EarthEngineExporter:
         additional_cols: List[str] = [],
         region_bbox: Optional[BoundingBox] = None,
     ):
+        r"""
+        Setup parameters to download cloud free sentinel data for countries,
+        where countries are defined by the simplified large scale
+        international boundaries.
+
+        :param start_date: The start date of the data export
+        :param end_date: The end date of the data export
+        :param end_date: The end date without specifying the year of the data export
+        :param season: The season to use to determine the start and end date
+        :param days_per_timestep: The number of days of data to use for each mosaiced image.
+        :param num_timesteps: The number of timesteps to export if season is not specified
+        :param additional_cols: The additional columns to extract when creating the dataframe
+        :param region_bbox: BoundingBox for region
+        """
 
         if end_date is None and end_month_day is None and season is None:
             raise ValueError("One of end_date, end_month_day, season must not be None")
@@ -217,7 +218,6 @@ class EarthEngineExporter:
         :param fast: Whether to use the faster cloudfree exporter. This function is considerably
             faster, but cloud artefacts can be more pronounced. Default = True
         """
-
         try:
             ee.Initialize()
         except Exception:
@@ -289,7 +289,7 @@ class EarthEngineExporter:
             )
 
         if self.region_bbox is None:
-            raise ValueError('Region bbox must be set to export_for_region')
+            raise ValueError("Region bbox must be set to export_for_region")
 
         region = EEBoundingBox.from_bounding_box(self.region_bbox)
 

@@ -14,6 +14,8 @@ import xarray as xr
 class TestEngineer(TestCase):
     """Tests for Engineer"""
 
+    engineer: Engineer
+
     @classmethod
     @patch("src.ETL.engineer.Engineer._read_labels")
     @patch("src.ETL.engineer.Path.glob")

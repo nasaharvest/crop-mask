@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 from pathlib import Path
 from datetime import timedelta, date
+from typing import Dict
 import pandas as pd
 import tempfile
 import shutil
@@ -13,6 +14,10 @@ module = "src.ETL.ee_exporter"
 
 
 class TestEEExporters(TestCase):
+
+    temp_data_dir: Path
+    exporters: Dict[str, EarthEngineExporter]
+
     @classmethod
     def setUpClass(cls):
         cls.temp_data_dir = Path(tempfile.mkdtemp())
