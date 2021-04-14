@@ -6,6 +6,7 @@ import shutil
 import xarray as xr
 
 import sys
+
 sys.path.append("..")
 
 from scripts.predict import run_inference

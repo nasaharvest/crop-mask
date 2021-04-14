@@ -90,24 +90,24 @@ labeled_datasets = [
         sentinel_dataset="earth_engine_mali_noncrop",
         crop_probability=0.0,
         processors=(Processor(file_name="mali_noncrop_2019"),),
-        exporter=EarthEngineExporter(end_date=date(2020, 4, 16))
+        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
     ),
     LabeledDataset(
         dataset=DatasetName.MaliSegou2018.value,
         country="Mali",
         sentinel_dataset="earth_engine_mali_segou_2018",
         crop_probability=1.0,
-        processors=(Processor(file_name="segou_bounds_07212020"), ),
-        exporter=EarthEngineExporter(end_date=date(2019, 4, 16))
+        processors=(Processor(file_name="segou_bounds_07212020"),),
+        exporter=EarthEngineExporter(end_date=date(2019, 4, 16)),
     ),
     LabeledDataset(
         dataset=DatasetName.MaliSegou2019.value,
         country="Mali",
         sentinel_dataset="earth_engine_mali_segou_2019",
         crop_probability=1.0,
-        processors=(Processor(file_name="segou_bounds_07212020"), ),
-        exporter=EarthEngineExporter(end_date=date(2020, 4, 16))
-    )
+        processors=(Processor(file_name="segou_bounds_07212020"),),
+        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
+    ),
 ]
 
 unlabeled_datasets = [

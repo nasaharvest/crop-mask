@@ -23,26 +23,25 @@ class IntegrationTestLabels(TestCase):
         df = geopandas.read_file(d.labels_path)
         points = [Point(xy) for xy in zip(df["lon"], df["lat"])]
         points_df = geopandas.GeoDataFrame(geometry=points)
-        points_df['Source'] = d.dataset
-        points_df['Country'] = d.country
+        points_df["Source"] = d.dataset
+        points_df["Country"] = d.country
         return points_df
 
     @staticmethod
     def within_country(point: Point, country: str):
         africa = IntegrationTestLabels.africa
-        return point.within(africa[africa['ADM0_NAME'] == country]['geometry'].iloc[0])
+        return point.within(africa[africa["ADM0_NAME"] == country]["geometry"].iloc[0])
 
     def test_all_processed_labels(self):
         """
         Currently this test merely prints out which labels are not witin the country boundary
         """
         get_dvc_dir("processed")
-        all_dfs = [self.create_points_df(d) for d in labeled_datasets if d.labels_path.suffix == ".geojson"]
+        all_dfs = [
+            self.create_points_df(d) for d in labeled_datasets if d.labels_path.suffix == ".geojson"
+        ]
         df = pd.concat(all_dfs)
-        df['Within Country'] = np.vectorize(self.within_country)(df['geometry'], df['Country'])
+        df["Within Country"] = np.vectorize(self.within_country)(df["geometry"], df["Country"])
         print("Labels NOT within country")
-        print(df[df['Within Country'] == False]['Source'].value_counts())
+        print(df[df["Within Country"] == False]["Source"].value_counts())
         return df
-
-
-
