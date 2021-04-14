@@ -13,6 +13,8 @@ from src.ETL.dataset import LabeledDataset
 class IntegrationTestLabels(TestCase):
     """Tests the processed labels script"""
 
+    africa: geopandas.GeoDataFrame
+
     @classmethod
     def setUpClass(cls):
         test_dir = get_dvc_dir("test")
