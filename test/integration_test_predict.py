@@ -3,10 +3,13 @@ from pathlib import Path
 import numpy as np
 import tempfile
 import shutil
-import subprocess
 import xarray as xr
 
+import sys
+sys.path.append("..")
+
 from scripts.predict import run_inference
+from utils import get_dvc_dir
 
 
 class IntegrationTestPredict(TestCase):
@@ -27,17 +30,9 @@ class IntegrationTestPredict(TestCase):
         first_file = next(dir_path.rglob("*.nc"))
         return xr.load_dataset(first_file)
 
-    def get_dvc_dir(self, dvc_dir_name: str) -> Path:
-        dvc_dir = Path(__file__).parent.parent / f"data/{dvc_dir_name}"
-        if not dvc_dir.exists():
-            subprocess.run(["dvc", "pull", f"data/{dvc_dir_name}"], check=True)
-        self.assertTrue(dvc_dir.exists(), f"{str(dvc_dir)} was not found.")
-        self.assertTrue(any(dvc_dir.iterdir()), f"{str(dvc_dir)} should not be empty.")
-        return dvc_dir
-
     def test_all_models(self):
-        test_data_dir = self.get_dvc_dir("test")
-        model_dir = self.get_dvc_dir("models")
+        test_data_dir = get_dvc_dir("test")
+        model_dir = get_dvc_dir("models")
 
         for model in model_dir.rglob("*5.ckpt"):
             model_name = model.stem
