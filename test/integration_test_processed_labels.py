@@ -34,7 +34,7 @@ class IntegrationTestLabels(TestCase):
 
     def test_all_processed_labels(self):
         """
-        Currently this test merely prints out which labels
+        Currently this test merely prints out which labels are not witin the country boundary
         """
         get_dvc_dir("processed")
         all_dfs = [self.create_points_df(d) for d in labeled_datasets if d.labels_path.suffix == ".geojson"]
