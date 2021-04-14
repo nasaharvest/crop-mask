@@ -5,12 +5,7 @@ from src.models import Model
 
 
 def get_model_path(name: str) -> str:
-    model_path = (
-        Path(__file__).parent.parent
-        / "data"
-        / "models"
-        / f"{name}.ckpt"
-    )
+    model_path = Path(__file__).parent.parent / "data" / "models" / f"{name}.ckpt"
     return str(model_path)
 
 
