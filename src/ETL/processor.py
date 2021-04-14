@@ -66,8 +66,8 @@ class Processor:
                 df["lat"] = lat
                 df["lon"] = lon
             else:
-                df["lat"] = x
-                df["lon"] = y
+                df["lon"] = x
+                df["lat"] = y
 
         df["index"] = df.index
         return df
