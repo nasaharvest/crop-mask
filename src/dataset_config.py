@@ -1,5 +1,10 @@
 from enum import Enum
-from src.ETL.dataset import Dataset, Processor, RawLabels
+from src.ETL.dataset import LabeledDataset, UnlabeledDataset
+from src.ETL.ee_exporter import EarthEngineExporter, Season
+from src.ETL.ee_boundingbox import BoundingBox
+from src.ETL.label_downloader import RawLabels
+from src.ETL.processor import Processor
+from datetime import date
 
 
 class DatasetName(Enum):
@@ -16,8 +21,8 @@ def geowiki_file_name(participants: str = "all") -> str:
     return f"loc_{file_label}{'_2' if file_label == 'all' else ''}.txt"
 
 
-datasets = [
-    Dataset(
+labeled_datasets = [
+    LabeledDataset(
         dataset=DatasetName.GeoWiki.value,
         sentinel_dataset="earth_engine_geowiki",
         labels_file="data.nc",
@@ -35,8 +40,9 @@ datasets = [
             RawLabels("http://store.pangaea.de/Publications/See_2017/loc_exp.zip"),
         ),
         processors=(Processor(file_name=geowiki_file_name(), custom_geowiki_processing=True),),
+        exporter=EarthEngineExporter(start_date=date(2017, 3, 28), end_date=date(2018, 3, 28)),
     ),
-    Dataset(
+    LabeledDataset(
         dataset=DatasetName.KenyaNonCrop.value,
         sentinel_dataset="earth_engine_kenya_non_crop",
         crop_probability=0.0,
@@ -49,21 +55,92 @@ datasets = [
             ),
             Processor(file_name="noncrop_kenya_gt", x_y_reversed=True, lat_lon_transform=True),
         ),
+        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
     ),
-    Dataset(
+    LabeledDataset(
         dataset=DatasetName.KenyaOAF.value,
         sentinel_dataset="earth_engine_one_acre_fund_kenya",
         crop_probability=1.0,
         is_maize=True,
         processors=(Processor(file_name="", x_y_from_centroid=False, lat_lon_lowercase=True),),
+        exporter=EarthEngineExporter(
+            end_date=date(2020, 4, 16),
+        ),
     ),
-    Dataset(
+    LabeledDataset(
         dataset=DatasetName.KenyaPV.value,
         sentinel_dataset="earth_engine_plant_village_kenya",
         crop_probability=1.0,
         crop_type_func=lambda overlap: overlap.crop_type,
         processors=(
             Processor(file_name="field_boundaries_pv_04282020.shp", lat_lon_transform=True),
+        ),
+        exporter=EarthEngineExporter(
+            additional_cols=["index", "planting_d", "harvest_da"],
+            end_month_day=(4, 16),
+        ),
+    ),
+]
+
+unlabeled_datasets = [
+    UnlabeledDataset(
+        sentinel_dataset="Kenya",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(min_lon=33.501, max_lon=42.283, min_lat=-5.202, max_lat=6.002),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="Busia",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(
+                min_lon=33.88389587402344,
+                min_lat=-0.04119872691853491,
+                max_lon=34.44007873535156,
+                max_lat=0.7779454563313616,
+            ),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="NorthMalawi",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(
+                min_lon=32.688, max_lon=35.772, min_lat=-14.636, max_lat=-9.231
+            ),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="SouthMalawi",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(
+                min_lon=34.211, max_lon=35.772, min_lat=-17.07, max_lat=-14.636
+            ),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="Rwanda",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(min_lon=28.841, max_lon=30.909, min_lat=-2.854, max_lat=-1.034),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="RwandaSake",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(min_lon=30.377, max_lon=30.404, min_lat=-2.251, max_lat=-2.226),
+            season=Season.post_season,
+        ),
+    ),
+    UnlabeledDataset(
+        sentinel_dataset="Togo",
+        exporter=EarthEngineExporter(
+            region_bbox=BoundingBox(
+                min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
+            ),
+            season=Season.post_season,
         ),
     ),
 ]

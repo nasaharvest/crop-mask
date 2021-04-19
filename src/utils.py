@@ -13,7 +13,7 @@ from .constants import BANDS
 logger = logging.getLogger(__name__)
 
 
-def set_seed(seed: int = 42) -> None:
+def set_seed(seed: int = 42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
@@ -27,8 +27,18 @@ def process_filename(
     and end dates of the data. This assumes the filename ends with '.tif'
     """
     date_format = "%Y-%m-%d"
+    if filename[-4:] != ".tif":
+        raise ValueError(f"Filename: {filename} must end with .tif")
 
-    identifier, start_date_str, end_date_str = filename[:-4].split("_")
+    filename_components = filename[:-4].split("_")
+    if len(filename_components) < 3:
+        raise ValueError(
+            f"Filename: {filename} must have an identifier, start, and end date separated by '_'"
+        )
+
+    identifier = filename_components[-3]
+    start_date_str = filename_components[-2]
+    end_date_str = filename_components[-1]
 
     start_date = datetime.strptime(start_date_str, date_format)
 
