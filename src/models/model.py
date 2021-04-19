@@ -370,8 +370,8 @@ class Model(pl.LightningModule):
                     {
                         "global_pred": global_preds,
                         "global_label": global_labels,
-                        "kenya_pred": local_preds,
-                        "kenya_label": local_labels,
+                        "local_pred": local_preds,
+                        "local_label": local_labels,
                     }
                 )
             return output_dict
@@ -470,7 +470,7 @@ class Model(pl.LightningModule):
 
         if self.hparams.multi_headed:
             logs.update(self._interpretable_metrics(outputs, "global_", "val_"))
-            logs.update(self._interpretable_metrics(outputs, "kenya_", "val_"))
+            logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
         else:
             logs.update(self._interpretable_metrics(outputs, "", "val_"))
         return {"val_loss": avg_loss, "log": logs}
@@ -504,7 +504,7 @@ class Model(pl.LightningModule):
 
         if self.hparams.multi_headed:
             output_dict.update(self._interpretable_metrics(outputs, "global_", "test_"))
-            output_dict.update(self._interpretable_metrics(outputs, "kenya_", "test_"))
+            output_dict.update(self._interpretable_metrics(outputs, "local_", "test_"))
         else:
             output_dict.update(self._interpretable_metrics(outputs, "", "test_"))
 

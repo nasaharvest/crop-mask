@@ -30,10 +30,9 @@ class Classifier(pl.LightningModule):
     :param hparams.num_global_layers: The number of classification layers to use on the global
         (GeoWiki) dataset. Default = 1
     :param hparams.num_local_layers: The number of classification layers to use on the local
-        (Kenya) dataset. Default = 2
-    :param hparams.multi_headed: Whether or not to add a local head, to classify instances within
-        Togo. If False, the same classification layer will be used to classify
-        all pixels. Default = True
+        dataset. Default = 2
+    :param hparams.multi_headed: Whether or not to add a local head. If False, the same
+        classification layer will be used to classify all pixels. Default = True
     """
 
     def __init__(
