@@ -42,6 +42,7 @@ class Dataset:
 @dataclass
 class LabeledDataset(Dataset):
     dataset: str = ""
+    country: str = ""
 
     # Raw label parameters
     raw_labels: Tuple[RawLabels, ...] = ()
