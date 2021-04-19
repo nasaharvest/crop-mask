@@ -207,7 +207,6 @@ class Engineer(ABC):
     ):
         logger.info(f"Creating pickled labeled dataset: {self.savedir}")
         for file_path in tqdm(self.geospatial_files):
-
             file_info = process_filename(
                 file_path.name, include_extended_filenames=include_extended_filenames
             )

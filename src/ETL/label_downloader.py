@@ -18,7 +18,7 @@ class RawLabels:
 
         if output_path.exists():
             logger.warning(f"{filename} already exists! Skipping")
-            return None
+            return
 
         logger.info(f"Downloading {self.url}")
         urllib.request.urlretrieve(self.url, output_path)

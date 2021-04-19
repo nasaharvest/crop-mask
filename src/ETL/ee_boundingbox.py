@@ -1,30 +1,19 @@
 from dataclasses import dataclass
-from datetime import date
 from math import cos, radians
+from typing import List, Tuple, Union
 import ee
 import logging
 
-from typing import List, Tuple, Union
-
-from src.boundingbox import BoundingBox
-
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
-    overlaps = start1 <= end2 and end1 >= start2
-    if not overlaps:
-        return 0
-    return (min(end1, end2) - max(start1, start2)).days
-
-
-def metre_per_degree(mid_lat: float) -> Tuple[float, float]:
-    # https://gis.stackexchange.com/questions/75528/understanding-terms-in-length-of-degree-formula
-    # see the link above to explain the magic numbers
-    m_per_deg_lat = 111132.954 - 559.822 * cos(2.0 * mid_lat) + 1.175 * cos(radians(4.0 * mid_lat))
-    m_per_deg_lon = (3.14159265359 / 180) * 6367449 * cos(radians(mid_lat))
-
-    return m_per_deg_lat, m_per_deg_lon
+@dataclass
+class BoundingBox:
+    min_lon: float
+    max_lon: float
+    min_lat: float
+    max_lat: float
 
 
 @dataclass
@@ -52,7 +41,7 @@ class EEBoundingBox(BoundingBox):
         """
         # https://gis.stackexchange.com/questions/75528/understanding-terms-in-length-of-degree-formula
         mid_lat = (self.min_lat + self.max_lat) / 2.0
-        m_per_deg_lat, m_per_deg_lon = metre_per_degree(mid_lat)
+        m_per_deg_lat, m_per_deg_lon = self._metre_per_degree(mid_lat)
 
         delta_lat = self.max_lat - self.min_lat
         delta_lon = self.max_lon - self.min_lon
@@ -94,50 +83,44 @@ class EEBoundingBox(BoundingBox):
 
         return output_polygons
 
+    @staticmethod
+    def _metre_per_degree(mid_lat: float) -> Tuple[float, float]:
+        # https://gis.stackexchange.com/questions/75528/understanding-terms-in-length-of-degree-formula
+        # see the link above to explain the magic numbers
+        m_per_deg_lat = (
+            111132.954 - 559.822 * cos(2.0 * mid_lat) + 1.175 * cos(radians(4.0 * mid_lat))
+        )
+        m_per_deg_lon = (3.14159265359 / 180) * 6367449 * cos(radians(mid_lat))
 
-def bounding_box_from_centre(
-    mid_lat: float, mid_lon: float, surrounding_metres: Union[int, Tuple[int, int]]
-) -> EEBoundingBox:
+        return m_per_deg_lat, m_per_deg_lon
 
-    m_per_deg_lat, m_per_deg_lon = metre_per_degree(mid_lat)
+    @staticmethod
+    def from_centre(
+        mid_lat: float, mid_lon: float, surrounding_metres: Union[int, Tuple[int, int]]
+    ) -> "EEBoundingBox":
 
-    if isinstance(surrounding_metres, int):
-        surrounding_metres = (surrounding_metres, surrounding_metres)
+        m_per_deg_lat, m_per_deg_lon = EEBoundingBox._metre_per_degree(mid_lat)
 
-    surrounding_lat, surrounding_lon = surrounding_metres
+        if isinstance(surrounding_metres, int):
+            surrounding_metres = (surrounding_metres, surrounding_metres)
 
-    deg_lat = surrounding_lat / m_per_deg_lat
-    deg_lon = surrounding_lon / m_per_deg_lon
+        surrounding_lat, surrounding_lon = surrounding_metres
 
-    max_lat, min_lat = mid_lat + deg_lat, mid_lat - deg_lat
-    max_lon, min_lon = mid_lon + deg_lon, mid_lon - deg_lon
+        deg_lat = surrounding_lat / m_per_deg_lat
+        deg_lon = surrounding_lon / m_per_deg_lon
 
-    return EEBoundingBox(max_lon=max_lon, min_lon=min_lon, max_lat=max_lat, min_lat=min_lat)
+        max_lat, min_lat = mid_lat + deg_lat, mid_lat - deg_lat
+        max_lon, min_lon = mid_lon + deg_lon, mid_lon - deg_lon
 
+        return EEBoundingBox(max_lon=max_lon, min_lon=min_lon, max_lat=max_lat, min_lat=min_lat)
 
-def bounding_box_to_earth_engine_bounding_box(
-    bounding_box: BoundingBox,
-) -> EEBoundingBox:
-    return EEBoundingBox(
-        max_lat=bounding_box.max_lat,
-        min_lat=bounding_box.min_lat,
-        max_lon=bounding_box.max_lon,
-        min_lon=bounding_box.min_lon,
-    )
-
-
-def cancel_all_tasks() -> None:
-
-    ee.Initialize()
-
-    tasks = ee.batch.Task.list()
-    logger.info(f"Cancelling up to {len(tasks)} tasks")
-    # Cancel running and ready tasks
-    for task in tasks:
-        task_id = task.status()["id"]
-        task_state = task.status()["state"]
-        if task_state == "RUNNING" or task_state == "READY":
-            task.cancel()
-            logger.info(f"Task {task_id} cancelled")
-        else:
-            logger.info(f"Task {task_id} state is {task_state}")
+    @staticmethod
+    def from_bounding_box(
+        bounding_box: BoundingBox,
+    ) -> "EEBoundingBox":
+        return EEBoundingBox(
+            max_lat=bounding_box.max_lat,
+            min_lat=bounding_box.min_lat,
+            max_lon=bounding_box.max_lon,
+            min_lon=bounding_box.min_lon,
+        )

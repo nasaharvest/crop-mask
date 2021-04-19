@@ -2,15 +2,18 @@ import pytorch_lightning as pl
 from pathlib import Path
 from argparse import ArgumentParser
 
-import sys
-
-sys.path.append("..")
 from src.models import Model
 
 
-def get_checkpoint(data_folder: Path, version: int) -> str:
+def get_checkpoint(version: int) -> str:
 
-    log_folder = data_folder / "lightning_logs" / f"version_{version}" / "checkpoints"
+    log_folder = (
+        Path(__file__).parent.parent
+        / "data"
+        / "lightning_logs"
+        / f"version_{version}"
+        / "checkpoints"
+    )
     checkpoint = list(log_folder.glob("*.ckpt"))
     return str(checkpoint[0])
 
@@ -22,7 +25,7 @@ def test_model():
 
     args = parser.parse_args()
 
-    model_path = get_checkpoint(Path("../data"), args.version)
+    model_path = get_checkpoint(args.version)
 
     print(f"Using model {model_path}")
 
