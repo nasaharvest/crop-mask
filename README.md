@@ -1,7 +1,6 @@
 # Crop Map Generation
 [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/main.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions)
 
-## How it works
 This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="diagrams/models.png" alt="models" height="200px"/>
@@ -9,6 +8,23 @@ This repository contains code and data to generate annual and in-season crop mas
 
 These can be used to create annual and in season crop maps. 
 
+## Contents
+- [Adding new data](#adding-new-data)
+  * [Setting up the environment](#setting-up-the-environment)
+  * [Adding Unlabeled Data:](#adding-unlabeled-data-)
+  * [Adding Labeled Data](#adding-labeled-data)
+- [Generating a Crop Map](#generating-a-crop-map)
+  * [Setup Environment Variables](#setup-environment-variables)
+  * [Training a New Model to Generate a Crop Map](#training-a-new-model-to-generate-a-crop-map)
+  * [Generating a Crop Map with an Existing Model](#generating-a-crop-map-with-an-existing-model)
+  * [Monitoring Training and Inference](#monitoring-training-and-inference)
+  * [Diagram of the Whole Process](#diagram-of-the-whole-process)
+- [Development](#development)
+  * [Building the docker image locally](#building-the-docker-image-locally)
+  * [Tests](#tests)
+- [Previously Generated Crop Maps](#previously-generated-crop-maps)
+- [Acknowledgments](#acknowledgments)
+- [Reference](#reference)
 ## Adding new data
 Adding new data is a prerequisite for generating a crop map with an existing machine learning model and training new models. 
 
@@ -32,11 +48,16 @@ Adding new data is a prerequisite for generating a crop map with an existing mac
     python -c "import ee; ee.Initialize()"
     ```
 
-#### Adding Unlabeled Data:
+#### Adding Unlabeled Data
 Unlabeled data is a set of satellite images without a crop/non-crop label. Unlabeled data is used to make predictions.
 
-1. Open the [dataset_config.py](src/dataset_config.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list. Specify the name of the dataset under `sentinel_dataset`, the bounding box to export (using EarthEngineExporter) and the season to export the satellite data for.
-2. Navigate to the [export_for_unlabeled.py](scripts/export_unlabeled.py) file, specify the dataset name, and execute the script to begin exporting satellite data from Google Earth Engine to your Google Drive.
+![Add unlabeled data](diagrams/add_unlabeled_data.png)
+
+1. Open the [dataset_config.py](src/dataset_config.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters (ie bounding box for region).
+2. To begin exporting satellite data from Google Earth Engine to your Google Drive run (from scripts directory):
+    ```
+    python export_for_unlabeled.py --dataset_name <YOUR DATASET NAME>
+    ```
 
 Running exports can be viewed (and individually cancelled) in the `Tabs` bar on the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 
@@ -45,28 +66,34 @@ Labeled data is a set of satellite images with a crop/non-crop label. Labeled da
 
 Since the labeled data is directly tied to the machine learning model, it is kept track of using [dvc](https://dvc.org/doc) inside the [data](data) directory. The [data](data) directory contains *.dvc files which point to the version and location of the data in remote storage (in this case an AWS S3 Bucket).
 
-To have access to existing labeled data:
+**Accessing existing labeled data:**
 1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
 2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
 3. Setup a profile by running `aws configure` and entering your AWS credentials
-4. Run `dvc pull` from the project root directory (dvc is installed as part of the conda environment)
+4. Run `dvc pull` from the project root directory to pull in existing labeled data (dvc is installed as part of the conda environment)
 
-To add new labeled data:
-1. Ensure the latest data exists locally by running `dvc pull`
-2. Add the shape file for new labels into [data/raw](data/raw)
-3. Open the [dataset_config.py](src/dataset_config.py) file and add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-4. Run [process.py](scripts/process.py) to process the labels into a standard format.
-5. Run [export_for_labeled.py](scripts/export_for_labeled.py) to begin exporting satellite data from Google Earth Engine to your Google Drive.
-6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
-7. Run [engineer.py] to combine the labels and the satellite images into a machine learning suitabe dataset.
-8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
+**Adding new labeled data:**
 
+![Add labeled data](diagrams/add_labeled_data.png)
+1. Add the shape file for new labels into [data/raw](data/raw)
+2. In [dataset_config.py](src/dataset_config.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
+3. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
+    ```bash
+    python export_for_labeled.py
+    ``` 
+4. Google Earth Engine will automatically export satellite images to Google Drive.
+5. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
+6. To combine the labels and the satellite images into a machine learning suitable dataset run (from scripts directory):
+    ```bash
+    python engineer.py
+    ```
+7. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
 ## Generating a Crop Map
 
-You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
+You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
-#### Setup - Environment Variables (1 step)
+#### Setup Environment Variables
 - If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: simply copy and paste the contents of setup.sh into your shell.
 - If you don't have the crop-mask repo, but have all the credential information locally, you can set the environment variables directly
   ```bash
@@ -81,7 +108,34 @@ You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developergui
   source setup.sh
   ```
 
-#### Generating a Crop Map with an Existing Model (2 steps)
+#### Training a New Model to Generate a Crop Map
+**Step 1:** Specify the following arguments:
+- `DATASETS` - which datasets to use for trianing (labeled dataset generated above)
+- `MODEL_NAME` - a unique identifier for the resulting model
+- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
+
+```bash
+# Example
+export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
+export MODEL_NAME="kenya"
+export MODELS_DVC_DIR="$HOME/crop-mask/data"
+```
+
+**Step 2:** Begin training:
+```bash
+docker run \
+  -v $AWS_CREDENTIALS:/root/.aws/credentials \
+  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
+  --mount type=bind,source=$MODELS_DVC_DIR,target=/vol \
+  -it ivanzvonkov/cropmask conda run -n landcover-mapping python model.py \
+  --datasets $DATASETS \
+  --model_name $MODEL_NAME
+```
+This command does the following:
+![train](diagrams/train.png)
+1. Pulls in the specified labeled dataset to train a model 
+2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
+#### Generating a Crop Map with an Existing Model
 
 **Step 1:** Specify the following arguments:
 - `MODEL_NAME` - model used for inference
@@ -108,47 +162,26 @@ docker run --gpus all \
   --model_name $MODEL_NAME \
   --predict_dir /vol/predict
 ```
+
 This command does the following:
-1. Gets latest docker image
-2. Attaches host GPU to docker image
-3. Downloads tif files from Google Drive
-4. Splits tif files so they are ready for inference
-5. Runs inference on each of the split files
+![inference](diagrams/inference.png)
+3. Pulls in the satellite images in Google Drive and splits them so they are ready for inference
+4. Runs inference on each of the split files and outputs a crop map to remote storage.
 
-#### Training a new model to generate crop maps (2 steps)
-**Step 1:** Specify the following arguments:
-- `DATASETS` - which datasets to use for trianing (labeled dataset generated above)
-- `MODEL_NAME` - a unique identifier for the resulting model
-- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
-
-```bash
-# Example
-export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
-export MODEL_NAME="kenya"
-export MODELS_DVC_DIR="$HOME/crop-mask/data"
-```
-
-**Step 2:** Begin training:
-```bash
-docker run \
-  -v $AWS_CREDENTIALS:/root/.aws/credentials \
-  -v $CLEARML_CREDENTIALS:/root/clearml.conf \
-  --mount type=bind,source=$MODELS_DVC_DIR,target=/vol \
-  -it ivanzvonkov/cropmask conda run -n landcover-mapping python model.py \
-  --datasets $DATASETS \
-  --model_name $MODEL_NAME
-```
-This command does the following:
-1. Gets latest docker image
-2. Uses the datasets specified to train a model 
-3. Logs model training to ClearML
-4. Pushes trained model to dvc
-5. Outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
+**Note**: The ML model is packaged into the docker image at build time not during this command.
 
 #### Monitoring Training and Inference
-ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)
+ClearML is used for monitoring training and inference during each docker run. You'll need a ClearML account and access to the ClearML workspace (contact izvonkov@umd.edu)
 
-## General Development
+#### Diagram of the Whole Process
+![crop_map_generation](diagrams/crop_map_generation.png)
+## Development
+#### Building the docker image locally
+```bash
+export DOCKER_BUILDKIT=1
+export AWS_CREDENTIALS=$HOME/.aws/credentials
+docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
+```
 #### Tests
 
 The following tests can be run against the pipeline:
@@ -159,12 +192,7 @@ mypy src scripts  # type checking
 python -m unittest
 ```
 
-#### Building the docker image locally
-```
-docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
-```
-
-## Already generated crop maps
+## Previously Generated Crop Maps
 Google Earth Engine:
 * [Kenya (post season)](https://code.earthengine.google.com/ea3613a3a45badfd01ce2ec914dfe1ef)
 * [Busia (in season)](https://code.earthengine.google.com/f567cccc28dad7a25e088d56dabfbd4c)
@@ -174,19 +202,6 @@ Zenodo
 
 ## Acknowledgments
 This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
-
-## Pipeline
-
-The main entrypoints into the pipeline are the [scripts](scripts). Specifically:
-
-* [scripts/export.py](scripts/export.py) exports data (locally, or to Google Drive - see below)
-* [scripts/process.py](scripts/process.py) processes the raw data
-* [scripts/engineer.py](scripts/engineer.py) combines the earth observation data with the labels to create (x, y) training data
-* [scripts/models.py](scripts/model.py) trains the models
-* [scripts/predict.py](scripts/predict.py) takes a trained model and runs it on an area
-
-The [split_tiff.py](scripts/split_tiff.py) script is useful to break large exports from Google Earth Engine, which may
-be too large to fit into memory.
 
 ## Reference
 

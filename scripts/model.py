@@ -1,3 +1,7 @@
+"""
+Trains the models
+"""
+
 import sys
 from argparse import ArgumentParser
 import subprocess
