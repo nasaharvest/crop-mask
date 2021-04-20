@@ -1,3 +1,6 @@
+"""
+Combines the earth observation data with the labels to create (x, y) training data
+"""
 import logging
 import sys
 
