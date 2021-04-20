@@ -11,7 +11,7 @@ These can be used to create annual and in season crop maps.
 ## Contents
 - [Adding new data](#adding-new-data)
   * [Setting up the environment](#setting-up-the-environment)
-  * [Adding Unlabeled Data:](#adding-unlabeled-data-)
+  * [Adding Unlabeled Data](#adding-unlabeled-data)
   * [Adding Labeled Data](#adding-labeled-data)
 - [Generating a Crop Map](#generating-a-crop-map)
   * [Setup Environment Variables](#setup-environment-variables)
@@ -28,7 +28,7 @@ These can be used to create annual and in season crop maps.
 ## Adding new data
 Adding new labeled data is a prerequisite for training new machine learning models and adding new unlabeled data is a prerequisite for generating a crop map with an existing model. 
 
-#### Setting up the environment
+### Setting up the environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed. Anaconda running python 3.6 is used as the package manager.
 2. Setup a conda environment for this project
     ```bash
@@ -39,7 +39,7 @@ Adding new labeled data is a prerequisite for training new machine learning mode
     ```bash
     conda activate landcover-mapping
     ```
-4. Authenticate earthengine to allow for exporting satellite data from Google Earth Engine to your Google Drive account.
+4. Authenticate earthengine to allow for exporting satellite data from Google Earth Engine to Google Drive
     ```bash
     earthengine authenticate
     ```
@@ -48,20 +48,22 @@ Adding new labeled data is a prerequisite for training new machine learning mode
     python -c "import ee; ee.Initialize()"
     ```
 
-#### Adding Unlabeled Data
+### Adding Unlabeled Data
+**Purpose:** 
 Unlabeled data is a set of satellite images without a crop/non-crop label. Unlabeled data is used to make predictions.
 
-![Add unlabeled data](diagrams/add_unlabeled_data.png)
-
+**Steps to add unlabeled data:**
 1. Open the [dataset_config.py](src/dataset_config.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters (ie bounding box for region).
 2. To begin exporting satellite data from Google Earth Engine to your Google Drive run (from scripts directory):
     ```
     python export_for_unlabeled.py --dataset_name <YOUR DATASET NAME>
     ```
+![Add unlabeled data](diagrams/add_unlabeled_data.png)
 
 Running exports can be viewed (and individually cancelled) in the `Tabs` bar on the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 
-#### Adding Labeled Data
+### Adding Labeled Data
+**Purpose:** 
 Labeled data is a set of satellite images with a crop/non-crop label. Labeled data is used to train and evaluate the machine learning model.
 
 Since the labeled data is directly tied to the machine learning model, it is kept track of using [dvc](https://dvc.org/doc) inside the [data](data) directory. The [data](data) directory contains *.dvc files which point to the version and location of the data in remote storage (in this case an AWS S3 Bucket).
@@ -72,7 +74,7 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 3. Setup a profile by running `aws configure` and entering your AWS credentials
 4. Run `dvc pull` from the project root directory to pull in existing labeled data (dvc is installed as part of the conda environment)
 
-**Adding new labeled data:**
+**Steps to add new labaled data:**
 
 ![Add labeled data](diagrams/add_labeled_data.png)
 1. Add the shape file for new labels into [data/raw](data/raw)
@@ -93,7 +95,7 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
-#### Setup Environment Variables
+### Setup Environment Variables
 - If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: simply copy and paste the contents of setup.sh into your shell.
 - If you don't have the crop-mask repo, but have all the credential information locally, you can set the environment variables directly
   ```bash
@@ -108,7 +110,7 @@ You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developergui
   source setup.sh
   ```
 
-#### Training a New Model to Generate a Crop Map
+### Training a New Model to Generate a Crop Map
 **Step 1:** Specify the following arguments:
 - `DATASETS` - which datasets to use for trianing (labeled dataset generated above)
 - `MODEL_NAME` - a unique identifier for the resulting model
@@ -135,7 +137,7 @@ This command does the following:
 ![train](diagrams/train.png)
 1. Pulls in the specified labeled dataset to train a model 
 2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
-#### Generating a Crop Map with an Existing Model
+### Generating a Crop Map with an Existing Model
 
 **Step 1:** Specify the following arguments:
 - `MODEL_NAME` - model used for inference
@@ -170,19 +172,19 @@ This command does the following:
 
 **Note**: The ML model is packaged into the docker image at build time not during this command.
 
-#### Monitoring Training and Inference
+### Monitoring Training and Inference
 ClearML is used for monitoring training and inference during each docker run. You'll need a ClearML account and access to the ClearML workspace (contact izvonkov@umd.edu)
 
-#### Diagram of the Whole Process
+### Diagram of the Whole Process
 ![crop_map_generation](diagrams/crop_map_generation.png)
 ## Development
-#### Building the docker image locally
+### Building the docker image locally
 ```bash
 export DOCKER_BUILDKIT=1
 export AWS_CREDENTIALS=$HOME/.aws/credentials
 docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
 ```
-#### Tests
+### Tests
 
 The following tests can be run against the pipeline:
 
