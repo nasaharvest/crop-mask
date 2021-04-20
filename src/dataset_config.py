@@ -134,7 +134,7 @@ unlabeled_datasets = [
         sentinel_dataset="MaliSegou",
         exporter=EarthEngineExporter(
             region_bbox=BoundingBox(
-                min_lon=-7.266759, max_lon=12.702882, min_lat=-5.511693, max_lat=13.937639
+                min_lon=-7.266759, max_lon=-5.511693, min_lat=12.702882, max_lat=13.937639
             ),
             season=Season.post_season,
         ),
