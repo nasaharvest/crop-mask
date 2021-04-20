@@ -75,8 +75,6 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 4. Run `dvc pull` from the project root directory to pull in existing labeled data (dvc is installed as part of the conda environment)
 
 **Steps to add new labaled data:**
-
-![Add labeled data](diagrams/add_labeled_data.png)
 1. Add the shape file for new labels into [data/raw](data/raw)
 2. In [dataset_config.py](src/dataset_config.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
 3. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
@@ -91,6 +89,7 @@ Since the labeled data is directly tied to the machine learning model, it is kep
     ```
 7. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
+![Add labeled data](diagrams/add_labeled_data.png)
 ## Generating a Crop Map
 
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
@@ -134,9 +133,10 @@ docker run \
   --model_name $MODEL_NAME
 ```
 This command does the following:
-![train](diagrams/train.png)
 1. Pulls in the specified labeled dataset to train a model 
 2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
+
+![train](diagrams/train.png)
 ### Generating a Crop Map with an Existing Model
 
 **Step 1:** Specify the following arguments:
@@ -166,11 +166,12 @@ docker run --gpus all \
 ```
 
 This command does the following:
-![inference](diagrams/inference.png)
 3. Pulls in the satellite images in Google Drive and splits them so they are ready for inference
 4. Runs inference on each of the split files and outputs a crop map to remote storage.
 
 **Note**: The ML model is packaged into the docker image at build time not during this command.
+
+![inference](diagrams/inference.png)
 
 ### Monitoring Training and Inference
 ClearML is used for monitoring training and inference during each docker run. You'll need a ClearML account and access to the ClearML workspace (contact izvonkov@umd.edu)
