@@ -26,7 +26,7 @@ These can be used to create annual and in season crop maps.
 - [Acknowledgments](#acknowledgments)
 - [Reference](#reference)
 ## Adding new data
-Adding new data is a prerequisite for generating a crop map with an existing machine learning model and training new models. 
+Adding new labeled data is a prerequisite for training new machine learning models and adding new unlabeled data is a prerequisite for generating a crop map with an existing model. 
 
 #### Setting up the environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed. Anaconda running python 3.6 is used as the package manager.
