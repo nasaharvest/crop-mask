@@ -1,99 +1,69 @@
-# Crop Mask Repository
+# Crop Map Generation
 [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/main.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions)
 
+## How it works
 This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="diagrams/models.png" alt="models" height="200px"/>
 
+
 These can be used to create annual and in season crop maps. 
 
-This repository currently contains the code to do this for Kenya, and Busia county in Kenya:
+## Adding new data
+Adding new data is a prerequisite for generating a crop map with an existing machine learning model and training new models. 
 
-<img src="diagrams/kenya_busia_maps.png" alt="models" height="400px"/>
+#### Setting up the environment
+1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed. Anaconda running python 3.6 is used as the package manager.
+2. Setup a conda environment for this project
+    ```bash
+    conda env create -f environment.yml
+    ```
+    This will create an environment named `landcover-mapping` with all the necessary packages to run the code. 
+3. Activate the environment by running
+    ```bash
+    conda activate landcover-mapping
+    ```
+4. Authenticate earthengine to allow for exporting satellite data from Google Earth Engine to your Google Drive account.
+    ```bash
+    earthengine authenticate
+    ```
+    To verify the earthengine is correctly authenticated run
+    ```bash
+    python -c "import ee; ee.Initialize()"
+    ```
 
-These maps are available on Google Earth Engine:
+#### Adding Unlabeled Data:
+Unlabeled data is a set of satellite images without a crop/non-crop label. Unlabeled data is used to make predictions.
 
-* [Kenya (post season)](https://code.earthengine.google.com/ea3613a3a45badfd01ce2ec914dfe1ef)
-* [Busia (in season)](https://code.earthengine.google.com/f567cccc28dad7a25e088d56dabfbd4c)
-
-In addition, they are available on [Zenodo](https://doi.org/10.5281/zenodo.4271143).
-
-This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
-
-## Pipeline
-
-The main entrypoints into the pipeline are the [scripts](scripts). Specifically:
-
-* [scripts/export.py](scripts/export.py) exports data (locally, or to Google Drive - see below)
-* [scripts/process.py](scripts/process.py) processes the raw data
-* [scripts/engineer.py](scripts/engineer.py) combines the earth observation data with the labels to create (x, y) training data
-* [scripts/models.py](scripts/model.py) trains the models
-* [scripts/predict.py](scripts/predict.py) takes a trained model and runs it on an area
-
-The [split_tiff.py](scripts/split_tiff.py) script is useful to break large exports from Google Earth Engine, which may
-be too large to fit into memory.
-
-## Setup
-
-[Anaconda](https://www.anaconda.com/download/#macos) running python 3.6 is used as the package manager. To get set up
-with an environment, install Anaconda from the link above, and (from this directory) run
-
-```bash
-conda env create -f environment.yml
-```
-This will create an environment named `landcover-mapping` with all the necessary packages to run the code. To
-activate this environment, run
-
-```bash
-conda activate landcover-mapping
-```
-
-If you are using a GPU, `environment.gpu.yml` additionally installs `cudatoolkit` so that pytorch can use it too.
-
-#### Earth Engine
-
-Earth engine is used to export data. To use it, once the conda environment has been activated, run
-
-```bash
-earthengine authenticate
-```
-
-and follow the instructions. To test that everything has worked, run
-
-```bash
-python -c "import ee; ee.Initialize()"
-```
-
-Note that Earth Engine exports files to Google Drive by default (to the same google account used sign up to Earth Engine).
+1. Open the [dataset_config.py](src/dataset_config.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list. Specify the name of the dataset under `sentinel_dataset`, the bounding box to export (using EarthEngineExporter) and the season to export the satellite data for.
+2. Navigate to the [export_for_unlabeled.py](scripts/export_unlabeled.py) file, specify the dataset name, and execute the script to begin exporting satellite data from Google Earth Engine to your Google Drive.
 
 Running exports can be viewed (and individually cancelled) in the `Tabs` bar on the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 
-Exports from Google Drive should be saved in [`data/raw`](data/raw).
+#### Adding Labeled Data
+Labeled data is a set of satellite images with a crop/non-crop label. Labeled data is used to train and evaluate the machine learning model.
 
-#### Accessing the data
-This project uses an AWS S3 bucket to store the training data and `dvc` to manage and fetch the training data. 
+Since the labeled data is directly tied to the machine learning model, it is kept track of using [dvc](https://dvc.org/doc) inside the [data](data) directory. The [data](data) directory contains *.dvc files which point to the version and location of the data in remote storage (in this case an AWS S3 Bucket).
 
-To have access to training data:
+To have access to existing labeled data:
 1. Obtain valid NASAHarvest AWS credentials (access key, secret key)
 2. Ensure you have the [AWS cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) on your machine
-3. Setup a named profile by running `aws configure` and entering your AWS credentials
+3. Setup a profile by running `aws configure` and entering your AWS credentials
+4. Run `dvc pull` from the project root directory (dvc is installed as part of the conda environment)
 
-To pull the latest training:
-1. Ensure you have [dvc](https://dvc.org/doc) installed
-2. Run `dvc pull` from the project root directory
+To add new labeled data:
+1. Ensure the latest data exists locally by running `dvc pull`
+2. Add the shape file for new labels into [data/raw](data/raw)
+3. Open the [dataset_config.py](src/dataset_config.py) file and add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
+4. Run [process.py](scripts/process.py) to process the labels into a standard format.
+5. Run [export_for_labeled.py](scripts/export_for_labeled.py) to begin exporting satellite data from Google Earth Engine to your Google Drive.
+6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
+7. Run [engineer.py] to combine the labels and the satellite images into a machine learning suitabe dataset.
+8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
-#### Tests
 
-The following tests can be run against the pipeline:
+## Generating a Crop Map
 
-```bash
-black .  # code formatting
-mypy src scripts  # type checking
-python -m unittest
-```
-
-## Using with docker
-#### General Prerequisites
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
 #### Setup - Environment Variables (1 step)
@@ -110,10 +80,12 @@ You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developergui
   ```bash
   source setup.sh
   ```
-#### Inference (2 steps)
+
+#### Generating a Crop Map with an Existing Model (2 steps)
+
 **Step 1:** Specify the following arguments:
 - `MODEL_NAME` - model used for inference
-- `GDRIVE_DIR` - source of the input files on Google Drive
+- `GDRIVE_DIR` - source of the input files on Google Drive (the unlabeled dataset generated above)
 - `VOLUME` - a directory on the host with a lot of space for storing the inputs and predictions. If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable
 
 ```bash
@@ -142,9 +114,10 @@ This command does the following:
 3. Downloads tif files from Google Drive
 4. Splits tif files so they are ready for inference
 5. Runs inference on each of the split files
-#### Training a new model (2 steps)
+
+#### Training a new model to generate crop maps (2 steps)
 **Step 1:** Specify the following arguments:
-- `DATASETS` - which datasets to use for trianing
+- `DATASETS` - which datasets to use for trianing (labeled dataset generated above)
 - `MODEL_NAME` - a unique identifier for the resulting model
 - `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
 
@@ -172,13 +145,48 @@ This command does the following:
 4. Pushes trained model to dvc
 5. Outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
 
+#### Monitoring Training and Inference
+ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)
+
+## General Development
+#### Tests
+
+The following tests can be run against the pipeline:
+
+```bash
+black .  # code formatting
+mypy src scripts  # type checking
+python -m unittest
+```
+
 #### Building the docker image locally
 ```
 docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
 ```
 
-#### Monitoring Training and Inference
-ClearML is used for monitoring training and inference during each docker build. You'll need a ClearML account and access to the ClearML workspace (contact ivan.zvonkov@gmail.com)
+## Already generated crop maps
+Google Earth Engine:
+* [Kenya (post season)](https://code.earthengine.google.com/ea3613a3a45badfd01ce2ec914dfe1ef)
+* [Busia (in season)](https://code.earthengine.google.com/f567cccc28dad7a25e088d56dabfbd4c)
+
+Zenodo
+- [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
+
+## Acknowledgments
+This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
+
+## Pipeline
+
+The main entrypoints into the pipeline are the [scripts](scripts). Specifically:
+
+* [scripts/export.py](scripts/export.py) exports data (locally, or to Google Drive - see below)
+* [scripts/process.py](scripts/process.py) processes the raw data
+* [scripts/engineer.py](scripts/engineer.py) combines the earth observation data with the labels to create (x, y) training data
+* [scripts/models.py](scripts/model.py) trains the models
+* [scripts/predict.py](scripts/predict.py) takes a trained model and runs it on an area
+
+The [split_tiff.py](scripts/split_tiff.py) script is useful to break large exports from Google Earth Engine, which may
+be too large to fit into memory.
 
 ## Reference
 
