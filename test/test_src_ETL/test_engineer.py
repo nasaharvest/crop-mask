@@ -39,7 +39,6 @@ class TestEngineer(TestCase):
             "path_to_file": Path("mock_file"),
             "crop_probability": 0.0,
             "is_global": False,
-            "is_maize": False,
             "crop_type_func": None,
             "nan_fill": 0,
             "max_nan_ratio": 0,
@@ -147,7 +146,6 @@ class TestEngineer(TestCase):
             label_lon=20,
             labelled_array=0.0,
             crop_label=None,
-            is_maize=False,
         )
         self.assertEqual(expected_data_instance, actual_data_instance)
 
@@ -170,7 +168,6 @@ class TestEngineer(TestCase):
             label_lon=20,
             labelled_array=0.0,
             crop_label="cane_sugar",
-            is_maize=False,
         )
         self.assertEqual(expected_data_instance, actual_data_instance)
 

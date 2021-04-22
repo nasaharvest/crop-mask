@@ -14,7 +14,6 @@ class CropDataInstance:
     label_lon: float
     labelled_array: Union[float, np.ndarray]
     crop_label: Optional[str] = ""
-    is_maize: Optional[bool] = False
 
     def isin(self, bounding_box: BoundingBox) -> bool:
         return (

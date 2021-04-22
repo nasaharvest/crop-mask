@@ -55,8 +55,8 @@ class EarthEngineExporter:
         :param region_bbox: BoundingBox for region
         """
 
-        if end_date is None and end_month_day is None and season is None:
-            raise ValueError("One of end_date, end_month_day, season must not be None")
+        # if end_date is None and end_month_day is None and season is None:
+        #     raise ValueError("One of end_date, end_month_day, season must not be None")
 
         self.additional_cols = additional_cols
         self.days_per_timestep = days_per_timestep
