@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple
 from .engineer import Engineer
 from .label_downloader import RawLabels
 from .processor import Processor
@@ -16,7 +17,7 @@ class Dataset:
     sentinel_dataset: str
 
     # Exporter parameters
-    exporter: EarthEngineExporter
+    exporter: EarthEngineExporter = EarthEngineExporter()
 
     data_folder: Path = Path(__file__).parent.parent.parent / "data"
 
@@ -24,10 +25,14 @@ class Dataset:
         raise NotImplementedError
 
     @staticmethod
-    def is_output_folder_setup(output_folder: Path):
+    def is_output_folder_ready(output_folder: Path, check_if_folder_empty=False):
         if output_folder.exists():
-            logger.warning(f"{output_folder} already exists skipping for {output_folder.stem}")
-            return False
+            if check_if_folder_empty:
+                is_empty = not any(output_folder.iterdir())
+                return is_empty
+            else:
+                logger.warning(f"{output_folder} already exists skipping for {output_folder.stem}")
+                return False
         elif output_folder.parent.exists():
             logger.info(f"Creating directory: {output_folder}")
             output_folder.mkdir()
@@ -49,12 +54,10 @@ class LabeledDataset(Dataset):
 
     # Process parameters
     processors: Tuple[Processor, ...] = ()
-    labels_file: str = "data.geojson"
+    labels_extension: str = ".geojson"
 
     # Engineer parameters
-    crop_probability: Union[float, Callable] = 0.0
     is_global: bool = False
-    is_maize: bool = False
     crop_type_func: Optional[Callable] = None
     val_set_size: float = 0.1
     test_set_size: float = 0.1
@@ -66,25 +69,23 @@ class LabeledDataset(Dataset):
     include_extended_filenames: bool = True
     calculate_normalizing_dict: bool = True
     days_per_timestep: int = 30
+    num_timesteps: int = 12
 
     def __post_init__(self):
         raw_dir = self.data_folder / "raw"
         self.raw_labels_dir = raw_dir / self.dataset
         self.raw_images_dir = raw_dir / self.sentinel_dataset
-        self.labels_dir = self.data_folder / "processed" / self.dataset
-        self.labels_path = self.labels_dir / self.labels_file
+        self.labels_path = self.data_folder / "processed" / (self.dataset + self.labels_extension)
         self.features_dir = self.data_folder / "features" / self.dataset
 
     def create_pickled_labeled_dataset(self):
-        if self.is_output_folder_setup(self.features_dir):
+        if self.is_output_folder_ready(self.features_dir):
             Engineer(
                 sentinel_files_path=self.raw_images_dir,
                 labels_path=self.labels_path,
                 features_path=self.features_dir,
             ).create_pickled_labeled_dataset(
-                crop_probability=self.crop_probability,
                 is_global=self.is_global,
-                is_maize=self.is_maize,
                 crop_type_func=self.crop_type_func,
                 val_set_size=self.val_set_size,
                 test_set_size=self.test_set_size,
@@ -99,12 +100,15 @@ class LabeledDataset(Dataset):
             )
 
     def process_labels(self):
-        if not self.is_output_folder_setup(self.labels_dir):
-            return
-        processed_label_list = [p.process(self.raw_labels_dir) for p in self.processors]
-        if self.labels_path.suffix == ".geojson":
+        total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
+        processed_label_list = [p.process(self.raw_labels_dir, total_days) for p in self.processors]
+        if self.labels_path.suffix == ".geojson" or self.labels_path.suffix == ".csv":
             labels = pd.concat(processed_label_list)
-            labels.to_file(self.labels_path, driver="GeoJSON")
+            labels["Country"] = self.country
+            if self.labels_path.suffix == ".geojson":
+                labels.to_file(self.labels_path, driver="GeoJSON")
+            elif self.labels_path.suffix == ".csv":
+                labels.to_csv(self.labels_path, index=False)
         elif self.labels_path.suffix == ".nc":
             labels = processed_label_list[0]
             labels.to_netcdf(self.labels_path)
@@ -112,12 +116,12 @@ class LabeledDataset(Dataset):
     def download_raw_labels(self):
         if len(self.raw_labels) == 0:
             logger.warning(f"No raw labels set for {self.dataset}")
-        elif self.is_output_folder_setup(self.raw_labels_dir):
+        elif self.is_output_folder_ready(self.raw_labels_dir):
             for label in self.raw_labels:
                 label.download_file(output_folder=self.raw_labels_dir)
 
     def export_earth_engine_data(self):
-        if self.is_output_folder_setup(self.raw_images_dir):
+        if self.is_output_folder_ready(self.raw_images_dir):
             self.exporter.export_for_labels(
                 labels_path=self.labels_path,
                 sentinel_dataset=self.sentinel_dataset,
@@ -134,7 +138,7 @@ class UnlabeledDataset(Dataset):
         self.raw_images_dir = self.data_folder / "raw" / self.sentinel_dataset
 
     def export_earth_engine_data(self):
-        if self.is_output_folder_setup(self.raw_images_dir):
+        if self.is_output_folder_ready(self.raw_images_dir):
             self.exporter.export_for_region(
                 sentinel_dataset=self.sentinel_dataset,
                 output_folder=self.raw_images_dir,

@@ -12,9 +12,8 @@ from torch.utils.data import Dataset
 
 from src.constants import BANDS
 
-from src.dataset_config import DatasetName
-
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
+from src.ETL.dataset import LabeledDataset
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class CropDataset(Dataset):
         self,
         data_folder: Path,
         subset: str,
-        datasets: List[DatasetName],
+        datasets: List[LabeledDataset],
         probability_threshold: float,
         remove_b1_b10: bool,
         include_geowiki: bool,
@@ -62,7 +61,7 @@ class CropDataset(Dataset):
         for dataset in datasets:
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
-                    self.data_folder / "features" / dataset.value,
+                    dataset.features_dir,
                     self.subset_name,
                 )
             )

@@ -109,9 +109,7 @@ class Engineer(ABC):
     def _create_labeled_data_instance(
         self,
         path_to_file: Path,
-        crop_probability: Union[float, Callable],
         is_global: bool,
-        is_maize: bool,
         crop_type_func: Optional[Callable],
         nan_fill: float,
         max_nan_ratio: float,
@@ -144,20 +142,24 @@ class Engineer(ABC):
         if len(overlap) == 0:
             return None
 
-        if isinstance(crop_probability, float):
-            calculated_crop_probability = crop_probability
-        else:
-            calculated_crop_probability = crop_probability(overlap.iloc[0])
+        row = overlap.iloc[0]
 
-        if calculated_crop_probability is None:
+        if "crop_probability" not in row:
+            logger.warning("Row missing crop_probability attribute.")
             return None
+
+        if row.crop_proability == 0.5:
+            logger.warning("Skipping row because crop_probability is 0.5")
+            return None
+
+        crop_probability = row.crop_proability
 
         crop_label = None
         if crop_type_func:
-            crop_label = crop_type_func(overlap.iloc[0])
+            crop_label = crop_type_func(row)
 
-        label_lat = overlap.iloc[0].lat
-        label_lon = overlap.iloc[0].lon
+        label_lat = row.lat
+        label_lon = row.lon
 
         closest_lon, _ = self._find_nearest(da.x, label_lon)
         closest_lat, _ = self._find_nearest(da.y, label_lat)
@@ -176,11 +178,10 @@ class Engineer(ABC):
 
         if labelled_array is not None:
             return CropDataInstance(
-                crop_probability=calculated_crop_probability,
+                crop_probability=crop_probability,
                 instance_lat=closest_lat,
                 instance_lon=closest_lon,
                 is_global=is_global,
-                is_maize=is_maize,
                 label_lat=label_lat,
                 label_lon=label_lon,
                 labelled_array=labelled_array,
@@ -190,9 +191,7 @@ class Engineer(ABC):
 
     def create_pickled_labeled_dataset(
         self,
-        crop_probability: Union[float, Callable],
         is_global: bool = False,
-        is_maize: bool = False,
         crop_type_func: Optional[Callable] = None,
         val_set_size: float = 0.1,
         test_set_size: float = 0.1,
@@ -242,9 +241,7 @@ class Engineer(ABC):
 
             instance = self._create_labeled_data_instance(
                 file_path,
-                crop_probability=crop_probability,
                 is_global=is_global,
-                is_maize=is_maize,
                 crop_type_func=crop_type_func,
                 nan_fill=nan_fill,
                 max_nan_ratio=max_nan_ratio,

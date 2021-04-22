@@ -1,20 +1,9 @@
-from enum import Enum
+from datetime import date
 from src.ETL.dataset import LabeledDataset, UnlabeledDataset
 from src.ETL.ee_exporter import EarthEngineExporter, Season
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.label_downloader import RawLabels
 from src.ETL.processor import Processor
-from datetime import date
-
-
-class DatasetName(Enum):
-    GeoWiki = "geowiki_landcover_2017"
-    KenyaNonCrop = "kenya_non_crop"
-    KenyaOAF = "one_acre_fund_kenya"
-    KenyaPV = "plant_village_kenya"
-    MaliNonCrop = "mali_non_crop"
-    MaliSegou2018 = "mali_segou_2018"
-    MaliSegou2019 = "mali_segou_2019"
 
 
 def geowiki_file_name(participants: str = "all") -> str:
@@ -26,10 +15,10 @@ def geowiki_file_name(participants: str = "all") -> str:
 
 labeled_datasets = [
     LabeledDataset(
-        dataset=DatasetName.GeoWiki.value,
+        dataset="geowiki_landcover_2017",
+        country="global",
         sentinel_dataset="earth_engine_geowiki",
-        labels_file="data.nc",
-        crop_probability=lambda overlap: overlap.mean_sumcrop / 100,
+        labels_extension=".csv",
         val_set_size=0.2,
         test_set_size=0,
         is_global=True,
@@ -42,71 +31,73 @@ labeled_datasets = [
             RawLabels("http://store.pangaea.de/Publications/See_2017/loc_con.zip"),
             RawLabels("http://store.pangaea.de/Publications/See_2017/loc_exp.zip"),
         ),
-        processors=(Processor(file_name=geowiki_file_name(), custom_geowiki_processing=True),),
-        exporter=EarthEngineExporter(start_date=date(2017, 3, 28), end_date=date(2018, 3, 28)),
-    ),
-    LabeledDataset(
-        dataset=DatasetName.KenyaNonCrop.value,
-        country="Kenya",
-        sentinel_dataset="earth_engine_kenya_non_crop",
-        crop_probability=0.0,
         processors=(
-            Processor(file_name="noncrop_labels_v2", lat_lon_transform=True),
-            Processor(file_name="noncrop_labels_set2", lat_lon_transform=True),
-            Processor(file_name="2019_gepro_noncrop"),
-            Processor(file_name="noncrop_water_kenya_gt"),
-            Processor(file_name="noncrop_kenya_gt"),
-        ),
-        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
-    ),
-    LabeledDataset(
-        dataset=DatasetName.KenyaOAF.value,
-        country="Kenya",
-        sentinel_dataset="earth_engine_one_acre_fund_kenya",
-        crop_probability=1.0,
-        is_maize=True,
-        processors=(Processor(file_name="", x_y_from_centroid=False, lat_lon_lowercase=True),),
-        exporter=EarthEngineExporter(
-            end_date=date(2020, 4, 16),
+            Processor(
+                file_name=geowiki_file_name(),
+                custom_geowiki_processing=True,
+                crop_prob=lambda df: df.mean_sumcrop / 100,
+                custom_start_date=date(2017, 3, 28),
+                custom_end_date=date(2018, 3, 28),
+                x_y_from_centroid=False,
+            ),
         ),
     ),
     LabeledDataset(
-        dataset=DatasetName.KenyaPV.value,
+        dataset="Kenya",
         country="Kenya",
-        sentinel_dataset="earth_engine_plant_village_kenya",
-        crop_probability=1.0,
-        crop_type_func=lambda overlap: overlap.crop_type,
+        sentinel_dataset="earth_engine_kenya",
         processors=(
-            Processor(file_name="field_boundaries_pv_04282020.shp", lat_lon_transform=True),
+            Processor(
+                file_name="noncrop_labels_v2",
+                crop_prob=0.0,
+                end_year=2020,
+                lat_lon_transform=True,
+            ),
+            Processor(
+                file_name="noncrop_labels_set2",
+                crop_prob=0.0,
+                end_year=2020,
+                lat_lon_transform=True,
+            ),
+            Processor(file_name="2019_gepro_noncrop", crop_prob=0.0, end_year=2020),
+            Processor(file_name="noncrop_water_kenya_gt", crop_prob=0.0, end_year=2020),
+            Processor(file_name="noncrop_kenya_gt", crop_prob=0.0, end_year=2020),
+            Processor(
+                file_name="one_acre_fund_kenya",
+                crop_prob=1.0,
+                end_year=2020,
+                x_y_from_centroid=False,
+                lat_lon_lowercase=True,
+            ),
+            Processor(
+                file_name="plant_village_kenya",
+                clean_df=lambda df: df[
+                    (df["harvest_da"] != "nan") & (df["harvest_da"] != "unknown")
+                ],
+                crop_prob=1.0,
+                use_harvest_date_for_date_range=True,
+                lat_lon_transform=True,
+            ),
         ),
-        exporter=EarthEngineExporter(
-            additional_cols=["index", "planting_d", "harvest_da"],
-            end_month_day=(4, 16),
+    ),
+    LabeledDataset(
+        dataset="Mali",
+        country="Mali",
+        sentinel_dataset="earth_engine_mali",
+        processors=(
+            Processor(file_name="mali_noncrop_2019", crop_prob=0.0, end_year=2020),
+            Processor(file_name="segou_bounds_07212020", crop_prob=1.0, end_year=2019),
+            Processor(file_name="segou_bounds_07212020", crop_prob=1.0, end_year=2020),
         ),
     ),
     LabeledDataset(
-        dataset=DatasetName.MaliNonCrop.value,
-        country="Mali",
-        sentinel_dataset="earth_engine_mali_noncrop",
-        crop_probability=0.0,
-        processors=(Processor(file_name="mali_noncrop_2019"),),
-        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
-    ),
-    LabeledDataset(
-        dataset=DatasetName.MaliSegou2018.value,
-        country="Mali",
-        sentinel_dataset="earth_engine_mali_segou_2018",
-        crop_probability=1.0,
-        processors=(Processor(file_name="segou_bounds_07212020"),),
-        exporter=EarthEngineExporter(end_date=date(2019, 4, 16)),
-    ),
-    LabeledDataset(
-        dataset=DatasetName.MaliSegou2019.value,
-        country="Mali",
-        sentinel_dataset="earth_engine_mali_segou_2019",
-        crop_probability=1.0,
-        processors=(Processor(file_name="segou_bounds_07212020"),),
-        exporter=EarthEngineExporter(end_date=date(2020, 4, 16)),
+        dataset="Togo",
+        country="Togo",
+        sentinel_dataset="earth_engine_togo",
+        processors=(
+            Processor(file_name="crop_merged_v2", crop_prob=1.0, end_year=2020),
+            Processor(file_name="noncrop_merged_v2", crop_prob=0.0, end_year=2020),
+        ),
     ),
 ]
 
