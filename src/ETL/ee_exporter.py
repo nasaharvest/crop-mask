@@ -3,10 +3,10 @@ from enum import Enum
 from pathlib import Path
 from tqdm import tqdm
 from typing import List, Optional, Tuple, Union
+from dataclasses import dataclass
 import logging
 import pandas as pd
 import ee
-import xarray as xr
 import geopandas
 import sys
 
@@ -25,47 +25,22 @@ def get_user_input(text_prompt: str) -> str:
     return input(text_prompt)
 
 
+@dataclass
 class EarthEngineExporter:
+    r"""
+    Setup parameters to download cloud free sentinel data for countries,
+    where countries are defined by the simplified large scale
+    international boundaries.
+
+    :param days_per_timestep: The number of days of data to use for each mosaiced image.
+    :param num_timesteps: The number of timesteps to export if season is not specified
+    """
 
     min_date = date(2017, 3, 28)
 
-    def __init__(
-        self,
-        start_date: Optional[date] = None,
-        end_date: Optional[date] = None,
-        end_month_day: Optional[Tuple[int, int]] = None,
-        season: Optional[Season] = None,
-        days_per_timestep: int = 30,
-        num_timesteps: int = 12,
-        additional_cols: List[str] = [],
-        region_bbox: Optional[BoundingBox] = None,
-    ):
-        r"""
-        Setup parameters to download cloud free sentinel data for countries,
-        where countries are defined by the simplified large scale
-        international boundaries.
+    days_per_timestep: int = 30,
+    num_timesteps: int = 12,
 
-        :param start_date: The start date of the data export
-        :param end_date: The end date of the data export
-        :param end_date: The end date without specifying the year of the data export
-        :param season: The season to use to determine the start and end date
-        :param days_per_timestep: The number of days of data to use for each mosaiced image.
-        :param num_timesteps: The number of timesteps to export if season is not specified
-        :param additional_cols: The additional columns to extract when creating the dataframe
-        :param region_bbox: BoundingBox for region
-        """
-
-        # if end_date is None and end_month_day is None and season is None:
-        #     raise ValueError("One of end_date, end_month_day, season must not be None")
-
-        self.additional_cols = additional_cols
-        self.days_per_timestep = days_per_timestep
-        self.num_timesteps = num_timesteps
-        self.start_date = start_date
-        self.end_date = end_date
-        self.end_month_day = end_month_day
-        self.season = season
-        self.region_bbox = region_bbox
 
     @staticmethod
     def cancel_all_tasks():
@@ -85,39 +60,12 @@ class EarthEngineExporter:
     def _load_labels(self, labels_path) -> pd.DataFrame:
         if not labels_path.exists():
             raise FileExistsError(f"Could not find labels file: {labels_path}")
-        elif labels_path.suffix == ".nc":
-            return xr.open_dataset(labels_path).to_dataframe().dropna().reset_index()
+        elif labels_path.suffix == ".csv":
+            return pd.read_csv(labels_path)
         elif labels_path.suffix == ".geojson":
-            return geopandas.read_file(labels_path)[["lat", "lon"] + self.additional_cols]
+            return geopandas.read_file(labels_path)
         else:
             raise ValueError(f"Unexpected extension {labels_path.suffix}")
-
-    @staticmethod
-    def _date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
-        overlaps = start1 <= end2 and end1 >= start2
-        if not overlaps:
-            return 0
-        overlap_days = (min(end1, end2) - max(start1, start2)).days
-        return overlap_days
-
-    @staticmethod
-    def _end_date_using_max_overlap(
-        planting_date: date,
-        harvest_date: date,
-        end_month_day: Tuple[int, int],
-        total_days: timedelta,
-    ):
-        potential_end_dates = [
-            date(harvest_date.year + diff, *end_month_day) for diff in range(-1, 2)
-        ]
-        potential_end_dates = [d for d in potential_end_dates if d < datetime.now().date()]
-        end_date = max(
-            potential_end_dates,
-            key=lambda d: EarthEngineExporter._date_overlap(
-                planting_date, harvest_date, d - total_days, d
-            ),
-        )
-        return end_date
 
     @staticmethod
     def _start_end_dates_using_season(season: Season) -> Tuple[date, date]:
@@ -151,41 +99,19 @@ class EarthEngineExporter:
         self, labels, num_labelled_points: Optional[int], surrounding_metres: int
     ) -> List[Tuple[int, EEBoundingBox, date, date]]:
         output: List[Tuple[int, EEBoundingBox, date, date]] = []
-
-        start_date, end_date = self.start_date, self.end_date
-        total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
-        if start_date is None and end_date:
-            start_date = end_date - total_days
-
-        if start_date:
-            assert (
-                start_date >= self.min_date
-            ), f"Sentinel data does not exist before {self.min_date}"
-
         for idx, row in tqdm(labels.iterrows()):
-            if self.end_month_day:
-                if "harvest_da" not in row or "planting_d" not in row:
-                    continue
-                planting_date = datetime.strptime(row["planting_d"], "%Y-%m-%d %H:%M:%S").date()
-                harvest_date = datetime.strptime(row["harvest_da"], "%Y-%m-%d %H:%M:%S").date()
-                end_date = self._end_date_using_max_overlap(
-                    planting_date, harvest_date, self.end_month_day, total_days
+            output.append(
+                (
+                    idx,
+                    EEBoundingBox.from_centre(
+                        mid_lat=row["lat"],
+                        mid_lon=row["lon"],
+                        surrounding_metres=surrounding_metres,
+                    ),
+                    row['start_date'],
+                    row['end_date'],
                 )
-                start_date = end_date - total_days if end_date else None
-
-            if start_date and end_date:
-                output.append(
-                    (
-                        idx,
-                        EEBoundingBox.from_centre(
-                            mid_lat=row["lat"],
-                            mid_lon=row["lon"],
-                            surrounding_metres=surrounding_metres,
-                        ),
-                        start_date,
-                        end_date,
-                    )
-                )
+            )
             if num_labelled_points is not None:
                 if len(output) >= num_labelled_points:
                     return output
@@ -248,12 +174,16 @@ class EarthEngineExporter:
 
     def export_for_region(
         self,
+        region_bbox: BoundingBox,
         sentinel_dataset: str,
         output_folder: Path,
         checkpoint: bool = True,
         monitor: bool = True,
         metres_per_polygon: Optional[int] = 10000,
         fast: bool = True,
+        end_date: Optional[date] = None,
+        total_days: Optional[int] = None,
+        season: Optional[Season] = None,
     ):
         r"""
         Run the regional exporter. For each label, the exporter will export
@@ -269,6 +199,9 @@ class EarthEngineExporter:
             split the area once it has been exported
         :param fast: Whether to use the faster cloudfree exporter. This function is considerably
             faster, but cloud artefacts can be more pronounced. Default = True
+        :param start_date: The start date of the data export
+        :param end_date: The end date of the data export
+        :param region_bbox: BoundingBox for region
         """
         try:
             ee.Initialize()
@@ -277,21 +210,21 @@ class EarthEngineExporter:
                 "This code doesn't work unless you have authenticated your earthengine account"
             )
 
-        if self.season:
-            start_date, end_date = self._start_end_dates_using_season(self.season)
-        elif self.end_date and self.num_timesteps:
-            end_date = self.end_date
-            start_date = self.end_date - self.num_timesteps * timedelta(days=self.days_per_timestep)
+        if season:
+            start_date, end_date = self._start_end_dates_using_season(season)
+        elif end_date and self.num_timesteps:
+            end_date = end_date
+            start_date = end_date - total_days
         else:
             raise ValueError(
                 "Unable to determine start_date, either 'season' or 'end_date' and 'num_timesteps' must "
                 "be set."
             )
 
-        if self.region_bbox is None:
+        if region_bbox is None:
             raise ValueError("Region bbox must be set to export_for_region")
 
-        region = EEBoundingBox.from_bounding_box(self.region_bbox)
+        region = EEBoundingBox.from_bounding_box(region_bbox)
 
         if metres_per_polygon is not None:
 
@@ -356,7 +289,6 @@ class EarthEngineExporter:
             return None
 
         while cur_end_date <= end_date:
-
             image_collection_list.append(
                 export_func(region=polygon, start_date=cur_date, end_date=cur_end_date)
             )

@@ -1,4 +1,5 @@
-from datetime import date
+import pandas as pd
+from datetime import date, timedelta
 from src.ETL.dataset import LabeledDataset, UnlabeledDataset
 from src.ETL.ee_exporter import EarthEngineExporter, Season
 from src.ETL.ee_boundingbox import BoundingBox
@@ -6,11 +7,27 @@ from src.ETL.label_downloader import RawLabels
 from src.ETL.processor import Processor
 
 
-def geowiki_file_name(participants: str = "all") -> str:
-    participants_to_file_labels = {"all": "all", "students": "con", "experts": "exp"}
-    file_label = participants_to_file_labels.get(participants, participants)
-    assert file_label in participants_to_file_labels.values(), f"Unknown participant {file_label}"
-    return f"loc_{file_label}{'_2' if file_label == 'all' else ''}.txt"
+def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
+    df = df[(df["harvest_da"] != "nan") & (df["harvest_da"] != "unknown")].copy()
+    df.loc[:, 'planting_d'] = pd.to_datetime(df['planting_d'])
+    df.loc[:, 'harvest_da'] = pd.to_datetime(df['harvest_da'])
+
+    df['between_days'] = (df['harvest_da'] - df['planting_d']).dt.days
+    year = pd.to_timedelta(timedelta(days=365))
+    df.loc[(-365 < df['between_days']) & (df['between_days'] < 0), 'harvest_da'] += year
+    df.loc[(365 < df['between_days']) & (df['between_days'] < (365*2)), 'harvest_da'] -= year
+    df.loc[((365*2) < df['between_days']) & (df['between_days'] < (365*3)), 'harvest_da'] -= (2*year)
+    return df
+
+
+def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
+    mean_per_location = df.groupby("location_id").mean()
+    mean_per_location = mean_per_location.rename(
+        {"loc_cent_X": "lon", "loc_cent_Y": "lat", "sumcrop": "mean_sumcrop"},
+        axis="columns",
+        errors="raise",
+    )
+    return mean_per_location.reset_index()
 
 
 labeled_datasets = [
@@ -33,12 +50,11 @@ labeled_datasets = [
         ),
         processors=(
             Processor(
-                file_name=geowiki_file_name(),
-                custom_geowiki_processing=True,
+                file_name="loc_all_2.txt",
+                clean_df=clean_geowiki,
                 crop_prob=lambda df: df.mean_sumcrop / 100,
-                custom_start_date=date(2017, 3, 28),
-                custom_end_date=date(2018, 3, 28),
-                x_y_from_centroid=False,
+                end_year=2018,
+                end_month_day=(3,28),
             ),
         ),
     ),
@@ -66,16 +82,14 @@ labeled_datasets = [
                 file_name="one_acre_fund_kenya",
                 crop_prob=1.0,
                 end_year=2020,
-                x_y_from_centroid=False,
-                lat_lon_lowercase=True,
+                clean_df=lambda df: df.rename(columns={"Lat": "lat", "Lon": "lon"})
             ),
             Processor(
                 file_name="plant_village_kenya",
-                clean_df=lambda df: df[
-                    (df["harvest_da"] != "nan") & (df["harvest_da"] != "unknown")
-                ],
+                clean_df=clean_pv_kenya,
                 crop_prob=1.0,
-                use_harvest_date_for_date_range=True,
+                plant_date_col='planting_d',
+                harvest_date_col='harvest_da',
                 lat_lon_transform=True,
             ),
         ),
