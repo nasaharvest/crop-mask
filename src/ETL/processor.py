@@ -20,20 +20,14 @@ class Processor:
     crop_prob: Union[float, Callable]
 
     end_year: Optional[int] = None
-    default_end_month_day = (4, 16)
+    end_month_day: Tuple[int, int] = (4, 16)
 
-    custom_end_date: Optional[date] = None
-    custom_start_date: Optional[date] = None
-
-    use_harvest_date_for_date_range: bool = False
+    plant_date_col: Optional[str] = None
+    harvest_date_col: Optional[str] = None
 
     clean_df: Optional[Callable] = None
     x_y_from_centroid: bool = True
-    x_y_reversed: bool = False
-    lat_lon_lowercase: bool = False
     lat_lon_transform: bool = False
-    custom_geowiki_processing: bool = False
-    custom_pv_end_date: Optional[Tuple[int, int]] = None
 
     min_date = date(2017, 3, 28)
 
@@ -41,33 +35,13 @@ class Processor:
         set_seed()
 
     @staticmethod
-    def _date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
-        overlaps = start1 <= end2 and end1 >= start2
-        if not overlaps:
-            return 0
-        overlap_days = (min(end1, end2) - max(start1, start2)).days
-        return overlap_days
-
-    @staticmethod
-    def custom_geowiki_process(df) -> xr.DataArray:
-        # first, we find the mean sumcrop calculated per location
-        mean_per_location = df.groupby("location_id").mean()
-
-        # then, we rename the columns
-        mean_per_location = mean_per_location.rename(
-            {"loc_cent_X": "lon", "loc_cent_Y": "lat", "sumcrop": "mean_sumcrop"},
-            axis="columns",
-            errors="raise",
-        )
-        mean_per_location = mean_per_location.reset_index()
-        return mean_per_location
-
-    @staticmethod
-    def compute_custom_pv_end_date(df, total_days, end_month_day):
-        if "harvest_da" not in df or "planting_d" not in df:
-            raise ValueError(
-                "Expected plant_village dataframe to include harvest_da and planting_d columns"
-            )
+    def end_date_using_overlap(planting_date_col, harvest_date_col, total_days, end_month_day):
+        def _date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
+            overlaps = start1 <= end2 and end1 >= start2
+            if not overlaps:
+                return 0
+            overlap_days = (min(end1, end2) - max(start1, start2)).days
+            return overlap_days
 
         def compute_end_date(planting_date, harvest_date):
             to_date = (
@@ -81,15 +55,13 @@ class Processor:
             potential_end_dates = [d for d in potential_end_dates if d < datetime.now().date()]
             end_date = max(
                 potential_end_dates,
-                key=lambda d: Processor._date_overlap(
+                key=lambda d: _date_overlap(
                     planting_date, harvest_date, d - total_days, d
                 ),
             )
             return end_date
 
-        return np.vectorize(compute_end_date)(
-            pd.to_datetime(df["planting_d"]), pd.to_datetime(df["harvest_da"])
-        )
+        return np.vectorize(compute_end_date)(planting_date_col, harvest_date_col)
 
     def process(self, raw_folder: Path, total_days) -> Union[pd.DataFrame, xr.DataArray]:
         file_path = raw_folder / self.file_name
@@ -102,51 +74,37 @@ class Processor:
         if self.clean_df:
             df = self.clean_df(df)
 
-        if self.custom_geowiki_processing:
-            df = self.custom_geowiki_process(df)
-
-        df["crop_probability"] = (
-            self.crop_prob if isinstance(self.crop_prob, float) else self.crop_prob(df)
-        )
         df["source"] = file_path.stem
         df["index"] = df.index
 
-        if self.custom_end_date:
-            df["end_date"] = self.custom_end_date
-        elif self.end_year:
-            df["end_date"] = date(self.end_year, *self.default_end_month_day)
-        elif self.use_harvest_date_for_date_range:
-            df["end_date"] = self.compute_custom_pv_end_date(df, total_days, self.default_end_month_day)
+        if isinstance(self.crop_prob, float):
+            df["crop_probability"] = self.crop_prob
+        else:
+            df["crop_probability"] = self.crop_prob(df)
+
+        if self.end_year:
+            df["end_date"] = date(self.end_year, *self.end_month_day)
+        elif self.plant_date_col and self.harvest_date_col:
+            df["end_date"] = self.end_date_using_overlap(df[self.plant_date_col], df[self.harvest_date_col], total_days, self.end_month_day)
         else:
             raise ValueError(
-                "end_date could not be computed please set either: custom_end_date, end_year, or use_harvest_date_for_date_range"
+                "end_date could not be computed please set either: end_year, or plant_date_col and harvest_date_col"
             )
 
-        if self.custom_start_date:
-            df["start_date"] = self.custom_start_date
-        else:
-            df["start_date"] = df["end_date"] - total_days
-
+        df["start_date"] = df["end_date"] - total_days
         df["end_date"] = pd.to_datetime(df["end_date"]).dt.strftime("%Y-%m-%d")
         df["start_date"] = pd.to_datetime(df["start_date"]).dt.strftime("%Y-%m-%d")
-
-        if self.lat_lon_lowercase:
-            df = df.rename(columns={"Lat": "lat", "Lon": "lon"})
 
         if self.x_y_from_centroid:
             x = df.geometry.centroid.x.values
             y = df.geometry.centroid.y.values
 
-            if self.x_y_reversed:
-                x, y = y, x
-
             if self.lat_lon_transform:
                 transformer = Transformer.from_crs(crs_from=32636, crs_to=4326)
-                lat, lon = transformer.transform(xx=x, yy=y)
-                df["lat"] = lat
-                df["lon"] = lon
-            else:
-                df["lon"] = x
-                df["lat"] = y
+                y, x = transformer.transform(xx=x, yy=y)
 
+            df["lon"] = x
+            df["lat"] = y
+
+        df = df.dropna(subset=['lon', 'lat', 'crop_probability'])
         return df
