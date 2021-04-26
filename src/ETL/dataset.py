@@ -1,28 +1,26 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Tuple
+import logging
+import numpy as np
+import pandas as pd
+
 from .engineer import Engineer
 from .label_downloader import RawLabels
 from .processor import Processor
-from .ee_exporter import EarthEngineExporter
-import logging
-import pandas as pd
+from .ee_exporter import LabelExporter, RegionExporter, Season
+from .ee_boundingbox import BoundingBox
+from src.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, NUM_LABELERS, SUBSET
 
 logger = logging.getLogger(__name__)
+
+data_folder: Path = Path(__file__).parent.parent.parent / "data"
 
 
 @dataclass
 class Dataset:
     sentinel_dataset: str
-
-    # Exporter parameters
-    exporter: EarthEngineExporter = EarthEngineExporter()
-
-    data_folder: Path = Path(__file__).parent.parent.parent / "data"
-
-    def export_earth_engine_data(self):
-        raise NotImplementedError
 
     @staticmethod
     def is_output_folder_ready(output_folder: Path, check_if_folder_empty=False):
@@ -54,13 +52,9 @@ class LabeledDataset(Dataset):
 
     # Process parameters
     processors: Tuple[Processor, ...] = ()
-    labels_extension: str = ".geojson"
 
     # Engineer parameters
     is_global: bool = False
-    crop_type_func: Optional[Callable] = None
-    val_set_size: float = 0.1
-    test_set_size: float = 0.1
     nan_fill: float = 0.0
     max_nan_ratio: float = 0.3
     checkpoint: bool = True
@@ -72,28 +66,25 @@ class LabeledDataset(Dataset):
     num_timesteps: int = 12
 
     def __post_init__(self):
-        raw_dir = self.data_folder / "raw"
+        raw_dir = data_folder / "raw"
         self.raw_labels_dir = raw_dir / self.dataset
         self.raw_images_dir = raw_dir / self.sentinel_dataset
-        self.labels_path = self.data_folder / "processed" / (self.dataset + self.labels_extension)
-        self.features_dir = self.data_folder / "features" / self.dataset
+        self.labels_path = data_folder / "processed" / (self.dataset + ".csv")
+        self.features_dir = data_folder / "features" / self.dataset
 
     def create_pickled_labeled_dataset(self):
         if self.is_output_folder_ready(self.features_dir):
             Engineer(
                 sentinel_files_path=self.raw_images_dir,
                 labels_path=self.labels_path,
-                features_path=self.features_dir,
-            ).create_pickled_labeled_dataset(
+                save_dir=self.features_dir,
                 is_global=self.is_global,
-                crop_type_func=self.crop_type_func,
-                val_set_size=self.val_set_size,
-                test_set_size=self.test_set_size,
                 nan_fill=self.nan_fill,
-                max_nan_ratio=self.max_nan_ratio,
-                checkpoint=self.checkpoint,
                 add_ndvi=self.add_ndvi,
                 add_ndwi=self.add_ndwi,
+                max_nan_ratio=self.max_nan_ratio,
+            ).create_pickled_labeled_dataset(
+                checkpoint=self.checkpoint,
                 include_extended_filenames=self.include_extended_filenames,
                 calculate_normalizing_dict=self.calculate_normalizing_dict,
                 days_per_timestep=self.days_per_timestep,
@@ -101,17 +92,19 @@ class LabeledDataset(Dataset):
 
     def process_labels(self):
         total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
-        processed_label_list = [p.process(self.raw_labels_dir, total_days) for p in self.processors]
-        if self.labels_path.suffix == ".geojson" or self.labels_path.suffix == ".csv":
-            labels = pd.concat(processed_label_list)
-            labels["Country"] = self.country
-            if self.labels_path.suffix == ".geojson":
-                labels.to_file(self.labels_path, driver="GeoJSON")
-            elif self.labels_path.suffix == ".csv":
-                labels.to_csv(self.labels_path, index=False)
-        elif self.labels_path.suffix == ".nc":
-            labels = processed_label_list[0]
-            labels.to_netcdf(self.labels_path)
+
+        # Combine all processed labels
+        label_dfs = [p.process(self.raw_labels_dir, total_days) for p in self.processors]
+        df = pd.concat(label_dfs)
+
+        # Combine duplicate labels
+        df[NUM_LABELERS] = 1
+        df = df.groupby([LON, LAT, START, END], as_index=False).agg(
+            {SOURCE: ",".join, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
+        )
+        df[COUNTRY] = self.country
+        df = df.reset_index(drop=True)
+        df.to_csv(self.labels_path, index=False)
 
     def download_raw_labels(self):
         if len(self.raw_labels) == 0:
@@ -122,28 +115,21 @@ class LabeledDataset(Dataset):
 
     def export_earth_engine_data(self):
         if self.is_output_folder_ready(self.raw_images_dir):
-            self.exporter.export_for_labels(
-                labels_path=self.labels_path,
-                sentinel_dataset=self.sentinel_dataset,
-                output_folder=self.raw_images_dir,
-                num_labelled_points=None,
-                monitor=False,
-                checkpoint=True,
-            )
+            LabelExporter(
+                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir
+            ).export(labels_path=self.labels_path)
 
 
 @dataclass
 class UnlabeledDataset(Dataset):
+    region_bbox: BoundingBox
+    season: Season
+
     def __post_init__(self):
-        self.raw_images_dir = self.data_folder / "raw" / self.sentinel_dataset
+        self.raw_images_dir = data_folder / "raw" / self.sentinel_dataset
 
     def export_earth_engine_data(self):
         if self.is_output_folder_ready(self.raw_images_dir):
-            self.exporter.export_for_region(
-                sentinel_dataset=self.sentinel_dataset,
-                output_folder=self.raw_images_dir,
-                monitor=False,
-                checkpoint=True,
-                metres_per_polygon=None,
-                fast=False,
-            )
+            RegionExporter(
+                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir
+            ).export(region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None)

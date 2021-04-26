@@ -13,7 +13,7 @@ class CropDataInstance:
     label_lat: float
     label_lon: float
     labelled_array: Union[float, np.ndarray]
-    crop_label: Optional[str] = ""
+    data_subset: str
 
     def isin(self, bounding_box: BoundingBox) -> bool:
         return (
