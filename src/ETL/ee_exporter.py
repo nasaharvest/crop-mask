@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from tqdm import tqdm
@@ -205,8 +205,6 @@ class RegionExporter(EarthEngineExporter):
 
 @dataclass
 class LabelExporter(EarthEngineExporter):
-    monitor = False
-    fast = False
 
     def export(
         self,
@@ -235,6 +233,6 @@ class LabelExporter(EarthEngineExporter):
             self._export_for_polygon(
                 polygon=bbox.to_ee_polygon(),
                 polygon_identifier=idx,
-                start_date=row[START],
-                end_date=row[END],
+                start_date=datetime.strptime(row[START], "%Y-%m-%d"),
+                end_date=datetime.strptime(row[END], "%Y-%m-%d")
             )
