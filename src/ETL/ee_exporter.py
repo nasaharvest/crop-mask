@@ -206,6 +206,7 @@ class LabelExporter(EarthEngineExporter):
         labels_path: Path,
         num_labelled_points: Optional[int] = None,
         surrounding_metres: int = 80,
+        start_from: Optional[int] = None
     ):
         r"""
         Run the exporter. For each label, the exporter will export
@@ -220,6 +221,8 @@ class LabelExporter(EarthEngineExporter):
         labels = pd.read_csv(labels_path)
         if num_labelled_points:
             labels = labels[:num_labelled_points]
+        if start_from:
+            labels = labels[start_from:]
 
         with tqdm(total=len(labels), position=0, leave=True) as pbar:
             for idx, row in tqdm(labels.iterrows()):
