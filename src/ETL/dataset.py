@@ -116,7 +116,7 @@ class LabeledDataset(Dataset):
     def export_earth_engine_data(self):
         if self.is_output_folder_ready(self.raw_images_dir):
             LabelExporter(
-                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir
+                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir, monitor=False, fast=False
             ).export(labels_path=self.labels_path)
 
 
