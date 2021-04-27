@@ -5,7 +5,6 @@ and exports datasets using Google Earth Engine
 """
 import logging
 import sys
-
 sys.path.append("..")
 from src.dataset_config import labeled_datasets
 
