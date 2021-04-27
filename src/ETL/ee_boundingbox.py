@@ -4,7 +4,6 @@ from typing import List, Tuple, Union
 import ee
 import logging
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

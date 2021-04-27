@@ -90,10 +90,6 @@ class EarthEngineExporter:
 
         image_collection_list: List[ee.Image] = []
 
-        logger.info(
-            f"Exporting image for polygon {polygon_identifier} from "
-            f"aggregated images between {str(cur_date)} and {str(end_date)}"
-        )
         filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
 
         if self.checkpoint and (self.output_folder / f"{filename}.tif").exists():
@@ -226,13 +222,15 @@ class LabelExporter(EarthEngineExporter):
         if num_labelled_points:
             labels = labels[:num_labelled_points]
 
-        for idx, row in tqdm(labels.iterrows()):
-            bbox = EEBoundingBox.from_centre(
-                mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
-            )
-            self._export_for_polygon(
-                polygon=bbox.to_ee_polygon(),
-                polygon_identifier=idx,
-                start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
-                end_date=datetime.strptime(row[END], "%Y-%m-%d").date()
-            )
+        with tqdm(total=len(labels), position=0, leave=True) as pbar:
+            for idx, row in tqdm(labels.iterrows()):
+                bbox = EEBoundingBox.from_centre(
+                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+                )
+                self._export_for_polygon(
+                    polygon=bbox.to_ee_polygon(),
+                    polygon_identifier=idx,
+                    start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
+                    end_date=datetime.strptime(row[END], "%Y-%m-%d").date()
+                )
+                pbar.update(1)

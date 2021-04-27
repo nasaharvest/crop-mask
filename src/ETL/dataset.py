@@ -3,7 +3,6 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Tuple
 import logging
-import numpy as np
 import pandas as pd
 
 from .engineer import Engineer
