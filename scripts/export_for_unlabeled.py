@@ -6,7 +6,6 @@ Exports specified unlabeled dataset using Google Earth Engine
 import logging
 from argparse import ArgumentParser
 import sys
-
 sys.path.append("..")
 
 from src.dataset_config import unlabeled_datasets
