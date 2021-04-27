@@ -47,7 +47,7 @@ class EarthEngineExporter:
     num_timesteps: int = 12
     fast: bool = True
     checkpoint: bool = True
-    monitor: bool = True
+    monitor: bool = False
 
     @staticmethod
     def check_earthengine_auth():

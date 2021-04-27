@@ -117,7 +117,6 @@ class LabeledDataset(Dataset):
             LabelExporter(
                 sentinel_dataset=self.sentinel_dataset,
                 output_folder=self.raw_images_dir,
-                monitor=False,
                 fast=False,
             ).export(labels_path=self.labels_path, start_from=start_from)
 
