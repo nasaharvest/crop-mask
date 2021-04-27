@@ -23,6 +23,12 @@ def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
     )
     return df
 
+def clean_pv_kenya2(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename({"Latitude": "lat", "Longitude": "lon"})
+    df.loc[:, "Planting Date"] = pd.to_datetime(df["Planting Date"])
+    df.loc[:, "Estimated Harvest Date"] = pd.to_datetime(df["Estimated Harvest Date"])
+    return df
+
 
 def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
     df = df.groupby("location_id").mean()
@@ -93,7 +99,18 @@ labeled_datasets = [
                 plant_date_col="planting_d",
                 harvest_date_col="harvest_da",
                 transform_crs_from=32636,
-            ),
+            )
+        ) +
+        tuple([
+            Processor(
+                filename=f"ref_african_crops_kenya_01_labels_0{i}/labels.geojson",
+                clean_df=clean_pv_kenya2,
+                crop_prob=1.0,
+                plant_date_col="Planting Date",
+                harvest_date_col="Estimated Harvest Date",
+                transform_crs_from=32636)
+            for i in [0,1,2]
+        ]
         ),
     ),
     LabeledDataset(

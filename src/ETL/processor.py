@@ -92,7 +92,7 @@ class Processor:
         if self.clean_df:
             df = self.clean_df(df)
 
-        df[SOURCE] = file_path.stem
+        df[SOURCE] = self.filename
 
         if isinstance(self.crop_prob, float):
             df[CROP_PROB] = self.crop_prob

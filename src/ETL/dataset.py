@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 import logging
 import pandas as pd
 
@@ -112,14 +112,14 @@ class LabeledDataset(Dataset):
             for label in self.raw_labels:
                 label.download_file(output_folder=self.raw_labels_dir)
 
-    def export_earth_engine_data(self):
-        if self.is_output_folder_ready(self.raw_images_dir):
+    def export_earth_engine_data(self, start_from: Optional[int] = None):
+        if self.is_output_folder_ready(self.raw_images_dir) or start_from is not None:
             LabelExporter(
                 sentinel_dataset=self.sentinel_dataset,
                 output_folder=self.raw_images_dir,
                 monitor=False,
                 fast=False,
-            ).export(labels_path=self.labels_path)
+            ).export(labels_path=self.labels_path, start_from=start_from)
 
 
 @dataclass
