@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import xarray as xr
 
-from src.constants import CROP_PROB, LAT, LON
+from src.constants import CROP_PROB, LAT, LON, SUBSET
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
@@ -25,7 +25,7 @@ class TestEngineer(TestCase):
         geospatial_file = tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
         mock_glob.return_value = [Path(geospatial_file.name)]
         mock_read_csv.return_value = pd.DataFrame(
-            {LON: [20, 40], LAT: [30, 50], CROP_PROB: [0.0, 1.0]}
+            {LON: [20, 40], LAT: [30, 50], CROP_PROB: [0.0, 1.0], SUBSET: ["training", "validation"]}
         )
         cls.engineer = Engineer(
             sentinel_files_path=Path("mock_sentinel_path"),
@@ -49,7 +49,6 @@ class TestEngineer(TestCase):
             "calculate_normalizing_dict": False,
             "start_date": datetime.now(),
             "days_per_timestep": 30,
-            "is_test": False,
         }
 
     def test_find_nearest(self):
@@ -120,6 +119,7 @@ class TestEngineer(TestCase):
             label_lat=30,
             label_lon=20,
             labelled_array=0.0,
+            data_subset="training"
         )
         self.assertEqual(expected_data_instance, actual_data_instance)
 
@@ -131,6 +131,6 @@ class TestEngineer(TestCase):
             data=np.zeros((55, 45)),
         )
         kwargs = self.generate_data_kwargs()
-        for k in ["path_to_file", "start_date", "is_test"]:
+        for k in ["path_to_file", "start_date"]:
             del kwargs[k]
         self.engineer.create_pickled_labeled_dataset(**kwargs)
