@@ -10,7 +10,7 @@ def get_model_path(name: str) -> str:
 
 
 if __name__ == "__main__":
-    name = "mali"
+    name = "togo"
     print(f"Using model {name}")
     model_path = get_model_path(name)
     model = Model.load_from_checkpoint(model_path)
