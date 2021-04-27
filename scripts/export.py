@@ -10,6 +10,5 @@ if __name__ == "__main__":
         d.download_raw_labels()
         d.export_earth_engine_data()
 
-    for d in unlabeled_datasets:
-        if d.sentinel_dataset == "MaliSegou":
-            d.export_earth_engine_data()
+    # for d in unlabeled_datasets:
+    #     d.export_earth_engine_data()
