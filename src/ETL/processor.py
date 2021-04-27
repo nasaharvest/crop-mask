@@ -133,6 +133,7 @@ class Processor:
             df[LAT] = y
 
         df = df.dropna(subset=[LON, LAT, CROP_PROB])
+        df = df.round({LON: 12, LAT: 12})
         df = self.train_val_test_split(df)
 
         return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET]]
