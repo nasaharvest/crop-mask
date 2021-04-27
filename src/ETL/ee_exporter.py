@@ -233,6 +233,6 @@ class LabelExporter(EarthEngineExporter):
             self._export_for_polygon(
                 polygon=bbox.to_ee_polygon(),
                 polygon_identifier=idx,
-                start_date=datetime.strptime(row[START], "%Y-%m-%d"),
-                end_date=datetime.strptime(row[END], "%Y-%m-%d")
+                start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
+                end_date=datetime.strptime(row[END], "%Y-%m-%d").date()
             )

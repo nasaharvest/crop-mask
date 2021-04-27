@@ -57,8 +57,8 @@ class TestEEExporters(TestCase):
         mock_export_for_polygon.assert_called_with(
             polygon=mock_poly_return,
             polygon_identifier=0,
-            start_date="2019-04-22",
-            end_date="2020-04-16",
+            start_date=date(2019, 4, 22),
+            end_date=date(2020, 4, 16),
         )
         mock_export_for_polygon.reset_mock()
 
