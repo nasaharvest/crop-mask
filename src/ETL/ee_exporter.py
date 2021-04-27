@@ -201,7 +201,6 @@ class RegionExporter(EarthEngineExporter):
 
 @dataclass
 class LabelExporter(EarthEngineExporter):
-
     def export(
         self,
         labels_path: Path,
@@ -231,6 +230,6 @@ class LabelExporter(EarthEngineExporter):
                     polygon=bbox.to_ee_polygon(),
                     polygon_identifier=idx,
                     start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
-                    end_date=datetime.strptime(row[END], "%Y-%m-%d").date()
+                    end_date=datetime.strptime(row[END], "%Y-%m-%d").date(),
                 )
                 pbar.update(1)

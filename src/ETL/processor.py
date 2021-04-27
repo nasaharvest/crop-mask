@@ -111,7 +111,7 @@ class Processor:
             )
 
         if self.custom_start_date:
-            df[START] =self.custom_start_date
+            df[START] = self.custom_start_date
         else:
             df[START] = df[END] - total_days
         # if (df["start_date"] < pd.Timestamp(min_date)).any():

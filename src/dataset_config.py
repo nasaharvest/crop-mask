@@ -56,7 +56,7 @@ labeled_datasets = [
                 crop_prob=lambda df: df.mean_sumcrop / 100,
                 end_year=2018,
                 end_month_day=(3, 28),
-                custom_start_date=date(2017,3,28),
+                custom_start_date=date(2017, 3, 28),
                 x_y_from_centroid=False,
                 train_val_test=(0.8, 0.2, 0.0),
             ),
@@ -68,16 +68,13 @@ labeled_datasets = [
         sentinel_dataset="earth_engine_kenya",
         processors=(
             Processor(
-                filename="noncrop_labels_v2",
-                crop_prob=0.0,
-                end_year=2020,
-                transform_crs_from=32636
+                filename="noncrop_labels_v2", crop_prob=0.0, end_year=2020, transform_crs_from=32636
             ),
             Processor(
                 filename="noncrop_labels_set2",
                 crop_prob=0.0,
                 end_year=2020,
-                transform_crs_from=32636
+                transform_crs_from=32636,
             ),
             Processor(filename="2019_gepro_noncrop", crop_prob=0.0, end_year=2020),
             Processor(filename="noncrop_water_kenya_gt", crop_prob=0.0, end_year=2020),
@@ -95,7 +92,7 @@ labeled_datasets = [
                 crop_prob=1.0,
                 plant_date_col="planting_d",
                 harvest_date_col="harvest_da",
-                transform_crs_from=32636
+                transform_crs_from=32636,
             ),
         ),
     ),
@@ -114,32 +111,42 @@ labeled_datasets = [
         country="Togo",
         sentinel_dataset="earth_engine_togo",
         processors=(
-            Processor(filename="crop_merged_v2", crop_prob=1.0, end_year=2020),
-            Processor(filename="noncrop_merged_v2", crop_prob=0.0, end_year=2020),
+            Processor(
+                filename="crop_merged_v2",
+                crop_prob=1.0,
+                train_val_test=(0.8, 0.2, 0.0),
+                end_year=2020,
+            ),
+            Processor(
+                filename="noncrop_merged_v2",
+                crop_prob=0.0,
+                train_val_test=(0.8, 0.2, 0.0),
+                end_year=2020,
+            ),
             Processor(
                 filename="random_sample_hrk",
                 crop_prob=lambda df: df["hrk-label"],
                 transform_crs_from=32631,
                 train_val_test=(0.0, 0.0, 1.0),
-                end_year=2020
+                end_year=2020,
             ),
             Processor(
                 filename="random_sample_cn",
                 crop_prob=lambda df: df["cn_labels"],
                 train_val_test=(0.0, 0.0, 1.0),
-                end_year=2020
+                end_year=2020,
             ),
             Processor(
                 filename="BB_random_sample_1k",
                 crop_prob=lambda df: df["bb_label"],
                 train_val_test=(0.0, 0.0, 1.0),
-                end_year=2020
+                end_year=2020,
             ),
             Processor(
                 filename="random_sample_bm",
                 crop_prob=lambda df: df["bm_labels"],
                 train_val_test=(0.0, 0.0, 1.0),
-                end_year=2020
+                end_year=2020,
             ),
         ),
     ),
