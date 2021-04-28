@@ -24,6 +24,7 @@ dependencies:
   - dvc-s3=1.11.16 
   - gdal=3.1.4
   - rclone
+  - flake8
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
       - clearml

@@ -110,7 +110,8 @@ class CropDataset(Dataset):
         pickle_files_dir = features_dir / subset_name
         if not pickle_files_dir.exists():
             logger.warning(
-                f"Directory: {pickle_files_dir} not found. Use command: `dvc pull` to get the latest data."
+                f"Directory: {pickle_files_dir} not found. Use command: "
+                f"`dvc pull` to get the latest data."
             )
             pickle_files = []
         else:
@@ -306,7 +307,8 @@ class CropDataset(Dataset):
             crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
         else:
             logger.error(
-                "target_datainstance missing mandatory field crop_probability, defaulting crop_int to 0"
+                "target_datainstance missing mandatory field crop_probability, "
+                "defaulting crop_int to 0"
             )
             crop_int = 0
 
