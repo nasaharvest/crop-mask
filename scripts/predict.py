@@ -1,3 +1,7 @@
+"""
+Takes a trained model and runs it on an area
+"""
+
 from argparse import ArgumentParser
 from clearml import Task
 from pathlib import Path
