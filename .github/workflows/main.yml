@@ -42,6 +42,9 @@ jobs:
     - name: Run type checks
       run: |
         mypy src scripts
+    - name: Run flake8
+      run: |
+        flake8 src scripts test
     - name: Run unit tests
       run: |
         python -m unittest

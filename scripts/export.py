@@ -1,6 +1,6 @@
 import logging
 
-from src.dataset_config import labeled_datasets, unlabeled_datasets
+from src.dataset_config import labeled_datasets
 
 logging.basicConfig(level=logging.INFO)
 

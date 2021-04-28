@@ -34,7 +34,8 @@ class Dataset:
             return True
         else:
             logger.warning(
-                f"{output_folder.parent} does not exist locally, use `dvc pull data/{output_folder.parent.stem}` to download latest"
+                f"{output_folder.parent} does not exist locally, use "
+                f"`dvc pull data/{output_folder.parent.stem}` to download latest"
             )
             return False
 

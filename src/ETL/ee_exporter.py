@@ -284,8 +284,8 @@ class EarthEngineExporter:
             start_date = self.end_date - self.num_timesteps * timedelta(days=self.days_per_timestep)
         else:
             raise ValueError(
-                "Unable to determine start_date, either 'season' or 'end_date' and 'num_timesteps' must "
-                "be set."
+                "Unable to determine start_date, either 'season' or 'end_date' and "
+                "'num_timesteps' must be set."
             )
 
         if self.region_bbox is None:
