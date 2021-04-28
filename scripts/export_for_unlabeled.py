@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 import sys
 sys.path.append("..")
 
-from src.dataset_config import unlabeled_datasets
+from src.dataset_config import unlabeled_datasets  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 
