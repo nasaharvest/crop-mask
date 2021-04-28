@@ -111,9 +111,10 @@ class LabeledDataset(Dataset):
             labels.to_netcdf(self.labels_path)
 
     def download_raw_labels(self):
-        if len(self.raw_labels) == 0:
-            logger.warning(f"No raw labels set for {self.dataset}")
-        elif self.is_output_folder_setup(self.raw_labels_dir):
+        if self.is_output_folder_setup(self.raw_labels_dir):
+            if len(self.raw_labels) == 0:
+                logger.warning(f"No raw labels set for {self.dataset}")
+
             for label in self.raw_labels:
                 label.download_file(output_folder=self.raw_labels_dir)
 
