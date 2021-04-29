@@ -54,7 +54,7 @@ class Forecaster(pl.LightningModule):
 
         predicted_output: List[torch.Tensor] = []
         for i in range(input_timesteps):
-            input = x[:, i : i + 1, :]
+            input = x[:, i: i + 1, :]
             output, hidden_tuple = self.lstm(input, hidden_tuple)
             output = self.to_bands(torch.transpose(output[0, :, :, :], 0, 1))
             predicted_output.append(output)

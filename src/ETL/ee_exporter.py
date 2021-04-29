@@ -177,8 +177,8 @@ class RegionExporter(EarthEngineExporter):
             start_date = end_date - timedelta(days=self.days_per_timestep * self.num_timesteps)
         else:
             raise ValueError(
-                "Unable to determine start_date, either 'season' or 'end_date' and 'num_timesteps' must "
-                "be set."
+                "Unable to determine start_date, either 'season' or 'end_date' and "
+                "'num_timesteps' must be set."
             )
 
         region = EEBoundingBox.from_bounding_box(region_bbox)

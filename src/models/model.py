@@ -206,7 +206,7 @@ class Model(pl.LightningModule):
         pbar = tqdm(total=input_data.x.shape[0] - 1, disable=disable_tqdm)
         while cur_i < (input_data.x.shape[0] - 1):
 
-            batch_x_np = input_data.x[cur_i : cur_i + batch_size]
+            batch_x_np = input_data.x[cur_i: cur_i + batch_size]
             if self.hparams.remove_b1_b10:
                 batch_x_np = CropDataset._remove_bands(batch_x_np)
             batch_x = torch.from_numpy(batch_x_np).float()
@@ -305,7 +305,7 @@ class Model(pl.LightningModule):
                         self.add_noise(input_to_encode, training),
                         # -1 because the encoder output has no value for the 0th
                         # timestep
-                        encoder_output[:, self.hparams.input_months - 1 :, :],
+                        encoder_output[:, self.hparams.input_months - 1:, :],
                     )
                 ),
                 dim=1,
@@ -412,7 +412,7 @@ class Model(pl.LightningModule):
             # the first half is unencoded, the second is encoded
             total = x[label]
             unencoded_all.append(total[: total.shape[0] // 2])
-            encoded_all.append(total[total.shape[0] // 2 :])
+            encoded_all.append(total[total.shape[0] // 2:])
         return (
             torch.cat(unencoded_all).detach().cpu().numpy(),
             torch.cat(encoded_all).detach().cpu().numpy(),

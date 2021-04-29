@@ -12,7 +12,7 @@ import logging
 
 sys.path.append("..")
 
-from src.models import Model, train_model
+from src.models import Model, train_model  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

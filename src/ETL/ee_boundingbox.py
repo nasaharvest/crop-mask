@@ -14,6 +14,12 @@ class BoundingBox:
     min_lat: float
     max_lat: float
 
+    def __post_init__(self):
+        if self.max_lon < self.min_lon:
+            raise ValueError("max_lon should be larger than min_lon")
+        if self.max_lat < self.min_lat:
+            raise ValueError("max_lat should be larger than min_lat")
+
 
 @dataclass
 class EEBoundingBox(BoundingBox):
@@ -117,6 +123,11 @@ class EEBoundingBox(BoundingBox):
     def from_bounding_box(
         bounding_box: BoundingBox,
     ) -> "EEBoundingBox":
+        lat = bounding_box.max_lat - bounding_box.min_lat
+        lon = bounding_box.max_lon - bounding_box.min_lon
+        if (lat + lon) > 10:
+            logger.warning("Bounding box is very large, Earth Engine may run out of memory.")
+
         return EEBoundingBox(
             max_lat=bounding_box.max_lat,
             min_lat=bounding_box.min_lat,
