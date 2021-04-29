@@ -47,7 +47,14 @@ jobs:
         flake8 --max-line-length 100 src scripts test
     - name: Run unit tests
       run: |
-        python -m unittest
+        pip install coverage
+        coverage run -m unittest
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+        verbose: true
     - name: Setup aws for integration test
       if: github.ref == 'refs/heads/master'
       run: |
