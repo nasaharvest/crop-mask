@@ -28,7 +28,8 @@ def splitImageIntoCells(img_path: Path, filename: str, squareDim: int, output_fo
             count = count + 1
 
 
-# Generate a bounding box from the pixel-wise coordinates using the original datasets transform property
+# Generate a bounding box from the pixel-wise coordinates
+# using the original datasets transform property
 def getTileGeom(transform, x, y, squareDim):
     corner1 = (x, y) * transform
     corner2 = (x + squareDim, y + squareDim) * transform

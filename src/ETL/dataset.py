@@ -36,7 +36,8 @@ class Dataset:
             return True
         else:
             logger.warning(
-                f"{output_folder.parent} does not exist locally, use `dvc pull data/{output_folder.parent.stem}` to download latest"
+                f"{output_folder.parent} does not exist locally, use "
+                f"`dvc pull data/{output_folder.parent.stem}` to download latest"
             )
             return False
 
@@ -106,9 +107,10 @@ class LabeledDataset(Dataset):
         df.to_csv(self.labels_path, index=False)
 
     def download_raw_labels(self):
-        if len(self.raw_labels) == 0:
-            logger.warning(f"No raw labels set for {self.dataset}")
-        elif self.is_output_folder_ready(self.raw_labels_dir):
+        if self.is_output_folder_ready(self.raw_labels_dir):
+            if len(self.raw_labels) == 0:
+                logger.warning(f"No raw labels set for {self.dataset}")
+
             for label in self.raw_labels:
                 label.download_file(output_folder=self.raw_labels_dir)
 

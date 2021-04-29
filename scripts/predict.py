@@ -13,9 +13,9 @@ import sys
 
 sys.path.append("..")
 
-from src.models import Model
-from src.analysis import plot_results
-from src.split_tiff import run_split_tiff
+from src.models import Model  # noqa: E402
+from src.analysis import plot_results  # noqa: E402
+from src.split_tiff import run_split_tiff  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -101,7 +101,8 @@ def run_inference(
 
     if gdrive_path_to_tif_files:
         logger.info(
-            f"Using rclone to copy files Google Drive: {gdrive_path_to_tif_files} to {local_path_to_tif_files}"
+            f"Using rclone to copy files Google Drive: {gdrive_path_to_tif_files} "
+            f"to {local_path_to_tif_files}"
         )
         subprocess.run(
             ["rclone", "copy", gdrive_path_to_tif_files, local_path_to_tif_files], check=True
