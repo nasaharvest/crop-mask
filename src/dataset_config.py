@@ -19,7 +19,8 @@ def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(-365 < df["between_days"]) & (df["between_days"] < 0), "harvest_da"] += year
 
     valid_years = [2018, 2019, 2020]
-    df = df[(df["planting_d"].dt.year.isin(valid_years)) & (df["harvest_da"].dt.year.isin(valid_years))].copy()
+    df = df[(df["planting_d"].dt.year.isin(valid_years)) &
+            (df["harvest_da"].dt.year.isin(valid_years))].copy()
     df = df[(0 < df["between_days"]) & (df["between_days"] <= 365)]
     return df
 
@@ -110,9 +111,8 @@ labeled_datasets = [
                 plant_date_col="Planting Date",
                 harvest_date_col="Estimated Harvest Date",
                 transform_crs_from=32636)
-            for i in [0,1,2]
-        ]
-        ),
+            for i in [0, 1, 2]
+        ]),
     ),
     LabeledDataset(
         dataset="Mali",

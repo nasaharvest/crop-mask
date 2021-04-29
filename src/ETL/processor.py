@@ -107,7 +107,8 @@ class Processor:
             )
         else:
             raise ValueError(
-                "end_date could not be computed please set either: end_year, or plant_date_col and harvest_date_col"
+                "end_date could not be computed please set either: end_year, "
+                "or plant_date_col and harvest_date_col"
             )
 
         if self.custom_start_date:
@@ -116,13 +117,14 @@ class Processor:
             df[START] = df[END] - total_days
 
         if (df[START] < pd.Timestamp(min_date)).any():
-            raise ValueError(f"start_date is set earlier than {min_date} (earlier than sentinel-2 data exists)")
+            raise ValueError(f"start_date is set earlier than {min_date} "
+                             f"(earlier than sentinel-2 data exists)")
 
         df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")
 
         if self.x_y_from_centroid:
-            df = df[df.geometry != None]
+            df = df[df.geometry != None]  # noqa: E711
             x = df.geometry.centroid.x.values
             y = df.geometry.centroid.y.values
 
