@@ -53,6 +53,7 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+        files: .coverage
         fail_ci_if_error: true
         verbose: true
     - name: Setup aws for integration test
