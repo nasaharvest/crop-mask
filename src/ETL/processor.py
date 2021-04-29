@@ -114,8 +114,9 @@ class Processor:
             df[START] = self.custom_start_date
         else:
             df[START] = df[END] - total_days
-        # if (df["start_date"] < pd.Timestamp(min_date)).any():
-        #     raise ValueError(f"start_date is set earlier than {min_date} (earlier than sentinel-2 data exists)")
+
+        if (df[START] < pd.Timestamp(min_date)).any():
+            raise ValueError(f"start_date is set earlier than {min_date} (earlier than sentinel-2 data exists)")
 
         df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")
