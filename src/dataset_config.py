@@ -17,11 +17,12 @@ def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
     df["between_days"] = (df["harvest_da"] - df["planting_d"]).dt.days
     year = pd.to_timedelta(timedelta(days=365))
     df.loc[(-365 < df["between_days"]) & (df["between_days"] < 0), "harvest_da"] += year
-    df.loc[(365 < df["between_days"]) & (df["between_days"] < (365 * 2)), "harvest_da"] -= year
-    df.loc[((365 * 2) < df["between_days"]) & (df["between_days"] < (365 * 3)), "harvest_da"] -= (
-        2 * year
-    )
+
+    valid_years = [2018, 2019, 2020]
+    df = df[(df["planting_d"].dt.year.isin(valid_years)) & (df["harvest_da"].dt.year.isin(valid_years))].copy()
+    df = df[(0 < df["between_days"]) & (df["between_days"] <= 365)]
     return df
+
 
 def clean_pv_kenya2(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename({"Latitude": "lat", "Longitude": "lon"})
