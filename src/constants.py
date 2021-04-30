@@ -1,3 +1,15 @@
+# df column names
+SOURCE = "source"
+CROP_PROB = "crop_probability"
+START = "start_date"
+END = "end_date"
+LON = "lon"
+LAT = "lat"
+COUNTRY = "country"
+NUM_LABELERS = "num_labelers"
+SUBSET = "subset"
+
+
 BANDS = [
     "B1",
     "B2",
