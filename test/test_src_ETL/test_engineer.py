@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import xarray as xr
 
-from src.constants import CROP_PROB, LAT, LON, SUBSET
+from src.constants import CROP_PROB, LAT, LON, SUBSET, START, END
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
@@ -30,6 +30,8 @@ class TestEngineer(TestCase):
                 LAT: [30, 50],
                 CROP_PROB: [0.0, 1.0],
                 SUBSET: ["training", "validation"],
+                START: ["2020-01-01", "2020-01-01"],
+                END: ["2021-01-01", "2021-01-01"],
             }
         )
         cls.engineer = Engineer(
@@ -52,7 +54,8 @@ class TestEngineer(TestCase):
         return {
             "path_to_file": Path("mock_file"),
             "calculate_normalizing_dict": False,
-            "start_date": datetime.now(),
+            "start_date": datetime(2020, 1, 1, 0, 0, 0),
+            "end_date": datetime(2021, 1, 1, 0, 0, 0),
             "days_per_timestep": 30,
         }
 
@@ -125,6 +128,9 @@ class TestEngineer(TestCase):
             label_lon=20,
             labelled_array=0.0,
             data_subset="training",
+            source_file="mock_file",
+            start_date_str="2020-01-01",
+            end_date_str="2021-01-01",
         )
         self.assertEqual(expected_data_instance, actual_data_instance)
 
@@ -136,6 +142,6 @@ class TestEngineer(TestCase):
             data=np.zeros((55, 45)),
         )
         kwargs = self.generate_data_kwargs()
-        for k in ["path_to_file", "start_date"]:
+        for k in ["path_to_file", "start_date", "end_date"]:
             del kwargs[k]
         self.engineer.create_pickled_labeled_dataset(**kwargs)

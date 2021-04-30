@@ -206,7 +206,7 @@ class LabelExporter(EarthEngineExporter):
         labels_path: Path,
         num_labelled_points: Optional[int] = None,
         surrounding_metres: int = 80,
-        start_from: Optional[int] = None
+        start_from: Optional[int] = None,
     ):
         r"""
         Run the exporter. For each label, the exporter will export
