@@ -1,6 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Union
 from .ee_boundingbox import BoundingBox
 
 
@@ -13,8 +13,7 @@ class CropDataInstance:
     label_lat: float
     label_lon: float
     labelled_array: Union[float, np.ndarray]
-    crop_label: Optional[str] = ""
-    is_maize: Optional[bool] = False
+    data_subset: str
 
     def isin(self, bounding_box: BoundingBox) -> bool:
         return (
