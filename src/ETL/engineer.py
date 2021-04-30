@@ -109,7 +109,11 @@ class Engineer(ABC):
         https://stackoverflow.com/questions/41336756/find-the-closest-latitude-and-longitude/41337005
         """
         p = 0.017453292519943295
-        a = 0.5 - np.cos((lat2-lat1)*p)/2 + np.cos(lat1*p)*np.cos(lat2*p) * (1-np.cos((lon2-lon1)*p)) / 2
+        a = (
+            0.5
+            - np.cos((lat2 - lat1) * p) / 2
+            + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
+        )
         return 12742 * np.arcsin(np.sqrt(a))
 
     def _create_labeled_data_instance(
@@ -186,7 +190,7 @@ class Engineer(ABC):
             data_subset=row[SUBSET],
             source_file=path_to_file.stem,
             start_date_str=row[START],
-            end_date_str=row[END]
+            end_date_str=row[END],
         )
 
     def create_pickled_labeled_dataset(
