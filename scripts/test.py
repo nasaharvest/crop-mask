@@ -17,7 +17,8 @@ if __name__ == "__main__":
         model = Model.load_from_checkpoint(str(model_path))
         trainer = pl.Trainer()
         trainer.test(model)
-        model_metrics[model_path.stem] = {k: round(float(v), 4) for k, v in trainer.callback_metrics.items()}
+        formatted_metrics = {k: round(float(v), 4) for k, v in trainer.callback_metrics.items()}
+        model_metrics[model_path.stem] = formatted_metrics
 
     with model_metrics_path.open("w") as f:
         json.dump(model_metrics, f, ensure_ascii=False, indent=4)
