@@ -5,7 +5,7 @@ import logging
 import sys
 
 sys.path.append("..")
-from src.dataset_config import labeled_datasets  # noqa: E402
+from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 

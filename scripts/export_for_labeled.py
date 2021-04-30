@@ -6,7 +6,7 @@ and exports datasets using Google Earth Engine
 import sys
 
 sys.path.append("..")
-from src.dataset_config import labeled_datasets  # noqa: E402
+from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 if __name__ == "__main__":
     for d in labeled_datasets:
