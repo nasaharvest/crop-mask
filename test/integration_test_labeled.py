@@ -14,7 +14,7 @@ from src.dataset_config import labeled_datasets  # noqa: E402
 class IntegrationTestLabeledData(TestCase):
     """Tests that the features look right"""
 
-    datasets_to_skip: List[str] = ['Kenya']
+    datasets_to_skip: List[str] = ["Kenya"]
 
     @classmethod
     def setUpClass(cls):
@@ -37,9 +37,12 @@ class IntegrationTestLabeledData(TestCase):
                 continue
             labels = pd.read_csv(d.labels_path)
             tif_file_count = self.get_file_count(d.raw_images_dir)
-            self.assertEqual(len(labels), tif_file_count,
-                             f"Amount of {d.dataset} labels ({len(labels)}) and resulting "
-                             f"{d.dataset} tif files ({tif_file_count}) is not the same")
+            self.assertEqual(
+                len(labels),
+                tif_file_count,
+                f"Amount of {d.dataset} labels ({len(labels)}) and resulting "
+                f"{d.dataset} tif files ({tif_file_count}) is not the same",
+            )
             print(f"{d.dataset} - each label has a tif file")
 
     def test_label_feature_subset_amounts(self):
@@ -49,14 +52,17 @@ class IntegrationTestLabeledData(TestCase):
 
             labels = pd.read_csv(d.labels_path)
             train_val_test_counts = labels[labels[CROP_PROB] != 0.5][SUBSET].value_counts()
-            for subset in ['training', 'validation', 'testing']:
+            for subset in ["training", "validation", "testing"]:
                 labels_in_subset = 0
                 if subset in train_val_test_counts:
                     labels_in_subset = train_val_test_counts[subset]
                 features_in_subset = self.get_file_count(d.features_dir / subset)
-                self.assertEqual(labels_in_subset, features_in_subset,
-                                 f"{d.dataset} {subset} labels ({labels_in_subset}) and features "
-                                 f"({features_in_subset}) are not equal in size")
+                self.assertEqual(
+                    labels_in_subset,
+                    features_in_subset,
+                    f"{d.dataset} {subset} labels ({labels_in_subset}) and features "
+                    f"({features_in_subset}) are not equal in size",
+                )
             print(f"{d.dataset} - label distribution exactly matches features")
 
     def test_features_for_duplicates(self):
@@ -65,15 +71,12 @@ class IntegrationTestLabeledData(TestCase):
                 continue
 
             features = []
-            for subset in ['training', 'validation', 'testing']:
+            for subset in ["training", "validation", "testing"]:
                 if (d.features_dir / subset).exists():
                     for p in (d.features_dir / subset).iterdir():
                         with p.open("rb") as f:
                             features.append(pickle.load(f))
             features_df = pd.DataFrame([feat.__dict__ for feat in features])
-            cols_to_check = ['label_lon', 'label_lat', 'start_date_str', 'end_date_str']
+            cols_to_check = ["label_lon", "label_lat", "start_date_str", "end_date_str"]
             num_dupes = len(features_df[features_df.duplicated(subset=cols_to_check)])
             self.assertEqual(num_dupes, 0, f"{d.dataset} features contain {num_dupes} duplicates.")
-
-
-
