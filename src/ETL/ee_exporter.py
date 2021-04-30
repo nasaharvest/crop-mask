@@ -93,7 +93,7 @@ class EarthEngineExporter:
         filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
 
         if self.checkpoint and (self.output_folder / f"{filename}.tif").exists():
-            logger.warning("File already exists! Skipping")
+            logger.info("File already exists! Skipping")
             return None
 
         while cur_end_date <= end_date:
