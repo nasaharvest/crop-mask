@@ -14,6 +14,9 @@ class CropDataInstance:
     label_lon: float
     labelled_array: Union[float, np.ndarray]
     data_subset: str
+    source_file: str
+    start_date_str: str
+    end_date_str: str
 
     def isin(self, bounding_box: BoundingBox) -> bool:
         return (

@@ -10,7 +10,7 @@ import pandas as pd
 import pickle
 
 from src.band_calculations import process_bands
-from src.constants import LAT, LON, CROP_PROB, SUBSET
+from src.constants import LAT, LON, CROP_PROB, SUBSET, START, END
 from src.utils import set_seed, process_filename, load_tif
 from .data_instance import CropDataInstance
 
@@ -102,11 +102,26 @@ class Engineer(ABC):
         std = np.sqrt(variance)
         return {"mean": norm_dict["mean"], "std": std}
 
+    @staticmethod
+    def distance(lat1, lon1, lat2, lon2):
+        """
+        haversince formula, inspired by:
+        https://stackoverflow.com/questions/41336756/find-the-closest-latitude-and-longitude/41337005
+        """
+        p = 0.017453292519943295
+        a = (
+            0.5
+            - np.cos((lat2 - lat1) * p) / 2
+            + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
+        )
+        return 12742 * np.arcsin(np.sqrt(a))
+
     def _create_labeled_data_instance(
         self,
         path_to_file: Path,
         calculate_normalizing_dict: bool,
         start_date: datetime,
+        end_date: datetime,
         days_per_timestep: int,
     ) -> Optional[CropDataInstance]:
         r"""
@@ -124,11 +139,23 @@ class Engineer(ABC):
             & (self.labels[LON] >= min_lon)
             & (self.labels[LAT] <= max_lat)
             & (self.labels[LAT] >= min_lat)
+            & (self.labels[START] == str(start_date.date()))
+            & (self.labels[END] == str(end_date.date()))
         ]
         if len(overlap) == 0:
             return None
 
-        row = overlap.iloc[0]
+        if len(overlap) == 1:
+            row = overlap.iloc[0]
+            idx = overlap.index[0]
+        else:
+            mean_lat = (min_lat + max_lat) / 2
+            mean_lon = (min_lon + max_lon) / 2
+            dist = self.distance(mean_lat, mean_lon, overlap[LAT], overlap[LON])
+            idx = dist.idxmin()
+            row = overlap.loc[dist.idxmin()]
+
+        self.labels = self.labels.drop(idx)
 
         if row[CROP_PROB] == 0.5:
             logger.warning("Skipping row because crop_probability is 0.5")
@@ -161,6 +188,9 @@ class Engineer(ABC):
             label_lon=row[LON],
             labelled_array=labelled_array,
             data_subset=row[SUBSET],
+            source_file=path_to_file.stem,
+            start_date_str=row[START],
+            end_date_str=row[END],
         )
 
     def create_pickled_labeled_dataset(
@@ -196,6 +226,7 @@ class Engineer(ABC):
                 file_path,
                 calculate_normalizing_dict=calculate_normalizing_dict,
                 start_date=start_date,
+                end_date=end_date,
                 days_per_timestep=days_per_timestep,
             )
             if instance is not None:
