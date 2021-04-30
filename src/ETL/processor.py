@@ -22,7 +22,7 @@ class Processor:
     filename: str
     crop_prob: Union[float, Callable]
 
-    train_val_test: Tuple[float, float, float] = (0.8, 0.1, 0.1)
+    train_val_test: Tuple[float, float, float] = (0.8, 0.2, 0.0)
 
     end_month_day: Tuple[int, int] = (4, 16)
     end_year: Optional[int] = None
