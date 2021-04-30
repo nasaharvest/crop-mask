@@ -90,6 +90,10 @@ class LabeledDataset(Dataset):
                 days_per_timestep=self.days_per_timestep,
             )
 
+    @staticmethod
+    def merge_sources(sources):
+        return ",".join(sources.unique())
+
     def process_labels(self):
         if self.labels_path.exists():
             return
@@ -103,7 +107,7 @@ class LabeledDataset(Dataset):
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
         df = df.groupby([LON, LAT, START, END], as_index=False).agg(
-            {SOURCE: ",".join, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
+            {SOURCE: self.merge_sources, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
         )
         df[COUNTRY] = self.country
         df = df.reset_index(drop=True)
