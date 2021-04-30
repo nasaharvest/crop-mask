@@ -91,6 +91,9 @@ class LabeledDataset(Dataset):
             )
 
     def process_labels(self):
+        if self.labels_path.exists():
+            return
+
         total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
 
         # Combine all processed labels
@@ -115,12 +118,12 @@ class LabeledDataset(Dataset):
                 label.download_file(output_folder=self.raw_labels_dir)
 
     def export_earth_engine_data(self, start_from: Optional[int] = None):
-        if self.is_output_folder_ready(self.raw_images_dir) or start_from is not None:
-            LabelExporter(
-                sentinel_dataset=self.sentinel_dataset,
-                output_folder=self.raw_images_dir,
-                fast=False,
-            ).export(labels_path=self.labels_path, start_from=start_from)
+        self.is_output_folder_ready(self.raw_images_dir)
+        LabelExporter(
+            sentinel_dataset=self.sentinel_dataset,
+            output_folder=self.raw_images_dir,
+            fast=False,
+        ).export(labels_path=self.labels_path, start_from=start_from)
 
 
 @dataclass
