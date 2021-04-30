@@ -75,8 +75,11 @@ labeled_datasets = [
         sentinel_dataset="earth_engine_kenya",
         processors=(
             Processor(
-                filename="noncrop_labels_v2", crop_prob=0.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1),
-                transform_crs_from=32636
+                filename="noncrop_labels_v2",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+                transform_crs_from=32636,
             ),
             Processor(
                 filename="noncrop_labels_set2",
@@ -85,9 +88,24 @@ labeled_datasets = [
                 train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
-            Processor(filename="2019_gepro_noncrop", crop_prob=0.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1)),
-            Processor(filename="noncrop_water_kenya_gt", crop_prob=0.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1)),
-            Processor(filename="noncrop_kenya_gt", crop_prob=0.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1)),
+            Processor(
+                filename="2019_gepro_noncrop",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="noncrop_water_kenya_gt",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="noncrop_kenya_gt",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
             Processor(
                 filename="one_acre_fund_kenya",
                 crop_prob=1.0,
@@ -126,9 +144,24 @@ labeled_datasets = [
         country="Mali",
         sentinel_dataset="earth_engine_mali",
         processors=(
-            Processor(filename="mali_noncrop_2019", crop_prob=0.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1)),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2019, train_val_test=(0.8, 0.1, 0.1)),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2020, train_val_test=(0.8, 0.1, 0.1)),
+            Processor(
+                filename="mali_noncrop_2019",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="segou_bounds_07212020",
+                crop_prob=1.0,
+                end_year=2019,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="segou_bounds_07212020",
+                crop_prob=1.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
         ),
     ),
     LabeledDataset(
