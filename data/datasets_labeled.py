@@ -75,22 +75,43 @@ labeled_datasets = [
         sentinel_dataset="earth_engine_kenya",
         processors=(
             Processor(
-                filename="noncrop_labels_v2", crop_prob=0.0, end_year=2020, transform_crs_from=32636
+                filename="noncrop_labels_v2",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+                transform_crs_from=32636,
             ),
             Processor(
                 filename="noncrop_labels_set2",
                 crop_prob=0.0,
                 end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
-            Processor(filename="2019_gepro_noncrop", crop_prob=0.0, end_year=2020),
-            Processor(filename="noncrop_water_kenya_gt", crop_prob=0.0, end_year=2020),
-            Processor(filename="noncrop_kenya_gt", crop_prob=0.0, end_year=2020),
+            Processor(
+                filename="2019_gepro_noncrop",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="noncrop_water_kenya_gt",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="noncrop_kenya_gt",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
             Processor(
                 filename="one_acre_fund_kenya",
                 crop_prob=1.0,
                 end_year=2020,
                 clean_df=lambda df: df.rename(columns={"Lat": LAT, "Lon": LON}),
+                train_val_test=(0.8, 0.1, 0.1),
                 x_y_from_centroid=False,
             ),
             Processor(
@@ -99,6 +120,7 @@ labeled_datasets = [
                 crop_prob=1.0,
                 plant_date_col="planting_d",
                 harvest_date_col="harvest_da",
+                train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
         )
@@ -110,6 +132,7 @@ labeled_datasets = [
                     crop_prob=1.0,
                     plant_date_col="Planting Date",
                     harvest_date_col="Estimated Harvest Date",
+                    train_val_test=(0.8, 0.1, 0.1),
                     transform_crs_from=32636,
                 )
                 for i in [0, 1, 2]
@@ -121,9 +144,24 @@ labeled_datasets = [
         country="Mali",
         sentinel_dataset="earth_engine_mali",
         processors=(
-            Processor(filename="mali_noncrop_2019", crop_prob=0.0, end_year=2020),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2019),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2020),
+            Processor(
+                filename="mali_noncrop_2019",
+                crop_prob=0.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="segou_bounds_07212020",
+                crop_prob=1.0,
+                end_year=2019,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
+            Processor(
+                filename="segou_bounds_07212020",
+                crop_prob=1.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
         ),
     ),
     LabeledDataset(
