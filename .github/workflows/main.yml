@@ -44,7 +44,7 @@ jobs:
         mypy src scripts
     - name: Run flake8
       run: |
-        flake8 --max-line-length 100 src scripts test
+        flake8 --max-line-length 100 src data scripts test
     - name: Run unit tests
       run: |
         pip install coverage

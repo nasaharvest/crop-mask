@@ -54,7 +54,7 @@ Adding new labeled data is a prerequisite for training new machine learning mode
 Unlabeled data is a set of satellite images without a crop/non-crop label. Unlabeled data is used to make predictions.
 
 **Steps to add unlabeled data:**
-1. Open the [dataset_config.py](src/dataset_config.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters (ie bounding box for region).
+1. Open the [dataset_unlabeled.py](data/datasets_unlabeled.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters (ie bounding box for region).
 2. To begin exporting satellite data from Google Earth Engine to your Google Drive run (from scripts directory):
     ```
     python export_for_unlabeled.py --dataset_name <YOUR DATASET NAME>
@@ -77,7 +77,7 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 
 **Steps to add new labaled data:**
 1. Add the shape file for new labels into [data/raw](data/raw)
-2. In [dataset_config.py](src/dataset_config.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
+2. In [dataset_labeled.py](data/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
 3. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
     ```bash
     python export_for_labeled.py
