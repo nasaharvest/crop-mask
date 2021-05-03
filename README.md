@@ -90,28 +90,22 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 
 ## 3. Training and inference
 ### 3a. Training locally
+You must have the specified datasets in `data/features`
 ```bash
-python model.py \
-  --datasets $DATASETS \
-  --model_name $MODEL_NAME
+python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ```
-
 ### 3b. Training with docker
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine.
 
 **Step 1:** Specify the following arguments:
-- `DATASETS` - which datasets to use for training (labeled dataset generated above)
-- `MODEL_NAME` - a unique identifier for the resulting model
-- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
-
 ```bash
 export DOCKER_BUILDKIT=1
 export AWS_CREDENTIALS=$HOME/.aws/credentials
 export CLEARML_CREDENTIALS=$HOME/clearml.conf
 
-export DATASETS="geowiki_landcover_2017,Kenya"  # Example datasets
-export MODEL_NAME="Kenya"                       # Example model name
-export MODELS_DVC_DIR="$HOME/crop-mask/data"
+export DATASETS="geowiki_landcover_2017,Kenya"  # Example datasets for which features exist
+export MODEL_NAME="Kenya"                       # Example new model name
+export MODELS_DVC_DIR="$HOME/crop-mask/data"    # Directory of the models.dvc file
 ```
 
 **Step 2:** Begin training:
@@ -142,7 +136,7 @@ export AWS_CREDENTIALS=$HOME/.aws/credentials
 export CLEARML_CREDENTIALS=$HOME/clearml.conf
 export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
 
-export MODEL_NAME="Kenya"                               # Model to be used for inference
+export MODEL_NAME="Kenya"                               # Existing model to be used for inference
 export GDRIVE_DIR="remote2:earth_engine_region_rwanda"  # Location of input tif files
 export VOLUME="/data"                                   # Directory on the host with a lot of space
 ```
