@@ -158,7 +158,7 @@ class Engineer(ABC):
         self.labels = self.labels.drop(idx)
 
         if row[CROP_PROB] == 0.5:
-            logger.warning("Skipping row because crop_probability is 0.5")
+            logger.info("Skipping row because crop_probability is 0.5")
             return None
 
         closest_lon, _ = self._find_nearest(da.x, row[LON])
