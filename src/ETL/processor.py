@@ -86,6 +86,8 @@ class Processor:
         logger.info(f"Reading in {file_path}")
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
+        elif file_path.suffix == ".csv":
+            df = pd.read_csv(file_path)
         else:
             df = geopandas.read_file(file_path)
 
