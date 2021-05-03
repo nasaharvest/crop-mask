@@ -1,5 +1,4 @@
 from unittest import TestCase
-from typing import List
 import pandas as pd
 import pickle
 import sys
@@ -8,13 +7,12 @@ sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
 from src.constants import CROP_PROB, SUBSET  # noqa: E402
+from src.ETL.dataset import LabeledDataset  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 
 class IntegrationTestLabeledData(TestCase):
     """Tests that the features look right"""
-
-    datasets_to_skip: List[str] = ["Kenya"]
 
     @classmethod
     def setUpClass(cls):
@@ -31,26 +29,40 @@ class IntegrationTestLabeledData(TestCase):
                     count += 1
         return count
 
+    @staticmethod
+    def load_labels(d: LabeledDataset) -> pd.DataFrame:
+        labels = pd.read_csv(d.labels_path)
+
+        # 9 images are not exported in geowiki due to:
+        # Error: Image.select: Pattern 'B1' did not match any bands.
+        if d.dataset == "geowiki_landcover_2017":
+            not_exported = [35684, 35687, 35705, 35717, 35726, 35730, 35791, 35861, 35865]
+            labels = labels[~labels.index.isin(not_exported)]
+
+        return labels
+
     def test_each_label_has_tif(self):
         for d in labeled_datasets:
-            if d.dataset in self.datasets_to_skip:
-                continue
-            labels = pd.read_csv(d.labels_path)
+
+            labels = self.load_labels(d)
+            label_count = len(labels)
+
             tif_file_count = self.get_file_count(d.raw_images_dir)
             self.assertEqual(
-                len(labels),
+                label_count,
                 tif_file_count,
-                f"Amount of {d.dataset} labels ({len(labels)}) and resulting "
+                f"Amount of {d.dataset} labels ({label_count}) and resulting "
                 f"{d.dataset} tif files ({tif_file_count}) is not the same",
             )
             print(f"{d.dataset} - each label has a tif file")
 
     def test_label_feature_subset_amounts(self):
         for d in labeled_datasets:
-            if d.dataset in self.datasets_to_skip:
-                continue
 
-            labels = pd.read_csv(d.labels_path)
+            # geowiki has 202 examples that are not associted with any labels
+            if d.dataset == "geowiki_landcover_2017":
+                continue
+            labels = self.load_labels(d)
             train_val_test_counts = labels[labels[CROP_PROB] != 0.5][SUBSET].value_counts()
             for subset in ["training", "validation", "testing"]:
                 labels_in_subset = 0
@@ -67,9 +79,6 @@ class IntegrationTestLabeledData(TestCase):
 
     def test_features_for_duplicates(self):
         for d in labeled_datasets:
-            if d.dataset in self.datasets_to_skip:
-                continue
-
             features = []
             for subset in ["training", "validation", "testing"]:
                 if (d.features_dir / subset).exists():
@@ -78,5 +87,8 @@ class IntegrationTestLabeledData(TestCase):
                             features.append(pickle.load(f))
             features_df = pd.DataFrame([feat.__dict__ for feat in features])
             cols_to_check = ["label_lon", "label_lat", "start_date_str", "end_date_str"]
-            num_dupes = len(features_df[features_df.duplicated(subset=cols_to_check)])
+            duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
+            num_dupes = len(duplicates)
+            if num_dupes > 0:
+                duplicates.to_csv(f"../data/test/duplicates/{d.dataset}.csv", index=False)
             self.assertEqual(num_dupes, 0, f"{d.dataset} features contain {num_dupes} duplicates.")

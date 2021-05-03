@@ -162,6 +162,12 @@ labeled_datasets = [
                 end_year=2020,
                 train_val_test=(0.8, 0.1, 0.1),
             ),
+            Processor(
+                filename="sikasso_clean_fields",
+                crop_prob=1.0,
+                end_year=2020,
+                train_val_test=(0.8, 0.1, 0.1),
+            ),
         ),
     ),
     LabeledDataset(
