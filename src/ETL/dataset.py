@@ -73,22 +73,21 @@ class LabeledDataset(Dataset):
         self.features_dir = data_folder / "features" / self.dataset
 
     def create_pickled_labeled_dataset(self):
-        if self.is_output_folder_ready(self.features_dir):
-            Engineer(
-                sentinel_files_path=self.raw_images_dir,
-                labels_path=self.labels_path,
-                save_dir=self.features_dir,
-                is_global=self.is_global,
-                nan_fill=self.nan_fill,
-                add_ndvi=self.add_ndvi,
-                add_ndwi=self.add_ndwi,
-                max_nan_ratio=self.max_nan_ratio,
-            ).create_pickled_labeled_dataset(
-                checkpoint=self.checkpoint,
-                include_extended_filenames=self.include_extended_filenames,
-                calculate_normalizing_dict=self.calculate_normalizing_dict,
-                days_per_timestep=self.days_per_timestep,
-            )
+        Engineer(
+            sentinel_files_path=self.raw_images_dir,
+            labels_path=self.labels_path,
+            save_dir=self.features_dir,
+            is_global=self.is_global,
+            nan_fill=self.nan_fill,
+            add_ndvi=self.add_ndvi,
+            add_ndwi=self.add_ndwi,
+            max_nan_ratio=self.max_nan_ratio,
+        ).create_pickled_labeled_dataset(
+            checkpoint=self.checkpoint,
+            include_extended_filenames=self.include_extended_filenames,
+            calculate_normalizing_dict=self.calculate_normalizing_dict,
+            days_per_timestep=self.days_per_timestep,
+        )
 
     @staticmethod
     def merge_sources(sources):
