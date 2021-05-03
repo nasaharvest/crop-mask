@@ -11,19 +11,20 @@ These can be used to create annual and in season crop maps.
 
 ## Contents
 - [1. Setting up a local environment](#1-setting-up-a-local-environment)
-- [2. Adding unlabeled data](#2-adding-unlabeled-data)
-- [3. Adding labeled data](#3-adding-labeled-data)
-- [4. Generating a crop map (with docker)](#4-generating-a-crop-map--with-docker-)
-  * [Setup environment variables](#setup-environment-variables)
-  * [Training a new model to generate a crop map](#training-a-new-model-to-generate-a-crop-map)
-  * [Generating a crop map with an existing model](#generating-a-crop-map-with-an-existing-model)
-  * [Monitoring training and inference](#monitoring-training-and-inference)
-  * [Diagram of the process](#diagram-of-the-process)
-  * [Building the docker image locally](#building-the-docker-image-locally)
-- [5. Tests](#5-tests)
-- [6. Previously generated crop maps](#6-previously-generated-crop-maps)
-- [7. Acknowledgments](#7-acknowledgments)
-- [8. Reference](#8-reference)
+- [2. Adding data](#2-adding-data)
+  * [2a. Adding unlabeled data](#2a-adding-unlabeled-data)
+  * [2b. Adding labeled data](#2b-adding-labeled-data)
+- [3. Training and inference](#3-training-and-inference)
+  * [3a. Training locally](#3a-training-locally)
+  * [3b. Training with docker](#3b-training-with-docker)
+  * [3c. Generating a crop map (with docker)](#3c-generating-a-crop-map--with-docker-)
+  * [3d. Monitoring](#3d-monitoring)
+  * [3e. Diagram of the process](#3e-diagram-of-the-process)
+  * [3f. Building the docker image locally](#3f-building-the-docker-image-locally)
+- [4. Tests](#4-tests)
+- [5. Previously generated crop maps](#5-previously-generated-crop-maps)
+- [6. Acknowledgments](#6-acknowledgments)
+- [7. Reference](#7-reference)
 
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
@@ -123,7 +124,7 @@ This command does the following:
 2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
 
 ![train](diagrams/train.png)
-## 3c. Generating a crop map (with docker)
+### 3c. Generating a crop map (with docker)
 
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
