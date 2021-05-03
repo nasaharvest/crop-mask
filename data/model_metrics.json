@@ -26,5 +26,33 @@
         "encoded_test_local_recall_score": 0.9091,
         "encoded_test_local_f1_score": 0.9091,
         "encoded_test_local_accuracy": 0.9
+    },
+    "Togo": {
+        "val_loss": 0.9169,
+        "test_encoder_mae": 0.4298,
+        "unencoded_test_local_roc_auc_score": 0.8587,
+        "unencoded_test_local_precision_score": 0.5799,
+        "unencoded_test_local_recall_score": 0.9159,
+        "unencoded_test_local_f1_score": 0.7101,
+        "unencoded_test_local_accuracy": 0.7419,
+        "encoded_test_local_roc_auc_score": 0.786,
+        "encoded_test_local_precision_score": 0.597,
+        "encoded_test_local_recall_score": 0.7477,
+        "encoded_test_local_f1_score": 0.6639,
+        "encoded_test_local_accuracy": 0.7387
+    },
+    "Mali": {
+        "val_loss": 0.5875,
+        "test_encoder_mae": 0.3482,
+        "unencoded_test_local_roc_auc_score": 0.9763,
+        "unencoded_test_local_precision_score": 0.974,
+        "unencoded_test_local_recall_score": 0.9494,
+        "unencoded_test_local_f1_score": 0.9615,
+        "unencoded_test_local_accuracy": 0.9368,
+        "encoded_test_local_roc_auc_score": 0.9699,
+        "encoded_test_local_precision_score": 0.961,
+        "encoded_test_local_recall_score": 0.9367,
+        "encoded_test_local_f1_score": 0.9487,
+        "encoded_test_local_accuracy": 0.9158
     }
 }
