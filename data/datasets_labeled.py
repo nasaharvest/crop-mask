@@ -218,7 +218,7 @@ labeled_datasets = [
                     filename=filename,
                     crop_prob=lambda df: df['Crop/ or not'] == 'Cropland',
                     x_y_from_centroid=False,
-                    train_val_test=(0.8, 0.2, 0.0),
+                    train_val_test=(0.8, 0.1, 0.1),
                     end_year=2020,
                 )
                 for filename in [
