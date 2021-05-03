@@ -1,5 +1,4 @@
 from unittest import TestCase
-from typing import List
 import pandas as pd
 import pickle
 import sys
@@ -8,7 +7,7 @@ sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
 from src.constants import CROP_PROB, SUBSET  # noqa: E402
-from src.ETL.dataset import LabeledDataset # noqa: E402
+from src.ETL.dataset import LabeledDataset  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 
@@ -36,7 +35,7 @@ class IntegrationTestLabeledData(TestCase):
 
         # 9 images are not exported in geowiki due to:
         # Error: Image.select: Pattern 'B1' did not match any bands.
-        if d.dataset == 'geowiki_landcover_2017':
+        if d.dataset == "geowiki_landcover_2017":
             not_exported = [35684, 35687, 35705, 35717, 35726, 35730, 35791, 35861, 35865]
             labels = labels[~labels.index.isin(not_exported)]
 
@@ -61,7 +60,7 @@ class IntegrationTestLabeledData(TestCase):
         for d in labeled_datasets:
 
             # geowiki has 202 examples that are not associted with any labels
-            if d.dataset == 'geowiki_landcover_2017':
+            if d.dataset == "geowiki_landcover_2017":
                 continue
             labels = self.load_labels(d)
             train_val_test_counts = labels[labels[CROP_PROB] != 0.5][SUBSET].value_counts()
