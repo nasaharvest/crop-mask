@@ -40,5 +40,19 @@
         "encoded_test_local_recall_score": 0.9367,
         "encoded_test_local_f1_score": 0.9487,
         "encoded_test_local_accuracy": 0.9158
+    },
+    "Kenya": {
+        "val_loss": 0.2367,
+        "test_encoder_mae": 0.303,
+        "unencoded_test_local_roc_auc_score": 0.9898,
+        "unencoded_test_local_precision_score": 0.9798,
+        "unencoded_test_local_recall_score": 0.9493,
+        "unencoded_test_local_f1_score": 0.9643,
+        "unencoded_test_local_accuracy": 0.9514,
+        "encoded_test_local_roc_auc_score": 0.9847,
+        "encoded_test_local_precision_score": 0.961,
+        "encoded_test_local_recall_score": 0.9673,
+        "encoded_test_local_f1_score": 0.9642,
+        "encoded_test_local_accuracy": 0.9502
     }
 }
