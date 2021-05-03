@@ -11,19 +11,20 @@ These can be used to create annual and in season crop maps.
 
 ## Contents
 - [1. Setting up a local environment](#1-setting-up-a-local-environment)
-- [2. Adding unlabeled data](#2-adding-unlabeled-data)
-- [3. Adding labeled data](#3-adding-labeled-data)
-- [4. Generating a crop map (with docker)](#4-generating-a-crop-map--with-docker-)
-  * [Setup environment variables](#setup-environment-variables)
-  * [Training a new model to generate a crop map](#training-a-new-model-to-generate-a-crop-map)
-  * [Generating a crop map with an existing model](#generating-a-crop-map-with-an-existing-model)
-  * [Monitoring training and inference](#monitoring-training-and-inference)
-  * [Diagram of the process](#diagram-of-the-process)
-  * [Building the docker image locally](#building-the-docker-image-locally)
-- [5. Tests](#5-tests)
-- [6. Previously generated crop maps](#6-previously-generated-crop-maps)
-- [7. Acknowledgments](#7-acknowledgments)
-- [8. Reference](#8-reference)
+- [2. Adding data](#2-adding-data)
+  * [2a. Adding unlabeled data](#2a-adding-unlabeled-data)
+  * [2b. Adding labeled data](#2b-adding-labeled-data)
+- [3. Training and inference](#3-training-and-inference)
+  * [3a. Training locally](#3a-training-locally)
+  * [3b. Training with docker](#3b-training-with-docker)
+  * [3c. Generating a crop map (with docker)](#3c-generating-a-crop-map--with-docker-)
+  * [3d. Monitoring](#3d-monitoring)
+  * [3e. Diagram of the process](#3e-diagram-of-the-process)
+  * [3f. Building the docker image locally](#3f-building-the-docker-image-locally)
+- [4. Tests](#4-tests)
+- [5. Previously generated crop maps](#5-previously-generated-crop-maps)
+- [6. Acknowledgments](#6-acknowledgments)
+- [7. Reference](#7-reference)
 
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
@@ -48,7 +49,8 @@ These can be used to create annual and in season crop maps.
     ```
  
 
-## 2. Adding unlabeled data
+## 2. Adding data
+### 2a. Adding unlabeled data
 **Purpose:** 
 Unlabeled data is a set of satellite images without a crop/non-crop label. Unlabeled data is used to make predictions.
 
@@ -56,20 +58,20 @@ Unlabeled data is a set of satellite images without a crop/non-crop label. Unlab
 1. Ensure local environment is set up.
 2. Open the [dataset_unlabeled.py](data/datasets_unlabeled.py) file and add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters (ie bounding box for region).
 3. To begin exporting satellite data from Google Earth Engine to your Google Drive run (from scripts directory):
-    ```
+    ```bash
     python export_for_unlabeled.py --dataset_name <YOUR DATASET NAME>
     ```
 ![Add unlabeled data](diagrams/add_unlabeled_data.png)
 
 Running exports can be viewed (and individually cancelled) in the `Tabs` bar on the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 
-## 3. Adding labeled data
+### 2b. Adding labeled data
 **Purpose:** 
 Labeled data is a set of satellite images with a crop/non-crop label. Labeled data is used to train and evaluate the machine learning model.
 
 Since the labeled data is directly tied to the machine learning model, it is kept track of using [dvc](https://dvc.org/doc) inside the [data](data) directory. The [data](data) directory contains *.dvc files which point to the version and location of the data in remote storage (in this case an AWS S3 Bucket).
 
-**Steps to add new labaled data:**
+**Steps to add new labeled data:**
 1. Ensure local environment is set up and all existing data is downloaded.
 2. Add the shape file for new labels into [data/raw](data/raw)
 3. In [dataset_labeled.py](data/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
@@ -86,36 +88,25 @@ Since the labeled data is directly tied to the machine learning model, it is kep
 8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
 ![Add labeled data](diagrams/add_labeled_data.png)
-## 4. Generating a crop map (with docker)
 
-You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
-
-### Setup environment variables
-- If you don't have the crop-mask repo, and you aren't sure if you have all the credentials on your machine: simply copy and paste the contents of setup.sh into your shell.
-- If you don't have the crop-mask repo, but have all the credential information locally, you can set the environment variables directly
-  ```bash
-  # Example
-  export DOCKER_BUILDKIT=1
-  export AWS_CREDENTIALS=$HOME/.aws/credentials
-  export CLEARML_CREDENTIALS=$HOME/clearml.conf
-  export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
-  ```
-- If you have the crop-mask repo available just run:
-  ```bash
-  source setup.sh
-  ```
-
-### Training a new model to generate a crop map
-**Step 1:** Specify the following arguments:
-- `DATASETS` - which datasets to use for trianing (labeled dataset generated above)
-- `MODEL_NAME` - a unique identifier for the resulting model
-- `MODELS_DVC_DIR` - a directory on the host machine where the models.dvc file will be exported
-
+## 3. Training and inference
+### 3a. Training locally
+You must have the specified datasets in `data/features`
 ```bash
-# Example
-export DATASETS="geowiki_landcover_2017,kenya_non_crop,one_acre_fund_kenya,plant_village_kenya"
-export MODEL_NAME="kenya"
-export MODELS_DVC_DIR="$HOME/crop-mask/data"
+python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
+```
+### 3b. Training with docker
+You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine.
+
+**Step 1:** Specify the following arguments:
+```bash
+export DOCKER_BUILDKIT=1
+export AWS_CREDENTIALS=$HOME/.aws/credentials
+export CLEARML_CREDENTIALS=$HOME/clearml.conf
+
+export DATASETS="geowiki_landcover_2017,Kenya"  # Example datasets for which features exist
+export MODEL_NAME="Kenya"                       # Example new model name
+export MODELS_DVC_DIR="$HOME/crop-mask/data"    # Directory of the models.dvc file
 ```
 
 **Step 2:** Begin training:
@@ -133,19 +124,25 @@ This command does the following:
 2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
 
 ![train](diagrams/train.png)
-### Generating a crop map with an existing model
+### 3c. Generating a crop map (with docker)
 
-**Step 1:** Specify the following arguments:
-- `MODEL_NAME` - model used for inference
-- `GDRIVE_DIR` - source of the input files on Google Drive (the unlabeled dataset generated above)
-- `VOLUME` - a directory on the host with a lot of space for storing the inputs and predictions. If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for this variable
+You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
+
+**Step 1:** Specify the environment variables:
 ```bash
 # Example
-export MODEL_NAME="kenya"
-export GDRIVE_DIR="remote2:earth_engine_region_rwanda"
-export VOLUME="/data"
+export DOCKER_BUILDKIT=1
+export AWS_CREDENTIALS=$HOME/.aws/credentials
+export CLEARML_CREDENTIALS=$HOME/clearml.conf
+export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
+
+export MODEL_NAME="Kenya"                               # Existing model to be used for inference
+export GDRIVE_DIR="remote2:earth_engine_region_rwanda"  # Location of input tif files
+export VOLUME="/data"                                   # Directory on the host with a lot of space
 ```
+
+If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for `VOLUME`.
 
 **Step 2:** Begin inference:
 ```bash
@@ -162,27 +159,27 @@ docker run --gpus all \
 ```
 
 This command does the following:
-3. Pulls in the satellite images in Google Drive and splits them so they are ready for inference
-4. Runs inference on each of the split files and outputs a crop map to remote storage.
+1. Pulls in the satellite images in Google Drive and splits them so they are ready for inference
+2. Runs inference on each of the split files and outputs a crop map to remote storage.
 
 **Note**: The ML model is packaged into the docker image at build time not during this command.
 
 ![inference](diagrams/inference.png)
 
-### Monitoring training and inference
+### 3d. Monitoring
 ClearML is used for monitoring training and inference during each docker run. You'll need a ClearML account and access to the ClearML workspace (contact izvonkov@umd.edu)
 
-### Diagram of the process
+### 3e. Diagram of the process 
 ![crop_map_generation](diagrams/crop_map_generation.png)
 
-### Building the docker image locally
+### 3f. Building the docker image locally
 ```bash
 export DOCKER_BUILDKIT=1
 export AWS_CREDENTIALS=$HOME/.aws/credentials
 docker build -t ivanzvonkov/cropmask --secret id=aws,src=$AWS_CREDENTIALS .
 ```
 
-## 5. Tests
+## 4. Tests
 The following tests can be run against the pipeline:
 
 ```bash
@@ -196,7 +193,7 @@ python -m unittest integration_test_labeled.py
 python -m unittest integration_test_predict.py
 ```
 
-## 6. Previously generated crop maps
+## 5. Previously generated crop maps
 Google Earth Engine:
 * [Kenya (post season)](https://code.earthengine.google.com/ea3613a3a45badfd01ce2ec914dfe1ef)
 * [Busia (in season)](https://code.earthengine.google.com/f567cccc28dad7a25e088d56dabfbd4c)
@@ -204,10 +201,10 @@ Google Earth Engine:
 Zenodo
 - [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
 
-## 7. Acknowledgments
+## 6. Acknowledgments
 This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
 
-## 8. Reference
+## 7. Reference
 
 If you find this code useful, please cite the following paper:
 
