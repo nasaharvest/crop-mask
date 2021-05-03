@@ -13,18 +13,18 @@
         "encoded_test_local_f1_score": 0.6364,
         "encoded_test_local_accuracy": 0.7161
     },
-    "mali2": {
-        "val_loss": 0.4687,
-        "test_encoder_mae": 0.3089,
-        "unencoded_test_local_roc_auc_score": 1.0,
-        "unencoded_test_local_precision_score": 1.0,
-        "unencoded_test_local_recall_score": 0.9091,
-        "unencoded_test_local_f1_score": 0.9524,
-        "unencoded_test_local_accuracy": 0.95,
-        "encoded_test_local_roc_auc_score": 0.9798,
-        "encoded_test_local_precision_score": 0.9091,
-        "encoded_test_local_recall_score": 0.9091,
-        "encoded_test_local_f1_score": 0.9091,
-        "encoded_test_local_accuracy": 0.9
+    "Mali": {
+        "val_loss": 0.5875,
+        "test_encoder_mae": 0.3482,
+        "unencoded_test_local_roc_auc_score": 0.9763,
+        "unencoded_test_local_precision_score": 0.974,
+        "unencoded_test_local_recall_score": 0.9494,
+        "unencoded_test_local_f1_score": 0.9615,
+        "unencoded_test_local_accuracy": 0.9368,
+        "encoded_test_local_roc_auc_score": 0.9699,
+        "encoded_test_local_precision_score": 0.961,
+        "encoded_test_local_recall_score": 0.9367,
+        "encoded_test_local_f1_score": 0.9487,
+        "encoded_test_local_accuracy": 0.9158
     }
 }
