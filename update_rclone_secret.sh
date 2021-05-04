@@ -6,7 +6,7 @@
 rclone version
 
 # Refreshes token
-rclone lsd remote2:
+rclone lsd remote:
 
 # Uploads secret
 aws secretsmanager update-secret \
