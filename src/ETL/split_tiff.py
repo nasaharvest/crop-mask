@@ -7,6 +7,7 @@ from pathlib import Path
 import math
 import logging
 import rasterio
+import re
 from rasterio.mask import mask
 
 logger = logging.getLogger(__name__)
@@ -63,18 +64,15 @@ def run_split_tiff(path_to_tif_files):
     images = Path(path_to_tif_files).glob("*.tif")
     output_folder = Path(path_to_tif_files)
     for idx, image in enumerate(images):
-
         logger.debug(f"Splitting {image}")
-
-        name, start_date, end_bit = image.name.split("_")
-        end_date = end_bit[:10]
-        tile_identifier = end_bit[10:-4]
-
-        new_filename = f"{idx}-{name}{tile_identifier}_{start_date}_{end_date}"
-
-        splitImageIntoCells(image, new_filename, 1000, output_folder)
-
-        logger.debug(f"Finished {image}. Removing the original file")
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", image.stem)
+        if len(dates) == 2:
+            start_date, end_date = dates
+            name = image.stem.split(start_date)[0]
+            tile_identifier = image.stem.split(end_date)[-1]
+            new_filename = f"{idx}-{name}{tile_identifier}_{start_date}_{end_date}"
+            splitImageIntoCells(image, new_filename, 1000, output_folder)
+            logger.debug(f"Finished {image}. Removing the original file")
         image.unlink()
 
     return output_folder

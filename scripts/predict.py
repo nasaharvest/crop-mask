@@ -15,7 +15,7 @@ sys.path.append("..")
 
 from src.models import Model  # noqa: E402
 from src.analysis import plot_results  # noqa: E402
-from src.split_tiff import run_split_tiff  # noqa: E402
+from src.ETL.split_tiff import run_split_tiff  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
