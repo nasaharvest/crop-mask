@@ -21,14 +21,20 @@ unlabeled_datasets = [
     UnlabeledDataset(
         sentinel_dataset="Mali_USAID_ZOIS_upper",
         region_bbox=BoundingBox(
-            min_lon=-5.197335399999872, max_lon=-1.9996060219999094, min_lat=13.1527367220001, max_lat=17.11443622600001
+            min_lon=-5.197335399999872,
+            max_lon=-1.9996060219999094,
+            min_lat=13.1527367220001,
+            max_lat=17.11443622600001,
         ),
         season=Season.post_season,
     ),
     UnlabeledDataset(
         sentinel_dataset="Mali_USAID_ZOIS_lower",
         region_bbox=BoundingBox(
-            min_lon=-8.34855327799994, max_lon=-4.661010148999935, min_lat=10.36852747000006, max_lat=12.583134347000112
+            min_lon=-8.34855327799994,
+            max_lon=-4.661010148999935,
+            min_lat=10.36852747000006,
+            max_lat=12.583134347000112,
         ),
         season=Season.post_season,
     ),
