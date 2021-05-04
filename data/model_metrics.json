@@ -1,17 +1,17 @@
 {
-    "togo-refeature-all": {
-        "val_loss": 0.8207,
-        "test_encoder_mae": 0.3721,
-        "unencoded_test_local_roc_auc_score": 0.8996,
-        "unencoded_test_local_precision_score": 0.6408,
-        "unencoded_test_local_recall_score": 0.8505,
-        "unencoded_test_local_f1_score": 0.7309,
-        "unencoded_test_local_accuracy": 0.7839,
-        "encoded_test_local_roc_auc_score": 0.7896,
-        "encoded_test_local_precision_score": 0.5704,
-        "encoded_test_local_recall_score": 0.7196,
-        "encoded_test_local_f1_score": 0.6364,
-        "encoded_test_local_accuracy": 0.7161
+    "Rwanda": {
+        "val_loss": 0.7164,
+        "test_encoder_mae": 0.4037,
+        "unencoded_test_local_roc_auc_score": 0.8304,
+        "unencoded_test_local_precision_score": 0.6087,
+        "unencoded_test_local_recall_score": 0.6829,
+        "unencoded_test_local_f1_score": 0.6437,
+        "unencoded_test_local_accuracy": 0.7615,
+        "encoded_test_local_roc_auc_score": 0.7909,
+        "encoded_test_local_precision_score": 0.5682,
+        "encoded_test_local_recall_score": 0.6098,
+        "encoded_test_local_f1_score": 0.5882,
+        "encoded_test_local_accuracy": 0.7308
     },
     "Togo": {
         "val_loss": 0.9169,
@@ -40,5 +40,19 @@
         "encoded_test_local_recall_score": 0.9367,
         "encoded_test_local_f1_score": 0.9487,
         "encoded_test_local_accuracy": 0.9158
+    },
+    "Kenya": {
+        "val_loss": 0.2348,
+        "test_encoder_mae": 0.2985,
+        "unencoded_test_local_roc_auc_score": 0.9898,
+        "unencoded_test_local_precision_score": 0.9782,
+        "unencoded_test_local_recall_score": 0.951,
+        "unencoded_test_local_f1_score": 0.9644,
+        "unencoded_test_local_accuracy": 0.9514,
+        "encoded_test_local_roc_auc_score": 0.9845,
+        "encoded_test_local_precision_score": 0.9548,
+        "encoded_test_local_recall_score": 0.9657,
+        "encoded_test_local_f1_score": 0.9602,
+        "encoded_test_local_accuracy": 0.9446
     }
 }
