@@ -59,9 +59,10 @@ class IntegrationTestLabeledData(TestCase):
     def test_label_feature_subset_amounts(self):
         for d in labeled_datasets:
 
-            # geowiki has 202 examples that are not associted with any labels
+            # geowiki has 202 examples that are not associated with any labels
             if d.dataset == "geowiki_landcover_2017":
                 continue
+
             labels = self.load_labels(d)
             train_val_test_counts = labels[labels[CROP_PROB] != 0.5][SUBSET].value_counts()
             for subset in ["training", "validation", "testing"]:
@@ -79,6 +80,9 @@ class IntegrationTestLabeledData(TestCase):
 
     def test_features_for_duplicates(self):
         for d in labeled_datasets:
+            if d.dataset == "geowiki_landcover_2017":
+                continue
+
             features = []
             for subset in ["training", "validation", "testing"]:
                 if (d.features_dir / subset).exists():
@@ -89,6 +93,8 @@ class IntegrationTestLabeledData(TestCase):
             cols_to_check = ["label_lon", "label_lat", "start_date_str", "end_date_str"]
             duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
             num_dupes = len(duplicates)
+
             if num_dupes > 0:
                 duplicates.to_csv(f"../data/test/duplicates/{d.dataset}.csv", index=False)
             self.assertEqual(num_dupes, 0, f"{d.dataset} features contain {num_dupes} duplicates.")
+            print(f"{d.dataset} - features have no duplicates")

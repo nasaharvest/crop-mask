@@ -214,4 +214,25 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Rwanda",
+        country="Rwanda",
+        sentinel_dataset="earth_engine_rwanda",
+        processors=tuple(
+            [
+                Processor(
+                    filename=filename,
+                    crop_prob=lambda df: df['Crop/ or not'] == 'Cropland',
+                    x_y_from_centroid=False,
+                    train_val_test=(0.8, 0.1, 0.1),
+                    end_year=2020,
+                )
+                for filename in [
+                    "ceo-2019-Rwanda-Cropland-(RCMRD-Set-1)-sample-data-2021-04-20.csv",
+                    "ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2021-04-20.csv",
+                    "ceo-2019-Rwanda-Cropland-sample-data-2021-04-20.csv"
+                ]
+            ]
+        )
+    )
 ]
