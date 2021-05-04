@@ -13,6 +13,20 @@
         "encoded_test_local_f1_score": 0.6364,
         "encoded_test_local_accuracy": 0.7161
     },
+    "Togo": {
+        "val_loss": 0.9169,
+        "test_encoder_mae": 0.4298,
+        "unencoded_test_local_roc_auc_score": 0.8587,
+        "unencoded_test_local_precision_score": 0.5799,
+        "unencoded_test_local_recall_score": 0.9159,
+        "unencoded_test_local_f1_score": 0.7101,
+        "unencoded_test_local_accuracy": 0.7419,
+        "encoded_test_local_roc_auc_score": 0.786,
+        "encoded_test_local_precision_score": 0.597,
+        "encoded_test_local_recall_score": 0.7477,
+        "encoded_test_local_f1_score": 0.6639,
+        "encoded_test_local_accuracy": 0.7387
+    },
     "Mali": {
         "val_loss": 0.5875,
         "test_encoder_mae": 0.3482,
