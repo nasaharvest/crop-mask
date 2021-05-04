@@ -6,10 +6,10 @@
 
 |Country        |Labeled data (training)|Trained model ([metrics](data/model_metrics.json)) |Unlabeled data (inference) |Crop Map       |
 |---            |:---:                  |:---:                                              |:---:                      |:---:          |
-|Kenya          |![Progress]            |![Progress]                                        |![N/A]                     |![Complete]    |
-|Togo           |![Complete]            |![Progress]                                        |![N/A]                     |![Complete]    |
-|Mali           |![Progress]            |![Complete]                                        |![Progress]                |![N/A]         |
-|Rwanda         |![Progress]            |![N/A]                                             |![Complete]                |![N/A]         |
+|Kenya          |![Complete]            |![Complete]                                        |![N/A]                     |![Complete]    |
+|Togo           |![Complete]            |![Complete]                                        |![N/A]                     |![Complete]    |
+|Mali           |![Complete]            |![Complete]                                        |![Complete]                |![Progress]    |
+|Rwanda         |![Complete]            |![Complete]                                        |![Complete]                |![Progress]    |
 |Uganda         |![N/A]                 |![N/A]                                             |![N/A]                     |![N/A]         |
 |Uganda (Maize) |![N/A]                 |![N/A]                                             |![N/A]                     |![N/A]         |
 
