@@ -44,4 +44,3 @@ class SplitTiffTest(TestCase):
         mock_splitImageIntoCells.assert_called_with(
             self.temp_data_dir / input_file, output_file, 1000, self.temp_data_dir
         )
-
