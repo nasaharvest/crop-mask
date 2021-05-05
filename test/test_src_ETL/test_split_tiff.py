@@ -12,32 +12,35 @@ class SplitTiffTest(TestCase):
     temp_data_dir: Path
 
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         cls.temp_data_dir = Path(tempfile.mkdtemp())
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDown(cls):
         shutil.rmtree(cls.temp_data_dir)
 
     @patch("src.ETL.split_tiff.splitImageIntoCells")
-    def test_run_split_tiff(self, mock_splitImageIntoCells):
-        file_names = [
-            (
-                "Mali_USAID_ZOIS_lower_2020-04-01_2021-04-01-0000023040-0000038400.tif",
-                "1-Mali_USAID_ZOIS_lower_-0000023040-0000038400_2020-04-01_2021-04-01",
-            ),
-            (
-                "Rwanda_2020-04-01_2021-04-01-0000023040-0000038400.tif",
-                "0-Rwanda_-0000023040-0000038400_2020-04-01_2021-04-01",
-            ),
-        ]
-        for input_image, _ in file_names:
-            (self.temp_data_dir / input_image).touch()
+    def test_run_split_tiff_1(self, mock_splitImageIntoCells):
+        input_file = "Mali_USAID_ZOIS_lower_2020-04-01_2021-04-01-0000023040-0000038400.tif"
+        output_file = "0-Mali_USAID_ZOIS_lower_-0000023040-0000038400_2020-04-01_2021-04-01"
+
+        (self.temp_data_dir / input_file).touch()
 
         run_split_tiff(self.temp_data_dir)
 
-        self.assertEqual(mock_splitImageIntoCells.call_count, 2)
+        mock_splitImageIntoCells.assert_called_with(
+            self.temp_data_dir / input_file, output_file, 1000, self.temp_data_dir
+        )
+
+    @patch("src.ETL.split_tiff.splitImageIntoCells")
+    def test_run_split_tiff_2(self, mock_splitImageIntoCells):
+        input_file = "Rwanda_2020-04-01_2021-04-01-0000023040-0000038400.tif"
+        output_file = "0-Rwanda_-0000023040-0000038400_2020-04-01_2021-04-01"
+
+        (self.temp_data_dir / input_file).touch()
+
+        run_split_tiff(self.temp_data_dir)
 
         mock_splitImageIntoCells.assert_called_with(
-            self.temp_data_dir / file_names[0][0], file_names[0][1], 1000, self.temp_data_dir
+            self.temp_data_dir / input_file, output_file, 1000, self.temp_data_dir
         )
