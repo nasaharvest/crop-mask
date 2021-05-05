@@ -4,6 +4,7 @@ Takes a trained model and runs it on an area
 
 from argparse import ArgumentParser
 from clearml import Task
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 import boto3
@@ -175,7 +176,7 @@ if __name__ == "__main__":
     params = parser.parse_args()
     Task.init(
         project_name="NASA Harvest",
-        task_name=params.model_name,
+        task_name=f"{params.model_name} {datetime.now()}",
         task_type=Task.TaskTypes.inference,
     )
     run_inference(
