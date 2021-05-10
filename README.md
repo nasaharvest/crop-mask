@@ -17,7 +17,7 @@ These can be used to create annual and in season crop maps.
 - [3. Training and inference](#3-training-and-inference)
   * [3a. Training locally](#3a-training-locally)
   * [3b. Training with docker](#3b-training-with-docker)
-  * [3c. Generating a crop map (with docker)](#3c-generating-a-crop-map--with-docker-)
+  * [3c. Inference with docker / Generating a crop map](#3c-inference-with-docker---generating-a-crop-map)
   * [3d. Monitoring](#3d-monitoring)
   * [3e. Diagram of the process](#3e-diagram-of-the-process)
   * [3f. Building the docker image locally](#3f-building-the-docker-image-locally)
@@ -124,7 +124,7 @@ This command does the following:
 2. Pushes trained model to remote storage and outputs the models.dvc file to `$MODELS_DVC_DIR`, this file needs to be git committed inorder to share the trained model with collaborators 
 
 ![train](diagrams/train.png)
-### 3c. Generating a crop map (with docker)
+### 3c. Inference with docker / Generating a crop map
 
 You must have [docker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html) and awscli installed on the machine. If doing inference and using the `--gpus all` flag the host machine must have accessible GPU drivers and [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) is setup.
 
@@ -140,6 +140,7 @@ export RCLONE_CREDENTIALS=$HOME/.config/rclone/rclone.conf
 export MODEL_NAME="Kenya"                               # Existing model to be used for inference
 export GDRIVE_DIR="remote2:earth_engine_region_rwanda"  # Location of input tif files
 export VOLUME="/data"                                   # Directory on the host with a lot of space
+export UPLOAD_PREFIX="Kenya_2019_2020"
 ```
 
 If using an EC2 instance it is recommended to [mount an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) and use its path for `VOLUME`.
@@ -155,7 +156,8 @@ docker run --gpus all \
   --local_path_to_tif_files /vol/input \
   --split_tif_files true \
   --model_name $MODEL_NAME \
-  --predict_dir /vol/predict
+  --predict_dir /vol/predict \
+  --upload_prefix $UPLOAD_PREFIX
 ```
 
 This command does the following:
