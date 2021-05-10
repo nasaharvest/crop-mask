@@ -17,7 +17,7 @@ These can be used to create annual and in season crop maps.
 - [3. Training and inference](#3-training-and-inference)
   * [3a. Training locally](#3a-training-locally)
   * [3b. Training with docker](#3b-training-with-docker)
-  * [3c. Generating a crop map (with docker)](#3c-generating-a-crop-map--with-docker-)
+  * [3c. Inference with docker / Generating a crop map](#3c-inference-with-docker---generating-a-crop-map)
   * [3d. Monitoring](#3d-monitoring)
   * [3e. Diagram of the process](#3e-diagram-of-the-process)
   * [3f. Building the docker image locally](#3f-building-the-docker-image-locally)
