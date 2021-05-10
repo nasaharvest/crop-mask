@@ -9,7 +9,7 @@ dependencies:
   - mypy
   - black
   - pandas
-  - xarray
+  - xarray=0.17.0
   - netcdf4
   - rasterio
   - jupyter
