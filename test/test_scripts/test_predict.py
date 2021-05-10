@@ -177,10 +177,10 @@ class TestPredict(TestCase):
     @patch("scripts.predict.boto3")
     def test_s3_upload(self, boto3):
         s3 = boto3.resource("s3")
-        upload_to_s3(merged_files=[Path("test_file")], upload_folder_name="test_folder")
+        upload_to_s3(merged_files=[Path("test_file")], upload_prefix="country_2020")
         s3.Bucket.assert_called_with("crop-mask-data")
         s3.Bucket("crop-mask-data").upload_file.assert_called_with(
-            "test_file", "output/test_folder/test_file"
+            "test_file", "output/country_2020_test_file"
         )
 
     @patch("src.models.Model.load_from_checkpoint")
@@ -197,7 +197,7 @@ class TestPredict(TestCase):
             data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
             merge_predictions=True,
-            upload_predictions=True,
+            upload_prefix="country_2020",
         )
         mock_load_from_checkpoint.assert_called()
         self.assertEqual(mock_make_prediction.call_count, 2)
