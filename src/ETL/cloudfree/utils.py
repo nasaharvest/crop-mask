@@ -34,10 +34,20 @@ def export(
     monitor: bool = False,
 ) -> ee.batch.Export:
 
-    task = ee.batch.Export.image(
-        image.clip(region),
-        filename,
-        {"scale": 10, "region": region, "maxPixels": 1e13, "driveFolder": drive_folder},
+    # task = ee.batch.Export.image(
+    #     image.clip(region),
+    #     filename,
+    #     {"scale": 10, "region": region, "maxPixels": 1e13, "driveFolder": drive_folder},
+    # )
+
+    task = ee.batch.Export.image.toCloudStorage(
+        image=image.clip(region),
+        bucket="ee-data-to-be-split",
+        description=filename,
+        fileNamePrefix=drive_folder + "/" + filename,
+        scale=10,
+        region=region,
+        maxPixels=1e13,
     )
 
     try:
