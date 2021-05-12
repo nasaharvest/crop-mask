@@ -17,6 +17,8 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--dataset_name", type=str)
     params = parser.parse_args()
-    for d in unlabeled_datasets:
-        if d.sentinel_dataset == params.dataset_name:
-            d.export_earth_engine_data()
+    try:
+        dataset = next(d for d in unlabeled_datasets if d.sentinel_dataset == params.dataset_name)
+        dataset.export_earth_engine_data()
+    except Exception:
+        print(f"ERROR: no dataset was found with name: {params.dataset_name}")
