@@ -22,13 +22,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_file_prefix(with_forecaster: bool):
-    if with_forecaster:
-        return "forecasted"
-    else:
-        return "normal"
-
-
 def make_prediction(
     model: Model,
     test_path: Path,
@@ -37,7 +30,7 @@ def make_prediction(
     plot_results_enabled: bool = False,
     disable_tqdm: bool = True,
 ) -> Optional[Path]:
-    prefix = get_file_prefix(with_forecaster)
+    prefix = "forecasted" if with_forecaster else "normal"
 
     file_path = save_dir / f"preds_{prefix}_{test_path.name}.nc"
     if file_path.exists():
@@ -51,15 +44,15 @@ def make_prediction(
     return file_path
 
 
-def gdal_merge(save_dir: Path, with_forecaster: bool = False) -> Path:
-    prefix = get_file_prefix(with_forecaster)
-    file_list = save_dir.glob(f"*{prefix}*.nc")
-    files_string = " ".join([str(file) for file in file_list])
-    merged_file = save_dir / f"merged_{prefix}.tif"
-    logger.info(f"Merging files *{prefix}*.nc to {merged_file}")
-    command = f"gdal_merge.py -o {merged_file} -of gtiff {files_string}"
+def gdal_merge(unmerged_tifs_folder: Path, output_file: Path) -> Path:
+    command = f"gdal_merge.py -o {output_file} -of gtiff {unmerged_tifs_folder}/*"
+    logger.info(f"Running: {command}")
     subprocess.Popen(command, shell=True).wait()
-    return merged_file
+    if not output_file.exists():
+        raise FileExistsError(
+            f"Output file: {output_file} was not created from files in {unmerged_tifs_folder}"
+        )
+    return output_file
 
 
 def upload_to_s3(merged_files: List[Path], upload_folder_name: str = ""):
@@ -121,7 +114,10 @@ def run_inference(
     logger.info(f"Using model {model_name}")
     model = Model.load_from_checkpoint(f"{data_dir}/models/{model_name}.ckpt")
     save_dir = Path(predict_dir)
-    save_dir.mkdir(exist_ok=True)
+    save_dir_forecasted = save_dir / "forecasted"
+    save_dir_normal = save_dir / "normal"
+    for dir in [save_dir, save_dir_forecasted, save_dir_normal]:
+        dir.mkdir(exist_ok=True)
 
     file_amount = len(test_files)
     logger.info(f"Beginning inference on tif files in {local_path_to_tif_files}")
@@ -131,7 +127,7 @@ def run_inference(
             make_prediction(
                 model,
                 test_path,
-                save_dir,
+                save_dir_forecasted,
                 with_forecaster=True,
                 plot_results_enabled=plot_results_enabled,
                 disable_tqdm=disable_tqdm,
@@ -140,7 +136,7 @@ def run_inference(
             make_prediction(
                 model,
                 test_path,
-                save_dir,
+                save_dir_normal,
                 with_forecaster=False,
                 plot_results_enabled=plot_results_enabled,
                 disable_tqdm=disable_tqdm,
@@ -150,9 +146,18 @@ def run_inference(
     if merge_predictions:
         logger.info("Merge predictions enabled")
         if predict_with_forecaster:
-            merged_files.append(gdal_merge(save_dir, with_forecaster=True))
+            merged_files.append(
+                gdal_merge(
+                    unmerged_tifs_folder=save_dir_forecasted,
+                    output_file=save_dir / "merged_forecasted.tif",
+                )
+            )
         if predict_without_forecaster:
-            merged_files.append(gdal_merge(save_dir, with_forecaster=False))
+            merged_files.append(
+                gdal_merge(
+                    unmerged_tifs_folder=save_dir_normal, output_file=save_dir / "merged_normal.tif"
+                )
+            )
 
     if upload_predictions:
         upload_to_s3(merged_files, upload_folder_name)
