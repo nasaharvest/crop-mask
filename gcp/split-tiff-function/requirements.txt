@@ -1,0 +1,5 @@
+google-cloud-secret-manager
+google-cloud-storage
+rasterio
+Shapely
+
