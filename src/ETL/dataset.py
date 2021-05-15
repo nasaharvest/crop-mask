@@ -10,7 +10,7 @@ from .label_downloader import RawLabels
 from .processor import Processor
 from .ee_exporter import LabelExporter, RegionExporter, Season
 from .ee_boundingbox import BoundingBox
-from src.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, NUM_LABELERS, SUBSET
+from src.ETL.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, NUM_LABELERS, SUBSET
 
 logger = logging.getLogger(__name__)
 

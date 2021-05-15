@@ -11,7 +11,7 @@ import sys
 
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
-from src.constants import START, END, LAT, LON
+from src.ETL.constants import START, END, LAT, LON
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +41,21 @@ class EarthEngineExporter:
             already been exported. If it has, skip it
     :param monitor: Whether to monitor each task until it has been run
     """
-    output_folder: Path
     sentinel_dataset: str
+    output_folder: Optional[Path] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
     fast: bool = True
     checkpoint: bool = True
     monitor: bool = False
+    credentials: Optional = None
 
-    @staticmethod
-    def check_earthengine_auth():
+    def check_earthengine_auth(self):
         try:
-            ee.Initialize()
+            if self.credentials:
+                ee.Initialize(credentials=self.credentials)
+            else:
+                ee.Initialize()
         except Exception:
             logger.error(
                 "This code doesn't work unless you have authenticated your earthengine account"
@@ -92,7 +95,7 @@ class EarthEngineExporter:
 
         filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
 
-        if self.checkpoint and (self.output_folder / f"{filename}.tif").exists():
+        if self.checkpoint and self.output_folder and (self.output_folder / f"{filename}.tif").exists():
             logger.info("File already exists! Skipping")
             return None
 

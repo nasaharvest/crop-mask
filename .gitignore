@@ -117,3 +117,6 @@ files
 # the data folder
 data/**/
 scripts/lightning_logs
+
+# gcp
+gcp/export-unlabeled-function/src
