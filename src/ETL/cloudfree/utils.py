@@ -5,7 +5,7 @@ cloudfree algorithm
 import ee
 import logging
 from datetime import date
-from src.constants import BANDS
+from src.ETL.constants import BANDS
 from typing import Union
 
 logger = logging.getLogger(__name__)

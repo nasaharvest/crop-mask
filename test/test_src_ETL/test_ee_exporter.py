@@ -14,7 +14,7 @@ from src.ETL.ee_exporter import (
     RegionExporter,
     EarthEngineExporter,
 )
-from src.constants import LAT, LON, START, END
+from src.ETL.constants import LAT, LON, START, END
 
 module = "src.ETL.ee_exporter"
 
