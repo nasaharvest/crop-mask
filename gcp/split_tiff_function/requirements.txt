@@ -1,5 +1,6 @@
 google-cloud-secret-manager
 google-cloud-storage
+psutil
 rasterio
 Shapely
 
