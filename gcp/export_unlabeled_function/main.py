@@ -1,18 +1,22 @@
 import logging
-import ee
 import json
 import tempfile
+import ee
 
-from flask import abort
+from flask import abort, Request
 from google.cloud import secretmanager
+from google.cloud import pubsub_v1
 from pathlib import Path
 
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.ee_exporter import Season, RegionExporter
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_credentials():
+
+def get_ee_credentials():
+    logger.info("Fetching credentials")
     filename = tempfile.gettempdir() + "/creds.json"
     if not Path(filename).exists():
         client = secretmanager.SecretManagerServiceClient()
@@ -22,10 +26,15 @@ def get_credentials():
         output_dict = json.loads(payload)
         with open(filename, 'w') as outfile:
             json.dump(output_dict, outfile)
-    return filename
+
+    service_account = 'nasa-harvest@appspot.gserviceaccount.com'
+    logger.info(f"Setting ee credentials for {service_account}")
+    credentials = ee.ServiceAccountCredentials(service_account, filename)
+    logger.info("Credentials set")
+    return credentials
 
 
-def hello_gcs(request):
+def export_unlabeled(request: Request):
     """
     Args:
          request (Request): Event payload.
@@ -47,9 +56,7 @@ def hello_gcs(request):
         abort(400, description=str(e))
 
     try:
-        service_account = 'nasa-harvest@appspot.gserviceaccount.com'
-        credentials = ee.ServiceAccountCredentials(service_account, get_credentials())
-        logger.info(f"Obtained credentials for {service_account}")
+        credentials = get_ee_credentials()
         RegionExporter(sentinel_dataset=sentinel_dataset, credentials=credentials).export(
             region_bbox=BoundingBox(**bbox_args), season=season, metres_per_polygon=None)
     except Exception as e:
@@ -57,3 +64,37 @@ def hello_gcs(request):
         abort(500, description=str(e))
 
     return f"Started export of {sentinel_dataset}"
+
+
+def get_status(request: Request):
+    """
+    Args:
+         request (Request): Event payload.
+    """
+    logger.info(f"Called with: {request.args}")
+    tasks = []
+    try:
+        credentials = get_ee_credentials()
+        ee.Initialize(credentials)
+        logger.info("Looping through ee task list:")
+        for t in ee.batch.Task.list():
+            if t.state != 'COMPLETED':
+                task_status = t.status()
+                logger.info(task_status)
+                tasks.append(task_status)
+
+    except Exception as e:
+        logger.exception(e)
+        abort(500, description=str(e))
+
+    response = {"amount": len(tasks), "tasks": tasks}
+
+    if request.args.get('pubsub'):
+        logger.info("Publishing")
+        publisher = pubsub_v1.PublisherClient()
+        topic = 'projects/nasa-harvest/topics/crop-maps'
+        future = publisher.publish(topic, bytes(str(response), 'UTF-8'))
+        logger.info(future.result())
+
+    return response
+
