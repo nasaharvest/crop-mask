@@ -119,4 +119,4 @@ data/**/
 scripts/lightning_logs
 
 # gcp
-gcp/export-unlabeled-function/src
+gcp/export_unlabeled_function/src/
