@@ -6,7 +6,7 @@ import ee
 import logging
 from datetime import date
 from src.ETL.constants import BANDS
-from typing import Union
+from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +32,8 @@ def export(
     filename: str,
     drive_folder: str,
     monitor: bool = False,
+    file_dimensions: Optional[int] = None
 ) -> ee.batch.Export:
-
-    # task = ee.batch.Export.image(
-    #     image.clip(region),
-    #     filename,
-    #     {"scale": 10, "region": region, "maxPixels": 1e13, "driveFolder": drive_folder},
-    # )
 
     task = ee.batch.Export.image.toCloudStorage(
         image=image.clip(region),
@@ -48,6 +43,7 @@ def export(
         scale=10,
         region=region,
         maxPixels=1e13,
+        fileDimensions=file_dimensions
     )
 
     try:
