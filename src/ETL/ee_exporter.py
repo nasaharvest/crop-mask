@@ -49,6 +49,7 @@ class EarthEngineExporter:
     checkpoint: bool = True
     monitor: bool = False
     credentials: Optional = None
+    file_dimensions: Optional[int] = None
 
     def check_earthengine_auth(self):
         try:
@@ -117,6 +118,7 @@ class EarthEngineExporter:
             filename=filename,
             drive_folder=self.sentinel_dataset,
             monitor=self.monitor,
+            file_dimensions=self.file_dimensions
         )
 
 

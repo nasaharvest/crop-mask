@@ -49,16 +49,18 @@ def export_unlabeled(request: Request):
 
     sentinel_dataset = request_json["name"]
     bbox_args = {k: v for k,v in request_json.items() if k in bbox_keys}
+
     try:
         season = Season(request_json["season"])
     except ValueError as e:
         logger.exception(e)
         abort(400, description=str(e))
 
+    file_dimensions = request_json.get("file_dimensions", None)
     try:
         credentials = get_ee_credentials()
-        RegionExporter(sentinel_dataset=sentinel_dataset, credentials=credentials).export(
-            region_bbox=BoundingBox(**bbox_args), season=season, metres_per_polygon=None)
+        RegionExporter(sentinel_dataset=sentinel_dataset, credentials=credentials, file_dimensions=file_dimensions
+                       ).export(region_bbox=BoundingBox(**bbox_args), season=season, metres_per_polygon=None)
     except Exception as e:
         logger.exception(e)
         abort(500, description=str(e))

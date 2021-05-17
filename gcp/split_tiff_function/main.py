@@ -25,7 +25,14 @@ logger = logging.getLogger(__name__)
 
 # Takes a  dataset and splits it into squares of dimensions squareDim * squareDim
 def splitImageIntoCells(src_path: str, dest_bucket: Bucket, squareDim: int = 1000):
-    src_name = Path(src_path).stem
+    src_path_obj = Path(src_path)
+    src_parent = src_path_obj.parent
+    if src_parent and src_parent not in dest_bucket.name:
+        dest_parent = f"{src_parent}/"
+    else:
+        dest_parent = ""
+
+    src_name = src_path_obj.stem
     dates = re.findall(r"\d{4}-\d{2}-\d{2}", src_name)
     if len(dates) != 2:
         raise ValueError(f"Unable to extract dates from: {src_path}")
@@ -45,18 +52,22 @@ def splitImageIntoCells(src_path: str, dest_bucket: Bucket, squareDim: int = 100
     numberOfCellsWide = math.ceil(img.shape[1] / squareDim)
     numberOfCellsHigh = math.ceil(img.shape[0] / squareDim)
     count = 0
+    total = len(numberOfCellsHigh) * len(numberOfCellsWide)
     for hc in range(numberOfCellsHigh):
         y = min(hc * squareDim, img.shape[0])
         for wc in range(numberOfCellsWide):
             x = min(wc * squareDim, img.shape[1])
+            logger.info(f"Getting geometry")
             geom = getTileGeom(img.transform, x, y, squareDim)
-            dest = f"{src_name}/{count}_{name}{tile_identifier}_{start_date}_{end_date}.tif"
+            logger.info(f"Obtained geometry")
+            dest = dest_parent + f"{count}_{name}{tile_identifier}_{start_date}_{end_date}.tif"
             dest_blob = dest_bucket.blob(dest)
+            logger.info(f"Creating mask for image")
             crop, cropTransform = mask(img, [geom], crop=True)
             logger.info(f"Writing to {dest}")
 
-            writeImageAsGeoTIFF(crop, cropTransform, img.metadata, img.crs, dest_blob)
-            logger.info(f"Successfully wrote to {dest}")
+            writeImageAsGeoTIFF(crop, cropTransform, img.meta, img.crs, dest_blob)
+            logger.info(f"Successfully wrote {count}/{total} to {dest}")
             count = count + 1
 
 
