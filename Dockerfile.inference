@@ -1,0 +1,35 @@
+# syntax = docker/dockerfile:experimental
+FROM pytorch/torchserve:0.3.0-cpu as base
+
+USER root
+
+FROM base as reqs
+COPY gcp/inference/requirements.txt requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip install -r requirements.txt
+
+FROM reqs as build-torchserve
+COPY gcp/inference/handler.py /home/model-server
+COPY data/models/*.pt /home/model-server
+
+WORKDIR /home/model-server
+
+ARG MODELS
+RUN for m in $MODELS; \
+    do torch-model-archiver \
+    --model-name $m \
+    --version 1.0 \
+    --serialized-file $m.pt \
+    --handler handler.py \
+    --export-path=model-store; \
+    done
+
+ENV MODELS ${MODELS}
+CMD ["torchserve", \
+    "--start", \
+    "--ncs", \
+    "--model-store", \
+    "model-store", \
+    "--models", \
+    "$(echo $(for m in $(echo ${MODELS} | xargs); do echo $m=$m.mar ; done))"]
+

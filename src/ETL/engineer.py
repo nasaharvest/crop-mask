@@ -10,7 +10,7 @@ import pandas as pd
 import pickle
 
 from src.band_calculations import process_bands
-from src.ETL.constants import LAT, LON, CROP_PROB, SUBSET, START, END
+from src.constants import LAT, LON, CROP_PROB, SUBSET, START, END
 from src.utils import set_seed, process_filename, load_tif
 from .data_instance import CropDataInstance
 

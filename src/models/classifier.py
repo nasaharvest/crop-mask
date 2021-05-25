@@ -104,7 +104,7 @@ class Classifier(pl.LightningModule):
 
             self.local_classifier = nn.Sequential(*local_classification_layers)
 
-    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
 
         for _, lstm in enumerate(self.base):
             x, (hn, _) = lstm(x)
@@ -112,12 +112,8 @@ class Classifier(pl.LightningModule):
 
         base = self.batchnorm(hn[-1, :, :])
         x_global = torch.sigmoid(self.global_classifier(base))
-
-        if self.hparams.multi_headed:
-            x_local = torch.sigmoid(self.local_classifier(base))
-            return x_global, x_local
-        else:
-            return x_global
+        x_local = torch.sigmoid(self.local_classifier(base))
+        return x_global, x_local
 
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:

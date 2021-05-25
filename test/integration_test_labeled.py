@@ -6,7 +6,7 @@ import sys
 sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
-from src.ETL.constants import CROP_PROB, SUBSET  # noqa: E402
+from src.constants import CROP_PROB, SUBSET  # noqa: E402
 from src.ETL.dataset import LabeledDataset  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 

@@ -11,7 +11,7 @@ import sys
 
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
-from src.ETL.constants import START, END, LAT, LON
+from src.constants import START, END, LAT, LON
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ class EarthEngineExporter:
     international boundaries.
     :param output_folder: The folder to export the earth engine data to
     :param sentinel_dataset: The name of the earth engine dataset
+    :param dest_bucket: The name of the destination GCP bucket
     :param days_per_timestep: The number of days of data to use for each mosaiced image.
     :param num_timesteps: The number of timesteps to export if season is not specified
     :param fast: Whether to use the faster cloudfree exporter. This function is considerably
@@ -42,6 +43,7 @@ class EarthEngineExporter:
     :param monitor: Whether to monitor each task until it has been run
     """
     sentinel_dataset: str
+    dest_bucket: str
     output_folder: Optional[Path] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
@@ -115,6 +117,7 @@ class EarthEngineExporter:
         cloudfree.export(
             image=img,
             region=polygon,
+            dest_bucket=self.dest_bucket,
             filename=filename,
             drive_folder=self.sentinel_dataset,
             monitor=self.monitor,
