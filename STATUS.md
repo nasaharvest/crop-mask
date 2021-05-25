@@ -30,7 +30,7 @@
 |Country            |Season         |Steps Complete |Link   |
 |---                |:---:          |:---:          |:---:  |
 |Kenya              |2019/20        |![Step 10]     |[Kenya Zenodo]   |
-|Togo               |2019/20        |![Step 10]     |[Togo Zenodo)   |
+|Togo               |2019/20        |![Step 10]     |[Togo Zenodo]   |
 |Mali (lower USAID) |2020/21        |![Step 4]      |       |
 |Mali (upper USAID) |2020/21        |![Step 4]      |       |
 |Rwanda             |2019/20        |![Step 4]      |       |
