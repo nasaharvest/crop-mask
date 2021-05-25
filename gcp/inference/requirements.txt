@@ -1,0 +1,5 @@
+google-cloud-storage
+netCDF4
+pandas
+rasterio
+xarray

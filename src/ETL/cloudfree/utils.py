@@ -5,7 +5,7 @@ cloudfree algorithm
 import ee
 import logging
 from datetime import date
-from src.ETL.constants import BANDS
+from src.constants import BANDS
 from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ def combine_bands(current, previous):
 def export(
     image: ee.Image,
     region: ee.Geometry,
+    dest_bucket: str,
     filename: str,
     drive_folder: str,
     monitor: bool = False,
@@ -37,7 +38,7 @@ def export(
 
     task = ee.batch.Export.image.toCloudStorage(
         image=image.clip(region),
-        bucket="ee-data-to-be-split",
+        bucket=dest_bucket,
         description=filename,
         fileNamePrefix=drive_folder + "/" + filename,
         scale=10,

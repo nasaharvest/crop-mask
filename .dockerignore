@@ -4,7 +4,7 @@ README.md
 
 .mypy_cache/
 diagrams/
-data/*/**
-gcp/
+#data/*/**
+#gcp/
 test/
 

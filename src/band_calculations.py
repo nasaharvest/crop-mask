@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-from src.ETL.constants import BANDS
+from src.constants import BANDS
 from typing import Optional
 
 

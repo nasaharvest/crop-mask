@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
-from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
+from src.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
 import logging
 import xarray as xr
 import geopandas

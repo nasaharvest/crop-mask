@@ -10,7 +10,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.ETL.constants import BANDS
+from src.constants import BANDS
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
 from src.ETL.dataset import LabeledDataset

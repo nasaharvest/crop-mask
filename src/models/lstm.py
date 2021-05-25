@@ -3,7 +3,7 @@ import math
 import torch
 from torch import nn
 
-from typing import Tuple, Optional
+from typing import List, Tuple, Optional
 
 
 class UnrolledLSTM(nn.Module):
@@ -20,7 +20,7 @@ class UnrolledLSTM(nn.Module):
         )
         self.dropout = VariationalDropout(dropout)
 
-    def forward(  # type: ignore
+    def forward(
         self, x: torch.Tensor, state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
     ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
 
@@ -119,7 +119,7 @@ class UnrolledLSTMCell(nn.Module):
             for pam in parameters:
                 nn.init.uniform_(pam.data, -sqrt_k, sqrt_k)
 
-    def forward(  # type: ignore
+    def forward(
         self, x: torch.Tensor, state: Tuple[torch.Tensor, torch.Tensor]
     ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         hidden, cell = state
@@ -151,11 +151,10 @@ class VariationalDropout(nn.Module):
 
     def __init__(self, p):
         super().__init__()
-
         self.p = p
-        self.mask = None
+        self.mask = torch.empty((1,1))
 
-    def update_mask(self, x_shape: Tuple, is_cuda: bool) -> None:
+    def update_mask(self, x_shape: List[int], is_cuda: bool) -> None:
         mask = torch.bernoulli(torch.ones(x_shape) * (1 - self.p)) / (1 - self.p)
         if is_cuda:
             mask = mask.cuda()

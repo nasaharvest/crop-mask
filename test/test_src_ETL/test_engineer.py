@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import xarray as xr
 
-from src.ETL.constants import CROP_PROB, LAT, LON, SUBSET, START, END
+from src.constants import CROP_PROB, LAT, LON, SUBSET, START, END
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 

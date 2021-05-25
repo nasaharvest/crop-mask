@@ -1,13 +1,19 @@
-import rasterio
-from rasterio.session import GSSession
-from google.cloud import secretmanager
+from src.models import Model
+import torch
+import json
+import numpy as np
+
+from argparse import ArgumentParser, Namespace
 
 if __name__ == "__main__":
-    gs_session = GSSession("/Users/izvonkov/Desktop/nasa-harvest-819cbbfe0587.json")
-    file = "gs://ee-data-to-be-split/TestRegion_TestRegion_2020-04-01_2021-04-01.tif"
-    with rasterio.Env(gs_session):
-        with rasterio.open(file) as src:
-            print(src.profile)
+    data_dir = "../data"
+    model_name = "Togo"
 
+    model = Model.load_from_checkpoint(f"{data_dir}/models/{model_name}.ckpt")
+    model.save()
 
+    # model2 = torch.jit.load(f"{data_dir}/models/{model_name}.pt")
+    # test = model2.get_normalizing_dict()
+    # test2 = model2.normalizing_dict_jit
+    # print("ok")
 

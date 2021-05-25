@@ -3,4 +3,3 @@ google-cloud-pubsub
 google-cloud-secret-manager
 tqdm
 pandas
-ee
