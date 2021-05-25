@@ -24,14 +24,15 @@
 [Step 9]: https://progress-bar.dev/9/?scale=10&suffix=/10&width=400
 [Step 10]: https://progress-bar.dev/10/?scale=10&suffix=/10&width=400
 
-
+[Kenya Zenodo]: https://zenodo.org/record/4271144#.YK07oJNKhTZ
+[Togo Zenodo]: https://zenodo.org/record/3836629#.YK08FJNKhTY
 
 |Country            |Season         |Steps Complete |Link   |
 |---                |:---:          |:---:          |:---:  |
-|Kenya              |2019/20        |![Step 10]     |[Zenodo](https://zenodo.org/record/4271144#.YK07oJNKhTZ)   |
-|Togo               |2018/19        |![Step 10]     |[Zenodo](https://zenodo.org/record/3836629#.YK08FJNKhTY)   |
+|Kenya              |2019/20        |![Step 10]     |[Kenya Zenodo]   |
+|Togo               |2019/20        |![Step 10]     |[Togo Zenodo)   |
 |Mali (lower USAID) |2020/21        |![Step 4]      |       |
 |Mali (upper USAID) |2020/21        |![Step 4]      |       |
 |Rwanda             |2019/20        |![Step 4]      |       |
-|Uganda             |               |![Step 0]      |       |
-|Uganda (Maize)     |               |![Step 0]      |       |
+|Uganda             |2020/21        |![Step 0]      |       |
+|Uganda (Maize)     |2020/21        |![Step 0]      |       |
