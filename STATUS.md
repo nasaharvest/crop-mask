@@ -8,8 +8,8 @@
 5. Expert analysis + corrective labeling complete on CEO
 6. Model retrained with corrective labels
 7. Corrected crop map generated (can go back to step 5 here)
-8. Generated test dataset
-9. Recorded test set metrics
+8. Generated stratified test dataset
+9. Quality check / test set metrics recorded
 10. Crop map uploaded to Zenodo
 
 [Step 0]: https://progress-bar.dev/0/?scale=10&suffix=/10&width=400
