@@ -16,20 +16,17 @@ WORKDIR /home/model-server
 
 ARG MODELS
 RUN for m in $MODELS; \
-    do torch-model-archiver \
+do torch-model-archiver \
     --model-name $m \
     --version 1.0 \
     --serialized-file $m.pt \
     --handler handler.py \
     --export-path=model-store; \
-    done
+done
 
+ADD gcp/inference/start.sh /usr/local/bin/start.sh
+RUN chmod 777 /usr/local/bin/start.sh
 ENV MODELS ${MODELS}
-CMD ["torchserve", \
-    "--start", \
-    "--ncs", \
-    "--model-store", \
-    "model-store", \
-    "--models", \
-    "$(echo $(for m in $(echo ${MODELS} | xargs); do echo $m=$m.mar ; done))"]
+CMD ["/usr/local/bin/start.sh", "\"${MODELS}\""]
+
 
