@@ -5,7 +5,7 @@
 2. Initial model trained ([see metrics](data/model_metrics.json))
 3. Data for inference exported from Google Earth Engine
 4. Initial crop map generated
-5. Expert analysis + corrective labeling complete on CEO
+5. Expert analysis + corrective labeling
 6. Model retrained with corrective labels
 7. Corrected crop map generated (can go back to step 5 here)
 8. Generated stratified test dataset
