@@ -70,7 +70,7 @@ After deployment the GOOGLE_APPLICATION_CREDENTIALS must be added using the Cons
 export URI="gs://ee-data-for-inference/RwandaSake/RwandaSake_2019-04-01_2020-04-01.tif"
 export URL="https://inference-sgmgtky4sq-uc.a.run.app"
 export MODEL_NAME="Mali"
-curl -X POST -d "uri=$URI" $URL/$MODEL_NAME
+curl -X POST -d "uri=$URI" $URL/predictions/$MODEL_NAME
 ```
 
 **Running container locally:**
