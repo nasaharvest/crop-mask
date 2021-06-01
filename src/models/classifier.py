@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 
-from typing import Any, Dict, List, Union, Tuple, Type
+from typing import Any, Dict, List, Tuple, Type
 import logging
 from .lstm import UnrolledLSTM
 

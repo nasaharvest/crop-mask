@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 import numpy as np
-import json
 import logging
 import xarray as xr
 from tqdm import tqdm
@@ -96,7 +95,9 @@ class Model(pl.LightningModule):
         self.normalizing_dict: Optional[Dict[str, np.ndarray]] = dataset.normalizing_dict
 
         # Normalizing dict that is exposed
-        self.normalizing_dict_jit: Dict[str, List[float]] = {k: v.tolist() for k,v in self.normalizing_dict.items()}
+        self.normalizing_dict_jit: Dict[str, List[float]] = {
+            k: v.tolist() for k, v in self.normalizing_dict.items()
+        }
 
         if self.hparams.forecast:
             num_output_timesteps = self.num_timesteps - self.hparams.input_months

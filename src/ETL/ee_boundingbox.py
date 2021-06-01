@@ -20,7 +20,9 @@ class BoundingBox:
         if self.max_lat < self.min_lat:
             raise ValueError("max_lat should be larger than min_lat")
 
-        self.url = f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
+        self.url = (
+            f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
+        )
 
 
 @dataclass

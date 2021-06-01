@@ -11,7 +11,7 @@ import sys
 
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
-from src.constants import START, END, LAT, LON
+from src.ETL.constants import START, END, LAT, LON
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ class EarthEngineExporter:
     """
     sentinel_dataset: str
     dest_bucket: str
+    model_name: Optional[str] = None
     output_folder: Optional[Path] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
@@ -98,7 +99,11 @@ class EarthEngineExporter:
 
         filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
 
-        if self.checkpoint and self.output_folder and (self.output_folder / f"{filename}.tif").exists():
+        if (
+            self.checkpoint
+            and self.output_folder
+            and (self.output_folder / f"{filename}.tif").exists()
+        ):
             logger.info("File already exists! Skipping")
             return None
 
@@ -114,14 +119,20 @@ class EarthEngineExporter:
         img = ee.Image(imcoll.iterate(cloudfree.combine_bands))
 
         # and finally, export the image
+        if self.model_name:
+            file_name_prefix = (
+                f"{self.model_name}/{self.sentinel_dataset}/batch_{polygon_identifier}/{filename}"
+            )
+        else:
+            file_name_prefix = f"{self.sentinel_dataset}/{filename}"
+
         cloudfree.export(
             image=img,
             region=polygon,
             dest_bucket=self.dest_bucket,
-            filename=filename,
-            drive_folder=self.sentinel_dataset,
+            file_name_prefix=file_name_prefix,
             monitor=self.monitor,
-            file_dimensions=self.file_dimensions
+            file_dimensions=self.file_dimensions,
         )
 
 
@@ -205,6 +216,9 @@ class RegionExporter(EarthEngineExporter):
                 start_date=start_date,
                 end_date=end_date,
             )
+
+        return ids
+
 
 
 @dataclass
