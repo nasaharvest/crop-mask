@@ -5,7 +5,8 @@ cloudfree algorithm
 import ee
 import logging
 from datetime import date
-from src.constants import BANDS
+from src.ETL.constants import BANDS
+from pathlib import Path
 from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
@@ -30,21 +31,20 @@ def export(
     image: ee.Image,
     region: ee.Geometry,
     dest_bucket: str,
-    filename: str,
-    drive_folder: str,
+    file_name_prefix: str,
     monitor: bool = False,
-    file_dimensions: Optional[int] = None
+    file_dimensions: Optional[int] = None,
 ) -> ee.batch.Export:
 
     task = ee.batch.Export.image.toCloudStorage(
         image=image.clip(region),
         bucket=dest_bucket,
-        description=filename,
-        fileNamePrefix=drive_folder + "/" + filename,
+        description=Path(file_name_prefix).stem,
+        fileNamePrefix=file_name_prefix,
         scale=10,
         region=region,
         maxPixels=1e13,
-        fileDimensions=file_dimensions
+        fileDimensions=file_dimensions,
     )
 
     try:

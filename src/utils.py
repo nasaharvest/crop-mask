@@ -8,7 +8,7 @@ from pathlib import Path
 import xarray as xr
 import pandas as pd
 
-from src.constants import BANDS
+from src.ETL.constants import BANDS
 
 logger = logging.getLogger(__name__)
 

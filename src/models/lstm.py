@@ -152,7 +152,7 @@ class VariationalDropout(nn.Module):
     def __init__(self, p):
         super().__init__()
         self.p = p
-        self.mask = torch.empty((1,1))
+        self.mask = torch.empty((1, 1))
 
     def update_mask(self, x_shape: List[int], is_cuda: bool) -> None:
         mask = torch.bernoulli(torch.ones(x_shape) * (1 - self.p)) / (1 - self.p)
