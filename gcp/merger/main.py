@@ -2,7 +2,7 @@ from glob import glob
 import os
 
 if __name__ == "__main__":
-    p = "/Users/izvonkov/nasaharvest/Uganda"
+    p = "/Users/izvonkov/nasaharvest/Uganda2"
 
     print("Building vrt for each batch")
     for i, d in enumerate(glob(p + "/*/")):

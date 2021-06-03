@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import logging
+import time
 import os
 import requests
 
@@ -30,7 +31,7 @@ def hello_gcs(event, context):
     url = f"{host}/predictions/{model_name}"
     logger.info(url)
     data = {"uri": src_path}
-    for attempt in range(2):
+    for attempt in range(3):
         logger.info("Sending request")
         response = requests.post(url, data=data)
         logger.info("Received response")
@@ -39,5 +40,4 @@ def hello_gcs(event, context):
             logger.info(response.json())
             break
         logger.error(f"Failed response: {response.raw}")
-
-
+        time.sleep(5)
