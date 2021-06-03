@@ -77,8 +77,11 @@ def export_unlabeled(request: Request):
         bbox = BoundingBox(**bbox_args)
 
         if is_bbox_too_big(bbox):
-            abort(403, description="The specified bounding box is too large. "
-                                   "Consider splitting it into several small bounding boxes")
+            abort(
+                403,
+                description="The specified bounding box is too large. "
+                "Consider splitting it into several small bounding boxes",
+            )
 
         ids = RegionExporter(
             dest_bucket=dest_bucket,

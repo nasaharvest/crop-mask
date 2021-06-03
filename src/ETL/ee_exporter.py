@@ -51,7 +51,7 @@ class EarthEngineExporter:
     fast: bool = True
     checkpoint: bool = True
     monitor: bool = False
-    credentials: Optional = None
+    credentials: Optional[str] = None
     file_dimensions: Optional[int] = None
 
     def check_earthengine_auth(self):
