@@ -7,7 +7,6 @@ import os
 
 from flask import abort, Request
 from google.cloud import secretmanager
-from google.cloud import pubsub_v1
 from google.cloud import firestore
 from pathlib import Path
 
@@ -18,6 +17,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 db = firestore.Client()
+
+BBOX_LIMIT = 25
+SERVICE_ACCOUNT = "nasa-harvest@appspot.gserviceaccount.com"
 
 
 def get_ee_credentials():
@@ -32,11 +34,16 @@ def get_ee_credentials():
         with open(filename, "w") as outfile:
             json.dump(output_dict, outfile)
 
-    service_account = "nasa-harvest@appspot.gserviceaccount.com"
-    logger.info(f"Setting ee credentials for {service_account}")
-    credentials = ee.ServiceAccountCredentials(service_account, filename)
+    logger.info(f"Setting ee credentials for {SERVICE_ACCOUNT}")
+    credentials = ee.ServiceAccountCredentials(SERVICE_ACCOUNT, filename)
     logger.info("Credentials set")
     return credentials
+
+
+def is_bbox_too_big(bbox: BoundingBox):
+    lat_len = bbox.max_lat - bbox.min_lat
+    lon_len = bbox.max_lon - bbox.min_lon
+    return lat_len * lon_len > BBOX_LIMIT
 
 
 def export_unlabeled(request: Request):
@@ -68,6 +75,11 @@ def export_unlabeled(request: Request):
         credentials = get_ee_credentials()
         bbox_args = {k: v for k, v in request_json.items() if k in bbox_keys}
         bbox = BoundingBox(**bbox_args)
+
+        if is_bbox_too_big(bbox):
+            abort(403, description="The specified bounding box is too large. "
+                                   "Consider splitting it into several small bounding boxes")
+
         ids = RegionExporter(
             dest_bucket=dest_bucket,
             model_name=model_name,
@@ -84,20 +96,16 @@ def export_unlabeled(request: Request):
             "complete_ee_tasks": 0,
             "total_ee_tasks": len(ids),
             "start_time": str(datetime.datetime.now()),
+            "ee_status": "https://us-central1-nasa-harvest.cloudfunctions.net/ee-status",
             "ee_files_exported": 0,
-            "predictions_made": 0
+            "predictions_made": 0,
         }
-        db.collection('crop-mask-runs').document(id).set(data)
+        db.collection("crop-mask-runs").document(id).set(data)
+        return data
 
     except Exception as e:
         logger.exception(e)
         abort(500, description=str(e))
-
-    return {
-        "message": f"Started export of {sentinel_dataset}",
-        "status": "https://us-central1-nasa-harvest.cloudfunctions.net/ee-status",
-        "bbox": bbox.url,
-    }
 
 
 def get_status(request: Request):
@@ -117,13 +125,4 @@ def get_status(request: Request):
         logger.exception(e)
         abort(500, description=str(e))
 
-    response = {"amount": len(tasks), "tasks": tasks}
-
-    if request.args.get("pubsub"):
-        logger.info("Publishing")
-        publisher = pubsub_v1.PublisherClient()
-        topic = "projects/nasa-harvest/topics/crop-maps"
-        future = publisher.publish(topic, bytes(str(response), "UTF-8"))
-        logger.info(future.result())
-
-    return response
+    return {"amount": len(tasks), "tasks": tasks}

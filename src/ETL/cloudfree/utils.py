@@ -30,22 +30,34 @@ def combine_bands(current, previous):
 def export(
     image: ee.Image,
     region: ee.Geometry,
-    dest_bucket: str,
     file_name_prefix: str,
     monitor: bool = False,
+    dest_bucket: Optional[str] = None,
     file_dimensions: Optional[int] = None,
 ) -> ee.batch.Export:
 
-    task = ee.batch.Export.image.toCloudStorage(
-        image=image.clip(region),
-        bucket=dest_bucket,
-        description=Path(file_name_prefix).stem,
-        fileNamePrefix=file_name_prefix,
-        scale=10,
-        region=region,
-        maxPixels=1e13,
-        fileDimensions=file_dimensions,
-    )
+    if dest_bucket:
+        task = ee.batch.Export.image.toCloudStorage(
+            image=image.clip(region),
+            bucket=dest_bucket,
+            description=Path(file_name_prefix).stem,
+            fileNamePrefix=file_name_prefix,
+            scale=10,
+            region=region,
+            maxPixels=1e13,
+            fileDimensions=file_dimensions,
+        )
+    else:
+        task = ee.batch.Export.image.toDrive(
+            image=image.clip(region),
+            folder=Path(file_name_prefix).parts[0],
+            fileNamePrefix=file_name_prefix,
+            description=Path(file_name_prefix).stem,
+            scale=10,
+            region=region,
+            maxPixels=1e13,
+            fileDimensions=file_dimensions,
+        )
 
     try:
         task.start()

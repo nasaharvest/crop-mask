@@ -1,6 +1,5 @@
 earthengine-api==0.1.264
 google-cloud-firestore
-google-cloud-pubsub
 google-cloud-secret-manager
 tqdm
 pandas

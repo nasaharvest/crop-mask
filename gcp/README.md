@@ -32,5 +32,3 @@ curl http://127.0.0.1:8081/models   # Verify models present
 export URI="gs://crop-mask-ee-data/RwandaSake/RwandaSake_2019-04-01_2020-04-01.tif"
 curl -X POST -d "uri=$URI" http://127.0.0.1:8080/predictions/<model name>     # Make prediction
 ```
-
-curl -X POST -d "uri=$URI" http://127.0.0.1:8080/predictions/Rwanda

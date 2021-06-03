@@ -8,6 +8,7 @@ gcloud functions deploy export-unlabeled \
     --allow-unauthenticated \
     --runtime=python37 \
     --entry-point=export_unlabeled \
+    --timeout=300s \
     --set-env-vars DEST_BUCKET=$BUCKET
 
 gcloud functions deploy ee-status \

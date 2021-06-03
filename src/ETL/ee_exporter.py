@@ -43,7 +43,7 @@ class EarthEngineExporter:
     :param monitor: Whether to monitor each task until it has been run
     """
     sentinel_dataset: str
-    dest_bucket: str
+    dest_bucket: Optional[str] = None
     model_name: Optional[str] = None
     output_folder: Optional[Path] = None
     days_per_timestep: int = 30
@@ -218,7 +218,6 @@ class RegionExporter(EarthEngineExporter):
             )
 
         return ids
-
 
 
 @dataclass
