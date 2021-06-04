@@ -65,9 +65,4 @@ unlabeled_datasets = [
         ),
         season=Season.post_season,
     ),
-    UnlabeledDataset(
-        sentinel_dataset="TestRegion",
-        region_bbox=BoundingBox(min_lon=30.401, max_lon=30.402, min_lat=-2.227, max_lat=-2.226),
-        season=Season.post_season,
-    ),
 ]
