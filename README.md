@@ -73,7 +73,7 @@ python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 3. In [dataset_unlabeled.py](data/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
 4. To begin exporting satellite data from Google Earth Engine run (from scripts directory):
     ```bash
-    python export_for_unlabeled.py
+    python export_for_unlabeled.py --dataset_name <dataset name>
     ``` 
 5. Google Earth Engine will automatically export satellite images to Google Drive.
 6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
