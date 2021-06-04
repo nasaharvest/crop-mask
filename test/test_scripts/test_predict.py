@@ -47,9 +47,13 @@ class TestPredict(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = Path(tempfile.mkdtemp())
-        cls.empty_tif = cls.generate_gtiff(cls.temp_dir / "empty.tif")
-        cls.forecasted_path = cls.predicted_file_path(cls.empty_tif.name, with_forecaster=True)
-        cls.normal_path = cls.predicted_file_path(cls.empty_tif.name, with_forecaster=False)
+        cls.input_dir = cls.temp_dir / "input"
+        cls.input_dir.mkdir(exist_ok=True)
+        cls.empty_tif = cls.generate_gtiff(cls.input_dir / "empty.tif")
+        cls.forecasted_path = cls.predicted_file_path(cls.empty_tif.name, "forecasted")
+        cls.normal_path = cls.predicted_file_path(cls.empty_tif.name, "normal")
+        cls.forecasted_path.parent.mkdir(exist_ok=True)
+        cls.normal_path.parent.mkdir(exist_ok=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -57,26 +61,21 @@ class TestPredict(TestCase):
 
     @classmethod
     def tearDown(cls):
-        paths = cls.temp_dir.glob("*")
+        paths = cls.temp_dir.glob("**/*")
         for p in paths:
             if p.is_file() and p != cls.empty_tif:
                 p.unlink()
 
     @classmethod
-    def predicted_file_path(cls, origin_file: str, with_forecaster=False) -> Path:
-        if with_forecaster:
-            prefix = "forecasted"
-        else:
-            prefix = "normal"
-        p = cls.temp_dir / f"preds_{prefix}_{origin_file}.nc"
-        return p
+    def predicted_file_path(cls, origin_file: str, prefix: str) -> Path:
+        return cls.temp_dir / prefix / f"preds_{prefix}_{origin_file}.nc"
 
     @patch("src.models.Model")
     @patch("scripts.predict.plot_results")
     def test_make_prediction_normal(self, mock_plot_results, mock_model):
         mock_model.predict.return_value = xr.Dataset(None)
         output_path = make_prediction(
-            model=mock_model, test_path=self.empty_tif, save_dir=self.temp_dir
+            model=mock_model, test_path=self.empty_tif, save_dir=self.temp_dir / "normal"
         )
         mock_model.predict.assert_called()
         mock_plot_results.assert_not_called()
@@ -90,7 +89,7 @@ class TestPredict(TestCase):
         output_path = make_prediction(
             model=mock_model,
             test_path=self.empty_tif,
-            save_dir=self.temp_dir,
+            save_dir=self.temp_dir / "forecasted",
             with_forecaster=True,
             plot_results_enabled=True,
         )
@@ -104,28 +103,28 @@ class TestPredict(TestCase):
     def test_make_prediction_already_exists(self, mock_plot_results, mock_model):
         self.normal_path.touch()
         output_path = make_prediction(
-            model=mock_model, test_path=self.empty_tif, save_dir=self.temp_dir
+            model=mock_model, test_path=self.empty_tif, save_dir=self.temp_dir / "normal"
         )
         mock_model.predict.assert_not_called()
         mock_plot_results.assert_not_called()
         self.assertEqual(output_path, None)
 
     def test_gdal_merge(self):
-        for with_forecaster in [False, True]:
+        for prefix in ["forecasted", "normal"]:
             # Setup
-            path_1, path_2 = (
-                self.predicted_file_path(name, with_forecaster) for name in ["1.tif", "2.tif"]
-            )
+            path_1, path_2 = (self.predicted_file_path(name, prefix) for name in ["1.tif", "2.tif"])
             self.generate_gtiff(path_1, bbox=(0, 10, 0, 10))
             self.assertTrue(path_1.exists())
             self.generate_gtiff(path_2, bbox=(10, 20, 0, 10))
             self.assertTrue(path_2.exists())
 
             # Use gdal_merge
-            merged_path = gdal_merge(save_dir=self.temp_dir, with_forecaster=with_forecaster)
+            merged_path = gdal_merge(
+                unmerged_tifs_folder=self.temp_dir / prefix,
+                output_file=self.temp_dir / f"merged_{prefix}.tif",
+            )
 
             # Verify merged gtiff
-            prefix = "forecasted" if with_forecaster else "normal"
             self.assertEqual(merged_path, Path(self.temp_dir / f"merged_{prefix}.tif"))
             self.assertTrue(merged_path.exists())
             merged_file = gdal.Open(str(merged_path))
@@ -149,7 +148,7 @@ class TestPredict(TestCase):
     @patch("scripts.predict.make_prediction")
     def test_run_inference_no_merge(self, mock_make_prediction, mock_load_from_checkpoint):
         run_inference(
-            local_path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir / "input"),
             model_name="mock_model",
             data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
@@ -164,7 +163,7 @@ class TestPredict(TestCase):
         self, mock_gdal_merge, mock_make_prediction, mock_load_from_checkpoint
     ):
         run_inference(
-            local_path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir / "input"),
             model_name="mock_model",
             data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
@@ -192,7 +191,7 @@ class TestPredict(TestCase):
     ):
         mock_gdal_merge.return_value = Path("mock_path_1")
         run_inference(
-            local_path_to_tif_files=str(self.temp_dir),
+            local_path_to_tif_files=str(self.temp_dir / "input"),
             model_name="mock_model",
             data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
