@@ -118,5 +118,3 @@ files
 data/**/
 scripts/lightning_logs
 
-# gcp
-gcp/export_unlabeled_function/src/
