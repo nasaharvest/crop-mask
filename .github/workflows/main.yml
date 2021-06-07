@@ -44,7 +44,7 @@ jobs:
         mypy src data scripts
     - name: Run flake8
       run: |
-        flake8 --max-line-length 100 src data scripts test
+        flake8 --max-line-length 100 src data scripts test gcp
     - name: Run unit tests
       run: |
         pip install coverage
@@ -73,27 +73,6 @@ jobs:
       run: |
         cd test
         python -m unittest integration_test_predict.py
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/master'
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup aws
-      run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    - name: Docker Build
-      env:
-        DOCKER_BUILDKIT: 1
-      run: |
-        docker build -t ivanzvonkov/cropmask:latest --secret id=aws,src=$HOME/.aws/credentials .
-    - name: Docker Push
-      run: |
-        docker login -u ivanzvonkov -p "${{ secrets.DOCKER_PASSWORD }}"
-        docker push ivanzvonkov/cropmask:latest
       
 
 

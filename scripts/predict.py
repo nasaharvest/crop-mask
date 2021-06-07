@@ -66,9 +66,7 @@ def upload_to_s3(merged_files: List[Path], upload_prefix: str):
     s3 = boto3.resource("s3")
     for merged_file in merged_files:
         upload_path = f"output/{upload_prefix}_{merged_file.name}"
-        logger.info(
-            f"Uploading {str(merged_file)} to S3 {upload_path}"
-        )
+        logger.info(f"Uploading {str(merged_file)} to S3 {upload_path}")
         s3.Bucket("crop-mask-data").upload_file(str(merged_file), upload_path)
 
 

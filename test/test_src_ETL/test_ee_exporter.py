@@ -14,7 +14,7 @@ from src.ETL.ee_exporter import (
     RegionExporter,
     EarthEngineExporter,
 )
-from src.constants import LAT, LON, START, END
+from src.ETL.constants import LAT, LON, START, END
 
 module = "src.ETL.ee_exporter"
 
@@ -123,7 +123,7 @@ class TestEEExporters(TestCase):
     @patch(f"{module}.ee")
     @patch(f"{module}.ee.Geometry.Polygon")
     @patch("src.ETL.cloudfree.fast.ee")
-    @patch("src.ETL.cloudfree.utils.ee.batch.Export.image")
+    @patch("src.ETL.cloudfree.utils.ee.batch.Export.image.toDrive")
     def test_export_for_region_metres_per_polygon_none(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
@@ -150,7 +150,7 @@ class TestEEExporters(TestCase):
     @patch(f"{module}.ee")
     @patch(f"{module}.ee.Geometry.Polygon")
     @patch("src.ETL.cloudfree.fast.ee")
-    @patch("src.ETL.cloudfree.utils.ee.batch.Export.image")
+    @patch("src.ETL.cloudfree.utils.ee.batch.Export.image.toDrive")
     def test_export_for_region_metres_per_polygon_set(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
