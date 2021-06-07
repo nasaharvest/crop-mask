@@ -12,12 +12,12 @@ These can be used to create annual and in season crop maps.
 ## Contents
 - [1. Setting up a local environment](#1-setting-up-a-local-environment)
 - [2. Training a new model](#2-training-a-new-model)
-- [4. Running inference locally](#4-running-inference-locally)
-- [5. Running inference at scale (on GCP)](#5-running-inference-at-scale--on-gcp-)
-- [6. Tests](#6-tests)
-- [7. Previously generated crop maps](#7-previously-generated-crop-maps)
-- [8. Acknowledgments](#8-acknowledgments)
-- [9. Reference](#9-reference)
+- [3. Running inference locally](#3-running-inference-locally)
+- [4. Running inference at scale (on GCP)](#4-running-inference-at-scale--on-gcp-)
+- [5. Tests](#5-tests)
+- [6. Previously generated crop maps](#6-previously-generated-crop-maps)
+- [7. Acknowledgments](#7-acknowledgments)
+- [8. Reference](#8-reference)
 
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
@@ -67,7 +67,7 @@ You must have the specified datasets in `data/features` then inside scripts/ run
 python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ```
 
-## 4. Running inference locally
+## 3. Running inference locally
 **Prerequisite: Getting unlabeled data:**
 1. Ensure local environment is set up.
 3. In [dataset_unlabeled.py](data/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
@@ -82,7 +82,7 @@ python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ```bash
 python predict.py --model_name "Kenya" --local_path_to_tif_files "../data/raw/<dataset name>
 ```
-## 5. Running inference at scale (on GCP)
+## 4. Running inference at scale (on GCP)
 **Deploying**
 1. Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated.
 2. Ensure you have a secret in GCP titled `GOOGLE_APPLICATION_CREDENTIALS` this will allow Google Earth Engine to be authenticated.
@@ -121,7 +121,7 @@ Once an inference run is complete the result is several small .nc files. These n
 2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
 
 
-## 6. Tests
+## 5. Tests
 The following tests can be run against the pipeline:
 
 ```bash
@@ -135,7 +135,7 @@ python -m unittest integration_test_labeled.py
 python -m unittest integration_test_predict.py
 ```
 
-## 7. Previously generated crop maps
+## 6. Previously generated crop maps
 Google Earth Engine:
 * [Kenya (post season)](https://code.earthengine.google.com/ea3613a3a45badfd01ce2ec914dfe1ef)
 * [Busia (in season)](https://code.earthengine.google.com/f567cccc28dad7a25e088d56dabfbd4c)
@@ -143,10 +143,10 @@ Google Earth Engine:
 Zenodo
 - [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
 
-## 8. Acknowledgments
+## 7. Acknowledgments
 This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
 
-## 9. Reference
+## 8. Reference
 
 If you find this code useful, please cite the following paper:
 
