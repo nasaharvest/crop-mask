@@ -24,6 +24,7 @@ PROJECT_ID = "670160663426"
 SECRET_NAME = "google_application_credentials"
 SECRET_VERSION = "2"
 
+
 def get_ee_credentials():
     logger.info("Fetching credentials")
     filename = tempfile.gettempdir() + "/creds.json"
