@@ -4,6 +4,5 @@ README.md
 
 .mypy_cache/
 diagrams/
-data/*/**
 test/
 

@@ -6,7 +6,7 @@ import sys
 sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
-from src.constants import CROP_PROB, SUBSET  # noqa: E402
+from src.ETL.constants import CROP_PROB, SUBSET  # noqa: E402
 from src.ETL.dataset import LabeledDataset  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 
@@ -21,11 +21,11 @@ class IntegrationTestLabeledData(TestCase):
         get_dvc_dir("features")
 
     @staticmethod
-    def get_file_count(directory):
+    def get_file_count(directory, extension=None):
         count = 0
         if directory.exists():
             for p in directory.iterdir():
-                if p.is_file():
+                if p.is_file() and (extension is None or p.suffix == extension):
                     count += 1
         return count
 
@@ -47,7 +47,7 @@ class IntegrationTestLabeledData(TestCase):
             labels = self.load_labels(d)
             label_count = len(labels)
 
-            tif_file_count = self.get_file_count(d.raw_images_dir)
+            tif_file_count = self.get_file_count(d.raw_images_dir, extension=".tif")
             self.assertEqual(
                 label_count,
                 tif_file_count,

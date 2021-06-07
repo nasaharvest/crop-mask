@@ -1,0 +1,10 @@
+{
+    "season": "post_season",
+    "model_name": "Kenya",
+    "dataset_name": "Uganda2",
+    "min_lon": 29.5794661801,
+    "max_lon": 35.03599,
+    "min_lat": -1.44332244223,
+    "max_lat": 4.24988494736,
+    "file_dimensions": 256
+}

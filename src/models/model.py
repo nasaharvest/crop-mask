@@ -92,7 +92,12 @@ class Model(pl.LightningModule):
         # The number of instances per dataset (and therefore the weights) can
         # vary between the train / test / val sets - this ensures the normalizing
         # dict stays constant between them
-        self.normalizing_dict = dataset.normalizing_dict
+        self.normalizing_dict: Optional[Dict[str, np.ndarray]] = dataset.normalizing_dict
+
+        # Normalizing dict that is exposed
+        self.normalizing_dict_jit: Dict[str, List[float]] = {}
+        if self.normalizing_dict:
+            self.normalizing_dict_jit = {k: v.tolist() for k, v in self.normalizing_dict.items()}
 
         if self.hparams.forecast:
             num_output_timesteps = self.num_timesteps - self.hparams.input_months
@@ -109,7 +114,7 @@ class Model(pl.LightningModule):
         self.global_loss_function: Callable = F.binary_cross_entropy
         self.local_loss_function: Callable = F.binary_cross_entropy
 
-    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # To keep the ABC happy
         return self.classifier(x)
 
@@ -220,15 +225,11 @@ class Model(pl.LightningModule):
                     batch_x_next = self.forecaster(batch_x)
                     batch_x = torch.cat((batch_x, batch_x_next), dim=1)
 
-                batch_preds = self.classifier(batch_x)
-
-                if self.hparams.multi_headed:
-                    global_preds, local_preds = batch_preds
-
-                    if local_head:
-                        batch_preds = local_preds
-                    else:
-                        batch_preds = global_preds
+                global_preds, local_preds = self.classifier(batch_x)
+                if local_head:
+                    batch_preds = local_preds
+                else:
+                    batch_preds = global_preds
 
                 # back to the CPU, if necessary
                 batch_preds = batch_preds.cpu()
@@ -556,3 +557,8 @@ class Model(pl.LightningModule):
 
         classifier_parser = Classifier.add_model_specific_args(parser)
         return Forecaster.add_model_specific_args(classifier_parser)
+
+    def save(self):
+        sm = torch.jit.script(self)
+        model_path = f"{self.data_folder}/models/{self.hparams.model_name}.pt"
+        sm.save(model_path)

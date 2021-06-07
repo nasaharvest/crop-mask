@@ -52,6 +52,7 @@ class Forecaster(pl.LightningModule):
         input_timesteps = x.shape[1]
         assert input_timesteps >= 1
 
+        output = torch.empty((1, 1, 1, 1))
         predicted_output: List[torch.Tensor] = []
         for i in range(input_timesteps):
             # fmt: off

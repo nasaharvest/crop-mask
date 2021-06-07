@@ -20,6 +20,10 @@ class BoundingBox:
         if self.max_lat < self.min_lat:
             raise ValueError("max_lat should be larger than min_lat")
 
+        self.url = (
+            f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
+        )
+
 
 @dataclass
 class EEBoundingBox(BoundingBox):
@@ -59,6 +63,14 @@ class EEBoundingBox(BoundingBox):
 
         num_cols = int(lon_metres / metres_per_patch)
         num_rows = int(lat_metres / metres_per_patch)
+        warning_msg = f"A single patch (metres_per_patch={metres_per_patch}) is " \
+                      f"bigger than the requested bounding box."
+        if num_cols == 0:
+            logger.warning(warning_msg)
+            num_cols = 1
+        if num_rows == 0:
+            logger.warning(warning_msg)
+            num_rows = 1
 
         logger.info(f"Splitting into {num_cols} columns and {num_rows} rows")
 
