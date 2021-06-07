@@ -1,0 +1,10 @@
+{
+    "season": "post_season",
+    "model_name": "Example",
+    "dataset_name": "Example",
+    "min_lon": 30.9091,
+    "max_lon": 30.9092,
+    "min_lat": -1.0338,
+    "max_lat": -1.0337,
+    "file_dimensions": 256
+}
