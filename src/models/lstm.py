@@ -3,7 +3,7 @@ import math
 import torch
 from torch import nn
 
-from typing import List, Tuple, Optional
+from typing import Tuple, Optional
 
 
 class UnrolledLSTM(nn.Module):
