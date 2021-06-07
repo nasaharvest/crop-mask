@@ -20,14 +20,16 @@ db = firestore.Client()
 
 BBOX_LIMIT = 25
 SERVICE_ACCOUNT = "nasa-harvest@appspot.gserviceaccount.com"
-
+PROJECT_ID = "670160663426"
+SECRET_NAME = "google_application_credentials"
+SECRET_VERSION = "2"
 
 def get_ee_credentials():
     logger.info("Fetching credentials")
     filename = tempfile.gettempdir() + "/creds.json"
     if not Path(filename).exists():
         client = secretmanager.SecretManagerServiceClient()
-        name = client.secret_version_path("670160663426", "google_application_credentials", "2")
+        name = client.secret_version_path(PROJECT_ID, SECRET_NAME, SECRET_VERSION)
         response = client.access_secret_version(name=name)
         payload = response.payload.data.decode("UTF-8")
         output_dict = json.loads(payload)
