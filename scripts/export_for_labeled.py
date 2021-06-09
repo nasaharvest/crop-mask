@@ -10,6 +10,6 @@ from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 if __name__ == "__main__":
     for d in labeled_datasets:
-        d.download_raw_labels()
+        #d.download_raw_labels()
         d.process_labels()
-        d.export_earth_engine_data()
+        #d.export_earth_engine_data()
