@@ -232,6 +232,19 @@ labeled_datasets = [
                     "ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2021-04-20.csv",
                     "ceo-2019-Rwanda-Cropland-sample-data-2021-04-20.csv"
                 ]
+            ] + [
+                Processor(
+                    filename="Rwanda-non-crop-corrective-v1",
+                    crop_prob=0.0,
+                    end_year=2020,
+                    train_val_test=(1.0, 0, 0)
+                ),
+                Processor(
+                    filename="Rwanda-crop-corrective-v1",
+                    crop_prob=1.0,
+                    end_year=2020,
+                    train_val_test=(1.0, 0, 0)
+                )
             ]
         )
     )

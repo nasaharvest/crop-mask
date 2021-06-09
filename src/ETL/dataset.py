@@ -94,14 +94,23 @@ class LabeledDataset(Dataset):
         return ",".join(sources.unique())
 
     def process_labels(self):
+        df = pd.DataFrame({})
+        already_processed = []
         if self.labels_path.exists():
-            return
+            df = pd.read_csv(self.labels_path)
+            already_processed = df[SOURCE].unique()
 
         total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
 
         # Combine all processed labels
-        label_dfs = [p.process(self.raw_labels_dir, total_days) for p in self.processors]
-        df = pd.concat(label_dfs)
+
+        new_labels = [p.process(self.raw_labels_dir, total_days) for p in self.processors
+                      if p.filename not in str(already_processed)]
+
+        if len(new_labels) == 0:
+            return
+
+        df = pd.concat([df] + new_labels)
 
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
