@@ -66,9 +66,9 @@ class LabeledDataset(Dataset):
     num_timesteps: int = 12
 
     def __post_init__(self):
-        raw_dir = data_folder / "raw"
-        self.raw_labels_dir = raw_dir / self.dataset
-        self.raw_images_dir = raw_dir / self.sentinel_dataset
+        self.raw_dir = data_folder / "raw"
+        self.raw_labels_dir = self.raw_dir / self.dataset
+        self.raw_images_dir = self.raw_dir / self.sentinel_dataset
         self.labels_path = data_folder / "processed" / (self.dataset + ".csv")
         self.features_dir = data_folder / "features" / self.dataset
 
@@ -133,9 +133,8 @@ class LabeledDataset(Dataset):
         self.is_output_folder_ready(self.raw_images_dir)
         LabelExporter(
             sentinel_dataset=self.sentinel_dataset,
-            output_folder=self.raw_images_dir,
             fast=False,
-        ).export(labels_path=self.labels_path, start_from=start_from)
+        ).export(labels_path=self.labels_path, output_folder=self.raw_dir, start_from=start_from)
 
 
 @dataclass
@@ -143,11 +142,6 @@ class UnlabeledDataset(Dataset):
     region_bbox: BoundingBox
     season: Season
 
-    def __post_init__(self):
-        self.raw_images_dir = data_folder / "raw" / self.sentinel_dataset
-
     def export_earth_engine_data(self):
-        if self.is_output_folder_ready(self.raw_images_dir):
-            RegionExporter(
-                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir
-            ).export(region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None)
+        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
+            region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None)
