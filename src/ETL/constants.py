@@ -9,7 +9,6 @@ COUNTRY = "country"
 NUM_LABELERS = "num_labelers"
 SUBSET = "subset"
 
-
 BANDS = [
     "B1",
     "B2",
@@ -25,3 +24,7 @@ BANDS = [
     "B11",
     "B12",
 ]
+
+# 9 images are not exported in geowiki due to:
+# Error: Image.select: Pattern 'B1' did not match any bands.
+GEOWIKI_UNEXPORTED = [35684, 35687, 35705, 35717, 35726, 35730, 35791, 35861, 35865]
