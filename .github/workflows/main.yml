@@ -57,11 +57,13 @@ jobs:
         files: coverage.xml
         fail_ci_if_error: true
         verbose: true
-    - name: Setup aws for integration test
-      if: github.ref == 'refs/heads/master'
-      run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+              
     - name: Get data for integration test
       if: github.ref == 'refs/heads/master'
       run: |
