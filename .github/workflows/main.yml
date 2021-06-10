@@ -70,7 +70,7 @@ jobs:
       
         
     - name: Get data for integration test
-      if: github.ref == 'refs/heads/master'
+      #if: github.ref == 'refs/heads/master'
       run: |
         dvc pull data/features
         dvc pull data/models
