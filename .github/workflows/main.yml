@@ -13,62 +13,57 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-#     - uses: actions/checkout@v2
-#     - name: Setup Python
-#       uses: actions/setup-python@v2
-#     - name: Cache pip
-#       uses: actions/cache@v2
-#       with:
-#         path: ~/.cache/pip
-#         key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-#         restore-keys: |
-#           ${{ runner.os }}-pip-
-#           ${{ runner.os }}-
-#     - name: Cache conda
-#       uses: actions/cache@v1
-#       env:
-#         CACHE_NUMBER: 0
-#       with:
-#         path: ~/conda_pkgs_dir
-#         key:
-#           ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-#     - uses: conda-incubator/setup-miniconda@v2
-#       with:
-#         activate-environment: landcover-mapping
-#         channel-priority: strict
-#         environment-file: environment.yml
-#         auto-activate-base: false
-#         use-only-tar-bz2: true
-#     - name: Run type checks
-#       run: |
-#         mypy src data scripts
-#     - name: Run flake8
-#       run: |
-#         flake8 --max-line-length 100 src data scripts test gcp
-#     - name: Run unit tests
-#       run: |
-#         pip install coverage
-#         coverage run -m unittest
-#         coverage xml
-#     - name: Upload coverage to Codecov
-#       uses: codecov/codecov-action@v1
-#       with:
-#         token: ${{ secrets.CODECOV_TOKEN }}
-#         files: coverage.xml
-#         fail_ci_if_error: true
-#         verbose: true
-        
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key:
+          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: landcover-mapping
+        channel-priority: strict
+        environment-file: environment.yml
+        auto-activate-base: false
+        use-only-tar-bz2: true
+    - name: Run type checks
+      run: |
+        mypy src data scripts
+    - name: Run flake8
+      run: |
+        flake8 --max-line-length 100 src data scripts test gcp
+    - name: Run unit tests
+      run: |
+        pip install coverage
+        coverage run -m unittest
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.xml
+        fail_ci_if_error: true
+        verbose: true
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@master
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
-
-    - name: Use gcloud CLI
-      run: gcloud info
-      
-        
+              
     - name: Get data for integration test
       #if: github.ref == 'refs/heads/master'
       run: |
