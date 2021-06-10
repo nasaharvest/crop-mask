@@ -50,9 +50,9 @@ def export(
     else:
         task = ee.batch.Export.image.toDrive(
             image=image.clip(region),
-            folder=Path(file_name_prefix).parts[0],
-            fileNamePrefix=file_name_prefix,
             description=Path(file_name_prefix).stem,
+            folder=str(Path(file_name_prefix).parent.stem),
+            fileNamePrefix=Path(file_name_prefix).stem,
             scale=10,
             region=region,
             maxPixels=1e13,
