@@ -236,7 +236,7 @@ class LabelExporter(EarthEngineExporter):
             labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
 
         # Check if exported files for labels already exist
-        if (output_folder / self.sentinel_dataset).exists():
+        if output_folder and (output_folder / self.sentinel_dataset).exists():
             num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
             if num_files >= len(labels):
                 logger.info("All tif files are already exported.")
@@ -251,7 +251,7 @@ class LabelExporter(EarthEngineExporter):
 
             # Check if exported files for specific dataset sources already exist
             for source_dataset in labels[DEST_FOLDER].unique():
-                if (output_folder / source_dataset).exists():
+                if output_folder and (output_folder / source_dataset).exists():
                     num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
                     if num_files >= len(labels[labels[DEST_FOLDER] == source_dataset]):
                         logger.info(f"All tifs for {source_dataset} files are already exported.")
@@ -269,11 +269,14 @@ class LabelExporter(EarthEngineExporter):
                 end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
 
                 file_name_prefix = f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}"
-                if not (output_folder / f"{file_name_prefix}.tif").exists():
-                    self._export_for_polygon(
-                        file_name_prefix=file_name_prefix,
-                        polygon=bbox.to_ee_polygon(),
-                        start_date=start_date,
-                        end_date=end_date,
-                    )
+                if output_folder and (output_folder / f"{file_name_prefix}.tif").exists():
+                    pbar.update(1)
+                    continue
+
+                self._export_for_polygon(
+                    file_name_prefix=file_name_prefix,
+                    polygon=bbox.to_ee_polygon(),
+                    start_date=start_date,
+                    end_date=end_date,
+                )
                 pbar.update(1)
