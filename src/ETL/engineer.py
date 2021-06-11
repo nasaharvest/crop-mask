@@ -41,7 +41,7 @@ class Engineer(ABC):
 
     def __post_init__(self):
         set_seed()
-        self.geospatial_files = list(self.sentinel_files_path.glob("*.tif"))
+        self.geospatial_files = list(self.sentinel_files_path.glob("**/*.tif"))
         self.labels = pd.read_csv(self.labels_path)
         if not mandatory_cols.issubset(set(self.labels.columns)):
             raise ValueError(f"{self.labels_path} is missing one of {mandatory_cols}")

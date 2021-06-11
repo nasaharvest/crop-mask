@@ -10,5 +10,7 @@ from data.datasets_labeled import labeled_datasets  # noqa: E402
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
+    dataset_name = "earth_engine_rwanda"
     for d in labeled_datasets:
-        d.create_pickled_labeled_dataset()
+        if d.sentinel_dataset == dataset_name:
+            d.create_pickled_labeled_dataset()
