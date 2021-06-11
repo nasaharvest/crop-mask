@@ -104,8 +104,11 @@ class LabeledDataset(Dataset):
 
         # Combine all processed labels
 
-        new_labels = [p.process(self.raw_labels_dir, total_days) for p in self.processors
-                      if p.filename not in str(already_processed)]
+        new_labels = [
+            p.process(self.raw_labels_dir, total_days)
+            for p in self.processors
+            if p.filename not in str(already_processed)
+        ]
 
         if len(new_labels) == 0:
             return
@@ -144,4 +147,5 @@ class UnlabeledDataset(Dataset):
 
     def export_earth_engine_data(self):
         RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
-            region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None)
+            region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None
+        )

@@ -80,7 +80,7 @@ class EarthEngineExporter:
         start_date: date,
         end_date: date,
         file_name_prefix: str,
-        dest_bucket: Optional[str] = None
+        dest_bucket: Optional[str] = None,
     ):
         if self.fast:
             export_func = cloudfree.get_single_image_fast
@@ -112,7 +112,6 @@ class EarthEngineExporter:
 
 @dataclass
 class RegionExporter(EarthEngineExporter):
-
     @staticmethod
     def _start_end_dates_using_season(season: Season) -> Tuple[date, date]:
         today = date.today()
@@ -199,7 +198,7 @@ class RegionExporter(EarthEngineExporter):
                 file_name_prefix=f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}",
                 start_date=start_date,
                 end_date=end_date,
-                dest_bucket=dest_bucket
+                dest_bucket=dest_bucket,
             )
 
         return ids
@@ -238,20 +237,22 @@ class LabelExporter(EarthEngineExporter):
 
         # Check if exported files for labels already exist
         if (output_folder / self.sentinel_dataset).exists():
-            num_files = len(list((output_folder / self.sentinel_dataset).glob('**/*')))
+            num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
             if num_files >= len(labels):
                 logger.info("All tif files are already exported.")
                 return
 
         labels[DEST_FOLDER] = self.sentinel_dataset
         if SOURCE in labels:
-            source_filename_safe = labels[SOURCE].str.split(',').str[0].str.replace(r'[^\w\d-]','_')
+            source_filename_safe = (
+                labels[SOURCE].str.split(",").str[0].str.replace(r"[^\w\d-]", "_")
+            )
             labels[DEST_FOLDER] = self.sentinel_dataset + "/" + source_filename_safe
 
             # Check if exported files for specific dataset sources already exist
             for source_dataset in labels[DEST_FOLDER].unique():
                 if (output_folder / source_dataset).exists():
-                    num_files = len(list((output_folder / self.sentinel_dataset).glob('**/*')))
+                    num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
                     if num_files >= len(labels[labels[DEST_FOLDER] == source_dataset]):
                         logger.info(f"All tifs for {source_dataset} files are already exported.")
                         labels = labels[labels[DEST_FOLDER] != source_dataset]
@@ -270,7 +271,7 @@ class LabelExporter(EarthEngineExporter):
                 file_name_prefix = f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}"
                 if not (output_folder / f"{file_name_prefix}.tif").exists():
                     self._export_for_polygon(
-                        file_name_prefix=f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}",
+                        file_name_prefix=file_name_prefix,
                         polygon=bbox.to_ee_polygon(),
                         start_date=start_date,
                         end_date=end_date,
