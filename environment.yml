@@ -27,4 +27,3 @@ dependencies:
   - flake8
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
-      - clearml
