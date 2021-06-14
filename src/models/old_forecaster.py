@@ -3,11 +3,9 @@ from argparse import ArgumentParser, Namespace
 import pytorch_lightning as pl
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
 
 from typing import Dict, Tuple, Type, Any, List, Optional
 from .lstm import UnrolledLSTM
-from .forecaster_dataset import ForecasterDataset
 
 
 class Forecaster(pl.LightningModule):
@@ -85,38 +83,3 @@ class Forecaster(pl.LightningModule):
             parser.add_argument(key, type=vals[0], default=vals[1])
 
         return parser
-
-    def train_dataloader(self):
-        return DataLoader(
-            self.get_dataset(subset="training"),
-            shuffle=True,
-            batch_size=self.hparams.batch_size,
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.get_dataset(
-                subset="validation",
-                normalizing_dict=self.normalizing_dict,
-            ),
-            batch_size=self.hparams.batch_size,
-        )
-
-    def get_dataset(
-        self,
-        subset: str,
-        normalizing_dict: Optional[Dict] = None,
-        cache: Optional[bool] = None,
-    ) -> ForecasterDataset:
-        return ForecasterDataset(
-            data_folder=self.data_folder,
-            subset=subset,
-            datasets=self.datasets,
-            probability_threshold=self.hparams.probability_threshold,
-            remove_b1_b10=self.hparams.remove_b1_b10,
-            normalizing_dict=normalizing_dict,
-            include_geowiki=self.hparams.include_geowiki if subset != "testing" else False,
-            cache=self.hparams.cache if cache is None else cache,
-            upsample=self.hparams.upsample if subset != "testing" else False,
-            noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
-        )

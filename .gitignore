@@ -118,3 +118,17 @@ files
 data/**/
 scripts/lightning_logs
 
+# dvc files
+.dvc/*
+!.dvc/plots/*
+!.dvc/.gitignore
+
+# data
+data/*
+!data/*.dvc
+!data/*.py
+!data/*.json
+!data/.gitignore
+
+# data model
+scripts/data_model

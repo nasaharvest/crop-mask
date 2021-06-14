@@ -1,6 +1,0 @@
-[core]
-    remote = gsremote
-['remote "s3remote"']
-    url = s3://crop-mask-data/remote/
-['remote "gsremote"']
-    url = gs://crop-mask-data/remote/
