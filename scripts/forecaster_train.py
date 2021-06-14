@@ -21,11 +21,13 @@ def run_training(parser):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str)
-    parser.add_argument("--datasets", type=str)
+    parser.add_argument("--model_name", type=str, default="temp")
     parser.add_argument("--max_epochs", type=int, default=1000)
     parser.add_argument("--patience", type=int, default=10)
-    parser.add_argument("--data_folder", type=str, default='./data_model')
+    parser.add_argument("--cache", type=bool, default=False)
+    parser.add_argument("--upsample", type=bool, default=False)
+    parser.add_argument("--data_folder", type=str, default='./data')
     parser.add_argument("--show_progress_bar", type=bool, default=False)
+    parser.add_argument("--batch_size", type=int, default=16)
 
     run_training(parser)

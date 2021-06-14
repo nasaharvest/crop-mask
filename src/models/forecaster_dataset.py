@@ -24,17 +24,10 @@ class ForecasterDataset(Dataset):
         data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
-        probability_threshold: float,
-        remove_b1_b10: bool,
-        include_geowiki: bool,
         cache: bool,
         upsample: bool,
-        noise_factor: bool,
         normalizing_dict: Optional[Dict] = None,
     ) -> None:
-
-        self.probability_threshold = probability_threshold
-        self.include_geowiki = include_geowiki
         self.upsample = upsample
 
         self.data_folder = data_folder
@@ -43,16 +36,9 @@ class ForecasterDataset(Dataset):
         assert subset in ["training", "validation", "testing"]
         self.subset_name = subset
 
-        self.remove_b1_b10 = remove_b1_b10
-
         self.x: Optional[torch.Tensor] = None
         self.y: Optional[torch.Tensor] = None
         self.weights: Optional[torch.Tensor] = None
-
-        # this is kept at False in case caching = True. It should be
-        # changed to the input noise argument at the end of the
-        # init function
-        self.noise_factor = 0
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
@@ -94,9 +80,6 @@ class ForecasterDataset(Dataset):
         if cache:
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
-        # we only save the noise attribute after the arrays have been cached, to
-        # ensure the saved arrays are the noiseless ones
-        self.noise_factor = noise_factor
 
     @staticmethod
     def load_files_and_normalizing_dicts(
@@ -250,12 +233,7 @@ class ForecasterDataset(Dataset):
 
     @property
     def num_output_classes(self) -> Union[int, Tuple[int, int]]:
-
-        if self.include_geowiki:
-            # multi headed
-            return 1, 1
-        else:
-            return 1
+        return 1
 
     @property
     def instances_per_class(self) -> List[int]:

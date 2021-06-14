@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 
 import pytorch_lightning as pl
 import torch
@@ -9,6 +10,7 @@ from typing import Dict, Tuple, Type, Any, List, Optional
 from .lstm import UnrolledLSTM
 from .forecaster_dataset import ForecasterDataset
 
+from data.datasets_labeled import labeled_datasets
 
 class Forecaster(pl.LightningModule):
     r"""
@@ -46,6 +48,9 @@ class Forecaster(pl.LightningModule):
         self.to_bands = nn.Linear(
             in_features=hparams.forecasting_vector_size, out_features=num_bands
         )
+
+        self.hparams = hparams
+        self.datasets = labeled_datasets
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -109,14 +114,10 @@ class Forecaster(pl.LightningModule):
         cache: Optional[bool] = None,
     ) -> ForecasterDataset:
         return ForecasterDataset(
-            data_folder=self.data_folder,
+            data_folder=Path(self.hparams.data_folder),
             subset=subset,
             datasets=self.datasets,
-            probability_threshold=self.hparams.probability_threshold,
-            remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
-            include_geowiki=self.hparams.include_geowiki if subset != "testing" else False,
             cache=self.hparams.cache if cache is None else cache,
             upsample=self.hparams.upsample if subset != "testing" else False,
-            noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
         )

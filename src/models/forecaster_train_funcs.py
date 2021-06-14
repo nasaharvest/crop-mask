@@ -11,6 +11,7 @@ def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.
         max_epochs=hparams.max_epochs,
         show_progress_bar=hparams.show_progress_bar,
     )
+    
     trainer.fit(model)
 
     if hparams.model_name:
