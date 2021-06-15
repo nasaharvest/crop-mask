@@ -132,3 +132,4 @@ data/*
 
 # data model
 scripts/data_model
+scripts/data/lightning_logs

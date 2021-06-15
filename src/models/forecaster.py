@@ -1,12 +1,16 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+import numpy as np
+
 import pytorch_lightning as pl
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from torch.nn import functional as F
 
-from typing import Dict, Tuple, Type, Any, List, Optional
+from typing import cast, Callable, Dict, Tuple, Type, Any, List, Optional, Union
+
 from .lstm import UnrolledLSTM
 from .forecaster_dataset import ForecasterDataset
 
@@ -33,11 +37,10 @@ class Forecaster(pl.LightningModule):
     def __init__(
         self,
         num_bands: int,
-        output_timesteps: int,
         hparams: Namespace,
     ) -> None:
         super().__init__()
-        self.output_timesteps = output_timesteps
+
         self.lstm = UnrolledLSTM(
             input_size=num_bands,
             hidden_size=hparams.forecasting_vector_size,
@@ -51,6 +54,25 @@ class Forecaster(pl.LightningModule):
 
         self.hparams = hparams
         self.datasets = labeled_datasets
+
+        dataset = self.get_dataset(subset="training", cache=False)
+        
+        self.num_timesteps = dataset.num_timesteps
+        self.output_timesteps = self.num_timesteps - self.hparams.input_months
+
+        # we save the normalizing dict because we calculate weighted
+        # normalization values based on the datasets we combine.
+        # The number of instances per dataset (and therefore the weights) can
+        # vary between the train / test / val sets - this ensures the normalizing
+        # dict stays constant between them
+        self.normalizing_dict: Optional[Dict[str, np.ndarray]] = dataset.normalizing_dict
+
+        # Normalizing dict that is exposed
+        self.normalizing_dict_jit: Dict[str, List[float]] = {}
+        if self.normalizing_dict:
+            self.normalizing_dict_jit = {k: v.tolist() for k, v in self.normalizing_dict.items()}
+
+        self.forecaster_loss = F.smooth_l1_loss
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -105,6 +127,63 @@ class Forecaster(pl.LightningModule):
                 normalizing_dict=self.normalizing_dict,
             ),
             batch_size=self.hparams.batch_size,
+        )
+
+    def add_noise(self, x: torch.Tensor, training: bool) -> torch.Tensor:
+        if (self.hparams.noise_factor == 0) or (not training):
+            return x
+
+        # expect input to be of shape [timesteps, bands]
+        # and to be normalized with mean 0, std=1
+        # if its not, it means no norm_dict was passed, so lets
+        # just assume std=1
+        noise = torch.normal(0, 1, size=x.shape).float() * self.hparams.noise_factor
+
+        # the added noise is the same per band, so that the temporal relationships
+        # are preserved
+        # noise_per_timesteps = noise.repeat(x.shape[0], 1)
+        return x + noise
+
+    def _split_preds_and_get_loss(
+        self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
+    ) -> Dict:
+
+        x = batch # , label, is_global = batch
+
+        input_to_encode = x[:, : self.hparams.input_months, :]
+
+        # we will predict every timestep except the first one
+        output_to_predict = x[:, 1:, :]
+        encoder_output = self.forward(input_to_encode)
+        encoder_loss = self.forecaster_loss(encoder_output, output_to_predict)
+        loss: Union[float, torch.Tensor] = encoder_loss
+
+        output_dict = {
+            loss_label: loss
+        }
+        
+        if add_preds:
+            output_dict.update(
+                {
+                    "encoder_prediction": encoder_output,
+                    "encoder_target": output_to_predict,
+                }
+            )
+        if log_loss:
+            output_dict["log"] = {
+                loss_label: loss
+            }
+
+        return output_dict
+
+    def training_step(self, batch, batch_idx):
+        return self._split_preds_and_get_loss(
+            batch, add_preds=False, loss_label="loss", log_loss=True, training=True
+        )
+
+    def validation_step(self, batch, batch_idx):
+        return self._split_preds_and_get_loss(
+            batch, add_preds=True, loss_label="val_loss", log_loss=True, training=False
         )
 
     def get_dataset(
