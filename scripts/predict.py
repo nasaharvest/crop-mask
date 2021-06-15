@@ -3,11 +3,9 @@ Takes a trained model and runs it on an area
 """
 
 from argparse import ArgumentParser
-from clearml import Task
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-import boto3
 import logging
 import subprocess
 import sys
@@ -55,21 +53,6 @@ def gdal_merge(unmerged_tifs_folder: Path, output_file: Path) -> Path:
     return output_file
 
 
-def upload_to_s3(merged_files: List[Path], upload_prefix: str):
-    if not merged_files:
-        logger.error(
-            "upload_predictions was set to True but there are no merged predictions to upload. "
-            "Ensure merge_predictions is set to True"
-        )
-        return
-
-    s3 = boto3.resource("s3")
-    for merged_file in merged_files:
-        upload_path = f"output/{upload_prefix}_{merged_file.name}"
-        logger.info(f"Uploading {str(merged_file)} to S3 {upload_path}")
-        s3.Bucket("crop-mask-data").upload_file(str(merged_file), upload_path)
-
-
 def run_inference(
     model_name: str,
     data_dir: str,
@@ -81,7 +64,6 @@ def run_inference(
     predict_without_forecaster: bool = True,
     predict_dir: str = "../data/predictions",
     merge_predictions: bool = False,
-    upload_prefix: str = "",
     disable_tqdm=True,
 ):
     if not predict_with_forecaster and not predict_without_forecaster:
@@ -155,9 +137,6 @@ def run_inference(
                 )
             )
 
-    if upload_prefix:
-        upload_to_s3(merged_files, upload_prefix)
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -170,7 +149,6 @@ if __name__ == "__main__":
     parser.add_argument("--predict_without_forecaster", type=bool, default=True)
     parser.add_argument("--predict_dir", type=str, default="../data/predictions")
     parser.add_argument("--merge_predictions", type=bool, default=True)
-    parser.add_argument("--upload_prefix", type=str, default="")
     parser.add_argument("--disable_tqdm", type=bool, default=True)
 
     params = parser.parse_args()
@@ -189,6 +167,5 @@ if __name__ == "__main__":
         predict_without_forecaster=params.predict_without_forecaster,
         predict_dir=params.predict_dir,
         merge_predictions=params.merge_predictions,
-        upload_prefix=params.upload_prefix,
         disable_tqdm=params.disable_tqdm,
     )
