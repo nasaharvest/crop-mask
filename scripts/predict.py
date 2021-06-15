@@ -152,11 +152,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_tqdm", type=bool, default=True)
 
     params = parser.parse_args()
-    Task.init(
-        project_name="NASA Harvest",
-        task_name=f"{params.model_name} {datetime.now()}",
-        task_type=Task.TaskTypes.inference,
-    )
+
     run_inference(
         model_name=params.model_name,
         data_dir=params.data_dir,
