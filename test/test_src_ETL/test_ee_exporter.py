@@ -51,11 +51,11 @@ class TestEEExporters(TestCase):
         LabelExporter(sentinel_dataset=ee_dataset).export(
             labels_path=Path("a/fake/path"),
             num_labelled_points=None,
-            output_folder=self.temp_data_dir / "raw"
+            output_folder=self.temp_data_dir / "raw",
         )
 
         mock_export_for_polygon.assert_called_with(
-            file_name_prefix='mock_dataset_name/0_2019-04-22_2020-04-16',
+            file_name_prefix="mock_dataset_name/0_2019-04-22_2020-04-16",
             polygon=mock_poly_return,
             start_date=date(2019, 4, 22),
             end_date=date(2020, 4, 16),
@@ -128,9 +128,7 @@ class TestEEExporters(TestCase):
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
         region_name = "test_region_name"
-        RegionExporter(
-            sentinel_dataset=region_name,
-        ).export(
+        RegionExporter(sentinel_dataset=region_name,).export(
             season=Season.post_season,
             region_bbox=BoundingBox(0, 1, 0, 1),
             metres_per_polygon=None,

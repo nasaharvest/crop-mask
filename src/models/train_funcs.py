@@ -17,7 +17,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
-        early_stop_callback=early_stop_callback
+        early_stop_callback=early_stop_callback,
     )
     trainer.fit(model)
 

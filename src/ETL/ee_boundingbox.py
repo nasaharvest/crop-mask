@@ -63,8 +63,10 @@ class EEBoundingBox(BoundingBox):
 
         num_cols = int(lon_metres / metres_per_patch)
         num_rows = int(lat_metres / metres_per_patch)
-        warning_msg = f"A single patch (metres_per_patch={metres_per_patch}) is " \
-                      f"bigger than the requested bounding box."
+        warning_msg = (
+            f"A single patch (metres_per_patch={metres_per_patch}) is "
+            f"bigger than the requested bounding box."
+        )
         if num_cols == 0:
             logger.warning(warning_msg)
             num_cols = 1
