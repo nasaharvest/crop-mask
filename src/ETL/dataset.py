@@ -66,9 +66,9 @@ class LabeledDataset(Dataset):
     num_timesteps: int = 12
 
     def __post_init__(self):
-        raw_dir = data_folder / "raw"
-        self.raw_labels_dir = raw_dir / self.dataset
-        self.raw_images_dir = raw_dir / self.sentinel_dataset
+        self.raw_dir = data_folder / "raw"
+        self.raw_labels_dir = self.raw_dir / self.dataset
+        self.raw_images_dir = self.raw_dir / self.sentinel_dataset
         self.labels_path = data_folder / "processed" / (self.dataset + ".csv")
         self.features_dir = data_folder / "features" / self.dataset
 
@@ -94,14 +94,26 @@ class LabeledDataset(Dataset):
         return ",".join(sources.unique())
 
     def process_labels(self):
+        df = pd.DataFrame({})
+        already_processed = []
         if self.labels_path.exists():
-            return
+            df = pd.read_csv(self.labels_path)
+            already_processed = df[SOURCE].unique()
 
         total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
 
         # Combine all processed labels
-        label_dfs = [p.process(self.raw_labels_dir, total_days) for p in self.processors]
-        df = pd.concat(label_dfs)
+
+        new_labels = [
+            p.process(self.raw_labels_dir, total_days)
+            for p in self.processors
+            if p.filename not in str(already_processed)
+        ]
+
+        if len(new_labels) == 0:
+            return
+
+        df = pd.concat([df] + new_labels)
 
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
@@ -124,9 +136,8 @@ class LabeledDataset(Dataset):
         self.is_output_folder_ready(self.raw_images_dir)
         LabelExporter(
             sentinel_dataset=self.sentinel_dataset,
-            output_folder=self.raw_images_dir,
             fast=False,
-        ).export(labels_path=self.labels_path, start_from=start_from)
+        ).export(labels_path=self.labels_path, output_folder=self.raw_dir, start_from=start_from)
 
 
 @dataclass
@@ -134,11 +145,7 @@ class UnlabeledDataset(Dataset):
     region_bbox: BoundingBox
     season: Season
 
-    def __post_init__(self):
-        self.raw_images_dir = data_folder / "raw" / self.sentinel_dataset
-
     def export_earth_engine_data(self):
-        if self.is_output_folder_ready(self.raw_images_dir):
-            RegionExporter(
-                sentinel_dataset=self.sentinel_dataset, output_folder=self.raw_images_dir
-            ).export(region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None)
+        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
+            region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None
+        )
