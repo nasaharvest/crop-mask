@@ -73,6 +73,7 @@ class Model(pl.LightningModule):
         input_dataset_names = hparams.datasets.replace(" ", "").split(",")
         input_dataset_names = list(filter(None, input_dataset_names))
         self.datasets = self.load_datasets(input_dataset_names)
+        self.local_train_dataset_size = hparams.local_train_dataset_size
 
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
@@ -134,7 +135,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
     ) -> CropDataset:
         return CropDataset(
-            data_folder=self.data_folder,
             subset=subset,
             datasets=self.datasets,
             probability_threshold=self.hparams.probability_threshold,
@@ -144,6 +144,7 @@ class Model(pl.LightningModule):
             cache=self.hparams.cache if cache is None else cache,
             upsample=self.hparams.upsample if subset != "testing" else False,
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
+            local_train_dataset_size=self.local_train_dataset_size
         )
 
     def train_dataloader(self):

@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="Rwanda")
     parser.add_argument("--datasets", type=str, default="Rwanda,geowiki_landcover_2017")
+    parser.add_argument("--local_train_dataset_size", type=int, default=None)
     parser.add_argument("--max_epochs", type=int, default=1000)
     parser.add_argument("--patience", type=int, default=10)
 

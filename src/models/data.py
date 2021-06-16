@@ -24,7 +24,6 @@ class CropDataset(Dataset):
 
     def __init__(
         self,
-        data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
         probability_threshold: float,
@@ -34,17 +33,13 @@ class CropDataset(Dataset):
         upsample: bool,
         noise_factor: bool,
         normalizing_dict: Optional[Dict] = None,
+        local_train_dataset_size: Optional[int] = None
     ) -> None:
 
         self.probability_threshold = probability_threshold
         self.include_geowiki = include_geowiki
-        self.upsample = upsample
-
-        self.data_folder = data_folder
-        self.features_dir = data_folder / "features"
 
         assert subset in ["training", "validation", "testing"]
-        self.subset_name = subset
 
         self.remove_b1_b10 = remove_b1_b10
 
@@ -59,10 +54,15 @@ class CropDataset(Dataset):
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
+            limit = None
+            if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
+                limit = local_train_dataset_size
+
             files_and_nds.append(
                 self.load_files_and_normalizing_dicts(
-                    dataset.features_dir,
-                    self.subset_name,
+                    features_dir=dataset.features_dir,
+                    subset_name=subset,
+                    limit=limit,
                 )
             )
 
@@ -103,7 +103,7 @@ class CropDataset(Dataset):
 
     @staticmethod
     def load_files_and_normalizing_dicts(
-        features_dir: Path, subset_name: str, file_suffix: str = "pkl"
+        features_dir: Path, subset_name: str, limit: Optional[int] = None, file_suffix: str = "pkl"
     ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
 
         pickle_files_dir = features_dir / subset_name
@@ -115,6 +115,8 @@ class CropDataset(Dataset):
             pickle_files = []
         else:
             pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
+            if limit and limit < len(pickle_files):
+                pickle_files = pickle_files[:limit]
 
         # try loading the normalizing dict. By default, if it exists we will use it
         normalizing_dict_path = features_dir / "normalizing_dict.pkl"
