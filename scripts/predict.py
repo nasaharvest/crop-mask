@@ -3,9 +3,8 @@ Takes a trained model and runs it on an area
 """
 
 from argparse import ArgumentParser
-from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 import logging
 import subprocess
 import sys
