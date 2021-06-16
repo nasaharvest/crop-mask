@@ -1,14 +1,14 @@
 import pytorch_lightning as pl
 import json
 from pathlib import Path
-from typing import List
+from typing import Tuple
 
 from src.models import Model
 
 data_dir = Path(__file__).parent.parent / "data"
 
 
-def test_one_model(model_path: Path, alternate_test_sets:List[str] = []):
+def test_one_model(model_path: Path, alternate_test_sets: Tuple[str, ...] = ()):
     model = Model.load_from_checkpoint(str(model_path))
     if alternate_test_sets:
         model.datasets = model.load_datasets(alternate_test_sets)
@@ -38,4 +38,4 @@ def test_all_models():
 
 if __name__ == "__main__":
     # test_all_models()
-    test_one_model(data_dir / "models/Kenya.ckpt", ["Uganda"])
+    test_one_model(data_dir / "models/Kenya.ckpt", alternate_test_sets=("Uganda",))
