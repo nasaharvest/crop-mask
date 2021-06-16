@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from tqdm import tqdm
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 import logging
 import pandas as pd
@@ -11,9 +11,11 @@ import sys
 
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
-from src.ETL.constants import START, END, LAT, LON
+from src.ETL.constants import START, END, LAT, LON, SOURCE, GEOWIKI_UNEXPORTED
 
 logger = logging.getLogger(__name__)
+
+DEST_FOLDER = "DEST_FOLDER"
 
 
 class Season(Enum):
@@ -31,25 +33,17 @@ class EarthEngineExporter:
     Setup parameters to download cloud free sentinel data for countries,
     where countries are defined by the simplified large scale
     international boundaries.
-    :param output_folder: The folder to export the earth engine data to
     :param sentinel_dataset: The name of the earth engine dataset
-    :param dest_bucket: The name of the destination GCP bucket
     :param days_per_timestep: The number of days of data to use for each mosaiced image.
     :param num_timesteps: The number of timesteps to export if season is not specified
     :param fast: Whether to use the faster cloudfree exporter. This function is considerably
         faster, but cloud artefacts can be more pronounced. Default = True
-    :param checkpoint: Whether or not to check in self.data_folder to see if the file has
-            already been exported. If it has, skip it
     :param monitor: Whether to monitor each task until it has been run
     """
     sentinel_dataset: str
-    dest_bucket: Optional[str] = None
-    model_name: Optional[str] = None
-    output_folder: Optional[Path] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
     fast: bool = True
-    checkpoint: bool = True
     monitor: bool = False
     credentials: Optional[str] = None
     file_dimensions: Optional[int] = None
@@ -83,53 +77,33 @@ class EarthEngineExporter:
     def _export_for_polygon(
         self,
         polygon: ee.Geometry.Polygon,
-        polygon_identifier: Union[int, str],
         start_date: date,
         end_date: date,
+        file_name_prefix: str,
+        dest_bucket: Optional[str] = None,
     ):
         if self.fast:
             export_func = cloudfree.get_single_image_fast
         else:
             export_func = cloudfree.get_single_image
 
-        cur_date = start_date
-        cur_end_date = cur_date + timedelta(days=self.days_per_timestep)
-
         image_collection_list: List[ee.Image] = []
-
-        filename = f"{polygon_identifier}_{str(cur_date)}_{str(end_date)}"
-
-        if (
-            self.checkpoint
-            and self.output_folder
-            and (self.output_folder / f"{filename}.tif").exists()
-        ):
-            logger.info("File already exists! Skipping")
-            return None
-
-        while cur_end_date <= end_date:
+        increment = timedelta(days=self.days_per_timestep)
+        cur_date = start_date
+        while (cur_date + increment) <= end_date:
             image_collection_list.append(
-                export_func(region=polygon, start_date=cur_date, end_date=cur_end_date)
+                export_func(region=polygon, start_date=cur_date, end_date=cur_date + increment)
             )
-            cur_date += timedelta(days=self.days_per_timestep)
-            cur_end_date += timedelta(days=self.days_per_timestep)
+            cur_date += increment
 
         # now, we want to take our image collection and append the bands into a single image
         imcoll = ee.ImageCollection(image_collection_list)
         img = ee.Image(imcoll.iterate(cloudfree.combine_bands))
 
-        # and finally, export the image
-        if self.model_name:
-            file_name_prefix = (
-                f"{self.model_name}/{self.sentinel_dataset}/batch_{polygon_identifier}/{filename}"
-            )
-        else:
-            file_name_prefix = f"{self.sentinel_dataset}/{filename}"
-
         cloudfree.export(
             image=img,
             region=polygon,
-            dest_bucket=self.dest_bucket,
+            dest_bucket=dest_bucket,
             file_name_prefix=file_name_prefix,
             monitor=self.monitor,
             file_dimensions=self.file_dimensions,
@@ -169,6 +143,8 @@ class RegionExporter(EarthEngineExporter):
     def export(
         self,
         region_bbox: BoundingBox,
+        dest_bucket: Optional[str] = None,
+        model_name: Optional[str] = None,
         end_date: Optional[date] = None,
         season: Optional[Season] = None,
         metres_per_polygon: Optional[int] = 10000,
@@ -179,6 +155,9 @@ class RegionExporter(EarthEngineExporter):
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
         :param region_bbox: BoundingBox for region
+        :param dest_bucket: The name of the destination GCP bucket
+        :param model_name: The name of the model that data will be fed to
+        :param season: The season for which the data should be exported
         :param end_date: The end date of the data export
         :param metres_per_polygon: Whether to split the export of a large region into smaller
             boxes of (max) area metres_per_polygon * metres_per_polygon. It is better to instead
@@ -209,12 +188,17 @@ class RegionExporter(EarthEngineExporter):
             regions = [region.to_ee_polygon()]
             ids = [self.sentinel_dataset]
 
+        dest_folder = self.sentinel_dataset
         for identifier, region in zip(ids, regions):
+            if model_name:
+                dest_folder = f"{model_name}/{self.sentinel_dataset}/batch_{identifier}"
+
             self._export_for_polygon(
                 polygon=region,
-                polygon_identifier=identifier,
+                file_name_prefix=f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}",
                 start_date=start_date,
                 end_date=end_date,
+                dest_bucket=dest_bucket,
             )
 
         return ids
@@ -225,6 +209,7 @@ class LabelExporter(EarthEngineExporter):
     def export(
         self,
         labels_path: Path,
+        output_folder: Path = None,
         num_labelled_points: Optional[int] = None,
         surrounding_metres: int = 80,
         start_from: Optional[int] = None,
@@ -235,25 +220,63 @@ class LabelExporter(EarthEngineExporter):
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
         :param labels_path: The path to the labels file
+        :param output_folder: The path to the destination of the tif files
         :param num_labelled_points: (Optional) The number of labelled points to export.
         :param surrounding_metres: The number of metres surrounding each labelled point to export
         """
         self.check_earthengine_auth()
+
         labels = pd.read_csv(labels_path)
         if num_labelled_points:
             labels = labels[:num_labelled_points]
         if start_from:
             labels = labels[start_from:]
 
+        if self.sentinel_dataset == "earth_engine_geowiki":
+            labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
+
+        # Check if exported files for labels already exist
+        if output_folder and (output_folder / self.sentinel_dataset).exists():
+            num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
+            if num_files >= len(labels):
+                logger.info("All tif files are already exported.")
+                return
+
+        labels[DEST_FOLDER] = self.sentinel_dataset
+        if SOURCE in labels:
+            source_filename_safe = (
+                labels[SOURCE].str.split(",").str[0].str.replace(r"[^\w\d-]", "_")
+            )
+            labels[DEST_FOLDER] = self.sentinel_dataset + "/" + source_filename_safe
+
+            # Check if exported files for specific dataset sources already exist
+            for source_dataset in labels[DEST_FOLDER].unique():
+                if output_folder and (output_folder / source_dataset).exists():
+                    num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
+                    if num_files >= len(labels[labels[DEST_FOLDER] == source_dataset]):
+                        logger.info(f"All tifs for {source_dataset} files are already exported.")
+                        labels = labels[labels[DEST_FOLDER] != source_dataset]
+
+        if len(labels) == 0:
+            return
+
         with tqdm(total=len(labels), position=0, leave=True) as pbar:
             for idx, row in tqdm(labels.iterrows()):
                 bbox = EEBoundingBox.from_centre(
                     mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
                 )
+                start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
+                end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
+
+                file_name_prefix = f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}"
+                if output_folder and (output_folder / f"{file_name_prefix}.tif").exists():
+                    pbar.update(1)
+                    continue
+
                 self._export_for_polygon(
+                    file_name_prefix=file_name_prefix,
                     polygon=bbox.to_ee_polygon(),
-                    polygon_identifier=idx,
-                    start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
-                    end_date=datetime.strptime(row[END], "%Y-%m-%d").date(),
+                    start_date=start_date,
+                    end_date=end_date,
                 )
                 pbar.update(1)

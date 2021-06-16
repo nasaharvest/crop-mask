@@ -1,4 +1,6 @@
+from pathlib import Path
 from unittest import TestCase
+import glob
 import pandas as pd
 import pickle
 import sys
@@ -6,7 +8,7 @@ import sys
 sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
-from src.ETL.constants import CROP_PROB, SUBSET  # noqa: E402
+from src.ETL.constants import CROP_PROB, SUBSET, GEOWIKI_UNEXPORTED  # noqa: E402
 from src.ETL.dataset import LabeledDataset  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 
@@ -21,23 +23,20 @@ class IntegrationTestLabeledData(TestCase):
         get_dvc_dir("features")
 
     @staticmethod
-    def get_file_count(directory, extension=None):
-        count = 0
-        if directory.exists():
-            for p in directory.iterdir():
-                if p.is_file() and (extension is None or p.suffix == extension):
-                    count += 1
-        return count
+    def get_file_count(directory: Path, extension=None):
+        if not directory.exists():
+            return 0
+        files = glob.glob(str(directory) + "/**", recursive=True)
+        if extension:
+            files = [f for f in files if f.endswith(extension)]
+        return len(files)
 
     @staticmethod
     def load_labels(d: LabeledDataset) -> pd.DataFrame:
         labels = pd.read_csv(d.labels_path)
 
-        # 9 images are not exported in geowiki due to:
-        # Error: Image.select: Pattern 'B1' did not match any bands.
         if d.dataset == "geowiki_landcover_2017":
-            not_exported = [35684, 35687, 35705, 35717, 35726, 35730, 35791, 35861, 35865]
-            labels = labels[~labels.index.isin(not_exported)]
+            labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
 
         return labels
 
@@ -69,7 +68,7 @@ class IntegrationTestLabeledData(TestCase):
                 labels_in_subset = 0
                 if subset in train_val_test_counts:
                     labels_in_subset = train_val_test_counts[subset]
-                features_in_subset = self.get_file_count(d.features_dir / subset)
+                features_in_subset = self.get_file_count(d.features_dir / subset, extension=".pkl")
                 self.assertEqual(
                     labels_in_subset,
                     features_in_subset,
