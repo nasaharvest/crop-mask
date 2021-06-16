@@ -173,7 +173,6 @@ class TestPredict(TestCase):
         self.assertEqual(mock_make_prediction.call_count, 2)
         self.assertEqual(mock_gdal_merge.call_count, 2)
 
-
     @patch("src.models.Model.load_from_checkpoint")
     @patch("scripts.predict.make_prediction")
     @patch("scripts.predict.gdal_merge")
