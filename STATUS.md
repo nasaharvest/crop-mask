@@ -32,5 +32,5 @@
 |Mali (lower USAID) |2020/21        |![Step 3]      |       |
 |Mali (upper USAID) |2020/21        |![Step 3]      |       |
 |Rwanda             |2019/20        |![Step 5]      |       |
-|Uganda             |2020/21        |![Step 3]      |       |
+|Uganda             |2020/21        |![Step 5]      |       |
 |Uganda (Maize)     |2020/21        |![Step 0]      |       |
