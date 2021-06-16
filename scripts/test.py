@@ -11,7 +11,7 @@ data_dir = Path(__file__).parent.parent / "data"
 def test_one_model(model_path: Path, alternate_test_sets: Tuple[str, ...] = ()):
     model = Model.load_from_checkpoint(str(model_path))
     if alternate_test_sets:
-        model.datasets = model.load_datasets(alternate_test_sets)
+        model.datasets = model.load_datasets(list(alternate_test_sets))
     trainer = pl.Trainer()
     trainer.test(model)
     formatted_metrics = {k: round(float(v), 4) for k, v in trainer.callback_metrics.items()}
