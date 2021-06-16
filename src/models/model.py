@@ -72,16 +72,8 @@ class Model(pl.LightningModule):
         self.data_folder = Path(hparams.data_folder)
         input_dataset_names = hparams.datasets.replace(" ", "").split(",")
         input_dataset_names = list(filter(None, input_dataset_names))
-        self.datasets = []
-        for d in labeled_datasets:
-            if d.dataset in input_dataset_names:
-                self.datasets.append(d)
-                input_dataset_names.remove(d.dataset)
+        self.datasets = self.load_datasets(input_dataset_names)
 
-        for not_found_dataset in input_dataset_names:
-            logger.error(f"Could not find dataset with name: {not_found_dataset}")
-
-        logger.info(f"Using datasets: {[d.dataset for d in self.datasets]}")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
@@ -120,6 +112,20 @@ class Model(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+
+    @staticmethod
+    def load_datasets(input_dataset_names: List[str]):
+        datasets = []
+        for d in labeled_datasets:
+            if d.dataset in input_dataset_names:
+                datasets.append(d)
+                input_dataset_names.remove(d.dataset)
+
+        for not_found_dataset in input_dataset_names:
+            logger.error(f"Could not find dataset with name: {not_found_dataset}")
+
+        logger.info(f"Using datasets: {[d.dataset for d in datasets]}")
+        return datasets
 
     def get_dataset(
         self,
