@@ -41,6 +41,20 @@
         "encoded_test_local_f1_score": 0.9487,
         "encoded_test_local_accuracy": 0.9158
     },
+    "Uganda": {
+        "val_loss": 1.0398,
+        "test_encoder_mae": 0.3949,
+        "unencoded_test_local_roc_auc_score": 0.8107,
+        "unencoded_test_local_precision_score": 0.5263,
+        "unencoded_test_local_recall_score": 0.5,
+        "unencoded_test_local_f1_score": 0.5128,
+        "unencoded_test_local_accuracy": 0.8257,
+        "encoded_test_local_roc_auc_score": 0.6674,
+        "encoded_test_local_precision_score": 0.4545,
+        "encoded_test_local_recall_score": 0.25,
+        "encoded_test_local_f1_score": 0.3226,
+        "encoded_test_local_accuracy": 0.8073
+    },
     "Kenya": {
         "val_loss": 0.2367,
         "test_encoder_mae": 0.303,

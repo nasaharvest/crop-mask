@@ -247,5 +247,25 @@ labeled_datasets = [
                 )
             ]
         )
+    ),
+    LabeledDataset(
+        dataset="Uganda",
+        country="Uganda",
+        sentinel_dataset="earth_engine_uganda",
+        processors=tuple(
+            [
+                Processor(
+                    filename=filename,
+                    crop_prob=lambda df: df['Crop/non-crop'] == 'Cropland',
+                    x_y_from_centroid=False,
+                    train_val_test=(0.8, 0.1, 0.1),
+                    end_year=2020,
+                )
+                for filename in [
+                    "ceo-2019-Uganda-Cropland-(RCMRD--Set-1)-sample-data-2021-06-11.csv",
+                    "ceo-2019-Uganda-Cropland-(RCMRD--Set-2)-sample-data-2021-06-11.csv",
+                ]
+            ]
+        )
     )
 ]
