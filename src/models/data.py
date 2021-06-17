@@ -51,6 +51,7 @@ class CropDataset(Dataset):
         # changed to the input noise argument at the end of the
         # init function
         self.noise_factor = 0
+        self.countries = set()
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
@@ -58,13 +59,15 @@ class CropDataset(Dataset):
             if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
                 limit = local_train_dataset_size
 
-            files_and_nds.append(
-                self.load_files_and_normalizing_dicts(
-                    features_dir=dataset.features_dir,
-                    subset_name=subset,
-                    limit=limit,
-                )
+            pickle_files, normalizing_dict = self.load_files_and_normalizing_dicts(
+                features_dir=dataset.features_dir,
+                subset_name=subset,
+                limit=limit,
             )
+            if len(pickle_files) > 0:
+                self.countries.add(dataset.country)
+
+            files_and_nds.append((pickle_files, normalizing_dict))
 
         if normalizing_dict is not None:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
