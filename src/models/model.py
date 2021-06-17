@@ -73,7 +73,7 @@ class Model(pl.LightningModule):
         input_dataset_names = hparams.datasets.replace(" ", "").split(",")
         input_dataset_names = list(filter(None, input_dataset_names))
         self.datasets = self.load_datasets(input_dataset_names)
-        self.local_train_dataset_size = hparams.local_train_dataset_size
+        self.local_train_dataset_size = hparams.local_train_dataset_size if "local_train_dataset_size" in hparams else None
 
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
