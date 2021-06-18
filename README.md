@@ -22,7 +22,7 @@ These can be used to create annual and in season crop maps.
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
-    conda env create -f environment.yml   # Creates environment
+    conda env create -f environment-dev.yml   # Creates environment
     conda activate landcover-mapping      # Activates environment
     ```
 2. [OPTIONAL] When adding new labeled data, Google Earth Engine is used to export Satellite data. To authenticate Earth Engine run:
@@ -42,7 +42,7 @@ These can be used to create annual and in season crop maps.
 **Prerequisite:  Adding new labeled data:**
 1. Ensure local environment is set up and all existing data is downloaded.
 2. Add the shape file for new labels into [data/raw](data/raw)
-3. In [dataset_labeled.py](data/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
+3. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
 4. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
     ```bash
     python export_for_labeled.py
@@ -66,7 +66,7 @@ python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ## 3. Running inference locally
 **Prerequisite: Getting unlabeled data:**
 1. Ensure local environment is set up.
-3. In [dataset_unlabeled.py](data/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
+3. In [dataset_unlabeled.py](src/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
 4. To begin exporting satellite data from Google Earth Engine run (from scripts directory):
     ```bash
     python export_for_unlabeled.py --dataset_name <dataset name>
