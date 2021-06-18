@@ -10,7 +10,7 @@ sys.path.append("..")
 from utils import get_dvc_dir  # noqa: E402
 from src.ETL.constants import CROP_PROB, SUBSET, GEOWIKI_UNEXPORTED  # noqa: E402
 from src.ETL.dataset import LabeledDataset, DataDir  # noqa: E402
-from data.datasets_labeled import labeled_datasets  # noqa: E402
+from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
 class IntegrationTestLabeledData(TestCase):
