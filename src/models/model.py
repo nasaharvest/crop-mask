@@ -135,6 +135,7 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
     ) -> CropDataset:
         return CropDataset(
+            data_folder=self.data_folder,
             subset=subset,
             datasets=self.datasets,
             probability_threshold=self.hparams.probability_threshold,
@@ -530,7 +531,6 @@ class Model(pl.LightningModule):
 
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
-            "--data_folder": (str, str(Path("../data"))),
             "--learning_rate": (float, 0.001),
             "--batch_size": (int, 64),
             "--probability_threshold": (float, 0.5),

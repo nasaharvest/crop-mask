@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from src.ETL.constants import BANDS
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
-from src.ETL.dataset import LabeledDataset
+from src.ETL.dataset import LabeledDataset, DataDir
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ class CropDataset(Dataset):
 
     def __init__(
         self,
+        data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
         probability_threshold: float,
@@ -60,7 +61,7 @@ class CropDataset(Dataset):
                 limit = local_train_dataset_size
 
             pickle_files, normalizing_dict = self.load_files_and_normalizing_dicts(
-                features_dir=dataset.features_dir,
+                features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
                 limit=limit,
             )
