@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
+from enum import Enum
 from pathlib import Path
 from typing import Optional, Tuple
 import logging
@@ -14,8 +15,15 @@ from src.ETL.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, 
 
 logger = logging.getLogger(__name__)
 
-data_folder: Path = Path(__file__).parent.parent.parent / "data"
+default_data_folder: Path = Path(__file__).parent.parent.parent / "data"
 
+
+class DataDir(Enum):
+    RAW_DIR = "raw_dir"
+    RAW_LABELS_DIR = "raw_labels_dir"
+    RAW_IMAGES_DIR = "raw_images_dir"
+    LABELS_PATH = "labels_path"
+    FEATURES_DIR = "features_dir"
 
 @dataclass
 class Dataset:
@@ -65,18 +73,23 @@ class LabeledDataset(Dataset):
     days_per_timestep: int = 30
     num_timesteps: int = 12
 
-    def __post_init__(self):
-        self.raw_dir = data_folder / "raw"
-        self.raw_labels_dir = self.raw_dir / self.dataset
-        self.raw_images_dir = self.raw_dir / self.sentinel_dataset
-        self.labels_path = data_folder / "processed" / (self.dataset + ".csv")
-        self.features_dir = data_folder / "features" / self.dataset
+    def get_path(self, data_dir: DataDir, root_data_folder: Path = default_data_folder):
+        if data_dir == DataDir.RAW_DIR:
+            return root_data_folder / "raw"
+        if data_dir == DataDir.RAW_LABELS_DIR:
+            return root_data_folder / "raw" / self.dataset
+        if data_dir == DataDir.RAW_IMAGES_DIR:
+            return root_data_folder / "raw" / self.sentinel_dataset
+        if data_dir == DataDir.LABELS_PATH:
+            return root_data_folder / "processed" / (self.dataset + ".csv")
+        if data_dir == DataDir.FEATURES_DIR:
+            return root_data_folder / "features" / self.dataset
 
     def create_pickled_labeled_dataset(self):
         Engineer(
-            sentinel_files_path=self.raw_images_dir,
-            labels_path=self.labels_path,
-            save_dir=self.features_dir,
+            sentinel_files_path=self.get_path(DataDir.RAW_IMAGES_DIR),
+            labels_path=self.get_path(DataDir.LABELS_PATH),
+            save_dir=self.get_path(DataDir.FEATURES_DIR),
             is_global=self.is_global,
             nan_fill=self.nan_fill,
             add_ndvi=self.add_ndvi,
@@ -96,8 +109,8 @@ class LabeledDataset(Dataset):
     def process_labels(self):
         df = pd.DataFrame({})
         already_processed = []
-        if self.labels_path.exists():
-            df = pd.read_csv(self.labels_path)
+        if self.get_path(DataDir.LABELS_PATH).exists():
+            df = pd.read_csv(self.get_path(DataDir.LABELS_PATH))
             already_processed = df[SOURCE].unique()
 
         total_days = timedelta(days=self.num_timesteps * self.days_per_timestep)
@@ -105,7 +118,7 @@ class LabeledDataset(Dataset):
         # Combine all processed labels
 
         new_labels = [
-            p.process(self.raw_labels_dir, total_days)
+            p.process(self.get_path(DataDir.RAW_LABELS_DIR), total_days)
             for p in self.processors
             if p.filename not in str(already_processed)
         ]
@@ -122,22 +135,22 @@ class LabeledDataset(Dataset):
         )
         df[COUNTRY] = self.country
         df = df.reset_index(drop=True)
-        df.to_csv(self.labels_path, index=False)
+        df.to_csv(self.get_path(DataDir.LABELS_PATH), index=False)
 
     def download_raw_labels(self):
-        if self.is_output_folder_ready(self.raw_labels_dir):
+        if self.is_output_folder_ready(self.get_path(DataDir.RAW_LABELS_DIR)):
             if len(self.raw_labels) == 0:
                 logger.warning(f"No raw labels set for {self.dataset}")
 
             for label in self.raw_labels:
-                label.download_file(output_folder=self.raw_labels_dir)
+                label.download_file(output_folder=self.get_path(DataDir.RAW_LABELS_DIR))
 
     def export_earth_engine_data(self, start_from: Optional[int] = None):
-        self.is_output_folder_ready(self.raw_images_dir)
+        self.is_output_folder_ready(self.get_path(DataDir.RAW_IMAGES_DIR))
         LabelExporter(
             sentinel_dataset=self.sentinel_dataset,
             fast=False,
-        ).export(labels_path=self.labels_path, output_folder=self.raw_dir, start_from=start_from)
+        ).export(labels_path=self.get_path(DataDir.LABELS_PATH), output_folder=self.get_path(DataDir.RAW_DIR), start_from=start_from)
 
 
 @dataclass

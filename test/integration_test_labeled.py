@@ -9,7 +9,7 @@ sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
 from src.ETL.constants import CROP_PROB, SUBSET, GEOWIKI_UNEXPORTED  # noqa: E402
-from src.ETL.dataset import LabeledDataset  # noqa: E402
+from src.ETL.dataset import LabeledDataset, DataDir  # noqa: E402
 from data.datasets_labeled import labeled_datasets  # noqa: E402
 
 
@@ -33,7 +33,7 @@ class IntegrationTestLabeledData(TestCase):
 
     @staticmethod
     def load_labels(d: LabeledDataset) -> pd.DataFrame:
-        labels = pd.read_csv(d.labels_path)
+        labels = pd.read_csv(d.get_path(DataDir.LABELS_PATH))
 
         if d.dataset == "geowiki_landcover_2017":
             labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
@@ -46,7 +46,7 @@ class IntegrationTestLabeledData(TestCase):
             labels = self.load_labels(d)
             label_count = len(labels)
 
-            tif_file_count = self.get_file_count(d.raw_images_dir, extension=".tif")
+            tif_file_count = self.get_file_count(d.get_path(DataDir.RAW_IMAGES_DIR), extension=".tif")
             self.assertEqual(
                 label_count,
                 tif_file_count,
@@ -84,8 +84,9 @@ class IntegrationTestLabeledData(TestCase):
 
             features = []
             for subset in ["training", "validation", "testing"]:
-                if (d.features_dir / subset).exists():
-                    for p in (d.features_dir / subset).iterdir():
+                features_dir = d.get_path(DataDir.FEATURES_DIR)
+                if (features_dir / subset).exists():
+                    for p in (features_dir / subset).iterdir():
                         with p.open("rb") as f:
                             features.append(pickle.load(f))
             features_df = pd.DataFrame([feat.__dict__ for feat in features])
