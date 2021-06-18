@@ -1,13 +1,17 @@
 """
 Trains the models
 """
-
+import os
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
 import logging
 
 sys.path.append("..")
+
+module_path = os.path.abspath(os.getcwd())
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 from src.models import Model, train_model  # noqa: E402
 
