@@ -4,67 +4,67 @@
         "test_set_crop_percentage": 0.6923076923076923,
         "models": {
             "Kenya.ckpt": {
-                "val_loss": 1.6966,
-                "test_encoder_mae": 0.5952,
-                "unencoded_test_local_roc_auc_score": 0.9398,
-                "unencoded_test_local_precision_score": 0.9902,
-                "unencoded_test_local_recall_score": 0.4935,
-                "unencoded_test_local_f1_score": 0.6587,
-                "unencoded_test_local_accuracy": 0.6459
+                "val_loss": 0.364,
+                "test_encoder_mae": 0.5037,
+                "unencoded_test_local_roc_auc_score": 0.9877,
+                "unencoded_test_local_precision_score": 0.9754,
+                "unencoded_test_local_recall_score": 0.9722,
+                "unencoded_test_local_f1_score": 0.9738,
+                "unencoded_test_local_accuracy": 0.9638
             },
             "Kenya1000.ckpt": {
-                "val_loss": 1.5626,
-                "test_encoder_mae": 0.6511,
-                "unencoded_test_local_roc_auc_score": 0.8529,
-                "unencoded_test_local_precision_score": 0.9662,
-                "unencoded_test_local_recall_score": 0.5131,
-                "unencoded_test_local_f1_score": 0.6702,
-                "unencoded_test_local_accuracy": 0.6505
+                "val_loss": 0.6038,
+                "test_encoder_mae": 0.6009,
+                "unencoded_test_local_roc_auc_score": 0.9771,
+                "unencoded_test_local_precision_score": 0.9592,
+                "unencoded_test_local_recall_score": 0.9216,
+                "unencoded_test_local_f1_score": 0.94,
+                "unencoded_test_local_accuracy": 0.9186
             },
             "Kenya2000.ckpt": {
-                "val_loss": 2.2046,
-                "test_encoder_mae": 0.6443,
-                "unencoded_test_local_roc_auc_score": 0.8483,
-                "unencoded_test_local_precision_score": 0.9653,
-                "unencoded_test_local_recall_score": 0.4085,
-                "unencoded_test_local_f1_score": 0.5741,
-                "unencoded_test_local_accuracy": 0.5803
+                "val_loss": 0.4697,
+                "test_encoder_mae": 0.5378,
+                "unencoded_test_local_roc_auc_score": 0.9849,
+                "unencoded_test_local_precision_score": 0.9669,
+                "unencoded_test_local_recall_score": 0.9559,
+                "unencoded_test_local_f1_score": 0.9614,
+                "unencoded_test_local_accuracy": 0.9468
             },
             "Kenya3000.ckpt": {
-                "val_loss": 1.9746,
-                "test_encoder_mae": 0.6289,
-                "unencoded_test_local_roc_auc_score": 0.8711,
-                "unencoded_test_local_precision_score": 0.9822,
-                "unencoded_test_local_recall_score": 0.451,
-                "unencoded_test_local_f1_score": 0.6181,
-                "unencoded_test_local_accuracy": 0.6143
+                "val_loss": 0.4186,
+                "test_encoder_mae": 0.5366,
+                "unencoded_test_local_roc_auc_score": 0.9851,
+                "unencoded_test_local_precision_score": 0.9659,
+                "unencoded_test_local_recall_score": 0.9706,
+                "unencoded_test_local_f1_score": 0.9682,
+                "unencoded_test_local_accuracy": 0.9559
             },
             "Kenya4000.ckpt": {
-                "val_loss": 1.2465,
-                "test_encoder_mae": 0.617,
-                "unencoded_test_local_roc_auc_score": 0.9561,
-                "unencoded_test_local_precision_score": 1.0,
-                "unencoded_test_local_recall_score": 0.5,
-                "unencoded_test_local_f1_score": 0.6667,
-                "unencoded_test_local_accuracy": 0.6538
+                "val_loss": 0.3743,
+                "test_encoder_mae": 0.5249,
+                "unencoded_test_local_roc_auc_score": 0.9871,
+                "unencoded_test_local_precision_score": 0.9761,
+                "unencoded_test_local_recall_score": 0.9363,
+                "unencoded_test_local_f1_score": 0.9558,
+                "unencoded_test_local_accuracy": 0.94
             },
             "Kenya5000.ckpt": {
-                "val_loss": 1.8585,
-                "test_encoder_mae": 0.6101,
-                "unencoded_test_local_roc_auc_score": 0.8985,
-                "unencoded_test_local_precision_score": 0.9915,
-                "unencoded_test_local_recall_score": 0.3824,
-                "unencoded_test_local_f1_score": 0.5519,
-                "unencoded_test_local_accuracy": 0.5701
+                "val_loss": 0.4184,
+                "test_encoder_mae": 0.5057,
+                "unencoded_test_local_roc_auc_score": 0.986,
+                "unencoded_test_local_precision_score": 0.97,
+                "unencoded_test_local_recall_score": 0.951,
+                "unencoded_test_local_f1_score": 0.9604,
+                "unencoded_test_local_accuracy": 0.9457
             },
             "Kenya6000.ckpt": {
-                "val_loss": 2.5748,
-                "test_encoder_mae": 0.606,
-                "unencoded_test_local_roc_auc_score": 0.8945,
-                "unencoded_test_local_precision_score": 0.9926,
-                "unencoded_test_local_recall_score": 0.4412,
-                "unencoded_test_local_f1_score": 0.6109,
-                "unencoded_test_local_accuracy": 0.6109
+                "val_loss": 0.3998,
+                "test_encoder_mae": 0.5019,
+                "unencoded_test_local_roc_auc_score": 0.9887,
+                "unencoded_test_local_precision_score": 0.9798,
+                "unencoded_test_local_recall_score": 0.9526,
+                "unencoded_test_local_f1_score": 0.966,
+                "unencoded_test_local_accuracy": 0.9536
             }
         }
     },
@@ -73,13 +73,13 @@
         "test_set_crop_percentage": 0.3153846153846154,
         "models": {
             "Rwanda.ckpt": {
-                "val_loss": 1.506,
-                "test_encoder_mae": 0.5787,
-                "unencoded_test_local_roc_auc_score": 0.823,
-                "unencoded_test_local_precision_score": 0.6757,
-                "unencoded_test_local_recall_score": 0.6098,
-                "unencoded_test_local_f1_score": 0.641,
-                "unencoded_test_local_accuracy": 0.7846
+                "val_loss": 0.7699,
+                "test_encoder_mae": 0.5532,
+                "unencoded_test_local_roc_auc_score": 0.8304,
+                "unencoded_test_local_precision_score": 0.5,
+                "unencoded_test_local_recall_score": 0.8537,
+                "unencoded_test_local_f1_score": 0.6306,
+                "unencoded_test_local_accuracy": 0.6846
             }
         }
     },
@@ -88,13 +88,13 @@
         "test_set_crop_percentage": 0.34516129032258064,
         "models": {
             "Togo.ckpt": {
-                "val_loss": 2.5045,
-                "test_encoder_mae": 0.6552,
-                "unencoded_test_local_roc_auc_score": 0.4951,
-                "unencoded_test_local_precision_score": 0.5714,
-                "unencoded_test_local_recall_score": 0.0374,
-                "unencoded_test_local_f1_score": 0.0702,
-                "unencoded_test_local_accuracy": 0.6581
+                "val_loss": 0.9284,
+                "test_encoder_mae": 0.6334,
+                "unencoded_test_local_roc_auc_score": 0.8765,
+                "unencoded_test_local_precision_score": 0.7069,
+                "unencoded_test_local_recall_score": 0.7664,
+                "unencoded_test_local_f1_score": 0.7354,
+                "unencoded_test_local_accuracy": 0.8097
             }
         }
     },
@@ -103,13 +103,13 @@
         "test_set_crop_percentage": 0.8315789473684211,
         "models": {
             "Mali.ckpt": {
-                "val_loss": 3.0911,
-                "test_encoder_mae": 0.7533,
-                "unencoded_test_local_roc_auc_score": 0.7595,
-                "unencoded_test_local_precision_score": 0.913,
-                "unencoded_test_local_recall_score": 0.5316,
-                "unencoded_test_local_f1_score": 0.672,
-                "unencoded_test_local_accuracy": 0.5684
+                "val_loss": 0.8957,
+                "test_encoder_mae": 0.5477,
+                "unencoded_test_local_roc_auc_score": 0.9628,
+                "unencoded_test_local_precision_score": 0.9625,
+                "unencoded_test_local_recall_score": 0.9747,
+                "unencoded_test_local_f1_score": 0.9686,
+                "unencoded_test_local_accuracy": 0.9474
             }
         }
     },
@@ -118,13 +118,13 @@
         "test_set_crop_percentage": 0.1834862385321101,
         "models": {
             "Uganda.ckpt": {
-                "val_loss": 1.05,
-                "test_encoder_mae": 0.6072,
-                "unencoded_test_local_roc_auc_score": 0.8084,
-                "unencoded_test_local_precision_score": 0.4583,
-                "unencoded_test_local_recall_score": 0.55,
-                "unencoded_test_local_f1_score": 0.5,
-                "unencoded_test_local_accuracy": 0.7982
+                "val_loss": 0.9791,
+                "test_encoder_mae": 0.5615,
+                "unencoded_test_local_roc_auc_score": 0.8337,
+                "unencoded_test_local_precision_score": 0.5455,
+                "unencoded_test_local_recall_score": 0.6,
+                "unencoded_test_local_f1_score": 0.5714,
+                "unencoded_test_local_accuracy": 0.8349
             }
         }
     }

@@ -20,9 +20,7 @@ def test_one_model(model, alternate_test_sets: Tuple[str, ...] = ()):
 
 
 def test_all_models():
-    model_metrics_path = data_dir / "model_metrics.json"
-    with model_metrics_path.open() as f:
-        model_metrics = json.load(f)
+    model_metrics = {}
 
     for model_path in (data_dir / "models").iterdir():
         if model_path.suffix != ".ckpt":
@@ -50,10 +48,11 @@ def test_all_models():
         for country_key, value in model_metrics.items()
     }
 
-    with model_metrics_path.open("w") as f:
+    with (data_dir / "model_metrics.json").open("w") as f:
         json.dump(model_metrics_sorted, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
     test_all_models()
-    #test_one_model(data_dir / "models/Kenya.ckpt", alternate_test_sets=("Uganda",))
+    # model = Model.load_from_checkpoint(str(data_dir / "models/Kenya1000.ckpt"))
+    # test_one_model(model)
