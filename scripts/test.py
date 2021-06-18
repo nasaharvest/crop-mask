@@ -25,7 +25,8 @@ def test_all_models():
     for model_path in (data_dir / "models").iterdir():
         if model_path.suffix != ".ckpt":
             continue
-
+        
+        print(model_path.name)
         model = Model.load_from_checkpoint(str(model_path))
         test_dataset = model.get_dataset("testing")
         country_key = "_".join(test_dataset.countries)
