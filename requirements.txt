@@ -1,5 +1,6 @@
 
 dataclasses  
+earthengine-api
 mypy==0.812
 black
 pandas
