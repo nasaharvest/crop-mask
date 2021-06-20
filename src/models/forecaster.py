@@ -67,11 +67,6 @@ class Forecaster(pl.LightningModule):
         # dict stays constant between them
         self.normalizing_dict: Optional[Dict[str, np.ndarray]] = dataset.normalizing_dict
 
-        # Normalizing dict that is exposed
-        self.normalizing_dict_jit: Dict[str, List[float]] = {}
-        if self.normalizing_dict:
-            self.normalizing_dict_jit = {k: v.tolist() for k, v in self.normalizing_dict.items()}
-
         self.forecaster_loss = F.smooth_l1_loss
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
