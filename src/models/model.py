@@ -133,6 +133,8 @@ class Model(pl.LightningModule):
         subset: str,
         normalizing_dict: Optional[Dict] = None,
         cache: Optional[bool] = None,
+        include_geowiki: bool = None,
+        upsample: Optional[bool] = None
     ) -> CropDataset:
         return CropDataset(
             data_folder=self.data_folder,
@@ -141,16 +143,20 @@ class Model(pl.LightningModule):
             probability_threshold=self.hparams.probability_threshold,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
-            include_geowiki=self.hparams.include_geowiki if subset != "testing" else False,
+            include_geowiki=include_geowiki if include_geowiki is not None else self.hparams.include_geowiki,
             cache=self.hparams.cache if cache is None else cache,
-            upsample=self.hparams.upsample if subset != "testing" else False,
+            upsample=upsample if upsample is not None else self.hparams.upsample,
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             local_train_dataset_size=self.local_train_dataset_size
         )
 
     def train_dataloader(self):
         return DataLoader(
-            self.get_dataset(subset="training"),
+            self.get_dataset(
+                subset="training",
+                include_geowiki=self.hparams.include_geowiki,
+                upsample=self.hparams.upsample
+            ),
             shuffle=True,
             batch_size=self.hparams.batch_size,
         )
@@ -160,6 +166,8 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
+                include_geowiki=self.hparams.include_geowiki,
+                upsample=False
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -169,6 +177,8 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
+                include_geowiki=False,
+                upsample=False
             ),
             batch_size=self.hparams.batch_size,
         )

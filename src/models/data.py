@@ -56,6 +56,9 @@ class CropDataset(Dataset):
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
+            if not include_geowiki and dataset.is_global:
+                continue
+
             limit = None
             if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
                 limit = local_train_dataset_size
@@ -324,3 +327,12 @@ class CropDataset(Dataset):
             torch.tensor(crop_int).float(),
             torch.tensor(is_global).float(),
         )
+
+    @property
+    def original_size(self):
+        return self.instances_per_class[0] + self.instances_per_class[1]
+
+    @property
+    def crop_percentage(self):
+        total_crop = self.instances_per_class[1]
+        return round(float(total_crop/self.original_size), 4)
