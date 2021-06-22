@@ -222,7 +222,7 @@ labeled_datasets = [
             [
                 Processor(
                     filename=filename,
-                    crop_prob=lambda df: df['Crop/ or not'] == 'Cropland',
+                    crop_prob=lambda df: df["Crop/ or not"] == "Cropland",
                     x_y_from_centroid=False,
                     train_val_test=(0.8, 0.1, 0.1),
                     end_year=2020,
@@ -230,23 +230,24 @@ labeled_datasets = [
                 for filename in [
                     "ceo-2019-Rwanda-Cropland-(RCMRD-Set-1)-sample-data-2021-04-20.csv",
                     "ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2021-04-20.csv",
-                    "ceo-2019-Rwanda-Cropland-sample-data-2021-04-20.csv"
+                    "ceo-2019-Rwanda-Cropland-sample-data-2021-04-20.csv",
                 ]
-            ] + [
+            ]
+            + [
                 Processor(
                     filename="Rwanda-non-crop-corrective-v1",
                     crop_prob=0.0,
                     end_year=2020,
-                    train_val_test=(1.0, 0, 0)
+                    train_val_test=(1.0, 0, 0),
                 ),
                 Processor(
                     filename="Rwanda-crop-corrective-v1",
                     crop_prob=1.0,
                     end_year=2020,
-                    train_val_test=(1.0, 0, 0)
-                )
+                    train_val_test=(1.0, 0, 0),
+                ),
             ]
-        )
+        ),
     ),
     LabeledDataset(
         dataset="Uganda",
@@ -256,7 +257,7 @@ labeled_datasets = [
             [
                 Processor(
                     filename=filename,
-                    crop_prob=lambda df: df['Crop/non-crop'] == 'Cropland',
+                    crop_prob=lambda df: df["Crop/non-crop"] == "Cropland",
                     x_y_from_centroid=False,
                     train_val_test=(0.8, 0.1, 0.1),
                     end_year=2020,
@@ -266,6 +267,6 @@ labeled_datasets = [
                     "ceo-2019-Uganda-Cropland-(RCMRD--Set-2)-sample-data-2021-06-11.csv",
                 ]
             ]
-        )
-    )
+        ),
+    ),
 ]

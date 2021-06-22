@@ -34,7 +34,7 @@ class CropDataset(Dataset):
         upsample: bool,
         noise_factor: bool,
         normalizing_dict: Optional[Dict] = None,
-        local_train_dataset_size: Optional[int] = None
+        local_train_dataset_size: Optional[int] = None,
     ) -> None:
 
         self.probability_threshold = probability_threshold
@@ -335,4 +335,4 @@ class CropDataset(Dataset):
     @property
     def crop_percentage(self):
         total_crop = self.instances_per_class[1]
-        return round(float(total_crop/self.original_size), 4)
+        return round(float(total_crop / self.original_size), 4)

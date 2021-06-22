@@ -25,6 +25,7 @@ class DataDir(Enum):
     LABELS_PATH = "labels_path"
     FEATURES_DIR = "features_dir"
 
+
 @dataclass
 class Dataset:
     sentinel_dataset: str
@@ -147,10 +148,11 @@ class LabeledDataset(Dataset):
 
     def export_earth_engine_data(self, start_from: Optional[int] = None):
         self.is_output_folder_ready(self.get_path(DataDir.RAW_IMAGES_DIR))
-        LabelExporter(
-            sentinel_dataset=self.sentinel_dataset,
-            fast=False,
-        ).export(labels_path=self.get_path(DataDir.LABELS_PATH), output_folder=self.get_path(DataDir.RAW_DIR), start_from=start_from)
+        LabelExporter(sentinel_dataset=self.sentinel_dataset, fast=False,).export(
+            labels_path=self.get_path(DataDir.LABELS_PATH),
+            output_folder=self.get_path(DataDir.RAW_DIR),
+            start_from=start_from,
+        )
 
 
 @dataclass
