@@ -192,6 +192,5 @@ class Forecaster(pl.LightningModule):
             subset=subset,
             datasets=self.datasets,
             normalizing_dict=normalizing_dict,
-            cache=self.hparams.cache if cache is None else cache,
-            upsample=self.hparams.upsample if subset != "testing" else False,
+            cache=self.hparams.cache if cache is None else cache
         )

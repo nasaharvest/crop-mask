@@ -4,16 +4,22 @@ import pickle
 import random
 import math
 import logging
+import os
+import re
 
 from tqdm import tqdm
 
 import torch
 from torch.utils.data import Dataset
 
+from datetime import datetime
+
 from src.ETL.constants import BANDS
+from src.ETL.dataset import LabeledDataset
+from src.utils import load_tif
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
-from src.ETL.dataset import LabeledDataset
+
 
 class ForecasterDataset(Dataset):
 
@@ -25,11 +31,8 @@ class ForecasterDataset(Dataset):
         subset: str,
         datasets: List[LabeledDataset],
         cache: bool,
-        upsample: bool,
         normalizing_dict: Optional[Dict] = None,
     ) -> None:
-        self.upsample = upsample
-
         self.data_folder = data_folder
         self.features_dir = data_folder / "features"
 
@@ -66,35 +69,55 @@ class ForecasterDataset(Dataset):
         self.cache = False
 
         self.class_instances: List = []
-        if upsample:
-            instances_per_class = self.instances_per_class
-            max_instances_in_class = max(instances_per_class)
-
-            new_pickle_files: List[Path] = []
-
-            for idx, num_instances in enumerate(instances_per_class):
-                if num_instances > 0:
-                    new_pickle_files.extend(self.upsample_class(idx, max_instances_in_class))
-            self.pickle_files.extend(new_pickle_files)
-
+        
         if cache:
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
 
+    # @staticmethod
+    # def load_files_and_normalizing_dicts(
+    #     features_dir: Path, subset_name: str, file_suffix: str = "pkl"
+    # ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
+
+    #     pickle_files_dir = features_dir / subset_name
+    #     if not pickle_files_dir.exists():
+    #         logger.warning(
+    #             f"Directory: {pickle_files_dir} not found. Use command: "
+    #             f"`dvc pull` to get the latest data."
+    #         )
+    #         pickle_files = []
+    #     else:
+    #         pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
+
+    #     # try loading the normalizing dict. By default, if it exists we will use it
+    #     normalizing_dict_path = features_dir / "normalizing_dict.pkl"
+    #     if normalizing_dict_path.exists():
+    #         with normalizing_dict_path.open("rb") as f:
+    #             normalizing_dict = pickle.load(f)
+    #     else:
+    #         normalizing_dict = None
+
+    #     return pickle_files, normalizing_dict
+
     @staticmethod
     def load_files_and_normalizing_dicts(
-        features_dir: Path, subset_name: str, file_suffix: str = "pkl"
+        features_dir: Path, subset_name: str, file_suffix: str = "tif"
     ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
 
-        pickle_files_dir = features_dir / subset_name
-        if not pickle_files_dir.exists():
-            logger.warning(
-                f"Directory: {pickle_files_dir} not found. Use command: "
-                f"`dvc pull` to get the latest data."
-            )
-            pickle_files = []
+        curr_dir = str(features_dir)[str(features_dir).rindex('/') + 1:]
+        
+        tif_files_dir = features_dir.parent.parent / "raw" / ("earth_engine_" + {
+            'geowiki_landcover_2017': 'geowiki',
+            'Kenya': 'kenya',
+            'Mali': 'mali',
+            'Rwanda': 'rwanda',
+            'Togo': 'togo'
+        }[curr_dir])
+    
+        if not tif_files_dir.exists():
+            tif_files = []
         else:
-            pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
+            tif_files = list(tif_files_dir.glob(f"*.{file_suffix}"))
 
         # try loading the normalizing dict. By default, if it exists we will use it
         normalizing_dict_path = features_dir / "normalizing_dict.pkl"
@@ -104,7 +127,7 @@ class ForecasterDataset(Dataset):
         else:
             normalizing_dict = None
 
-        return pickle_files, normalizing_dict
+        return tif_files, normalizing_dict
 
     def _normalize(self, array: np.ndarray) -> np.ndarray:
         if self.normalizing_dict is None:
@@ -210,27 +233,6 @@ class ForecasterDataset(Dataset):
             # batches, timesteps, bands
             return x[:, :, indices_to_keep]
 
-    def upsample_class(self, class_idx: int, max_instances: int) -> List[Path]:
-        """Given a class to upsample and the maximum number of classes,
-        update self.pickle_files to reflect the new number of classes
-        """
-        class_files: List[Path] = []
-        for idx, filepath in enumerate(self.pickle_files):
-            _, class_int, is_global = self[idx]
-            if is_global == 0:
-                if class_int == class_idx:
-                    class_files.append(filepath)
-
-        multiplier = max_instances / len(class_files)
-
-        # we will return files which need to be *added* to pickle files
-        # multiplier will definitely be >= 1
-        fraction_multiplier, int_multiplier = math.modf(multiplier - 1)
-
-        new_files = random.sample(class_files, int(fraction_multiplier * len(class_files)))
-        new_files += class_files * int(int_multiplier)
-        return new_files
-
     @property
     def num_output_classes(self) -> Union[int, Tuple[int, int]]:
         return 1
@@ -253,23 +255,27 @@ class ForecasterDataset(Dataset):
             self.class_instances = instances_per_class
         return self.class_instances
 
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor]:
 
-        if (self.cache) & (self.x is not None):
-            # if we upsample, the caching might not have happened yet
-            return (
-                cast(torch.Tensor, self.x)[index],
-                cast(torch.Tensor, self.y)[index],
-                cast(torch.Tensor, self.weights)[index],
-            )
+        # if (self.cache) & (self.x is not None):
+        #     # if we upsample, the caching might not have happened yet
+        #     return (
+        #         cast(torch.Tensor, self.x)[index],
+        #         cast(torch.Tensor, self.y)[index],
+        #         cast(torch.Tensor, self.weights)[index],
+        #     )
 
         target_file = self.pickle_files[index]
 
-        # first, we load up the target file
-        with target_file.open("rb") as f:
-            target_datainstance = pickle.load(f)
+        pattern = re.search('.*/[0-9]+_(20[0-9]{2})-([0-9]{2})-([0-9]{2})_20[0-9]{2}-[0-9]{2}-[0-9]{2}\.tif$', str(target_file))
+        
+        target_datainstance = load_tif(target_file, datetime(int(pattern.group(1)), int(pattern.group(2)), int(pattern.group(3))), days_per_timestep=30)
 
-        x = self.remove_bands(x=self._normalize(target_datainstance.labelled_array))
+        # # first, we load up the target file
+        # with target_file.open("rb") as f:
+        #     target_datainstance = pickle.load(f)
+
+        x = self.remove_bands(x=self._normalize(target_datainstance))
 
         return (
             torch.from_numpy(x).float() # 1 pixel

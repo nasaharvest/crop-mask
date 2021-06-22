@@ -26,6 +26,5 @@ if __name__ == "__main__":
     parser.add_argument("--num_bands", type=int, default=14)
     parser.add_argument("--patience", type=int, default=10)
     parser.add_argument("--show_progress_bar", type=bool, default=False)
-    parser.add_argument("--upsample", type=bool, default=False)
 
     run_training(parser)
