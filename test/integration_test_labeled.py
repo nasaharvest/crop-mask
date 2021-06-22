@@ -46,7 +46,9 @@ class IntegrationTestLabeledData(TestCase):
             labels = self.load_labels(d)
             label_count = len(labels)
 
-            tif_file_count = self.get_file_count(d.get_path(DataDir.RAW_IMAGES_DIR), extension=".tif")
+            tif_file_count = self.get_file_count(
+                d.get_path(DataDir.RAW_IMAGES_DIR), extension=".tif"
+            )
             self.assertEqual(
                 label_count,
                 tif_file_count,

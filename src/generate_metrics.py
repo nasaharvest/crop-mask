@@ -10,7 +10,9 @@ from src.models import Model
 data_dir = Path(__file__).parent.parent / "data"
 
 
-def get_metrics(model: pl.LightningModule, test_mode: bool, alternate_test_sets: Tuple[str, ...] = ()):
+def get_metrics(
+    model: pl.LightningModule, test_mode: bool, alternate_test_sets: Tuple[str, ...] = ()
+):
     if alternate_test_sets:
         model.datasets = model.load_datasets(list(alternate_test_sets))
 
@@ -35,10 +37,7 @@ def get_metrics(model: pl.LightningModule, test_mode: bool, alternate_test_sets:
         "local_train_upsamepled_size": len(train_dataset),
     }
 
-    return {
-        "metrics": metrics,
-        "data": data
-    }
+    return {"metrics": metrics, "data": data}
 
 
 def get_metrics_for_all_models(test_mode: bool = False):
@@ -57,7 +56,7 @@ def get_metrics_for_all_models(test_mode: bool = False):
             model_metrics[country_key] = {
                 f"local_{metric_type}_dataset_size": len(metric_dataset),
                 f"local_{metric_type}_crop_percentage": metric_dataset.crop_percentage,
-                "models": {}
+                "models": {},
             }
 
         if model_path.name not in model_metrics[country_key]["models"]:
@@ -73,6 +72,6 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
 
 if __name__ == "__main__":
-    #model = Model.load_from_checkpoint(str(data_dir / "models/Kenya1000.ckpt"))
-    #get_metrics(model, test_mode=False)
+    # model = Model.load_from_checkpoint(str(data_dir / "models/Kenya1000.ckpt"))
+    # get_metrics(model, test_mode=False)
     get_metrics_for_all_models(test_mode=False)

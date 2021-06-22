@@ -73,7 +73,9 @@ class Model(pl.LightningModule):
         input_dataset_names = hparams.datasets.replace(" ", "").split(",")
         input_dataset_names = list(filter(None, input_dataset_names))
         self.datasets = self.load_datasets(input_dataset_names)
-        self.local_train_dataset_size = hparams.local_train_dataset_size if "local_train_dataset_size" in hparams else None
+        self.local_train_dataset_size = (
+            hparams.local_train_dataset_size if "local_train_dataset_size" in hparams else None
+        )
 
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
@@ -134,7 +136,7 @@ class Model(pl.LightningModule):
         normalizing_dict: Optional[Dict] = None,
         cache: Optional[bool] = None,
         include_geowiki: bool = None,
-        upsample: Optional[bool] = None
+        upsample: Optional[bool] = None,
     ) -> CropDataset:
         return CropDataset(
             data_folder=self.data_folder,
@@ -143,11 +145,13 @@ class Model(pl.LightningModule):
             probability_threshold=self.hparams.probability_threshold,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
-            include_geowiki=include_geowiki if include_geowiki is not None else self.hparams.include_geowiki,
+            include_geowiki=include_geowiki
+            if include_geowiki is not None
+            else self.hparams.include_geowiki,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
-            local_train_dataset_size=self.local_train_dataset_size
+            local_train_dataset_size=self.local_train_dataset_size,
         )
 
     def train_dataloader(self):
@@ -155,7 +159,7 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="training",
                 include_geowiki=self.hparams.include_geowiki,
-                upsample=self.hparams.upsample
+                upsample=self.hparams.upsample,
             ),
             shuffle=True,
             batch_size=self.hparams.batch_size,
@@ -167,7 +171,7 @@ class Model(pl.LightningModule):
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
                 include_geowiki=self.hparams.include_geowiki,
-                upsample=False
+                upsample=False,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -178,7 +182,7 @@ class Model(pl.LightningModule):
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
                 include_geowiki=False,
-                upsample=False
+                upsample=False,
             ),
             batch_size=self.hparams.batch_size,
         )
