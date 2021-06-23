@@ -63,15 +63,15 @@ class CropDataset(Dataset):
             if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
                 limit = local_train_dataset_size
 
-            pickle_files, normalizing_dict = self.load_files_and_normalizing_dicts(
+            pickle_files_for_dataset, normalizing_dict = self.load_files_and_normalizing_dicts(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
                 limit=limit,
             )
-            if len(pickle_files) > 0:
+            if len(pickle_files_for_dataset) > 0:
                 self.countries.add(dataset.country)
 
-            files_and_nds.append((pickle_files, normalizing_dict))
+            files_and_nds.append((pickle_files_for_dataset, normalizing_dict))
 
         if normalizing_dict is not None:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
