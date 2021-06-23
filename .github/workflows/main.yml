@@ -43,7 +43,7 @@ jobs:
         use-only-tar-bz2: true
     - name: Run type checks
       run: |
-        mypy src data scripts
+        mypy src scripts
     - name: Run flake8
       run: |
         flake8 --max-line-length 100 src data scripts test gcp
