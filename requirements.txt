@@ -1,0 +1,17 @@
+
+dataclasses  
+earthengine-api
+mypy==0.812
+black
+pandas
+xarray==0.17.0
+netcdf4
+rasterio
+matplotlib
+torch==1.6.0
+pyproj
+tqdm
+geopandas
+scikit-learn
+flake8
+pytorch-lightning==0.7.1  

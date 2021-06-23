@@ -51,7 +51,7 @@ class ModelHandler(BaseHandler):
         self.normalizing_dict = None
 
     def load_tif(
-            self, local_path: str, start_date: datetime, days_per_timestep: int
+        self, local_path: str, start_date: datetime, days_per_timestep: int
     ) -> xr.DataArray:
         r"""
         The sentinel files exported from google earth have all the timesteps
@@ -70,7 +70,7 @@ class ModelHandler(BaseHandler):
         num_bands = len(da.band)
 
         assert (
-                num_bands % bands_per_timestep == 0
+            num_bands % bands_per_timestep == 0
         ), "Total number of bands not divisible by the expected bands per timestep"
 
         cur_band = 0
@@ -127,7 +127,7 @@ class ModelHandler(BaseHandler):
 
     @staticmethod
     def _calculate_difference_index(
-            input_array: np.ndarray, num_dims: int, band_1: str, band_2: str
+        input_array: np.ndarray, num_dims: int, band_1: str, band_2: str
     ) -> np.ndarray:
         if num_dims == 2:
             band_1_np = input_array[:, BANDS.index(band_1)]
@@ -153,7 +153,7 @@ class ModelHandler(BaseHandler):
 
     @staticmethod
     def _maxed_nan_to_num(
-            array: np.ndarray, nan: float, max_ratio: Optional[float] = None
+        array: np.ndarray, nan: float, max_ratio: Optional[float] = None
     ) -> Optional[np.ndarray]:
         if max_ratio is not None:
             num_nan = np.count_nonzero(np.isnan(array))
@@ -163,12 +163,12 @@ class ModelHandler(BaseHandler):
 
     @staticmethod
     def process_bands(
-            x_np,
-            nan_fill: float,
-            max_nan_ratio: Optional[float] = None,
-            add_ndvi: bool = False,
-            add_ndwi: bool = False,
-            num_dims: int = 2,
+        x_np,
+        nan_fill: float,
+        max_nan_ratio: Optional[float] = None,
+        add_ndvi: bool = False,
+        add_ndwi: bool = False,
+        num_dims: int = 2,
     ) -> Optional[np.ndarray]:
         print("HANDLER: Processing bands")
         if add_ndvi:

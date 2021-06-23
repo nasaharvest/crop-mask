@@ -185,7 +185,7 @@ class TestPredict(TestCase):
             model_name="mock_model",
             data_dir=str(self.temp_dir),
             predict_dir=str(self.temp_dir),
-            merge_predictions=True
+            merge_predictions=True,
         )
         mock_load_from_checkpoint.assert_called()
         self.assertEqual(mock_make_prediction.call_count, 2)

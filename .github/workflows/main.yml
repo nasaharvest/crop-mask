@@ -33,17 +33,17 @@ jobs:
       with:
         path: ~/conda_pkgs_dir
         key:
-          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment-dev.yml') }}
     - uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: landcover-mapping
         channel-priority: strict
-        environment-file: environment.yml
+        environment-file: environment-dev.yml
         auto-activate-base: false
         use-only-tar-bz2: true
     - name: Run type checks
       run: |
-        mypy src data scripts
+        mypy src scripts
     - name: Run flake8
       run: |
         flake8 --max-line-length 100 src data scripts test gcp

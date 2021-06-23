@@ -116,5 +116,5 @@ files
 
 # the data folder
 data/**/
-scripts/lightning_logs
+lightning_logs
 

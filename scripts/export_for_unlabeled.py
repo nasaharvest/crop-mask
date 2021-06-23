@@ -9,7 +9,7 @@ import sys
 
 sys.path.append("..")
 
-from data.datasets_unlabeled import unlabeled_datasets  # noqa: E402
+from src.datasets_unlabeled import unlabeled_datasets  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 
