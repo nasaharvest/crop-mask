@@ -188,7 +188,7 @@ class Forecaster(pl.LightningModule):
         cache: Optional[bool] = None,
     ) -> ForecasterDataset:
         return ForecasterDataset(
-            data_folder=Path(self.hparams.data_folder),
+            data_folder=Path(self.hparams.processed_data_folder),
             subset=subset,
             datasets=self.datasets,
             normalizing_dict=normalizing_dict,
