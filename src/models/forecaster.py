@@ -70,7 +70,6 @@ class Forecaster(pl.LightningModule):
         self.forecaster_loss = F.smooth_l1_loss
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         hidden_tuple: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
 
         input_timesteps = x.shape[1]
@@ -149,7 +148,7 @@ class Forecaster(pl.LightningModule):
 
         # we will predict every timestep except the first one
         output_to_predict = x[:, 1:, :]
-        encoder_output = self.forward(input_to_encode)
+        encoder_output = self(input_to_encode)
         encoder_loss = self.forecaster_loss(encoder_output, output_to_predict)
         loss: Union[float, torch.Tensor] = encoder_loss
 

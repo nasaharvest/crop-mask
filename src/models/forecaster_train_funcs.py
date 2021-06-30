@@ -9,6 +9,8 @@ def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.
         default_save_path=hparams.processed_data_folder,
         max_epochs=hparams.max_epochs,
         show_progress_bar=hparams.show_progress_bar,
+        checkpoint_callback=False,
+        logger=False
     )
     
     trainer.fit(model)

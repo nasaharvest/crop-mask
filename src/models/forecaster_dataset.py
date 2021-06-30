@@ -36,16 +36,20 @@ class ForecasterDataset(Dataset):
 
         print(f"Found: {len(all_nc_files )} tif files")
 
-        split_index = int(len(all_nc_files)*0.75)
+        train_split_index = int(len(all_nc_files)*0.7)
+        val_split_index = int(len(all_nc_files)*0.85)
 
         assert subset in ["training", "validation", "testing"]
 
         self.subset_name = subset
+        print(self.subset_name)
 
         if self.subset_name == 'training':
-            self.nc_files = all_nc_files [:split_index]
+            self.nc_files = all_nc_files [:train_split_index]
+        elif self.subset_name == 'validation':
+            self.nc_files = all_nc_files [train_split_index:val_split_index]
         elif self.subset_name == 'testing':
-            self.nc_files = all_nc_files [split_index:]
+            self.nc_files = all_nc_files [val_split_index:]
 
         print(f"Using: {len(self.nc_files)} for {self.subset_name}")
 
@@ -269,7 +273,7 @@ class ForecasterDataset(Dataset):
         
         tile_normalized = self._normalize(tile)
 
-        print(tile_normalized)
+        # print(tile_normalized)
         
         return torch.from_numpy(tile_normalized)
 
