@@ -30,7 +30,7 @@ These can be used to create annual and in season crop maps.
     earthengine authenticate                # Authenticates Earth Engine              
     python -c "import ee; ee.Initialize()"  # Will raise error if not setup 
     ```
-3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated. installed and run:
+3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated, and run:
     ```bash
     dvc pull                                  # All data (will take long time)
     dvc pull data/features data/models        # For retraining or inference
