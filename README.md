@@ -58,7 +58,8 @@ These can be used to create annual and in season crop maps.
 ![Add labeled data](diagrams/add_labeled_data.png)
 
 **Actual Training**
-You must have the specified datasets in `data/features` then inside scripts/ run
+
+You must have the specified datasets in `data/features`, then inside `scripts/` run:
 ```bash
 python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ```
@@ -67,7 +68,7 @@ python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 **Prerequisite: Getting unlabeled data:**
 1. Ensure local environment is set up.
 3. In [dataset_unlabeled.py](src/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
-4. To begin exporting satellite data from Google Earth Engine run (from scripts directory):
+4. To begin exporting satellite data from Google Earth Engine, run (from scripts directory):
     ```bash
     python export_for_unlabeled.py --dataset_name <dataset name>
     ``` 
@@ -81,8 +82,8 @@ python predict.py --model_name "Kenya" --local_path_to_tif_files "../data/raw/<d
 ## 4. Running inference at scale (on GCP)
 **Deploying**
 1. Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated.
-2. Ensure you have a secret in GCP titled `GOOGLE_APPLICATION_CREDENTIALS` this will allow Google Earth Engine to be authenticated.
-3. Run the following to deploy the project into Google Cloud
+2. Ensure you have a secret in GCP titled `GOOGLE_APPLICATION_CREDENTIALS`; this will allow Google Earth Engine to be authenticated.
+3. Run the following to deploy the project into Google Cloud:
 ```bash
 gcloud config set project nasa-harvest 
 gsutil mb gs://crop-mask-ee-data
@@ -109,7 +110,7 @@ gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
 ```
 
 **Putting it all together**
-Once an inference run is complete the result is several small .nc files. These need to be merged into a single tif. Currently this operation is not automated and requires the user to:
+Once an inference run is complete the result is several small `.nc` files. These need to be merged into a single `.tif` file. Currently this operation is not automated and requires the user to:
 1. Download the appropriate folder
     ```bash
     gsutil -m cp -r "gs://crop-mask-preds-unmerged/<model>/<dataset>/"
