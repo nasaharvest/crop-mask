@@ -42,7 +42,6 @@ class ForecasterDataset(Dataset):
         assert subset in ["training", "validation", "testing"]
 
         self.subset_name = subset
-        print(self.subset_name)
 
         if self.subset_name == 'training':
             self.nc_files = all_nc_files [:train_split_index]
@@ -52,6 +51,7 @@ class ForecasterDataset(Dataset):
             self.nc_files = all_nc_files [val_split_index:]
 
         print(f"Using: {len(self.nc_files)} for {self.subset_name}")
+        print()
 
         self.seed_is_set = True
 
@@ -258,24 +258,24 @@ class ForecasterDataset(Dataset):
         self.set_seed(index)
         rand_i = np.random.randint(len(self.nc_files))
         tile = xr.open_dataarray(self.nc_files[rand_i]).values
-        print(tile.shape)
-        assert tile.shape == (12, 13, 64, 64)
+
+        tile = tile[:,:,0,0]    # Replace this
+
+        assert tile.shape == (12, 13)
 
         ndvi = self._calculate_ndvi(tile)
-        assert ndvi.shape == (12, 64, 64)
+        assert ndvi.shape == (12, )
         
         tile = np.concatenate([tile, np.expand_dims(ndvi, axis=1)], axis=1)
-        assert tile.shape == (12, 14, 64, 64)
+        assert tile.shape == (12, 14)
 
         tile = self.remove_bands(tile)
 
-        assert tile.shape == (12, 12, 64, 64)
+        assert tile.shape == (12, 12)
         
         tile_normalized = self._normalize(tile)
-
-        # print(tile_normalized)
         
-        return torch.from_numpy(tile_normalized)
+        return torch.from_numpy(tile_normalized).float()
 
 
         # target_file = self.pickle_files[index]

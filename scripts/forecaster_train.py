@@ -22,10 +22,10 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--cache", type=bool, default=False)
     parser.add_argument("--input_months", type=int, default=5)
-    parser.add_argument("--num_bands", type=int, default=14)
+    parser.add_argument("--num_bands", type=int, default=12)
     parser.add_argument("--show_progress_bar", type=bool, default=False)
-    parser.add_argument("--processed_data_folder", type=str, default='/cmlscratch/izvonkov/forecaster-data-processed')
-    parser.add_argument("--save_dir", type=str, default='/nfshomes/hkjoo/repo/crop-mask/data/models/sandbox')    
+    parser.add_argument("--processed_data_folder", type=str, default='/cmlscratch/izvonkov/forecaster-data-processed-split/train')
+    parser.add_argument("--save_dir", type=str, default='/cmlscratch/hkjoo/repo/crop-mask/data/models/sandbox')    
     parser.add_argument("--tile_size", type=int, default=1)
 
     run_training(parser)
