@@ -69,6 +69,11 @@ class Forecaster(pl.LightningModule):
 
         self.forecaster_loss = F.smooth_l1_loss
 
+        self.log_recorder = {
+            'train': 0,
+            'validation': 0
+        }
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         hidden_tuple: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
 
@@ -139,7 +144,7 @@ class Forecaster(pl.LightningModule):
         return x + noise
 
     def _split_preds_and_get_loss(
-        self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
+        self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool, batch_idx=int
     ) -> Dict:
 
         x = batch # , label, is_global = batch
@@ -152,6 +157,15 @@ class Forecaster(pl.LightningModule):
         encoder_loss = self.forecaster_loss(encoder_output, output_to_predict)
         loss: Union[float, torch.Tensor] = encoder_loss
 
+        if training:
+            print(f"[EPOCH {self.current_epoch}] Train Loss of Minibatch #{batch_idx}: {loss}")
+            self.logger.experiment.add_scalar('Train loss', loss, self.log_recorder['train'])
+            self.log_recorder['train'] += 1
+        else:
+            print(f"[EPOCH {self.current_epoch}] Validation Loss of Minibatch #{batch_idx}: {loss}")
+            self.logger.experiment.add_scalar('Validation loss', loss, self.log_recorder['validation'])
+            self.log_recorder['validation'] += 1
+
         output_dict = {
             loss_label: loss
         }
@@ -163,6 +177,7 @@ class Forecaster(pl.LightningModule):
                     "encoder_target": output_to_predict,
                 }
             )
+
         if log_loss:
             output_dict["log"] = {
                 loss_label: loss
@@ -172,12 +187,12 @@ class Forecaster(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         return self._split_preds_and_get_loss(
-            batch, add_preds=False, loss_label="loss", log_loss=True, training=True
+            batch, add_preds=False, loss_label="loss", log_loss=True, training=True, batch_idx=batch_idx
         )
 
     def validation_step(self, batch, batch_idx):
         return self._split_preds_and_get_loss(
-            batch, add_preds=True, loss_label="val_loss", log_loss=True, training=False
+            batch, add_preds=True, loss_label="val_loss", log_loss=True, training=False, batch_idx=batch_idx
         )
 
     def get_dataset(
@@ -190,6 +205,23 @@ class Forecaster(pl.LightningModule):
             data_folder=Path(self.hparams.processed_data_folder),
             subset=subset,
             datasets=self.datasets,
-            normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache
         )
+
+    def training_epoch_end(self, outputs):
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+        
+        self.logger.experiment.add_scalar("Train Loss (per epoch)", avg_loss, self.current_epoch)
+
+        return {
+            'loss': avg_loss
+        }
+
+    def validation_epoch_end(self, outputs):
+        val_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+        
+        self.logger.experiment.add_scalar("Validation Loss (per epoch)", val_loss, self.current_epoch)
+
+        return {
+            'val_loss': val_loss
+        }
