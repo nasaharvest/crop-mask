@@ -128,6 +128,9 @@ class Forecaster(pl.LightningModule):
             batch_size=self.hparams.batch_size,
         )
 
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+
     def add_noise(self, x: torch.Tensor, training: bool) -> torch.Tensor:
         if (self.hparams.noise_factor == 0) or (not training):
             return x
@@ -148,8 +151,12 @@ class Forecaster(pl.LightningModule):
     ) -> Dict:
 
         x = batch # , label, is_global = batch
+        
+        assert x.shape == (self.hparams.batch_size, 12, 12, 64, 64), x.shape
 
-        # PUT PDB HERE (2 * 64 * 64, 12, 14)
+        x = x.permute([0, 3, 4, 1, 2]).contiguous().view(-1, 12, 12)
+        
+        assert x.shape == (self.hparams.batch_size * 64 * 64, 12, 12), x.shape
 
         input_to_encode = x[:, : self.hparams.input_months, :]
 

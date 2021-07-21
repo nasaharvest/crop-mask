@@ -37,14 +37,16 @@ class ForecasterDataset(Dataset):
             try:
                 with (Path(data_folder) / "normalizing_dict.json").open() as f:
                     self.normalizing_dict = json.load(f)
-                    self.mean = np.array(self.normalizing_dict["mean"])
-                    self.std = np.array(self.normalizing_dict["std"])
+                    bands = len(self.normalizing_dict["mean"])
+                    self.mean = np.array(self.normalizing_dict["mean"]).reshape(bands, 1, 1)
+                    self.std = np.array(self.normalizing_dict["std"]).reshape(bands, 1, 1)
             except:
                 self.normalizing_dict = None
         else:
             self.normalizing_dict = normalizing_dict
-            self.mean = np.array(self.normalizing_dict["mean"])
-            self.std = np.array(self.normalizing_dict["std"])
+            bands = len(normalizing_dict["mean"])
+            self.mean = np.array(self.normalizing_dict["mean"]).reshape(bands, 1, 1)
+            self.std = np.array(self.normalizing_dict["std"]).reshape(bands, 1, 1)
 
         assert subset in ["training", "validation", "testing"]
 
@@ -175,22 +177,17 @@ class ForecasterDataset(Dataset):
         self.set_seed(index)
         rand_i = np.random.randint(len(self.nc_files))
         tile = xr.open_dataarray(self.nc_files[rand_i]).values
-
-        # tile = tile[:,:,0,0]    # Replace this
-        tile = torch.tensor(tile).permute([2, 3, 0, 1]).contiguous().view(-1, 12, 13).permute([1, 2, 0]) # REMOVE THIS
-        tile = tile[:, :, 0]    # REMOVE THIS
-
-        assert tile.shape == (12, 13)
+        assert tile.shape == (12, 13, 64, 64)
 
         tile = self._normalize(tile)
 
         ndvi = self._calculate_ndvi(tile)
-        assert ndvi.shape == (12,)
-        
+        assert ndvi.shape == (12, 64, 64)
+
         tile = self.remove_bands(tile)
-        assert tile.shape == (12, 11)
+        assert tile.shape == (12, 11, 64, 64)
 
         tile = np.concatenate([tile, np.expand_dims(ndvi, axis=1)], axis=1)
-        assert tile.shape == (12, 12)
+        assert tile.shape == (12, 12, 64, 64)
 
         return torch.from_numpy(tile).float()

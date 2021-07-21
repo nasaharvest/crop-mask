@@ -22,7 +22,7 @@ def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.
     trainer = pl.Trainer(
         default_save_path=hparams.save_dir,
         max_epochs=hparams.max_epochs,
-        # early_stop_callback=early_stop_callback,
+        early_stop_callback=early_stop_callback,
         checkpoint_callback=False,
         show_progress_bar=hparams.show_progress_bar,
         logger=logger
