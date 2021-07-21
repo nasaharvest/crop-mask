@@ -4,7 +4,6 @@ Trains the models
 
 import sys
 from argparse import ArgumentParser
-from pathlib import Path
 
 sys.path.append("..")
 

@@ -149,6 +149,8 @@ class Forecaster(pl.LightningModule):
 
         x = batch # , label, is_global = batch
 
+        # PUT PDB HERE (2 * 64 * 64, 12, 14)
+
         input_to_encode = x[:, : self.hparams.input_months, :]
 
         # we will predict every timestep except the first one
@@ -205,6 +207,7 @@ class Forecaster(pl.LightningModule):
             data_folder=Path(self.hparams.processed_data_folder),
             subset=subset,
             datasets=self.datasets,
+            normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache
         )
 

@@ -29,16 +29,22 @@ class ForecasterDataset(Dataset):
         data_folder: Path,
         subset: str,
         cache: bool,
+        normalizing_dict: Optional[Dict],
         datasets: List[LabeledDataset]
     ) -> None:
 
-        try:
-            with (Path(data_folder) / "normalizing_dict.json").open() as f:
-                self.normalizing_dict = json.load(f)
-                self.mean = np.array(self.normalizing_dict["mean"])
-                self.std = np.array(self.normalizing_dict["std"])
-        except:
-            self.normalizing_dict = None
+        if normalizing_dict is None:
+            try:
+                with (Path(data_folder) / "normalizing_dict.json").open() as f:
+                    self.normalizing_dict = json.load(f)
+                    self.mean = np.array(self.normalizing_dict["mean"])
+                    self.std = np.array(self.normalizing_dict["std"])
+            except:
+                self.normalizing_dict = None
+        else:
+            self.normalizing_dict = normalizing_dict
+            self.mean = np.array(self.normalizing_dict["mean"])
+            self.std = np.array(self.normalizing_dict["std"])
 
         assert subset in ["training", "validation", "testing"]
 
@@ -171,8 +177,8 @@ class ForecasterDataset(Dataset):
         tile = xr.open_dataarray(self.nc_files[rand_i]).values
 
         # tile = tile[:,:,0,0]    # Replace this
-        tile = torch.tensor(tile).permute([2, 3, 0, 1]).contiguous().view(-1, 12, 13).permute([1, 2, 0])
-        tile = tile[:, :, 0]
+        tile = torch.tensor(tile).permute([2, 3, 0, 1]).contiguous().view(-1, 12, 13).permute([1, 2, 0]) # REMOVE THIS
+        tile = tile[:, :, 0]    # REMOVE THIS
 
         assert tile.shape == (12, 13)
 

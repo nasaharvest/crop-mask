@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping
 
 def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
     logger = TensorBoardLogger(
         save_dir=hparams.save_dir,
-        name='lightning_logs_norm'
+        name='lightning_logs_sandbox'
     )
 
     early_stop_callback = EarlyStopping(
