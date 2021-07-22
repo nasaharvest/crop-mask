@@ -29,8 +29,7 @@ class ForecasterDataset(Dataset):
         data_folder: Path,
         subset: str,
         cache: bool,
-        normalizing_dict: Optional[Dict],
-        datasets: List[LabeledDataset]
+        normalizing_dict: Optional[Dict]
     ) -> None:
 
         if normalizing_dict is None:

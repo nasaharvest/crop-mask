@@ -53,7 +53,6 @@ class Forecaster(pl.LightningModule):
         )
 
         self.hparams = hparams
-        self.datasets = labeled_datasets
 
         dataset = self.get_dataset(subset="training", cache=False)
         
@@ -150,13 +149,15 @@ class Forecaster(pl.LightningModule):
         self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool, batch_idx=int
     ) -> Dict:
 
-        x = batch # , label, is_global = batch
+        x = batch
+
+        original_batch_size = x.shape[0]
         
-        assert x.shape == (self.hparams.batch_size, 12, 12, 64, 64), x.shape
+        assert x.shape == (original_batch_size, 12, 12, 64, 64), x.shape
 
         x = x.permute([0, 3, 4, 1, 2]).contiguous().view(-1, 12, 12)
         
-        assert x.shape == (self.hparams.batch_size * 64 * 64, 12, 12), x.shape
+        assert x.shape == (original_batch_size * 64 * 64, 12, 12), x.shape
 
         input_to_encode = x[:, : self.hparams.input_months, :]
 
@@ -213,7 +214,6 @@ class Forecaster(pl.LightningModule):
         return ForecasterDataset(
             data_folder=Path(self.hparams.processed_data_folder),
             subset=subset,
-            datasets=self.datasets,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache
         )
@@ -235,3 +235,4 @@ class Forecaster(pl.LightningModule):
         return {
             'val_loss': val_loss
         }
+        

@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import EarlyStopping
 def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
     logger = TensorBoardLogger(
         save_dir=hparams.save_dir,
-        name='lightning_logs_sandbox'
+        name=hparams.logger_name
     )
 
     early_stop_callback = EarlyStopping(
