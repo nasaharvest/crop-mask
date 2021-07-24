@@ -32,6 +32,8 @@ class ForecasterDataset(Dataset):
         normalizing_dict: Optional[Dict]
     ) -> None:
 
+        self.seq_len = 12
+
         if normalizing_dict is None:
             try:
                 with (Path(data_folder) / "normalizing_dict.json").open() as f:
@@ -152,41 +154,19 @@ class ForecasterDataset(Dataset):
 
         return x[:, indices_to_keep]
 
-    @staticmethod
-    def _calculate_ndvi(input_array: np.ndarray) -> np.ndarray:
-        r"""
-        Given an input array of shape [timestep, bands] or [batches, timesteps, bands]
-        where bands == len(BANDS), returns an array of shape
-        [timestep, bands + 1] where the extra band is NDVI,
-        (b08 - b04) / (b08 + b04)
-        """
-        b08 = input_array[:, BANDS.index("B8")]
-        b04 = input_array[:, BANDS.index("B4")]
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
-            # suppress the following warning
-            # RuntimeWarning: invalid value encountered in true_divide
-            # for cases where near_infrared + red == 0
-            # since this is handled in the where condition
-            ndvi = np.where((b08 + b04) > 0, (b08 - b04) / (b08 + b04), 0,)
-        return ndvi
-
     def __getitem__(self, index: int) -> Tuple[torch.Tensor]:
         self.set_seed(index)
         rand_i = np.random.randint(len(self.nc_files))
         tile = xr.open_dataarray(self.nc_files[rand_i]).values
-        assert tile.shape == (12, 13, 64, 64)
+
+        # take the last 12 months of data only
+        tile = tile[tile.shape[0] - 12:]
+
+        assert tile.shape == (self.seq_len, 14, 64, 64)
 
         tile = self._normalize(tile)
 
-        ndvi = self._calculate_ndvi(tile)
-        assert ndvi.shape == (12, 64, 64)
-
         tile = self.remove_bands(tile)
-        assert tile.shape == (12, 11, 64, 64)
-
-        tile = np.concatenate([tile, np.expand_dims(ndvi, axis=1)], axis=1)
-        assert tile.shape == (12, 12, 64, 64)
+        assert tile.shape == (self.seq_len, 12, 64, 64)
 
         return torch.from_numpy(tile).float()
