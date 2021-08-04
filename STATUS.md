@@ -18,8 +18,8 @@
 |Togo               |2019/20        |![Step 7]     |[Togo Zenodo]   |   |
 |Mali (lower USAID) |2020/21        |![Step 0]      |       | Gathering labels on CEO      |
 |Mali (upper USAID) |2020/21        |![Step 0]      |       |Gathering labels on CEO       |
-|Rwanda             |2019/20        |![Step 1]      |       |       |
-|Uganda             |2020/21        |![Step 1]      |       |       |
+|Rwanda             |2019/20        |![Step 3]      |       |Going back to step 2       |
+|Uganda             |2020/21        |![Step 3]      |       |Going back to step 2       |
 |Uganda (Maize)     |2020/21        |![Step 0]      |       |       |
 
 ### Steps for generating crop map:
