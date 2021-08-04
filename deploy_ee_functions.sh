@@ -1,4 +1,4 @@
-export BUCKET=crop-mask-ee-data
+export BUCKET=crop-mask-earthengine
 
 cp -R src/ETL gcp/export_unlabeled_function/src
 
