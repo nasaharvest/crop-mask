@@ -85,9 +85,8 @@ python predict.py --model_name "Kenya" --local_path_to_tif_files "../data/raw/<d
 2. Ensure you have a secret in GCP titled `GOOGLE_APPLICATION_CREDENTIALS`; this will allow Google Earth Engine to be authenticated.
 3. Run the following to deploy the project into Google Cloud:
 ```bash
-gcloud config set project nasa-harvest 
-gsutil mb gs://crop-mask-ee-data
-gsutil mb gs://crop-mask-preds-unmerged
+gsutil mb gs://crop-mask-earthengine
+gsutil mb gs://crop-mask-preds
 sh deploy_ee_functions.sh
 sh deploy_inference.sh
 ```
@@ -103,7 +102,7 @@ curl -X POST http://us-central1-nasa-harvest.cloudfunctions.net/export-unlabeled
 curl https://us-central1-nasa-harvest.cloudfunctions.net/ee-status?additional=FAILED,COMPLETED | python -mjson.tool
 
 # Amount of files exported
-gsutil du gs://crop-mask-ee-data/<model name>/<dataset> | wc -l
+gsutil du gs://crop-mask-earthengine/<model name>/<dataset> | wc -l
 
 # Amount of files predicted
 gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
@@ -113,7 +112,7 @@ gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
 Once an inference run is complete the result is several small `.nc` files. These need to be merged into a single `.tif` file. Currently this operation is not automated and requires the user to:
 1. Download the appropriate folder
     ```bash
-    gsutil -m cp -r "gs://crop-mask-preds-unmerged/<model>/<dataset>/"
+    gsutil -m cp -r "gs://crop-mask-preds/<model>/<dataset>/"
     ```
 2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
 

@@ -33,7 +33,7 @@ BANDS = [
 temp_dir = tempfile.gettempdir()
 
 storage_client = storage.Client()
-dest_bucket_name = "crop-mask-preds-unmerged"
+dest_bucket_name = "crop-mask-preds"
 dest_bucket = storage_client.get_bucket(dest_bucket_name)
 
 
