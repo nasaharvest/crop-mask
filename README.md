@@ -51,7 +51,7 @@ These can be used to create annual and in season crop maps.
 6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
 7. To combine the labels and the satellite images into a machine learning suitable dataset run (from scripts directory):
     ```bash
-    python engineer.py
+    python create_features.py
     ```
 8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
@@ -61,7 +61,7 @@ These can be used to create annual and in season crop maps.
 
 You must have the specified datasets in `data/features`, then inside `scripts/` run:
 ```bash
-python model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
+python train_model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
 ```
 
 ## 3. Running inference locally
