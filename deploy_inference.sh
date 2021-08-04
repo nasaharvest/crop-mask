@@ -1,11 +1,11 @@
-export TAG=us-central1-docker.pkg.dev/nasa-harvest/crop-mask/inference
+export TAG=us-central1-docker.pkg.dev/bsos-geog-harvest1/crop-mask/crop-mask
 export MODELS="Kenya Mali Rwanda Togo"
-export BUCKET=crop-mask-ee-data
-export URL="https://inference-sgmgtky4sq-uc.a.run.app"
+export BUCKET=crop-mask-earthengine
+export URL="https://crop-mask-grxg7bzh2a-uc.a.run.app"
 
 docker build -f Dockerfile.inference . --build-arg MODELS="$MODELS" -t $TAG
 docker push $TAG
-gcloud run deploy inference --image ${TAG}:latest \
+gcloud run deploy crop-mask --image ${TAG}:latest \
         --memory=4Gi \
         --platform=managed \
         --region=us-central1 \
