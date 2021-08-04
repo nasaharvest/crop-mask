@@ -118,23 +118,23 @@
         }
     },
     "Rwanda": {
-        "local_validation_dataset_size": 134,
-        "local_validation_crop_percentage": 0.3284,
+        "local_validation_dataset_size": 538,
+        "local_validation_crop_percentage": 0.3569,
         "models": {
-            "Rwanda.ckpt": {
+            "Rwanda2.ckpt": {
                 "metrics": {
-                    "val_loss": 0.8382,
-                    "val_encoder_mae": 0.8001,
-                    "unencoded_val_local_roc_auc_score": 0.771,
-                    "unencoded_val_local_precision_score": 0.5072,
-                    "unencoded_val_local_recall_score": 0.7955,
-                    "unencoded_val_local_f1_score": 0.6195,
-                    "unencoded_val_local_accuracy": 0.6791
+                    "val_loss": 0.8594,
+                    "val_encoder_mae": 0.7785,
+                    "unencoded_val_local_roc_auc_score": 0.7578,
+                    "unencoded_val_local_precision_score": 0.5714,
+                    "unencoded_val_local_recall_score": 0.6458,
+                    "unencoded_val_local_f1_score": 0.6064,
+                    "unencoded_val_local_accuracy": 0.7007
                 },
                 "data": {
-                    "local_train_crop_percentage": 0.3436,
-                    "local_train_original_size": 1106,
-                    "local_train_upsamepled_size": 1452
+                    "local_train_crop_percentage": 0.3624,
+                    "local_train_original_size": 287,
+                    "local_train_upsamepled_size": 366
                 }
             }
         }
@@ -184,23 +184,23 @@
         }
     },
     "Uganda": {
-        "local_validation_dataset_size": 108,
-        "local_validation_crop_percentage": 0.1019,
+        "local_validation_dataset_size": 458,
+        "local_validation_crop_percentage": 0.131,
         "models": {
-            "Uganda.ckpt": {
+            "Uganda2.ckpt": {
                 "metrics": {
-                    "val_loss": 0.8643,
-                    "val_encoder_mae": 0.8311,
-                    "unencoded_val_local_roc_auc_score": 0.8679,
-                    "unencoded_val_local_precision_score": 0.4706,
-                    "unencoded_val_local_recall_score": 0.7273,
-                    "unencoded_val_local_f1_score": 0.5714,
-                    "unencoded_val_local_accuracy": 0.8889
+                    "val_loss": 0.9303,
+                    "val_encoder_mae": 0.773,
+                    "unencoded_val_local_roc_auc_score": 0.6615,
+                    "unencoded_val_local_precision_score": 0.2973,
+                    "unencoded_val_local_recall_score": 0.1833,
+                    "unencoded_val_local_f1_score": 0.2268,
+                    "unencoded_val_local_accuracy": 0.8362
                 },
                 "data": {
-                    "local_train_crop_percentage": 0.1114,
-                    "local_train_original_size": 808,
-                    "local_train_upsamepled_size": 1436
+                    "local_train_crop_percentage": 0.0818,
+                    "local_train_original_size": 110,
+                    "local_train_upsamepled_size": 201
                 }
             }
         }
