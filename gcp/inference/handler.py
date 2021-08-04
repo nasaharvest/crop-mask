@@ -257,7 +257,7 @@ class ModelHandler(BaseHandler):
             x_np = (x_np - self.normalizing_dict["mean"]) / self.normalizing_dict["std"]
         print("HANDLER: Splitting into batches")
         batches = [
-            x_np[i: i + self.batch_size] for i in range(0, (x_np.shape[0] - 1), self.batch_size)
+            x_np[i : i + self.batch_size] for i in range(0, (x_np.shape[0] - 1), self.batch_size)
         ]
         print(f"HANDLER: Doing inference on {len(batches)} batches")
         predictions = [self.inference_on_single_batch(b) for b in batches]
