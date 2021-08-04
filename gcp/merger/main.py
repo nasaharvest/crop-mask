@@ -23,9 +23,19 @@ if __name__ == "__main__":
 
     print("Building vrt for each batch")
     for i, d in enumerate(glob(p + "/*/")):
-        #gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=f"{p}/{i}.vrt")
+        # gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=f"{p}/{i}.vrt")
         gdal_cmd(cmd_type="gdal_translate", in_file=f"{p}/{i}.vrt", out_file=f"{p}/{i}.tif")
 
     if build_full_vrt:
-        gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{p}/*.vrt", out_file=f"{p}/final.vrt", msg="Building full vrt")
-        gdal_cmd(cmd_type="gdal_translate", in_file=f"{p}/final.vrt", out_file=f"{p}/final.tif", msg="Vrt to tif")
+        gdal_cmd(
+            cmd_type="gdalbuildvrt",
+            in_file=f"{p}/*.vrt",
+            out_file=f"{p}/final.vrt",
+            msg="Building full vrt",
+        )
+        gdal_cmd(
+            cmd_type="gdal_translate",
+            in_file=f"{p}/final.vrt",
+            out_file=f"{p}/final.tif",
+            msg="Vrt to tif",
+        )
