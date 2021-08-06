@@ -41,12 +41,26 @@ def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
     return df.reset_index()
 
 
+def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename(
+        {"site_longitude": LON, "site_latitude": LAT},
+        axis="columns",
+        errors="raise",
+    )
+    df = df[
+        df[LON].notnull()
+        & df[LAT].notnull()
+        & df["harvesting_date"].notnull()
+        & df["planting_date"].notnull()
+    ].copy()
+    return df
+
+
 labeled_datasets = [
     LabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
         sentinel_dataset="earth_engine_geowiki",
-        is_global=True,
         raw_labels=(
             RawLabels("http://store.pangaea.de/Publications/See_2017/crop_all.zip"),
             RawLabels("http://store.pangaea.de/Publications/See_2017/crop_con.zip"),
@@ -65,7 +79,7 @@ labeled_datasets = [
                 end_month_day=(3, 28),
                 custom_start_date=date(2017, 3, 28),
                 x_y_from_centroid=False,
-                train_val_test=(0.8, 0.2, 0.0),
+                train_val_test=(1.0, 0.0, 0.0),
             ),
         ),
     ),
@@ -275,6 +289,22 @@ labeled_datasets = [
                     "ceo-2019-Uganda-Cropland-(RCMRD--Set-2)-sample-data-2021-06-11.csv",
                 ]
             ]
+        ),
+    ),
+    LabeledDataset(
+        dataset="one_acre_fund",
+        country="Kenya,Rwanda,Tanzania",
+        sentinel_dataset="earth_engine_one_acre_fund",
+        processors=(
+            Processor(
+                filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
+                crop_prob=1.0,
+                clean_df=clean_one_acre_fund,
+                harvest_date_col="harvesting_date",
+                plant_date_col="planting_date",
+                x_y_from_centroid=False,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
         ),
     ),
 ]
