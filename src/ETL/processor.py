@@ -49,12 +49,17 @@ class Processor:
             overlap_days = (min(end1, end2) - max(start1, start2)).days
             return overlap_days
 
+        def _to_date(d):
+            if type(d) == np.datetime64:
+                return d.astype("M8[D]").astype("O")
+            elif type(d) == str:
+                return pd.to_datetime(d).date()
+            else:
+                return d.date()
+
         def compute_end_date(planting_date, harvest_date):
-            to_date = (
-                lambda d: d.astype("M8[D]").astype("O") if type(d) == np.datetime64 else d.date()
-            )
-            planting_date = to_date(planting_date)
-            harvest_date = to_date(harvest_date)
+            planting_date = _to_date(planting_date)
+            harvest_date = _to_date(harvest_date)
             potential_end_dates = [
                 date(harvest_date.year + diff, *end_month_day) for diff in [2, 1, 0, -1]
             ]
@@ -68,7 +73,7 @@ class Processor:
         return np.vectorize(compute_end_date)(planting_date_col, harvest_date_col)
 
     def train_val_test_split(self, df: pd.DataFrame):
-        train, val, test = self.train_val_test
+        _, val, test = self.train_val_test
         random_float = np.random.rand(len(df))
 
         df[SUBSET] = "testing"
@@ -87,7 +92,7 @@ class Processor:
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
         elif file_path.suffix == ".csv":
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, engine="python")
         else:
             df = geopandas.read_file(file_path)
 
@@ -118,11 +123,7 @@ class Processor:
         else:
             df[START] = df[END] - total_days
 
-        if (df[START] < pd.Timestamp(min_date)).any():
-            raise ValueError(
-                f"start_date is set earlier than {min_date} "
-                f"(earlier than sentinel-2 data exists)"
-            )
+        df = df[df[START] >= pd.Timestamp(min_date)]
 
         df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")
