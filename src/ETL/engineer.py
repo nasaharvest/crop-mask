@@ -29,7 +29,6 @@ class Engineer(ABC):
     sentinel_files_path: Path
     labels_path: Path
     save_dir: Path
-    is_global: bool
     nan_fill: float = 0.0
     max_nan_ratio: float = 0.3
     add_ndvi: bool = True
@@ -183,7 +182,6 @@ class Engineer(ABC):
             crop_probability=row[CROP_PROB],
             instance_lat=closest_lat,
             instance_lon=closest_lon,
-            is_global=self.is_global,
             label_lat=row[LAT],
             label_lon=row[LON],
             labelled_array=labelled_array,

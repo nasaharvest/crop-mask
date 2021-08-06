@@ -14,7 +14,7 @@ def get_metrics(
     model: pl.LightningModule, test_mode: bool, alternate_test_sets: Tuple[str, ...] = ()
 ):
     if alternate_test_sets:
-        model.datasets = model.load_datasets(list(alternate_test_sets))
+        model.eval_datasets = model.load_datasets(list(alternate_test_sets))
 
     trainer = pl.Trainer()
     if test_mode:
@@ -30,7 +30,7 @@ def get_metrics(
         if (not k.startswith("encoded")) and ("_global_" not in k)
     }
 
-    train_dataset = model.get_dataset("training", include_geowiki=False)
+    train_dataset = model.get_dataset("training", is_local_only=True)
     data = {
         "local_train_crop_percentage": train_dataset.crop_percentage,
         "local_train_original_size": train_dataset.original_size,
@@ -49,20 +49,23 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
         model = Model.load_from_checkpoint(str(model_path))
 
-        metric_dataset = model.get_dataset(metric_type, include_geowiki=False, upsample=False)
-        country_key = "_".join(metric_dataset.countries)
+        metric_dataset = model.get_dataset(metric_type, is_local_only=True, upsample=False)
+        if "target_bbox_key" in model.hparams:
+            key = model.hparams.target_bbox_key
+        else:
+            key = "_".join(metric_dataset.countries)
 
-        if country_key not in model_metrics:
-            model_metrics[country_key] = {
+        if key not in model_metrics:
+            model_metrics[key] = {
                 f"local_{metric_type}_dataset_size": len(metric_dataset),
                 f"local_{metric_type}_crop_percentage": metric_dataset.crop_percentage,
                 "models": {},
             }
 
-        if model_path.name not in model_metrics[country_key]["models"]:
+        if model_path.name not in model_metrics[key]["models"]:
             metrics = get_metrics(model, test_mode)
             print(f"\n{metrics}")
-            model_metrics[country_key]["models"][model_path.name] = metrics
+            model_metrics[key]["models"][model_path.name] = metrics
 
     for country_key, value in model_metrics.items():
         model_metrics[country_key]["models"] = OrderedDict(sorted(value["models"].items()))

@@ -10,7 +10,6 @@ from .engineer import Engineer
 from .label_downloader import RawLabels
 from .processor import Processor
 from .ee_exporter import LabelExporter, RegionExporter, Season
-from .ee_boundingbox import BoundingBox
 from src.ETL.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, NUM_LABELERS, SUBSET
 
 logger = logging.getLogger(__name__)
@@ -63,7 +62,6 @@ class LabeledDataset(Dataset):
     processors: Tuple[Processor, ...] = ()
 
     # Engineer parameters
-    is_global: bool = False
     nan_fill: float = 0.0
     max_nan_ratio: float = 0.3
     checkpoint: bool = True
@@ -91,7 +89,6 @@ class LabeledDataset(Dataset):
             sentinel_files_path=self.get_path(DataDir.RAW_IMAGES_DIR),
             labels_path=self.get_path(DataDir.LABELS_PATH),
             save_dir=self.get_path(DataDir.FEATURES_DIR),
-            is_global=self.is_global,
             nan_fill=self.nan_fill,
             add_ndvi=self.add_ndvi,
             add_ndwi=self.add_ndwi,
@@ -157,10 +154,7 @@ class LabeledDataset(Dataset):
 
 @dataclass
 class UnlabeledDataset(Dataset):
-    region_bbox: BoundingBox
     season: Season
 
     def export_earth_engine_data(self):
-        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
-            region_bbox=self.region_bbox, season=self.season, metres_per_polygon=None
-        )
+        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(season=self.season, metres_per_polygon=None)

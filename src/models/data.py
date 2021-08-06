@@ -14,6 +14,7 @@ from src.ETL.constants import BANDS
 
 from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
 from src.ETL.dataset import LabeledDataset, DataDir
+from src.ETL.ee_boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
 
@@ -29,16 +30,17 @@ class CropDataset(Dataset):
         datasets: List[LabeledDataset],
         probability_threshold: float,
         remove_b1_b10: bool,
-        include_geowiki: bool,
         cache: bool,
         upsample: bool,
         noise_factor: bool,
         normalizing_dict: Optional[Dict] = None,
-        local_train_dataset_size: Optional[int] = None,
+        target_bbox: Optional[BoundingBox] = None,
+        is_local_only: bool = False,
     ) -> None:
 
         self.probability_threshold = probability_threshold
-        self.include_geowiki = include_geowiki
+        self.target_bbox = target_bbox
+        self.is_local_only = is_local_only
 
         assert subset in ["training", "validation", "testing"]
 
@@ -56,17 +58,9 @@ class CropDataset(Dataset):
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
-            if not include_geowiki and dataset.is_global:
-                continue
-
-            limit = None
-            if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
-                limit = local_train_dataset_size
-
             pickle_files_for_dataset, normalizing_dict = self.load_files_and_normalizing_dicts(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
-                limit=limit,
             )
             if len(pickle_files_for_dataset) > 0:
                 self.countries.add(dataset.country)
@@ -88,6 +82,9 @@ class CropDataset(Dataset):
         self.pickle_files = pickle_files
 
         self.cache = False
+
+        if self.is_local_only:
+            self.pickle_files = [file for i, file in enumerate(self.pickle_files) if not self[i][2]]
 
         self.class_instances: List = []
         if upsample:
@@ -262,12 +259,7 @@ class CropDataset(Dataset):
 
     @property
     def num_output_classes(self) -> Union[int, Tuple[int, int]]:
-
-        if self.include_geowiki:
-            # multi headed
-            return 1, 1
-        else:
-            return 1
+        return 1, 1
 
     @property
     def instances_per_class(self) -> List[int]:
@@ -303,13 +295,7 @@ class CropDataset(Dataset):
         with target_file.open("rb") as f:
             target_datainstance = pickle.load(f)
 
-        if hasattr(target_datainstance, "is_global"):
-            is_global = int(target_datainstance.is_global)
-        else:
-            logger.error(
-                "target_datainstance missing mandatory field is_global, defaulting is_global to 0"
-            )
-            is_global = 0
+        is_global = not target_datainstance.isin(self.target_bbox)
 
         if hasattr(target_datainstance, "crop_probability"):
             crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
