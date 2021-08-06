@@ -9,6 +9,7 @@ import pandas as pd
 import ee
 import sys
 
+from src.bounding_boxes import bounding_boxes
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
 from src.ETL.constants import START, END, LAT, LON, SOURCE, GEOWIKI_UNEXPORTED
@@ -142,7 +143,6 @@ class RegionExporter(EarthEngineExporter):
 
     def export(
         self,
-        region_bbox: BoundingBox,
         dest_bucket: Optional[str] = None,
         model_name: Optional[str] = None,
         end_date: Optional[date] = None,
@@ -154,7 +154,6 @@ class RegionExporter(EarthEngineExporter):
         data from (end_date - timedelta(days=days_per_timestep * num_timesteps)) to end_date
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
-        :param region_bbox: BoundingBox for region
         :param dest_bucket: The name of the destination GCP bucket
         :param model_name: The name of the model that data will be fed to
         :param season: The season for which the data should be exported
@@ -163,6 +162,10 @@ class RegionExporter(EarthEngineExporter):
             boxes of (max) area metres_per_polygon * metres_per_polygon. It is better to instead
             split the area once it has been exported
         """
+        if self.sentinel_dataset not in bounding_boxes:
+            raise ValueError(f"{self.sentinel_dataset} was not found in bounding_boxes.py")
+        region_bbox = bounding_boxes[self.sentinel_dataset]
+
         if season is None and end_date is None:
             raise ValueError("One of season or end_date must be specified.")
 
