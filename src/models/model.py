@@ -1,5 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+
+from torch.utils import data
+from src.ETL.dataset import LabeledDataset
 import numpy as np
 import logging
 import xarray as xr
@@ -21,6 +24,7 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
+from src.bounding_boxes import bounding_boxes
 from src.utils import set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
@@ -59,10 +63,12 @@ class Model(pl.LightningModule):
     :param hparams.remove_b1_b10: Whether or not to remove the B1 and B10 bands. Default = True
     :param hparams.forecast: Whether or not to forecast the partial time series. Default = True
     :param hparams.cache: Whether to load all the data into memory during training. Default = True
-    :param hparams.include_geowiki: Whether to include the global GeoWiki dataset during
-        training. Default = True
     :param hparams.upsample: Whether to oversample the under-represented class so that each class
         is equally represented in the training and validation dataset. Default = True
+    :param hparams.target_bbox_key: The key to the bbox in bounding_box.py which determines which
+        data is local and which is global
+    :param hparams.train_datasets: A list of the datasets to use for training.
+    :param hparams.eval_datasets: A list of the datasets to use for evaluation.
     """
 
     def __init__(self, hparams: Namespace) -> None:
@@ -70,13 +76,14 @@ class Model(pl.LightningModule):
         set_seed()
         self.hparams = hparams
         self.data_folder = Path(hparams.data_folder)
-        input_dataset_names = hparams.datasets.replace(" ", "").split(",")
-        input_dataset_names = list(filter(None, input_dataset_names))
-        self.datasets = self.load_datasets(input_dataset_names)
-        self.local_train_dataset_size = (
-            hparams.local_train_dataset_size if "local_train_dataset_size" in hparams else None
-        )
 
+        bbox_key = hparams.target_bbox_key
+        if bbox_key not in bounding_boxes:
+            raise ValueError(f"target_bbox_key: {bbox_key} was not found in bounding_boxes.py")
+        self.target_bbox = bounding_boxes[bbox_key]
+
+        self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
+        self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
         dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
@@ -117,7 +124,16 @@ class Model(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
 
     @staticmethod
-    def load_datasets(input_dataset_names: List[str]):
+    def load_datasets(
+        input_dataset_names: Union[str, List[str]], subset: str
+    ) -> List[LabeledDataset]:
+        """
+        Loads the datasets specified in the input_dataset_names list.
+        """
+        if isinstance(input_dataset_names, str):
+            input_dataset_names = input_dataset_names.replace(" ", "").split(",")
+            input_dataset_names = list(filter(None, input_dataset_names))
+
         datasets = []
         for d in labeled_datasets:
             if d.dataset in input_dataset_names:
@@ -127,7 +143,7 @@ class Model(pl.LightningModule):
         for not_found_dataset in input_dataset_names:
             logger.error(f"Could not find dataset with name: {not_found_dataset}")
 
-        logger.info(f"Using datasets: {[d.dataset for d in datasets]}")
+        logger.info(f"Using {subset} datasets: {[d.dataset for d in datasets]}")
         return datasets
 
     def get_dataset(
@@ -135,30 +151,32 @@ class Model(pl.LightningModule):
         subset: str,
         normalizing_dict: Optional[Dict] = None,
         cache: Optional[bool] = None,
-        include_geowiki: bool = None,
         upsample: Optional[bool] = None,
+        is_local_only: bool = False,
     ) -> CropDataset:
+        if subset == "training":
+            datasets = self.train_datasets
+        else:
+            datasets = self.eval_datasets
+
         return CropDataset(
             data_folder=self.data_folder,
             subset=subset,
-            datasets=self.datasets,
+            datasets=datasets,
             probability_threshold=self.hparams.probability_threshold,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
-            include_geowiki=include_geowiki
-            if include_geowiki is not None
-            else self.hparams.include_geowiki,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
-            local_train_dataset_size=self.local_train_dataset_size,
+            target_bbox=self.target_bbox,
+            is_local_only=is_local_only,
         )
 
     def train_dataloader(self):
         return DataLoader(
             self.get_dataset(
                 subset="training",
-                include_geowiki=self.hparams.include_geowiki,
                 upsample=self.hparams.upsample,
             ),
             shuffle=True,
@@ -170,7 +188,6 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                include_geowiki=self.hparams.include_geowiki,
                 upsample=False,
             ),
             batch_size=self.hparams.batch_size,
@@ -181,7 +198,6 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
-                include_geowiki=False,
                 upsample=False,
             ),
             batch_size=self.hparams.batch_size,
@@ -359,34 +375,33 @@ class Model(pl.LightningModule):
                 output_dict["log"] = {}
             x = self.add_noise(input_to_encode, training=training)
 
-        if self.hparams.multi_headed:
-            org_global_preds, local_preds = self.classifier(x)
-            global_preds = org_global_preds[is_global != 0]
-            global_labels = label[is_global != 0]
+        org_global_preds, local_preds = self.classifier(x)
+        global_preds = org_global_preds[is_global != 0]
+        global_labels = label[is_global != 0]
 
-            local_preds = local_preds[is_global == 0]
-            local_labels = label[is_global == 0]
+        local_preds = local_preds[is_global == 0]
+        local_labels = label[is_global == 0]
 
-            if local_preds.shape[0] > 0:
-                local_loss = self.local_loss_function(
-                    local_preds.squeeze(-1),
-                    local_labels,
-                )
-                loss += local_loss
+        if local_preds.shape[0] > 0:
+            local_loss = self.local_loss_function(
+                local_preds.squeeze(-1),
+                local_labels,
+            )
+            loss += local_loss
 
-            if global_preds.shape[0] > 0:
-                global_loss = self.global_loss_function(
-                    global_preds.squeeze(-1),
-                    global_labels,
-                )
+        if global_preds.shape[0] > 0:
+            global_loss = self.global_loss_function(
+                global_preds.squeeze(-1),
+                global_labels,
+            )
 
-                num_local_labels = local_preds.shape[0]
-                if num_local_labels == 0:
-                    alpha = 1
-                else:
-                    ratio = global_preds.shape[0] / num_local_labels
-                    alpha = ratio / self.hparams.alpha
-                loss += alpha * global_loss
+            num_local_labels = local_preds.shape[0]
+            if num_local_labels == 0:
+                alpha = 1
+            else:
+                ratio = global_preds.shape[0] / num_local_labels
+                alpha = ratio / self.hparams.alpha
+            loss += alpha * global_loss
 
             output_dict[loss_label] = loss
             if log_loss:
@@ -567,10 +582,6 @@ class Model(pl.LightningModule):
         parser.add_argument("--cache", dest="cache", action="store_true")
         parser.add_argument("--do_not_cache", dest="cache", action="store_false")
         parser.set_defaults(cache=True)
-
-        parser.add_argument("--include_geowiki", dest="include_geowiki", action="store_true")
-        parser.add_argument("--exclude_geowiki", dest="include_geowiki", action="store_false")
-        parser.set_defaults(include_geowiki=True)
 
         parser.add_argument("--upsample", dest="upsample", action="store_true")
         parser.add_argument("--do_not_upsample", dest="upsample", action="store_false")
