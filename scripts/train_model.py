@@ -17,18 +17,16 @@ from src.models import Model, train_model  # noqa: E402
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-all_datasets_str = ",".join(
-    [ld.dataset for ld in labeled_datasets if ld.dataset != "one_acre_fund"]
-)
+all_datasets_str = ",".join([ld.dataset for ld in labeled_datasets if ld.dataset])
 
 data_folder = str(Path(module_path) / "data")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="Rwanda4")
-    parser.add_argument("--target_bbox_key", type=str, default="Rwanda")
+    parser.add_argument("--model_name", type=str, default="Uganda5")
+    parser.add_argument("--target_bbox_key", type=str, default="Uganda")
     parser.add_argument("--train_datasets", type=str, default=all_datasets_str)
-    parser.add_argument("--eval_datasets", type=str, default="Rwanda,")
+    parser.add_argument("--eval_datasets", type=str, default="Uganda,")
     parser.add_argument("--max_epochs", type=int, default=1000)
     parser.add_argument("--patience", type=int, default=10)
     parser.add_argument("--data_folder", type=str, default=data_folder)
