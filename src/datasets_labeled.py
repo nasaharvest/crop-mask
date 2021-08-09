@@ -56,6 +56,15 @@ def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def clean_open_buildings(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename(
+        {"longitude": LON, "latitude": LAT},
+        axis="columns",
+        errors="raise",
+    )
+    return df
+
+
 labeled_datasets = [
     LabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -289,6 +298,23 @@ labeled_datasets = [
                     "ceo-2019-Uganda-Cropland-(RCMRD--Set-2)-sample-data-2021-06-11.csv",
                 ]
             ]
+        )
+        + tuple(
+            [
+                Processor(
+                    filename=filename,
+                    crop_prob=0.0,
+                    sample_from_polygon=True,
+                    x_y_from_centroid=True,
+                    train_val_test=(1.0, 0, 0),
+                    end_year=2021,
+                )
+                for filename in [
+                    "WDPA_WDOECM_Aug2021_Public_UGA_shp_0.zip",
+                    "WDPA_WDOECM_Aug2021_Public_UGA_shp_1.zip",
+                    "WDPA_WDOECM_Aug2021_Public_UGA_shp_2.zip",
+                ]
+            ]
         ),
     ),
     LabeledDataset(
@@ -302,6 +328,21 @@ labeled_datasets = [
                 clean_df=clean_one_acre_fund,
                 harvest_date_col="harvesting_date",
                 plant_date_col="planting_date",
+                x_y_from_centroid=False,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="open_buildings",
+        country="global",
+        sentinel_dataset="earth_engine_open_buildings",
+        processors=(
+            Processor(
+                filename="177_buildings_confidence_0.9.csv",
+                clean_df=clean_open_buildings,
+                crop_prob=0.0,
+                end_year=2021,
                 x_y_from_centroid=False,
                 train_val_test=(1.0, 0.0, 0.0),
             ),
