@@ -7,7 +7,7 @@ from src.utils import set_seed
 from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
 import logging
 import xarray as xr
-import geopandas
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 
@@ -32,6 +32,7 @@ class Processor:
     harvest_date_col: Optional[str] = None
 
     clean_df: Optional[Callable] = None
+    sample_from_polygon: bool = False
     x_y_from_centroid: bool = True
     transform_crs_from: Optional[int] = None
 
@@ -86,6 +87,23 @@ class Processor:
 
         return df
 
+    @staticmethod
+    def get_points(polygon, samples: int) -> gpd.GeoSeries:
+
+        # find the bounds of your geodataframe
+        x_min, y_min, x_max, y_max = polygon.bounds
+
+        # generate random data within the bounds
+        x = np.random.uniform(x_min, x_max, samples)
+        y = np.random.uniform(y_min, y_max, samples)
+
+        # convert them to a points GeoSeries
+        gdf_points = gpd.GeoSeries(gpd.points_from_xy(x, y))
+        # only keep those points within polygons
+        gdf_points = gdf_points[gdf_points.within(polygon)]
+
+        return gdf_points
+
     def process(self, raw_folder: Path, total_days) -> Union[pd.DataFrame, xr.DataArray]:
         file_path = raw_folder / self.filename
         logger.info(f"Reading in {file_path}")
@@ -94,10 +112,16 @@ class Processor:
         elif file_path.suffix == ".csv":
             df = pd.read_csv(file_path, engine="python")
         else:
-            df = geopandas.read_file(file_path)
+            df = gpd.read_file(file_path)
 
         if self.clean_df:
             df = self.clean_df(df)
+
+        if self.sample_from_polygon:
+            df = df[df.geometry != None]  # noqa: E711
+            df["samples"] = (df.geometry.area / 0.001).astype(int)
+            list_of_points = np.vectorize(self.get_points)(df.geometry, df.samples)
+            df = gpd.GeoDataFrame(geometry=pd.concat(list_of_points, ignore_index=True))
 
         df[SOURCE] = self.filename
 
