@@ -54,7 +54,6 @@ class CropDataset(Dataset):
         # changed to the input noise argument at the end of the
         # init function
         self.noise_factor = 0
-        self.countries = set()
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
@@ -62,8 +61,6 @@ class CropDataset(Dataset):
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
-            if len(pickle_files_for_dataset) > 0:
-                self.countries.add(dataset.country)
 
             files_and_nds.append((pickle_files_for_dataset, normalizing_dict))
 
