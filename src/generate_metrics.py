@@ -50,10 +50,8 @@ def get_metrics_for_all_models(test_mode: bool = False):
         model = Model.load_from_checkpoint(str(model_path))
 
         metric_dataset = model.get_dataset(metric_type, is_local_only=True, upsample=False)
-        if "target_bbox_key" in model.hparams:
-            key = model.hparams.target_bbox_key
-        else:
-            key = "_".join(metric_dataset.countries)
+
+        key = model.hparams.target_bbox_key
 
         if key not in model_metrics:
             model_metrics[key] = {
