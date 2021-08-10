@@ -11,7 +11,7 @@ from src.models import Forecaster, forecaster_train_model
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--cache", type=bool, default=False)
     parser.add_argument("--checkpoint", type=str, default='/cmlscratch/hkjoo/repo/crop-mask/data/models/checkpoints')    
     parser.add_argument("--input_months", type=int, default=5)
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", type=str, default="Arizona")
     parser.add_argument("--num_bands", type=int, default=12)
     parser.add_argument("--patience", type=int, default=10)
-    parser.add_argument("--processed_data_folder", type=str, default='/cmlscratch/izvonkov/Arizona-processed2')
+    parser.add_argument("--processed_data_folder", type=str, default='/cmlscratch/hkjoo/repo/crop-mask/data/dataset/Arizona')
     parser.add_argument("--save_dir", type=str, default='/cmlscratch/hkjoo/repo/crop-mask/data/models')    
     parser.add_argument("--show_progress_bar", type=bool, default=False)
 

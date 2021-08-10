@@ -38,16 +38,14 @@ class ForecasterDataset(Dataset):
             try:
                 with (Path(data_folder) / "normalizing_dict.json").open() as f:
                     self.normalizing_dict = json.load(f)
-                    bands = len(self.normalizing_dict["mean"])
-                    self.mean = np.array(self.normalizing_dict["mean"]).reshape(bands, 1, 1)
-                    self.std = np.array(self.normalizing_dict["std"]).reshape(bands, 1, 1)
+                    self.mean = np.array(self.normalizing_dict["mean"])
+                    self.std = np.array(self.normalizing_dict["std"])
             except:
                 self.normalizing_dict = None
         else:
             self.normalizing_dict = normalizing_dict
-            bands = len(normalizing_dict["mean"])
-            self.mean = np.array(self.normalizing_dict["mean"]).reshape(bands, 1, 1)
-            self.std = np.array(self.normalizing_dict["std"]).reshape(bands, 1, 1)
+            self.mean = np.array(self.normalizing_dict["mean"])
+            self.std = np.array(self.normalizing_dict["std"])
 
         assert subset in ["training", "validation", "testing"]
 
@@ -58,7 +56,7 @@ class ForecasterDataset(Dataset):
         elif self.subset_name == 'testing':
             data_root_subset = Path(data_folder) / "test" 
         
-        self.nc_files = [ str(i) for i in data_root_subset.glob("*.nc") ]
+        self.nc_files = [ str(i) for i in data_root_subset.glob("*.pickle") ]
 
         distribution = int(len(self.nc_files) * 0.8)
 
@@ -157,16 +155,18 @@ class ForecasterDataset(Dataset):
     def __getitem__(self, index: int) -> Tuple[torch.Tensor]:
         self.set_seed(index)
         rand_i = np.random.randint(len(self.nc_files))
-        tile = xr.open_dataarray(self.nc_files[rand_i]).values
+
+        with open(self.nc_files[rand_i], 'rb') as f:
+            tile = pickle.load(f)
 
         # take the last 12 months of data only
-        tile = tile[tile.shape[0] - 12:]
+        tile = tile[tile.shape[0] - self.seq_len:]
 
-        assert tile.shape == (self.seq_len, 14, 64, 64)
+        assert tile.shape == (self.seq_len, 14)
 
         tile = self._normalize(tile)
 
         tile = self.remove_bands(tile)
-        assert tile.shape == (self.seq_len, 12, 64, 64)
+        assert tile.shape == (self.seq_len, 12)
 
         return torch.from_numpy(tile).float()

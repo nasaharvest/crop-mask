@@ -55,6 +55,7 @@ class Forecaster(pl.LightningModule):
         self.hparams = hparams
 
         dataset = self.get_dataset(subset="training", cache=False)
+        self.train_count = len(dataset)
         
         self.num_timesteps = dataset.num_timesteps
         self.output_timesteps = self.num_timesteps - self.hparams.input_months
@@ -150,18 +151,11 @@ class Forecaster(pl.LightningModule):
     ) -> Dict:
 
         x = batch
-
-        original_batch_size = x.shape[0]
         
-        # Assumes the data input is 12 month long (time=12), so takes the last 12 months
-        # of Arizona dataset
-        assert x.shape == (original_batch_size, 12, 12, 64, 64), x.shape
-
-        # convert (batch=original_batch_size, time=12, band=12, w=64, h=64) into
-        # (original_batch_size*w* h, time=12, band=12)
-        x = x.permute([0, 3, 4, 1, 2]).contiguous().view(-1, 12, 12)
-        
-        assert x.shape == (original_batch_size * 64 * 64, 12, 12), x.shape
+        if training:
+            # Assumes the data input is 12 month long (time=12), so takes the last 12 months
+            # of Arizona dataset
+            assert x.shape in {(self.hparams.batch_size, 12, 12), (self.train_count % self.hparams.batch_size, 12, 12)}, x.shape
 
         input_to_encode = x[:, : self.hparams.input_months, :]
 
