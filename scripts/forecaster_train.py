@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=2)
     parser.add_argument("--cache", type=bool, default=False)
+    parser.add_argument("--checkpoint", type=str, default='/cmlscratch/hkjoo/repo/crop-mask/data/models/checkpoints')    
     parser.add_argument("--input_months", type=int, default=5)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--logger_name", type=str, default="lightning_logs")

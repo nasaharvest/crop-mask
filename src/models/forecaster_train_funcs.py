@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
     logger = TensorBoardLogger(
@@ -18,12 +18,18 @@ def forecaster_train_model(model: pl.LightningModule, hparams: Namespace) -> pl.
         verbose=True,
         mode="min",
     )
+    
+    checkpoint_callback = ModelCheckpoint(
+        filepath=str(Path(hparams.checkpoint) / (hparams.logger_name + '-{epoch}-{val_loss:.3f}')),
+        verbose=True,
+        monitor='val_loss',
+    )
 
     trainer = pl.Trainer(
         default_save_path=hparams.save_dir,
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
-        checkpoint_callback=False,
+        checkpoint_callback=checkpoint_callback,
         show_progress_bar=hparams.show_progress_bar,
         logger=logger
     )

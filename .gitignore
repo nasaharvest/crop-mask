@@ -127,3 +127,5 @@ experiment.py
 data/*
 scripts/.nfs*
 test/.nfs*
+
+satellite_baselines.ipynb
