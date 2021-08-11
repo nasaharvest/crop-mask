@@ -1,4 +1,42 @@
 {
+    "Rwanda": {
+        "local_validation_dataset_size": 341,
+        "local_validation_crop_percentage": 0.4223,
+        "models": {
+            "Rwanda4.ckpt": {
+                "metrics": {
+                    "val_loss": 1.1315,
+                    "val_encoder_mae": 0.5538,
+                    "unencoded_val_local_roc_auc_score": 0.7414,
+                    "unencoded_val_local_precision_score": 0.6291,
+                    "unencoded_val_local_recall_score": 0.6597,
+                    "unencoded_val_local_f1_score": 0.6441,
+                    "unencoded_val_local_accuracy": 0.6921
+                },
+                "data": {
+                    "local_train_crop_percentage": 0.3801,
+                    "local_train_original_size": 271,
+                    "local_train_upsamepled_size": 336
+                }
+            },
+            "Rwanda5.ckpt": {
+                "metrics": {
+                    "val_loss": 2.0292,
+                    "val_encoder_mae": 0.5195,
+                    "unencoded_val_local_roc_auc_score": 0.6703,
+                    "unencoded_val_local_precision_score": 0.4721,
+                    "unencoded_val_local_recall_score": 1.0,
+                    "unencoded_val_local_f1_score": 0.6414,
+                    "unencoded_val_local_accuracy": 0.5279
+                },
+                "data": {
+                    "local_train_crop_percentage": 0.8815,
+                    "local_train_original_size": 1418,
+                    "local_train_upsamepled_size": 2500
+                }
+            }
+        }
+    },
     "Uganda": {
         "local_validation_dataset_size": 384,
         "local_validation_crop_percentage": 0.1354,
@@ -17,6 +55,22 @@
                     "local_train_crop_percentage": 0.7501,
                     "local_train_original_size": 5746,
                     "local_train_upsamepled_size": 8619
+                }
+            },
+            "Uganda5.ckpt": {
+                "metrics": {
+                    "val_loss": 3.0886,
+                    "val_encoder_mae": 0.4803,
+                    "unencoded_val_local_roc_auc_score": 0.726,
+                    "unencoded_val_local_precision_score": 0.1753,
+                    "unencoded_val_local_recall_score": 0.9808,
+                    "unencoded_val_local_f1_score": 0.2974,
+                    "unencoded_val_local_accuracy": 0.3724
+                },
+                "data": {
+                    "local_train_crop_percentage": 0.7949,
+                    "local_train_original_size": 7003,
+                    "local_train_upsamepled_size": 11133
                 }
             }
         }
