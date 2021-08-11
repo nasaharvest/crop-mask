@@ -32,6 +32,7 @@ def get_metrics(
 
     train_dataset = model.get_dataset("training", is_local_only=True)
     data = {
+        "training_datasets": model.hparams.train_datasets,
         "local_train_crop_percentage": train_dataset.crop_percentage,
         "local_train_original_size": train_dataset.original_size,
         "local_train_upsamepled_size": len(train_dataset),
