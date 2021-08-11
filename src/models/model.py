@@ -403,33 +403,19 @@ class Model(pl.LightningModule):
                 alpha = ratio / self.hparams.alpha
             loss += alpha * global_loss
 
-            output_dict[loss_label] = loss
-            if log_loss:
-                output_dict["log"][loss_label] = loss
-            if add_preds:
-                output_dict.update(
-                    {
-                        "global_pred": global_preds,
-                        "global_label": global_labels,
-                        "local_pred": local_preds,
-                        "local_label": local_labels,
-                    }
-                )
-            return output_dict
-        else:
-            preds = cast(torch.Tensor, self.classifier(x))
-
-            loss += self.global_loss_function(
-                input=preds.squeeze(-1),
-                target=label,
+        output_dict[loss_label] = loss
+        if log_loss:
+            output_dict["log"][loss_label] = loss
+        if add_preds:
+            output_dict.update(
+                {
+                    "global_pred": global_preds,
+                    "global_label": global_labels,
+                    "local_pred": local_preds,
+                    "local_label": local_labels,
+                }
             )
-
-            output_dict = {loss_label: loss}
-            if log_loss:
-                output_dict["log"][loss_label] = loss
-            if add_preds:
-                output_dict.update({"pred": preds, "label": label})
-            return output_dict
+        return output_dict
 
     def training_step(self, batch, batch_idx):
         return self._split_preds_and_get_loss(
