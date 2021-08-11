@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.loggers import TensorBoardLogger
 
 
 def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
@@ -17,11 +18,14 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
         verbose=True,
         mode="min",
     )
+
+    logger = TensorBoardLogger("tb_logs", name=hparams.model_name)
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
         checkpoint_callback=False,
+        logger=logger,
     )
     trainer.fit(model)
 

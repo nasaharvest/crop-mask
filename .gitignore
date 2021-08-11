@@ -117,4 +117,5 @@ files
 # the data folder
 data/**/
 lightning_logs
+tb_logs
 
