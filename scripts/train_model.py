@@ -12,12 +12,15 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 from src.datasets_labeled import labeled_datasets
-from src.models import Model, train_model  # noqa: E402
+from src.models import Model, train_model
+from src.generate_metrics import get_metrics  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-all_datasets_str = ",".join([ld.dataset for ld in labeled_datasets if ld.dataset])
+all_datasets_str = ",".join(
+    [ld.dataset for ld in labeled_datasets if ld.dataset != "one_acre_fund"]
+)
 
 data_folder = str(Path(module_path) / "data")
 
@@ -34,3 +37,6 @@ if __name__ == "__main__":
     model_args = Model.add_model_specific_args(parser).parse_args()
     model = Model(model_args)
     train_model(model, model_args)
+
+    metrics = get_metrics(model, test_mode=False)
+    print(f"\n{metrics}")
