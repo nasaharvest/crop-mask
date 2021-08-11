@@ -8,6 +8,12 @@ bounding_boxes = {
         max_lon=34.44007873535156,
         max_lat=0.7779454563313616,
     ),
+    "Mali": BoundingBox(
+        min_lon=-12.170750,
+        max_lon=4.270210,
+        min_lat=10.096361,
+        max_lat=24.974574,
+    ),
     "Mali_USAID_ZOIS_upper": BoundingBox(
         min_lon=-5.197335399999872,
         max_lon=-1.9996060219999094,
