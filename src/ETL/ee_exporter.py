@@ -263,18 +263,21 @@ class LabelExporter(EarthEngineExporter):
         if len(labels) == 0:
             return
 
+        already_exported = 0
         with tqdm(total=len(labels), position=0, leave=True) as pbar:
             for idx, row in tqdm(labels.iterrows()):
-                bbox = EEBoundingBox.from_centre(
-                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
-                )
                 start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
                 end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
 
                 file_name_prefix = f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}"
                 if output_folder and (output_folder / f"{file_name_prefix}.tif").exists():
+                    already_exported += 1
                     pbar.update(1)
                     continue
+
+                bbox = EEBoundingBox.from_centre(
+                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+                )
 
                 self._export_for_polygon(
                     file_name_prefix=file_name_prefix,
@@ -283,3 +286,5 @@ class LabelExporter(EarthEngineExporter):
                     end_date=end_date,
                 )
                 pbar.update(1)
+
+        print(f"Already exported: {already_exported}")
