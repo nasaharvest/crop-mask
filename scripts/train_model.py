@@ -37,6 +37,3 @@ if __name__ == "__main__":
     model_args = Model.add_model_specific_args(parser).parse_args()
     model = Model(model_args)
     train_model(model, model_args)
-
-    metrics = get_metrics(model, test_mode=False)
-    print(f"\n{metrics}")
