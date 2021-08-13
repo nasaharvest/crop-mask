@@ -24,17 +24,10 @@ def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def clean_pv_kenya2(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename({"Latitude": "lat", "Longitude": "lon"})
-    df.loc[:, "Planting Date"] = pd.to_datetime(df["Planting Date"])
-    df.loc[:, "Estimated Harvest Date"] = pd.to_datetime(df["Estimated Harvest Date"])
-    return df
-
-
 def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
     df = df.groupby("location_id").mean()
     df = df.rename(
-        {"loc_cent_X": LON, "loc_cent_Y": LAT, "sumcrop": "mean_sumcrop"},
+        {"sumcrop": "mean_sumcrop"},
         axis="columns",
         errors="raise",
     )
@@ -42,11 +35,6 @@ def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(
-        {"site_longitude": LON, "site_latitude": LAT},
-        axis="columns",
-        errors="raise",
-    )
     df = df[
         df[LON].notnull()
         & df[LAT].notnull()
@@ -56,12 +44,8 @@ def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def clean_open_buildings(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(
-        {"longitude": LON, "latitude": LAT},
-        axis="columns",
-        errors="raise",
-    )
+def add_fake_harvest_date(df: pd.DataFrame) -> pd.DataFrame:
+    df["end"] = pd.to_datetime(df["start"]) + pd.to_timedelta(timedelta(days=365))
     return df
 
 
@@ -83,6 +67,8 @@ labeled_datasets = [
             Processor(
                 filename="loc_all_2.txt",
                 clean_df=clean_geowiki,
+                longitude_col="loc_cent_X",
+                latitude_col="loc_cent_Y",
                 crop_prob=lambda df: df.mean_sumcrop / 100,
                 end_year=2018,
                 end_month_day=(3, 28),
@@ -133,7 +119,8 @@ labeled_datasets = [
                 filename="one_acre_fund_kenya",
                 crop_prob=1.0,
                 end_year=2020,
-                clean_df=lambda df: df.rename(columns={"Lat": LAT, "Lon": LON}),
+                longitude_col="Lon",
+                latitude_col="Lat",
                 train_val_test=(0.8, 0.1, 0.1),
                 x_y_from_centroid=False,
             ),
@@ -151,7 +138,8 @@ labeled_datasets = [
             [
                 Processor(
                     filename=f"ref_african_crops_kenya_01_labels_0{i}/labels.geojson",
-                    clean_df=clean_pv_kenya2,
+                    longitude_col="Longitude",
+                    latitude_col="Latitude",
                     crop_prob=1.0,
                     plant_date_col="Planting Date",
                     harvest_date_col="Estimated Harvest Date",
@@ -298,9 +286,7 @@ labeled_datasets = [
                     "ceo-2019-Uganda-Cropland-(RCMRD--Set-2)-sample-data-2021-06-11.csv",
                 ]
             ]
-        )
-        + tuple(
-            [
+            + [
                 Processor(
                     filename=filename,
                     crop_prob=0.0,
@@ -315,6 +301,41 @@ labeled_datasets = [
                     "WDPA_WDOECM_Aug2021_Public_UGA_shp_2.zip",
                 ]
             ]
+            + [
+                Processor(
+                    filename="ug_in_season_monitoring_2021_08_11_17_50_46_428737.csv",
+                    crop_prob=1.0,
+                    longitude_col="location/_gps_longitude",
+                    latitude_col="location/_gps_latitude",
+                    clean_df=add_fake_harvest_date,
+                    plant_date_col="start",
+                    harvest_date_col="end",
+                    train_val_test=(1.0, 0.0, 0.0),
+                    x_y_from_centroid=False,
+                ),
+                Processor(
+                    filename="ug_end_of_season_assessment_2021_08_11_17_47_53_813908.csv",
+                    crop_prob=1.0,
+                    longitude_col="district_selection/_gps_location_longitude",
+                    latitude_col="district_selection/_gps_location_latitude",
+                    clean_df=add_fake_harvest_date,
+                    plant_date_col="start",
+                    harvest_date_col="end",
+                    train_val_test=(1.0, 0.0, 0.0),
+                    x_y_from_centroid=False,
+                ),
+                Processor(
+                    filename="ug_pre_season_assessment_2021_08_11_18_15_27_323695.csv",
+                    crop_prob=1.0,
+                    longitude_col="location/_gps_location_longitude",
+                    latitude_col="location/_gps_location_latitude",
+                    clean_df=add_fake_harvest_date,
+                    plant_date_col="start",
+                    harvest_date_col="end",
+                    train_val_test=(1.0, 0.0, 0.0),
+                    x_y_from_centroid=False,
+                ),
+            ]
         ),
     ),
     LabeledDataset(
@@ -326,6 +347,8 @@ labeled_datasets = [
                 filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
                 crop_prob=1.0,
                 clean_df=clean_one_acre_fund,
+                longitude_col="site_longitude",
+                latitude_col="site_latitude",
                 harvest_date_col="harvesting_date",
                 plant_date_col="planting_date",
                 x_y_from_centroid=False,
@@ -340,10 +363,24 @@ labeled_datasets = [
         processors=(
             Processor(
                 filename="177_buildings_confidence_0.9.csv",
-                clean_df=clean_open_buildings,
+                latitude_col="latitude",
+                longitude_col="longitude",
                 crop_prob=0.0,
                 end_year=2021,
                 x_y_from_centroid=False,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="digitalearthafrica",
+        country="global",
+        sentinel_dataset="earth_engine_digitalearthafrica",
+        processors=(
+            Processor(
+                filename="Eastern_training_data_20210427.geojson",
+                crop_prob=1.0,
+                end_year=2021,
                 train_val_test=(1.0, 0.0, 0.0),
             ),
         ),

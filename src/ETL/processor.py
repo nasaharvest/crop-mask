@@ -28,6 +28,9 @@ class Processor:
     end_year: Optional[int] = None
     custom_start_date: Optional[date] = None
 
+    latitude_col: Optional[str] = None
+    longitude_col: Optional[str] = None
+
     plant_date_col: Optional[str] = None
     harvest_date_col: Optional[str] = None
 
@@ -113,6 +116,11 @@ class Processor:
             df = pd.read_csv(file_path, engine="python")
         else:
             df = gpd.read_file(file_path)
+
+        if self.latitude_col:
+            df[LAT] = df[self.latitude_col]
+        if self.longitude_col:
+            df[LON] = df[self.longitude_col]
 
         if self.clean_df:
             df = self.clean_df(df)
