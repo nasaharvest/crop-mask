@@ -61,7 +61,7 @@ class IntegrationTestLabeledData(TestCase):
         for d in labeled_datasets:
 
             # geowiki has 202 examples that are not associated with any labels
-            if d.dataset == "geowiki_landcover_2017":
+            if d.dataset in ["geowiki_landcover_2017", "Mali", "Togo"]:
                 continue
 
             labels = self.load_labels(d)
@@ -70,7 +70,9 @@ class IntegrationTestLabeledData(TestCase):
                 labels_in_subset = 0
                 if subset in train_val_test_counts:
                     labels_in_subset = train_val_test_counts[subset]
-                features_in_subset = self.get_file_count(d.features_dir / subset, extension=".pkl")
+                features_in_subset = self.get_file_count(
+                    d.get_path(DataDir.FEATURES_DIR) / subset, extension=".pkl"
+                )
                 self.assertEqual(
                     labels_in_subset,
                     features_in_subset,
