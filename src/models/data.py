@@ -36,11 +36,17 @@ class CropDataset(Dataset):
         normalizing_dict: Optional[Dict] = None,
         target_bbox: Optional[BoundingBox] = None,
         is_local_only: bool = False,
+        is_global_only: bool = False,
     ) -> None:
 
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
+
+        if is_local_only and is_global_only:
+            raise ValueError("is_local_only and is_global_only cannot both be True")
+
         self.is_local_only = is_local_only
+        self.is_global_only = is_global_only
 
         assert subset in ["training", "validation", "testing"]
 
@@ -82,17 +88,22 @@ class CropDataset(Dataset):
 
         if self.is_local_only:
             self.pickle_files = [file for i, file in enumerate(self.pickle_files) if not self[i][2]]
+        elif self.is_global_only:
+            self.pickle_files = [file for i, file in enumerate(self.pickle_files) if self[i][2]]
 
-        self.class_instances: List = []
+        self.local_class_instances: List = []
+        self.global_class_instances: List = []
         if upsample:
-            instances_per_class = self.instances_per_class
+            instances_per_class = self.local_instances_per_class
             max_instances_in_class = max(instances_per_class)
 
             new_pickle_files: List[Path] = []
 
             for idx, num_instances in enumerate(instances_per_class):
                 if num_instances > 0:
-                    new_pickle_files.extend(self.upsample_class(idx, max_instances_in_class))
+                    new_pickle_files.extend(
+                        self.upsample_class(idx, max_instances_in_class, is_local_only=True)
+                    )
             self.pickle_files.extend(new_pickle_files)
 
         if cache:
@@ -233,16 +244,20 @@ class CropDataset(Dataset):
             # batches, timesteps, bands
             return x[:, :, indices_to_keep]
 
-    def upsample_class(self, class_idx: int, max_instances: int) -> List[Path]:
+    def upsample_class(
+        self, class_idx: int, max_instances: int, is_local_only: bool = True
+    ) -> List[Path]:
         """Given a class to upsample and the maximum number of classes,
         update self.pickle_files to reflect the new number of classes
         """
         class_files: List[Path] = []
         for idx, filepath in enumerate(self.pickle_files):
             _, class_int, is_global = self[idx]
-            if is_global == 0:
-                if class_int == class_idx:
-                    class_files.append(filepath)
+            if is_local_only and (is_global == 1):
+                continue
+
+            if class_int == class_idx:
+                class_files.append(filepath)
 
         multiplier = max_instances / len(class_files)
 
@@ -259,22 +274,28 @@ class CropDataset(Dataset):
         return 1, 1
 
     @property
-    def instances_per_class(self) -> List[int]:
+    def local_instances_per_class(self) -> List[int]:
+        if len(self.local_class_instances) == 0:
+            self.local_class_instances = self.instances_per_class(self.num_output_classes[1], True)
+        return self.local_class_instances
 
-        num_output_classes = self.num_output_classes
-        num_local_output_classes = (
-            num_output_classes[1] if isinstance(num_output_classes, tuple) else num_output_classes
-        )
-        if len(self.class_instances) == 0:
-            # we set a minimum number of output classes since if its 1,
-            # its really 2 (binary)
-            instances_per_class = [0] * max(num_local_output_classes, 2)
-            for i in range(len(self)):
-                _, class_int, is_global = self[i]
-                if is_global == 0:
-                    instances_per_class[int(class_int)] += 1
-            self.class_instances = instances_per_class
-        return self.class_instances
+    @property
+    def global_instances_per_class(self) -> List[int]:
+        if len(self.global_class_instances) == 0:
+            self.global_class_instances = self.instances_per_class(
+                self.num_output_classes[0], False
+            )
+        return self.global_class_instances
+
+    def instances_per_class(self, num_local_output_classes, is_local) -> List[int]:
+        # we set a minimum number of output classes since if its 1,
+        # its really 2 (binary)
+        instances_per_class = [0] * max(num_local_output_classes, 2)
+        for i in range(len(self)):
+            _, class_int, is_global = self[i]
+            if is_local and (is_global == 0) or (not is_local and (is_global == 1)):
+                instances_per_class[int(class_int)] += 1
+        return instances_per_class
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
@@ -313,9 +334,25 @@ class CropDataset(Dataset):
 
     @property
     def original_size(self):
-        return self.instances_per_class[0] + self.instances_per_class[1]
+        local_size = self.local_instances_per_class[0] + self.local_instances_per_class[1]
+        global_size = self.global_instances_per_class[0] + self.global_instances_per_class[1]
+        if self.is_local_only:
+            return local_size
+        elif self.is_global_only:
+            return global_size
+        else:
+            return local_size + global_size
 
     @property
     def crop_percentage(self):
-        total_crop = self.instances_per_class[1]
+        if self.original_size == 0:
+            return 0
+
+        if self.is_local_only:
+            total_crop = self.local_instances_per_class[1]
+        elif self.is_global_only:
+            total_crop = self.global_instances_per_class[1]
+        else:
+            total_crop = self.local_instances_per_class[1] + self.global_instances_per_class[1]
+
         return round(float(total_crop / self.original_size), 4)

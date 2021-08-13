@@ -74,6 +74,7 @@ class Model(pl.LightningModule):
     def __init__(self, hparams: Namespace) -> None:
         super().__init__()
         set_seed()
+
         self.hparams = hparams
         self.data_folder = Path(hparams.data_folder)
 
@@ -153,6 +154,7 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
         is_local_only: bool = False,
+        is_global_only: bool = False,
     ) -> CropDataset:
         if subset == "training":
             datasets = self.train_datasets
@@ -171,6 +173,7 @@ class Model(pl.LightningModule):
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
+            is_global_only=is_global_only,
         )
 
     def train_dataloader(self):
