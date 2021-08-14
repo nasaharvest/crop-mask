@@ -63,11 +63,19 @@ class CropDataset(Dataset):
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
-            pickle_file_and_norm_dict = self.load_files_and_normalizing_dicts(
+            pickle_files, norm_dict = self.load_files_and_normalizing_dicts(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
-            files_and_nds.append(pickle_file_and_norm_dict)
+
+            # check which pickle files should be kept
+            if self.is_local_only:
+                pickle_files = [p for p in pickle_files if self.is_pickle_file_local(p)]
+            elif self.is_global_only:
+                pickle_files = [p for p in pickle_files if not self.is_pickle_file_local(p)]
+
+            if len(pickle_files) > 0:
+                files_and_nds.append((pickle_files, norm_dict))
 
         if normalizing_dict is not None:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
@@ -84,11 +92,6 @@ class CropDataset(Dataset):
         self.pickle_files = pickle_files
 
         self.cache = False
-
-        if self.is_local_only:
-            self.pickle_files = [file for i, file in enumerate(self.pickle_files) if not self[i][2]]
-        elif self.is_global_only:
-            self.pickle_files = [file for i, file in enumerate(self.pickle_files) if self[i][2]]
 
         self.local_class_instances: List = []
         self.global_class_instances: List = []
@@ -295,6 +298,11 @@ class CropDataset(Dataset):
             if is_local and (is_global == 0) or (not is_local and (is_global == 1)):
                 instances_per_class[int(class_int)] += 1
         return instances_per_class
+
+    def is_pickle_file_local(self, target_file: str) -> bool:
+        with target_file.open("rb") as f:
+            target_datainstance = pickle.load(f)
+        return target_datainstance.isin(self.target_bbox)
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
