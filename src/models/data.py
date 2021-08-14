@@ -63,12 +63,11 @@ class CropDataset(Dataset):
 
         files_and_nds: List[Tuple] = []
         for dataset in datasets:
-            pickle_files_for_dataset, normalizing_dict = self.load_files_and_normalizing_dicts(
+            pickle_file_and_norm_dict = self.load_files_and_normalizing_dicts(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
-
-            files_and_nds.append((pickle_files_for_dataset, normalizing_dict))
+            files_and_nds.append(pickle_file_and_norm_dict)
 
         if normalizing_dict is not None:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
