@@ -192,6 +192,7 @@ class Model(pl.LightningModule):
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
+                is_local_only=True,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -202,6 +203,7 @@ class Model(pl.LightningModule):
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
+                is_local_only=True,
             ),
             batch_size=self.hparams.batch_size,
         )
