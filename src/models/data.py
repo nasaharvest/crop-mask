@@ -61,35 +61,38 @@ class CropDataset(Dataset):
         # init function
         self.noise_factor = 0
 
-        files_and_nds: List[Tuple] = []
+        all_pickle_files: List[str] = []
         for dataset in datasets:
-            pickle_files, norm_dict = self.load_files_and_normalizing_dicts(
+            pickle_files, _ = self.load_files_and_normalizing_dicts(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
+            all_pickle_files += pickle_files
 
-            # check which pickle files should be kept
-            if self.is_local_only:
-                pickle_files = [p for p in pickle_files if self.is_pickle_file_local(p)]
-            elif self.is_global_only:
-                pickle_files = [p for p in pickle_files if not self.is_pickle_file_local(p)]
+        self.pickle_files: List[Path] = []
+        normalizing_dict_interim = {"n": 0}
+        for p in all_pickle_files:
+            with p.open("rb") as f:
+                datainstance = pickle.load(f)
 
-            if len(pickle_files) > 0:
-                files_and_nds.append((pickle_files, norm_dict))
+            # Check if pickle file should be added to CropDataset
+            is_local = datainstance.isin(self.target_bbox)
+            if (
+                (not is_local_only and not is_global_only)
+                or (is_local_only and is_local)
+                or (is_global_only and not is_local)
+            ):
+                self.pickle_files.append(p)
+                if not normalizing_dict:
+                    labelled_array = datainstance.labelled_array
+                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
 
-        if normalizing_dict is not None:
-            self.normalizing_dict: Optional[Dict] = normalizing_dict
+        if normalizing_dict:
+            self.normalizing_dict = normalizing_dict
         else:
-            # if no normalizing dict was passed to the consturctor,
-            # then we want to make our own
-            self.normalizing_dict = self.adjust_normalizing_dict(
-                [(len(x[0]), x[1]) for x in files_and_nds]
+            self.normalizing_dict = self._calculate_normalizing_dict(
+                norm_dict=normalizing_dict_interim
             )
-
-        pickle_files: List[Path] = []
-        for files, _ in files_and_nds:
-            pickle_files.extend(files)
-        self.pickle_files = pickle_files
 
         self.cache = False
 
@@ -114,6 +117,44 @@ class CropDataset(Dataset):
         # we only save the noise attribute after the arrays have been cached, to
         # ensure the saved arrays are the noiseless ones
         self.noise_factor = noise_factor
+
+    @staticmethod
+    def _update_normalizing_values(
+        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
+    ) -> None:
+        # given an input array of shape [timesteps, bands]
+        # update the normalizing dict
+        # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+        # https://www.johndcook.com/blog/standard_deviation/
+
+        # initialize
+        if "mean" not in norm_dict:
+            num_bands = array.shape[1]
+            norm_dict["mean"] = np.zeros(num_bands)
+            norm_dict["M2"] = np.zeros(num_bands)
+
+        for time_idx in range(array.shape[0]):
+            norm_dict["n"] += 1
+
+            x = array[time_idx, :]
+
+            delta = x - norm_dict["mean"]
+            norm_dict["mean"] += delta / norm_dict["n"]
+            norm_dict["M2"] += delta * (x - norm_dict["mean"])
+
+    def _calculate_normalizing_dict(
+        self, norm_dict: Dict[str, Union[np.ndarray, int]]
+    ) -> Optional[Dict[str, np.ndarray]]:
+
+        if "mean" not in norm_dict:
+            logger.warning(
+                "No normalizing dict calculated! Make sure to call _update_normalizing_values"
+            )
+            return None
+
+        variance = norm_dict["M2"] / (norm_dict["n"] - 1)
+        std = np.sqrt(variance)
+        return {"mean": norm_dict["mean"], "std": std}
 
     @staticmethod
     def load_files_and_normalizing_dicts(
