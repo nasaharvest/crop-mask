@@ -85,7 +85,7 @@ class Model(pl.LightningModule):
 
         self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
         self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
-        dataset = self.get_dataset(subset="training", cache=False, is_local_only=True)
+        dataset = self.get_dataset(subset="training", cache=False)
         self.num_outputs = dataset.num_output_classes
         self.num_timesteps = dataset.num_timesteps
         self.input_size = dataset.num_input_features
