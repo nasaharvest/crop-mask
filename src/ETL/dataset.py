@@ -10,7 +10,19 @@ from .engineer import Engineer
 from .label_downloader import RawLabels
 from .processor import Processor
 from .ee_exporter import LabelExporter, RegionExporter, Season
-from src.ETL.constants import COUNTRY, CROP_PROB, LAT, LON, START, END, SOURCE, NUM_LABELERS, SUBSET
+from src.ETL.constants import (
+    COUNTRY,
+    CROP_PROB,
+    LAT,
+    LON,
+    START,
+    END,
+    SOURCE,
+    NUM_LABELERS,
+    SUBSET,
+    DATASET,
+    DEST_TIF,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +79,6 @@ class LabeledDataset(Dataset):
     checkpoint: bool = True
     add_ndvi: bool = True
     add_ndwi: bool = False
-    include_extended_filenames: bool = True
-    calculate_normalizing_dict: bool = True
     days_per_timestep: int = 30
     num_timesteps: int = 12
 
@@ -93,12 +103,7 @@ class LabeledDataset(Dataset):
             add_ndvi=self.add_ndvi,
             add_ndwi=self.add_ndwi,
             max_nan_ratio=self.max_nan_ratio,
-        ).create_pickled_labeled_dataset(
-            checkpoint=self.checkpoint,
-            include_extended_filenames=self.include_extended_filenames,
-            calculate_normalizing_dict=self.calculate_normalizing_dict,
-            days_per_timestep=self.days_per_timestep,
-        )
+        ).create_pickled_labeled_dataset()
 
     @staticmethod
     def merge_sources(sources):
@@ -128,10 +133,24 @@ class LabeledDataset(Dataset):
 
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
-        df = df.groupby([LON, LAT, START, END], as_index=False).agg(
+        df = df.groupby([LON, LAT, START, END], as_index=False, sort=False).agg(
             {SOURCE: self.merge_sources, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
         )
         df[COUNTRY] = self.country
+        df[DATASET] = self.dataset
+
+        source_filename_safe = df["source"].str.split(",").str[0].str.replace(r"[^\w\d-]", "_")
+        df[DEST_TIF] = (
+            source_filename_safe
+            + "/"
+            + df.index.astype(str)
+            + "_"
+            + df["start_date"].astype(str)
+            + "_"
+            + df["end_date"].astype(str)
+            + ".tif"
+        )
+
         df = df.reset_index(drop=True)
         df.to_csv(self.get_path(DataDir.LABELS_PATH), index=False)
 
@@ -157,4 +176,6 @@ class UnlabeledDataset(Dataset):
     season: Season
 
     def export_earth_engine_data(self):
-        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(season=self.season, metres_per_polygon=None)
+        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
+            season=self.season, metres_per_polygon=None
+        )
