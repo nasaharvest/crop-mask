@@ -2,6 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 from tqdm import tqdm
 import numpy as np
 import logging
@@ -47,7 +48,9 @@ class Engineer(ABC):
         idx = (np.abs(array - value)).argmin()
         return array[idx]
 
-    def _create_labeled_data_instance(self, row) -> None:
+    def _create_labeled_data_instance(
+        self, row: Tuple[str, str, float, str, str, str, float, float, str]
+    ) -> None:
         r"""
         Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
         1) the anchor (labelled)
