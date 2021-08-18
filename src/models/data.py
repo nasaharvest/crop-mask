@@ -1,3 +1,4 @@
+from os import stat
 from pathlib import Path
 import numpy as np
 import pickle
@@ -63,7 +64,7 @@ class CropDataset(Dataset):
 
         all_pickle_files: List[str] = []
         for dataset in datasets:
-            pickle_files, _ = self.load_files_and_normalizing_dicts(
+            pickle_files = self.load_pickle_files(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
@@ -135,29 +136,26 @@ class CropDataset(Dataset):
 
         for time_idx in range(array.shape[0]):
             norm_dict["n"] += 1
-
             x = array[time_idx, :]
-
             delta = x - norm_dict["mean"]
             norm_dict["mean"] += delta / norm_dict["n"]
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
+    @staticmethod
     def _calculate_normalizing_dict(
-        self, norm_dict: Dict[str, Union[np.ndarray, int]]
+        norm_dict: Dict[str, Union[np.ndarray, int]]
     ) -> Optional[Dict[str, np.ndarray]]:
-
         if "mean" not in norm_dict:
             logger.warning(
                 "No normalizing dict calculated! Make sure to call _update_normalizing_values"
             )
             return None
-
         variance = norm_dict["M2"] / (norm_dict["n"] - 1)
         std = np.sqrt(variance)
         return {"mean": norm_dict["mean"], "std": std}
 
     @staticmethod
-    def load_files_and_normalizing_dicts(
+    def load_pickle_files(
         features_dir: Path, subset_name: str, limit: Optional[int] = None, file_suffix: str = "pkl"
     ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
 
@@ -173,15 +171,7 @@ class CropDataset(Dataset):
             if limit and limit < len(pickle_files):
                 pickle_files = pickle_files[:limit]
 
-        # try loading the normalizing dict. By default, if it exists we will use it
-        normalizing_dict_path = features_dir / "normalizing_dict.pkl"
-        if normalizing_dict_path.exists():
-            with normalizing_dict_path.open("rb") as f:
-                normalizing_dict = pickle.load(f)
-        else:
-            normalizing_dict = None
-
-        return pickle_files, normalizing_dict
+        return pickle_files
 
     def _normalize(self, array: np.ndarray) -> np.ndarray:
         if self.normalizing_dict is None:
@@ -228,33 +218,6 @@ class CropDataset(Dataset):
         assert len(self.pickle_files) > 0, "No files to load!"
         output_tuple = self[0]
         return output_tuple[0].shape[0]
-
-    @staticmethod
-    def adjust_normalizing_dict(
-        dicts: Sequence[Tuple[int, Optional[Dict[str, np.ndarray]]]]
-    ) -> Optional[Dict[str, np.ndarray]]:
-
-        for _, single_dict in dicts:
-            if single_dict is None:
-                return None
-
-        dicts = cast(Sequence[Tuple[int, Dict[str, np.ndarray]]], dicts)
-
-        new_total = sum([x[0] for x in dicts])
-
-        new_mean = sum([single_dict["mean"] * length for length, single_dict in dicts]) / new_total
-
-        new_variance = (
-            sum(
-                [
-                    (single_dict["std"] ** 2 + (single_dict["mean"] - new_mean) ** 2) * length
-                    for length, single_dict in dicts
-                ]
-            )
-            / new_total
-        )
-
-        return {"mean": new_mean, "std": np.sqrt(new_variance)}
 
     def remove_bands(self, x: np.ndarray) -> np.ndarray:
         """This nested function is so that
