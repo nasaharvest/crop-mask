@@ -113,7 +113,10 @@ class Processor:
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
         elif file_path.suffix == ".csv":
-            df = pd.read_csv(file_path, engine="python")
+            try:
+                df = pd.read_csv(file_path)
+            except UnicodeDecodeError:
+                df = pd.read_csv(file_path, engine="python")
         else:
             df = gpd.read_file(file_path)
 
