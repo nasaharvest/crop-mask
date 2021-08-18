@@ -4,11 +4,12 @@ from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
 import pandas as pd
+import pickle
 import shutil
 import tempfile
 import xarray as xr
 
-from src.ETL.constants import CROP_PROB, LAT, LON, SUBSET, START, END
+from src.ETL.constants import CROP_PROB, DEST_TIF, LAT, LON, SUBSET, START, END
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
@@ -19,25 +20,17 @@ class TestEngineer(TestCase):
     engineer: Engineer
 
     @classmethod
-    @patch("src.ETL.engineer.pd.read_csv")
-    @patch("src.ETL.engineer.Path.glob")
-    def setUpClass(cls, mock_glob, mock_read_csv):
-        geospatial_file = tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
-        mock_glob.return_value = [Path(geospatial_file.name)]
-        mock_read_csv.return_value = pd.DataFrame(
-            {
-                LON: [20, 40],
-                LAT: [30, 50],
-                CROP_PROB: [0.0, 1.0],
-                SUBSET: ["training", "validation"],
-                START: ["2020-01-01", "2020-01-01"],
-                END: ["2021-01-01", "2021-01-01"],
-            }
-        )
+    def setUpClass(cls):
+        temp_path = Path(tempfile.gettempdir())
+        sentinel_files_path = temp_path / "tifs"
+        sentinel_files_path.mkdir(parents=True, exist_ok=True)
+        save_dir = temp_path / "mock_save_dir"
+        save_dir.mkdir(parents=True, exist_ok=True)
+
         cls.engineer = Engineer(
-            sentinel_files_path=Path("mock_sentinel_path"),
+            sentinel_files_path=sentinel_files_path,
             labels_path=Path("mock_labels_path"),
-            save_dir=Path("mock_features_path"),
+            save_dir=save_dir,
             nan_fill=0,
             max_nan_ratio=0,
             add_ndvi=False,
@@ -47,33 +40,14 @@ class TestEngineer(TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.engineer.save_dir)
-
-    @staticmethod
-    def generate_data_kwargs():
-        return {
-            "path_to_file": Path("mock_file"),
-            "start_date": datetime(2020, 1, 1, 0, 0, 0),
-            "end_date": datetime(2021, 1, 1, 0, 0, 0),
-            "days_per_timestep": 30,
-        }
+        shutil.rmtree(cls.engineer.sentinel_files_path)
 
     def test_find_nearest(self):
-        val, idx = Engineer._find_nearest([1.0, 2.0, 3.0, 4.0, 5.0], 4.0)
+        val = Engineer._find_nearest([1.0, 2.0, 3.0, 4.0, 5.0], 4.0)
         self.assertEqual(val, 4.0)
-        self.assertEqual(idx, 3)
 
-        val, idx = Engineer._find_nearest(xr.DataArray([1.0, 2.0, 3.0, -4.0, -5.0]), -1.0)
+        val = Engineer._find_nearest(xr.DataArray([1.0, 2.0, 3.0, -4.0, -5.0]), -1.0)
         self.assertEqual(val, 1.0)
-        self.assertEqual(idx, 0)
-
-    @patch("src.ETL.engineer.load_tif")
-    def test_create_labeled_data_instance_no_overlap(self, mock_load_tif):
-        mock_load_tif.return_value = xr.DataArray(
-            attrs={"x": np.array([25, 35]), "y": np.array([35, 45])}
-        )
-        kwargs = self.generate_data_kwargs()
-        data_instance = self.engineer._create_labeled_data_instance(**kwargs)
-        self.assertIsNone(data_instance)
 
     @patch("src.ETL.engineer.load_tif")
     def test_create_labeled_data_instance(self, mock_load_tif):
@@ -82,8 +56,26 @@ class TestEngineer(TestCase):
             dims=["x", "y"],
             data=np.zeros((55, 45)),
         )
-        kwargs = self.generate_data_kwargs()
-        actual_data_instance = self.engineer._create_labeled_data_instance(**kwargs)
+
+        feature_path = self.engineer.save_dir / "mock_feature_file.pkl"
+
+        args = (
+            "mock_file",
+            str(feature_path),
+            0.0,
+            "training",
+            "2020-01-01",
+            "2021-01-01",
+            20,
+            30,
+            "mock_file",
+        )
+
+        self.engineer._create_labeled_data_instance(args)
+
+        with feature_path.open("rb") as f:
+            actual_data_instance = pickle.load(f)
+
         expected_data_instance = CropDataInstance(
             crop_probability=0.0,
             instance_lat=30,
@@ -99,13 +91,34 @@ class TestEngineer(TestCase):
         self.assertEqual(expected_data_instance, actual_data_instance)
 
     @patch("src.ETL.engineer.load_tif")
-    def test_create_pickled_labeled_dataset(self, mock_load_tif):
+    @patch("src.ETL.engineer.pd.read_csv")
+    def test_create_pickled_labeled_dataset(self, mock_read_csv, mock_load_tif):
+        tif_filenames = ["00_2020-01-01_2021-01-01.tif", "01_2020-01-01_2021-01-01.tif"]
+        for f in tif_filenames:
+            (self.engineer.sentinel_files_path / f).touch()
+
+        mock_read_csv.return_value = pd.DataFrame(
+            {
+                LON: [20, 40],
+                LAT: [30, 50],
+                CROP_PROB: [0.0, 1.0],
+                SUBSET: ["training", "validation"],
+                START: ["2020-01-01", "2020-01-01"],
+                END: ["2021-01-01", "2021-01-01"],
+                DEST_TIF: tif_filenames,
+            }
+        )
+
         mock_load_tif.return_value = xr.DataArray(
             attrs={"x": np.array([15, 45]), "y": np.array([25, 55])},
             dims=["x", "y"],
             data=np.zeros((55, 45)),
         )
-        kwargs = self.generate_data_kwargs()
-        for k in ["path_to_file", "start_date", "end_date"]:
-            del kwargs[k]
-        self.engineer.create_pickled_labeled_dataset(**kwargs)
+        self.engineer.create_pickled_labeled_dataset()
+
+        feature_files = list(self.engineer.save_dir.glob("**/*"))
+
+        pkl_file_stems = [f.stem for f in feature_files if f.suffix == ".pkl"]
+
+        for tif_file in tif_filenames:
+            self.assertIn(Path(tif_file).stem, pkl_file_stems)
