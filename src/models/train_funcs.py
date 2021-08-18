@@ -50,7 +50,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
 
     logger.experiment.add_hparams(vars(hparams), trainer.callback_metrics)
 
-    model_path = Path(f"{hparams.data_folder}/models/{hparams.model_name}.ckpt")
+    model_path = Path(f"models/{hparams.model_name}.ckpt")
     if model_path.exists():
         model_path.unlink()
     model_path.parent.mkdir(parents=True, exist_ok=True)
