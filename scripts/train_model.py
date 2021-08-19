@@ -26,7 +26,6 @@ data_folder = str(Path(module_path) / "data")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="Uganda5")
     parser.add_argument("--target_bbox_key", type=str, default="Uganda")
     parser.add_argument("--train_datasets", type=str, default=all_datasets_str)
     parser.add_argument("--eval_datasets", type=str, default="Uganda,")
@@ -38,3 +37,5 @@ if __name__ == "__main__":
     model_args = Model.add_model_specific_args(parser).parse_args()
     model = Model(model_args)
     train_model(model, model_args)
+
+    print("Done")

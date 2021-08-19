@@ -1,6 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -8,8 +9,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
 
-    if not hparams.model_name:
-        raise ValueError("model_name must be set.")
+    if not hparams.target_bbox_key:
+        raise ValueError("target_bbox_key must be set.")
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
@@ -19,7 +20,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
         mode="min",
     )
 
-    logger = TensorBoardLogger("tb_logs", name=hparams.model_name)
+    logger = TensorBoardLogger("tb_logs", name=hparams.target_bbox_key)
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
@@ -50,10 +51,18 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
 
     logger.experiment.add_hparams(vars(hparams), trainer.callback_metrics)
 
-    model_path = Path(f"{hparams.model_dir}/{hparams.model_name}.ckpt")
-    if model_path.exists():
-        model_path.unlink()
-    model_path.parent.mkdir(parents=True, exist_ok=True)
-    trainer.save_checkpoint(model_path)
+    model_path_prefix = f"{hparams.model_dir}/{hparams.target_bbox_key}"
+    model_ckpt_path = Path(f"{model_path_prefix}.ckpt")
+    model_pt_path = Path(f"{model_path_prefix}.pt")
+
+    for p in [model_ckpt_path, model_pt_path]:
+        if p.exists():
+            p.unlink()
+
+    model_ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+    trainer.save_checkpoint(model_ckpt_path)
+
+    sm = torch.jit.script(model)
+    sm.save(model_pt_path)
 
     return model
