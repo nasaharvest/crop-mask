@@ -63,6 +63,6 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     trainer.save_checkpoint(model_ckpt_path)
 
     sm = torch.jit.script(model)
-    sm.save(model_pt_path)
+    sm.save(str(model_pt_path))
 
     return model
