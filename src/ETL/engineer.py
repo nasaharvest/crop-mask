@@ -122,8 +122,8 @@ class Engineer(ABC):
                 "No tifs exist, please export them from Google Earth Engine using export_for_labeled"
             )
         elif len(labels_with_no_tif) > 0:
-            logger.warning(
-                f"{len(labels_with_no_tif)} labels have no tif file. These labels will be ignored."
+            print(
+                f"{len(labels_with_no_tif)} labels will be ignored because they have no tif file."
             )
             labels = labels[existing_tifs]
 
