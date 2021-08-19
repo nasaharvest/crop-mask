@@ -583,5 +583,5 @@ class Model(pl.LightningModule):
 
     def save(self):
         sm = torch.jit.script(self)
-        model_path = f"{self.data_folder}/models/{self.hparams.model_name}.pt"
+        model_path = f"{self.hparams.model_dir}/{self.hparams.target_bbox_key}.pt"
         sm.save(model_path)
