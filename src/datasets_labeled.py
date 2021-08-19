@@ -379,7 +379,7 @@ labeled_datasets = [
         processors=(
             Processor(
                 filename="Eastern_training_data_20210427.geojson",
-                crop_prob=1.0,
+                crop_prob=lambda df: df["Class"],
                 end_year=2021,
                 train_val_test=(1.0, 0.0, 0.0),
             ),
