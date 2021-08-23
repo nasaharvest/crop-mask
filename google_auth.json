@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "bsos-geog-harvest1",
+  "private_key_id": "2a88c7080bc79a6d6cb0ae50ebbb2ec1e29f0971",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDBOI76gMSUSgZ7\n9hkQTWQWml/+3q7ZR4uxHpczk6jB7IKvDbL5gIfME1D+x92djM7VqoeN7olougGF\nRaDbtOjczGSlYQY716KtPZnevzFpmfUbQBSujg+9crQOzefWksfdUZaWgLAz912S\neToKuoeJvwZD1luJas2kmD1WOtESaCyD7BkTwtaVi+r2M84nn9Q54s8Mr3PrPYE1\ncf6AmpA5ksFW+mK1jtgBkhrzfQ5koZ4M7/SaKHpt7rsdIRFyTtzyy34xaHLd9UTf\n0TVGnooXi2zaxdJzD1eCO6sxIwcObCxwEZox9bOjsp/Ui1yeZn9vGT2FkKAfRf3E\noHBqOPWrAgMBAAECggEABF5zSfyf7L/JWXsjma0qkjLvI/C3vHfcnDeWMPuQJhjJ\nnuGM80Benn966m5LCIl8IrglduqDdsBZr2KQum+WGa5mhg9QGl8YxtSzWXMYvu3/\nueBp25IpKGrv0GbysOxxQYxjy4+pn37rUrolIdU81XamKAQfd9/6F/7vpj9+v4ax\n9bbBlCkUsBFivrW27eacoOGovPzJC8QI1oVKebItyrd3ycCX/ztGG9OkTuwo200p\nK8qMPDIoRAQPYqYCZNRmLqASunoqpU+TRC+WyebfCQHzJ1t0tWZcbcRsHMWPbv/z\nM0sFdPZzRdHlkpkwh9438/tn/w6AUDPCGhdEsEGqwQKBgQDlEHuifiQFjO7Q2nNS\niyue4Z3mJ1CN+Z97qHmHblC60iebKZgaB7SOjoTn64DqTmrya2EXv477ygSQwygs\nJE3SviFojMxcoMuh2AqOVlkPIIt2lvEKEhJOZTZ4o2c5vHUi3ZPVIe9QpQhePF8I\nWv+lk2wcMNCdlko1ahu2EIKrUwKBgQDX8RTRYy1XuO0kmGy5dG5V3T2sdUznI3Xi\nX7uHgiqwHlJBGb0yRi/45MR7DZ3U8WEQQ3GPE+jWEg2aYbN5tMKO3aq52Xq5UV8R\nc1u4mfnEU3j0bUGVgpgzA1oBp0nutwGq5R8/MRJeqe2e17sDmYjhTzvCskwelYw4\n8mX7KHkZSQKBgQCfT5NtM+XBpn8B6qyCICC6Y5f51iYEWDQ/QLElK+ghxr+c/pS2\npd1BuIVe9z+1tcxTxbLFXYkIPTxnohNyf91QUMPTfvkzAvIdIbBVxmAyUSQt2lTR\n+DebJnF3/c1xLk0Zbpm+hdd3cxAa2koN+ZwLgDiUcq7kqv35oE6dlWYL2QKBgDRR\nPl/0jVnBfgLtwvmzkb/P2E9eJAGj/72WwBJ2oO0Gi5smJ0Z05s6AbnH5vJGI4aFV\nFcA6bKDgwtbycM890h1W6zQX0rnvUv8hWcmB1JeSOa3OgqM8fq9tUnMwGqNxR0Am\nPsnKk87HkMB5N+AJZLZhwfLLy9FlHhH1+Gs/RQexAoGANGuKiPHgKax2+nVt4BgY\ndq+kr3Gf8nWwuP3meX4raCzo2UEfn1g9YuHo5/bDhbvXRlAyoeabjPLfU/5O095K\niB22sJJ/UHtxlWrYUR7cKQBJIzrpJ/h2BONeXjyr77pDsWusw4Yo2erbALE1xIVX\nHbjbtamKpUxFV7vZwcffCNE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "bsos-geog-harvest1@appspot.gserviceaccount.com",
+  "client_id": "102448987558585551677",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bsos-geog-harvest1%40appspot.gserviceaccount.com"
+}
