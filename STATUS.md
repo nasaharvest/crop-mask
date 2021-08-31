@@ -12,15 +12,15 @@
 [Kenya Zenodo]: https://zenodo.org/record/4271144#.YK07oJNKhTZ
 [Togo Zenodo]: https://zenodo.org/record/3836629#.YK08FJNKhTY
 
-|Country            |Season         |Steps Complete |Link   |
-|---                |:---:          |:---:          |:---:  |
-|Kenya              |2019/20        |![Step 7]     |[Kenya Zenodo]   |
-|Togo               |2019/20        |![Step 7]     |[Togo Zenodo]   |
-|Mali (lower USAID) |2020/21        |![Step 5]      |       |
-|Mali (upper USAID) |2020/21        |![Step 5]      |       |
-|Rwanda             |2019/20        |![Step 5]      |       |
-|Uganda             |2020/21        |![Step 5]      |       |
-|Uganda (Maize)     |2020/21        |![Step 0]      |       |
+|Country            |Season         |Steps Complete |Link   |Notes  |
+|---                |:---:          |:---:          |:---:  |:---:  |
+|Kenya              |2019/20        |![Step 7]     |[Kenya Zenodo]   |  |
+|Togo               |2019/20        |![Step 7]     |[Togo Zenodo]   |   |
+|Mali (lower USAID) |2020/21        |![Step 0]      |       | Gathering labels on CEO      |
+|Mali (upper USAID) |2020/21        |![Step 0]      |       |Gathering labels on CEO       |
+|Rwanda             |2019/20        |![Step 3]      |       |Going back to step 2       |
+|Uganda             |2020/21        |![Step 3]      |       |Going back to step 2       |
+|Uganda (Maize)     |2020/21        |![Step 0]      |       |       |
 
 ### Steps for generating crop map:
 ![Image](diagrams/Steps.png)

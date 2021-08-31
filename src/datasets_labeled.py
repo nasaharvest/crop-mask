@@ -224,7 +224,11 @@ labeled_datasets = [
                     filename=filename,
                     crop_prob=lambda df: df["Crop/ or not"] == "Cropland",
                     x_y_from_centroid=False,
-                    train_val_test=(0.8, 0.1, 0.1),
+                    train_val_test=(
+                        0.1,
+                        0.45,
+                        0.45,
+                    ),  # this makes about 525 for validation and test
                     end_year=2020,
                 )
                 for filename in [
@@ -259,7 +263,11 @@ labeled_datasets = [
                     filename=filename,
                     crop_prob=lambda df: df["Crop/non-crop"] == "Cropland",
                     x_y_from_centroid=False,
-                    train_val_test=(0.8, 0.1, 0.1),
+                    train_val_test=(
+                        0.10,
+                        0.45,
+                        0.45,
+                    ),  # this makes about 525 for validation and test
                     end_year=2020,
                 )
                 for filename in [
