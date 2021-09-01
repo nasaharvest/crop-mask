@@ -109,7 +109,7 @@ class IntegrationTestLabeledData(TestCase):
                     all_subsets_correct_size = False
                     print(
                         f"\u2716 {subset}: {labels_in_subset} labels, "
-                        + "but {features_in_subset} features"
+                        + f"but {features_in_subset} features"
                     )
                 else:
                     print(f"\u2714 {subset} amount")
