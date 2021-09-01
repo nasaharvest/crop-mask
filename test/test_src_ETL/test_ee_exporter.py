@@ -9,7 +9,6 @@ import shutil
 
 from src.ETL.ee_exporter import (
     Season,
-    BoundingBox,
     LabelExporter,
     RegionExporter,
     EarthEngineExporter,

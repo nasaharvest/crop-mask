@@ -10,7 +10,7 @@ import ee
 import sys
 
 from src.bounding_boxes import bounding_boxes
-from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
+from src.ETL.ee_boundingbox import EEBoundingBox
 from src.ETL import cloudfree
 from src.ETL.constants import (
     START,

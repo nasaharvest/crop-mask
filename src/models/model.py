@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
-from torch.utils import data
 from src.ETL.dataset import LabeledDataset
 import numpy as np
 import logging

@@ -1,4 +1,3 @@
-from os import stat
 from pathlib import Path
 import numpy as np
 import pickle
@@ -13,7 +12,7 @@ from torch.utils.data import Dataset
 
 from src.ETL.constants import BANDS
 
-from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
+from typing import cast, Tuple, Optional, List, Dict, Union
 from src.ETL.dataset import LabeledDataset, DataDir
 from src.ETL.ee_boundingbox import BoundingBox
 

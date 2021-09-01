@@ -119,7 +119,7 @@ class Engineer(ABC):
         labels_with_no_tif = labels[~existing_tifs]
         if len(labels_with_no_tif) == len(labels):
             raise ValueError(
-                "No tifs exist, please export them from Google Earth Engine using export_for_labeled"
+                "No tifs exist, please export them from Google EarthEngine using export_for_labeled"
             )
         elif len(labels_with_no_tif) > 0:
             print(

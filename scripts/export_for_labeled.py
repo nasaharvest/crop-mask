@@ -4,11 +4,10 @@ and exports datasets using Google Earth Engine
 (locally, or to Google Drive)
 """
 import os
+import sys
 
 # Change the working directory to the directory of this script
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
-import sys
 
 sys.path.append("..")
 from src.datasets_labeled import labeled_datasets  # noqa: E402
