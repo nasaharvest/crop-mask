@@ -145,3 +145,31 @@ class IntegrationTestLabeledData(TestCase):
                 print(f"\u2714 Duplicates: {num_dupes}")
 
         self.assertTrue(no_duplicates, "Check logs for duplicates.")
+
+    def test_features_for_closeness(self):
+        no_mismatches = True
+        print("\n")
+        for d in labeled_datasets:
+            print("------------------------------")
+            print(d.dataset)
+
+            features = []
+            for subset in ["training", "validation", "testing"]:
+                features_dir = d.get_path(DataDir.FEATURES_DIR)
+                if (features_dir / subset).exists():
+                    for p in (features_dir / subset).iterdir():
+                        with p.open("rb") as f:
+                            features.append(pickle.load(f))
+            features_df = pd.DataFrame([feat.__dict__ for feat in features])
+            label_tif_mismatch = features_df[
+                (features_df["label_lon"] - features_df["instance_lon"]) > 0.0001
+            ]
+            num_mismatched = len(label_tif_mismatch)
+
+            if num_mismatched > 0:
+                no_mismatches = False
+                print(f"\u2716 Mismatches: {num_mismatched}")
+            else:
+                print(f"\u2714 Mismatches: {num_mismatched}")
+
+        self.assertTrue(no_mismatches, "Check logs for mismatched.")
