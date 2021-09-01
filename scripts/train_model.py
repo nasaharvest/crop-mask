@@ -11,9 +11,8 @@ module_path = os.path.abspath(os.getcwd())
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from src.datasets_labeled import labeled_datasets
-from src.models import Model, train_model
-from src.generate_metrics import get_metrics  # noqa: E402
+from src.datasets_labeled import labeled_datasets  # noqa: E402
+from src.models import Model, train_model  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

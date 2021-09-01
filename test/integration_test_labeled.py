@@ -11,13 +11,13 @@ from pprint import pprint
 sys.path.append("..")
 
 from utils import get_dvc_dir  # noqa: E402
-from src.ETL.constants import (
+from src.ETL.constants import (  # noqa: E402
     CROP_PROB,
     DEST_TIF,
     SUBSET,
     GEOWIKI_UNEXPORTED,
     UGANDA_UNEXPORTED,
-)  # noqa: E402
+)
 from src.ETL.dataset import LabeledDataset, DataDir  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
@@ -68,17 +68,17 @@ class IntegrationTestLabeledData(TestCase):
             actual = self.get_files(parent_tif_dir, extension=".tif")
             if len(actual) == 0:
                 all_labels_have_tifs = False
-                print(f"\u2716 WARNING: 0 tifs found")
+                print("\u2716 WARNING: 0 tifs found")
                 continue
 
             difference = list(set(expected) - set(actual))
             if len(difference) == 0:
-                print(f"\u2714 Labels == tifs")
+                print("\u2714 Labels == tifs")
                 continue
 
             difference_old = list(set(expected_old) - set(actual))
             if len(difference_old) == 0:
-                print(f"\u2714 Labels == tifs (organized with previous convention)")
+                print("\u2714 Labels == tifs (organized with previous convention)")
             elif len(difference_old) < len(difference):
                 all_labels_have_tifs = False
                 print(f"\u2716 Difference: {len(difference_old)}")
@@ -108,7 +108,8 @@ class IntegrationTestLabeledData(TestCase):
                 if labels_in_subset != features_in_subset:
                     all_subsets_correct_size = False
                     print(
-                        f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features"
+                        f"\u2716 {subset}: {labels_in_subset} labels, "
+                        + "but {features_in_subset} features"
                     )
                 else:
                     print(f"\u2714 {subset} amount")

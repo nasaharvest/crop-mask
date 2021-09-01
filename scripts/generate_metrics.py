@@ -6,7 +6,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 sys.path.append("..")
 
-from src.generate_metrics import get_metrics_for_all_models
+from src.generate_metrics import get_metrics_for_all_models  # noqa: E402
 
 if __name__ == "__main__":
     get_metrics_for_all_models(test_mode=False)
