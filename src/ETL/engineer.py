@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
-from typing import Dict, Tuple, Optional, Union
+from typing import Tuple, Optional
 import numpy as np
 import logging
 import pandas as pd
