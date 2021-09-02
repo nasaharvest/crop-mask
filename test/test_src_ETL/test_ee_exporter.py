@@ -9,12 +9,11 @@ import shutil
 
 from src.ETL.ee_exporter import (
     Season,
-    BoundingBox,
     LabelExporter,
     RegionExporter,
     EarthEngineExporter,
 )
-from src.ETL.constants import LAT, LON, START, END
+from src.ETL.constants import DEST_TIF, LAT, LON, START, END
 
 module = "src.ETL.ee_exporter"
 
@@ -43,6 +42,7 @@ class TestEEExporters(TestCase):
                 LON: [1],
                 END: ["2020-04-16"],
                 START: ["2019-04-22"],
+                DEST_TIF: ["tmp/0_2019-04-22_2020-04-16.tif"],
             }
         )
         mock_poly_return = "mock_poly"
@@ -55,7 +55,7 @@ class TestEEExporters(TestCase):
         )
 
         mock_export_for_polygon.assert_called_with(
-            file_name_prefix="mock_dataset_name/0_2019-04-22_2020-04-16",
+            file_name_prefix="mock_dataset_name/tmp/0_2019-04-22_2020-04-16.tif",
             polygon=mock_poly_return,
             start_date=date(2019, 4, 22),
             end_date=date(2020, 4, 16),
@@ -127,10 +127,8 @@ class TestEEExporters(TestCase):
     def test_export_for_region_metres_per_polygon_none(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        region_name = "test_region_name"
-        RegionExporter(sentinel_dataset=region_name,).export(
+        RegionExporter(sentinel_dataset="Togo").export(
             season=Season.post_season,
-            region_bbox=BoundingBox(0, 1, 0, 1),
             metres_per_polygon=None,
         )
         mock_base_ee.Initialize.assert_called()
@@ -151,14 +149,12 @@ class TestEEExporters(TestCase):
     def test_export_for_region_metres_per_polygon_set(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        region_name = "test_region_name"
-        RegionExporter(sentinel_dataset=region_name).export(
+        RegionExporter(sentinel_dataset="Togo").export(
             season=Season.post_season,
-            region_bbox=BoundingBox(0, 1, 0, 1),
             metres_per_polygon=10000,
         )
         mock_base_ee.Initialize.assert_called()
-        expected_polygon_count = 121
+        expected_polygon_count = 1155
         expected_image_colls_to_export = 12 * expected_polygon_count
         self.assertEqual(mock_ee_polygon.call_count, expected_polygon_count)
         self.assertEqual(mock_cloudfree_ee.DateRange.call_count, expected_image_colls_to_export * 3)

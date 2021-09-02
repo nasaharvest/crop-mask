@@ -1,6 +1,8 @@
 [core]
-    remote = gsremote
+    remote = gsremote2
 ['remote "s3remote"']
     url = s3://crop-mask-data/remote/
 ['remote "gsremote"']
     url = gs://crop-mask-data/remote/
+['remote "gsremote2"']
+    url = gs://crop-mask-dvc-data/remote/

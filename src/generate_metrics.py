@@ -14,7 +14,7 @@ def get_metrics(
     model: pl.LightningModule, test_mode: bool, alternate_test_sets: Tuple[str, ...] = ()
 ):
     if alternate_test_sets:
-        model.datasets = model.load_datasets(list(alternate_test_sets))
+        model.eval_datasets = model.load_datasets(list(alternate_test_sets))
 
     trainer = pl.Trainer()
     if test_mode:
@@ -30,11 +30,16 @@ def get_metrics(
         if (not k.startswith("encoded")) and ("_global_" not in k)
     }
 
-    train_dataset = model.get_dataset("training", include_geowiki=False)
+    local_train_dataset = model.get_dataset("training", is_local_only=True)
+    local_global_dataset = model.get_dataset("training", is_global_only=True)
     data = {
-        "local_train_crop_percentage": train_dataset.crop_percentage,
-        "local_train_original_size": train_dataset.original_size,
-        "local_train_upsamepled_size": len(train_dataset),
+        "training_datasets": model.hparams.train_datasets,
+        "local_train_crop_percentage": local_train_dataset.crop_percentage,
+        "local_train_original_size": local_train_dataset.original_size,
+        "local_train_upsamepled_size": len(local_train_dataset),
+        "global_train_crop_percentage": local_global_dataset.crop_percentage,
+        "global_train_original_size": local_global_dataset.original_size,
+        "global_train_upsampled_size": len(local_global_dataset),
     }
 
     return {"metrics": metrics, "data": data}
@@ -49,20 +54,21 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
         model = Model.load_from_checkpoint(str(model_path))
 
-        metric_dataset = model.get_dataset(metric_type, include_geowiki=False, upsample=False)
-        country_key = "_".join(metric_dataset.countries)
+        local_dataset = model.get_dataset(metric_type, is_local_only=True, upsample=False)
 
-        if country_key not in model_metrics:
-            model_metrics[country_key] = {
-                f"local_{metric_type}_dataset_size": len(metric_dataset),
-                f"local_{metric_type}_crop_percentage": metric_dataset.crop_percentage,
+        key = model.hparams.target_bbox_key
+
+        if key not in model_metrics:
+            model_metrics[key] = {
+                f"local_{metric_type}_dataset_size": len(local_dataset),
+                f"local_{metric_type}_crop_percentage": local_dataset.crop_percentage,
                 "models": {},
             }
 
-        if model_path.name not in model_metrics[country_key]["models"]:
+        if model_path.name not in model_metrics[key]["models"]:
             metrics = get_metrics(model, test_mode)
             print(f"\n{metrics}")
-            model_metrics[country_key]["models"][model_path.name] = metrics
+            model_metrics[key]["models"][model_path.name] = metrics
 
     for country_key, value in model_metrics.items():
         model_metrics[country_key]["models"] = OrderedDict(sorted(value["models"].items()))
