@@ -61,7 +61,7 @@ class CropDataset(Dataset):
         # init function
         self.noise_factor = 0
 
-        all_pickle_files: List[str] = []
+        all_pickle_files: List[Path] = []
         for dataset in datasets:
             pickle_files = self.load_pickle_files(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
@@ -88,7 +88,7 @@ class CropDataset(Dataset):
                     self._update_normalizing_values(normalizing_dict_interim, labelled_array)
 
         if normalizing_dict:
-            self.normalizing_dict = normalizing_dict
+            self.normalizing_dict: Optional[Dict] = normalizing_dict
         else:
             self.normalizing_dict = self._calculate_normalizing_dict(
                 norm_dict=normalizing_dict_interim
@@ -156,7 +156,7 @@ class CropDataset(Dataset):
     @staticmethod
     def load_pickle_files(
         features_dir: Path, subset_name: str, limit: Optional[int] = None, file_suffix: str = "pkl"
-    ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
+    ) -> List[Path]:
 
         pickle_files_dir = features_dir / subset_name
         if not pickle_files_dir.exists():
@@ -275,7 +275,7 @@ class CropDataset(Dataset):
         return new_files
 
     @property
-    def num_output_classes(self) -> Union[int, Tuple[int, int]]:
+    def num_output_classes(self) -> Tuple[int, int]:
         return 1, 1
 
     @property
@@ -301,11 +301,6 @@ class CropDataset(Dataset):
             if is_local and (is_global == 0) or (not is_local and (is_global == 1)):
                 instances_per_class[int(class_int)] += 1
         return instances_per_class
-
-    def is_pickle_file_local(self, target_file: str) -> bool:
-        with target_file.open("rb") as f:
-            target_datainstance = pickle.load(f)
-        return target_datainstance.isin(self.target_bbox)
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
