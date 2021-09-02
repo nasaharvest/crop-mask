@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
-from typing import Dict, Tuple, Optional, Union
+from typing import Tuple, Optional
 import numpy as np
 import logging
 import pandas as pd
@@ -29,7 +29,6 @@ class Engineer(ABC):
     sentinel_files_path: Path
     labels_path: Path
     save_dir: Path
-    is_global: bool
     nan_fill: float = 0.0
     max_nan_ratio: float = 0.3
     add_ndvi: bool = True
@@ -46,61 +45,12 @@ class Engineer(ABC):
         if not mandatory_cols.issubset(set(self.labels.columns)):
             raise ValueError(f"{self.labels_path} is missing one of {mandatory_cols}")
         self.save_dir.mkdir(exist_ok=True, parents=True)
-        self.normalizing_dict_interim: Dict[str, Union[np.ndarray, int]] = {"n": 0}
 
     @staticmethod
     def _find_nearest(array, value: float) -> Tuple[float, int]:
         array = np.asarray(array)
         idx = (np.abs(array - value)).argmin()
         return array[idx], idx
-
-    @staticmethod
-    def _update_normalizing_values(
-        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
-    ) -> None:
-        # given an input array of shape [timesteps, bands]
-        # update the normalizing dict
-        # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-        # https://www.johndcook.com/blog/standard_deviation/
-        num_bands = array.shape[1]
-
-        # initialize
-        if "mean" not in norm_dict:
-            norm_dict["mean"] = np.zeros(num_bands)
-            norm_dict["M2"] = np.zeros(num_bands)
-
-        for time_idx in range(array.shape[0]):
-            norm_dict["n"] += 1
-
-            x = array[time_idx, :]
-
-            delta = x - norm_dict["mean"]
-            norm_dict["mean"] += delta / norm_dict["n"]
-            norm_dict["M2"] += delta * (x - norm_dict["mean"])
-
-    def _update_batch_normalizing_values(
-        self, norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
-    ) -> None:
-
-        assert len(array.shape) == 3, "Expected array of shape [batch, timesteps, bands]"
-
-        for idx in range(array.shape[0]):
-            subarray = array[idx, :, :]
-            self._update_normalizing_values(norm_dict, subarray)
-
-    def _calculate_normalizing_dict(
-        self, norm_dict: Dict[str, Union[np.ndarray, int]]
-    ) -> Optional[Dict[str, np.ndarray]]:
-
-        if "mean" not in norm_dict:
-            logger.warning(
-                "No normalizing dict calculated! Make sure to call _update_normalizing_values"
-            )
-            return None
-
-        variance = norm_dict["M2"] / (norm_dict["n"] - 1)
-        std = np.sqrt(variance)
-        return {"mean": norm_dict["mean"], "std": std}
 
     @staticmethod
     def distance(lat1, lon1, lat2, lon2):
@@ -119,7 +69,6 @@ class Engineer(ABC):
     def _create_labeled_data_instance(
         self,
         path_to_file: Path,
-        calculate_normalizing_dict: bool,
         start_date: datetime,
         end_date: datetime,
         days_per_timestep: int,
@@ -173,9 +122,6 @@ class Engineer(ABC):
             add_ndwi=self.add_ndwi,
         )
 
-        if (row[SUBSET] != "testing") and calculate_normalizing_dict:
-            self._update_normalizing_values(self.normalizing_dict_interim, labelled_array)
-
         if labelled_array is None:
             return None
 
@@ -183,7 +129,6 @@ class Engineer(ABC):
             crop_probability=row[CROP_PROB],
             instance_lat=closest_lat,
             instance_lon=closest_lon,
-            is_global=self.is_global,
             label_lat=row[LAT],
             label_lon=row[LON],
             labelled_array=labelled_array,
@@ -197,7 +142,6 @@ class Engineer(ABC):
         self,
         checkpoint: bool = True,
         include_extended_filenames: bool = True,
-        calculate_normalizing_dict: bool = True,
         days_per_timestep: int = 30,
     ):
         logger.info(f"Creating pickled labeled dataset: {self.save_dir}")
@@ -224,7 +168,6 @@ class Engineer(ABC):
 
             instance = self._create_labeled_data_instance(
                 file_path,
-                calculate_normalizing_dict=calculate_normalizing_dict,
                 start_date=start_date,
                 end_date=end_date,
                 days_per_timestep=days_per_timestep,
@@ -235,15 +178,3 @@ class Engineer(ABC):
                 save_path = subset_path / f"{filename}.pkl"
                 with save_path.open("wb") as f:
                     pickle.dump(instance, f)
-
-        if calculate_normalizing_dict:
-            normalizing_dict = self._calculate_normalizing_dict(
-                norm_dict=self.normalizing_dict_interim
-            )
-
-            if normalizing_dict is not None:
-                save_path = self.save_dir / "normalizing_dict.pkl"
-                with save_path.open("wb") as f:
-                    pickle.dump(normalizing_dict, f)
-            else:
-                logger.warning("No normalizing dict calculated!")

@@ -38,7 +38,6 @@ class TestEngineer(TestCase):
             sentinel_files_path=Path("mock_sentinel_path"),
             labels_path=Path("mock_labels_path"),
             save_dir=Path("mock_features_path"),
-            is_global=False,
             nan_fill=0,
             max_nan_ratio=0,
             add_ndvi=False,
@@ -53,7 +52,6 @@ class TestEngineer(TestCase):
     def generate_data_kwargs():
         return {
             "path_to_file": Path("mock_file"),
-            "calculate_normalizing_dict": False,
             "start_date": datetime(2020, 1, 1, 0, 0, 0),
             "end_date": datetime(2021, 1, 1, 0, 0, 0),
             "days_per_timestep": 30,
@@ -67,39 +65,6 @@ class TestEngineer(TestCase):
         val, idx = Engineer._find_nearest(xr.DataArray([1.0, 2.0, 3.0, -4.0, -5.0]), -1.0)
         self.assertEqual(val, 1.0)
         self.assertEqual(idx, 0)
-
-    def test_update_normalizing_values(self):
-        norm_dict = {"n": 0}
-        array = np.array([[1, 2, 3], [2, 3, 4]])
-        Engineer._update_normalizing_values(norm_dict, array)
-        self.assertEqual(norm_dict["n"], array.shape[0])
-        self.assertTrue(np.allclose(norm_dict["mean"], np.array([1.5, 2.5, 3.5])))
-        self.assertTrue(np.allclose(norm_dict["M2"], np.array([0.5, 0.5, 0.5])))
-
-        array2 = np.array([[3, 4, 5], [4, 5, 6]])
-        Engineer._update_normalizing_values(norm_dict, array2)
-        self.assertEqual(norm_dict["n"], array.shape[0] + array2.shape[0])
-        self.assertTrue(np.allclose(norm_dict["mean"], np.array([2.5, 3.5, 4.5])))
-        self.assertTrue(np.allclose(norm_dict["M2"], np.array([5.0, 5.0, 5.0])))
-
-    def test_update_batch_normalizing_values(self):
-        norm_dict = {"n": 0}
-        array = np.array([[[1, 2, 3], [2, 3, 4]], [[3, 4, 5], [4, 5, 6]]])
-        self.engineer._update_batch_normalizing_values(norm_dict, array)
-        self.assertEqual(norm_dict["n"], array.shape[0] * array.shape[1])
-        self.assertTrue(np.allclose(norm_dict["mean"], np.array([2.5, 3.5, 4.5])))
-        self.assertTrue(np.allclose(norm_dict["M2"], np.array([5.0, 5.0, 5.0])))
-
-    def test_calculate_normalizing_dict(self):
-        norm_dict = {"n": 4, "mean": np.array([2.5, 3.5, 4.5]), "M2": np.array([5.0, 5.0, 5.0])}
-        normalizing_dict = self.engineer._calculate_normalizing_dict(norm_dict)
-        self.assertTrue(np.allclose(normalizing_dict["mean"], norm_dict["mean"]))
-        self.assertTrue(
-            np.allclose(normalizing_dict["std"], np.array([1.29099445, 1.29099445, 1.29099445]))
-        )
-        empty_norm_dict = {}
-        normalizing_dict = self.engineer._calculate_normalizing_dict(empty_norm_dict)
-        self.assertIsNone(normalizing_dict)
 
     @patch("src.ETL.engineer.load_tif")
     def test_create_labeled_data_instance_no_overlap(self, mock_load_tif):
@@ -123,7 +88,6 @@ class TestEngineer(TestCase):
             crop_probability=0.0,
             instance_lat=30,
             instance_lon=20,
-            is_global=False,
             label_lat=30,
             label_lon=20,
             labelled_array=0.0,

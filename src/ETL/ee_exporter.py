@@ -9,13 +9,20 @@ import pandas as pd
 import ee
 import sys
 
-from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
+from src.bounding_boxes import bounding_boxes
+from src.ETL.ee_boundingbox import EEBoundingBox
 from src.ETL import cloudfree
-from src.ETL.constants import START, END, LAT, LON, SOURCE, GEOWIKI_UNEXPORTED
+from src.ETL.constants import (
+    START,
+    END,
+    LAT,
+    LON,
+    GEOWIKI_UNEXPORTED,
+    UGANDA_UNEXPORTED,
+    DEST_TIF,
+)
 
 logger = logging.getLogger(__name__)
-
-DEST_FOLDER = "DEST_FOLDER"
 
 
 class Season(Enum):
@@ -142,7 +149,6 @@ class RegionExporter(EarthEngineExporter):
 
     def export(
         self,
-        region_bbox: BoundingBox,
         dest_bucket: Optional[str] = None,
         model_name: Optional[str] = None,
         end_date: Optional[date] = None,
@@ -154,7 +160,6 @@ class RegionExporter(EarthEngineExporter):
         data from (end_date - timedelta(days=days_per_timestep * num_timesteps)) to end_date
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
-        :param region_bbox: BoundingBox for region
         :param dest_bucket: The name of the destination GCP bucket
         :param model_name: The name of the model that data will be fed to
         :param season: The season for which the data should be exported
@@ -163,6 +168,10 @@ class RegionExporter(EarthEngineExporter):
             boxes of (max) area metres_per_polygon * metres_per_polygon. It is better to instead
             split the area once it has been exported
         """
+        if self.sentinel_dataset not in bounding_boxes:
+            raise ValueError(f"{self.sentinel_dataset} was not found in bounding_boxes.py")
+        region_bbox = bounding_boxes[self.sentinel_dataset]
+
         if season is None and end_date is None:
             raise ValueError("One of season or end_date must be specified.")
 
@@ -234,45 +243,34 @@ class LabelExporter(EarthEngineExporter):
 
         if self.sentinel_dataset == "earth_engine_geowiki":
             labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
+        elif self.sentinel_dataset == "earth_engine_uganda":
+            labels = labels[~labels.index.isin(UGANDA_UNEXPORTED)]
 
         # Check if exported files for labels already exist
         if output_folder and (output_folder / self.sentinel_dataset).exists():
-            num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
+            num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*.tif")))
             if num_files >= len(labels):
                 logger.info("All tif files are already exported.")
                 return
 
-        labels[DEST_FOLDER] = self.sentinel_dataset
-        if SOURCE in labels:
-            source_filename_safe = (
-                labels[SOURCE].str.split(",").str[0].str.replace(r"[^\w\d-]", "_")
-            )
-            labels[DEST_FOLDER] = self.sentinel_dataset + "/" + source_filename_safe
-
-            # Check if exported files for specific dataset sources already exist
-            for source_dataset in labels[DEST_FOLDER].unique():
-                if output_folder and (output_folder / source_dataset).exists():
-                    num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*")))
-                    if num_files >= len(labels[labels[DEST_FOLDER] == source_dataset]):
-                        logger.info(f"All tifs for {source_dataset} files are already exported.")
-                        labels = labels[labels[DEST_FOLDER] != source_dataset]
-
         if len(labels) == 0:
             return
 
+        already_exported = 0
         with tqdm(total=len(labels), position=0, leave=True) as pbar:
-            for idx, row in tqdm(labels.iterrows()):
-                bbox = EEBoundingBox.from_centre(
-                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
-                )
-                start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
-                end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
-
-                file_name_prefix = f"{row[DEST_FOLDER]}/{idx}_{str(start_date)}_{str(end_date)}"
-                if output_folder and (output_folder / f"{file_name_prefix}.tif").exists():
+            for _, row in tqdm(labels.iterrows()):
+                file_name_prefix = f"{self.sentinel_dataset}/{row[DEST_TIF]}"
+                if output_folder and (output_folder / file_name_prefix).exists():
+                    already_exported += 1
                     pbar.update(1)
                     continue
 
+                bbox = EEBoundingBox.from_centre(
+                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+                )
+
+                start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
+                end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
                 self._export_for_polygon(
                     file_name_prefix=file_name_prefix,
                     polygon=bbox.to_ee_polygon(),
@@ -280,3 +278,5 @@ class LabelExporter(EarthEngineExporter):
                     end_date=end_date,
                 )
                 pbar.update(1)
+
+        print(f"Already exported: {already_exported}")

@@ -36,11 +36,12 @@ def export(
     file_dimensions: Optional[int] = None,
 ) -> ee.batch.Export:
 
+    description = f"{str(Path(file_name_prefix).parent.stem)}-{str(Path(file_name_prefix).stem)}"
     if dest_bucket:
         task = ee.batch.Export.image.toCloudStorage(
             image=image.clip(region),
             bucket=dest_bucket,
-            description=Path(file_name_prefix).stem,
+            description=description,
             fileNamePrefix=file_name_prefix,
             scale=10,
             region=region,
@@ -50,7 +51,7 @@ def export(
     else:
         task = ee.batch.Export.image.toDrive(
             image=image.clip(region),
-            description=Path(file_name_prefix).stem,
+            description=description,
             folder=str(Path(file_name_prefix).parent.stem),
             fileNamePrefix=Path(file_name_prefix).stem,
             scale=10,

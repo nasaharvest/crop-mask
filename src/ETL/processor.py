@@ -7,7 +7,7 @@ from src.utils import set_seed
 from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
 import logging
 import xarray as xr
-import geopandas
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 
@@ -28,10 +28,14 @@ class Processor:
     end_year: Optional[int] = None
     custom_start_date: Optional[date] = None
 
+    latitude_col: Optional[str] = None
+    longitude_col: Optional[str] = None
+
     plant_date_col: Optional[str] = None
     harvest_date_col: Optional[str] = None
 
     clean_df: Optional[Callable] = None
+    sample_from_polygon: bool = False
     x_y_from_centroid: bool = True
     transform_crs_from: Optional[int] = None
 
@@ -49,12 +53,17 @@ class Processor:
             overlap_days = (min(end1, end2) - max(start1, start2)).days
             return overlap_days
 
+        def _to_date(d):
+            if type(d) == np.datetime64:
+                return d.astype("M8[D]").astype("O")
+            elif type(d) == str:
+                return pd.to_datetime(d).date()
+            else:
+                return d.date()
+
         def compute_end_date(planting_date, harvest_date):
-            to_date = (
-                lambda d: d.astype("M8[D]").astype("O") if type(d) == np.datetime64 else d.date()
-            )
-            planting_date = to_date(planting_date)
-            harvest_date = to_date(harvest_date)
+            planting_date = _to_date(planting_date)
+            harvest_date = _to_date(harvest_date)
             potential_end_dates = [
                 date(harvest_date.year + diff, *end_month_day) for diff in [2, 1, 0, -1]
             ]
@@ -68,7 +77,7 @@ class Processor:
         return np.vectorize(compute_end_date)(planting_date_col, harvest_date_col)
 
     def train_val_test_split(self, df: pd.DataFrame):
-        train, val, test = self.train_val_test
+        _, val, test = self.train_val_test
         random_float = np.random.rand(len(df))
 
         df[SUBSET] = "testing"
@@ -81,18 +90,49 @@ class Processor:
 
         return df
 
+    @staticmethod
+    def get_points(polygon, samples: int) -> gpd.GeoSeries:
+
+        # find the bounds of your geodataframe
+        x_min, y_min, x_max, y_max = polygon.bounds
+
+        # generate random data within the bounds
+        x = np.random.uniform(x_min, x_max, samples)
+        y = np.random.uniform(y_min, y_max, samples)
+
+        # convert them to a points GeoSeries
+        gdf_points = gpd.GeoSeries(gpd.points_from_xy(x, y))
+        # only keep those points within polygons
+        gdf_points = gdf_points[gdf_points.within(polygon)]
+
+        return gdf_points
+
     def process(self, raw_folder: Path, total_days) -> Union[pd.DataFrame, xr.DataArray]:
         file_path = raw_folder / self.filename
         logger.info(f"Reading in {file_path}")
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
         elif file_path.suffix == ".csv":
-            df = pd.read_csv(file_path)
+            try:
+                df = pd.read_csv(file_path)
+            except UnicodeDecodeError:
+                df = pd.read_csv(file_path, engine="python")
         else:
-            df = geopandas.read_file(file_path)
+            df = gpd.read_file(file_path)
+
+        if self.latitude_col:
+            df[LAT] = df[self.latitude_col]
+        if self.longitude_col:
+            df[LON] = df[self.longitude_col]
 
         if self.clean_df:
             df = self.clean_df(df)
+
+        if self.sample_from_polygon:
+            df = df[df.geometry != None]  # noqa: E711
+            df["samples"] = (df.geometry.area / 0.001).astype(int)
+            list_of_points = np.vectorize(self.get_points)(df.geometry, df.samples)
+            df = gpd.GeoDataFrame(geometry=pd.concat(list_of_points, ignore_index=True))
 
         df[SOURCE] = self.filename
 
@@ -118,11 +158,7 @@ class Processor:
         else:
             df[START] = df[END] - total_days
 
-        if (df[START] < pd.Timestamp(min_date)).any():
-            raise ValueError(
-                f"start_date is set earlier than {min_date} "
-                f"(earlier than sentinel-2 data exists)"
-            )
+        df = df[df[START] >= pd.Timestamp(min_date)]
 
         df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")

@@ -37,9 +37,7 @@ These can be used to create annual and in season crop maps.
     dvc pull data/processed                   # For labeled data analysis
     ```
  
-
-## 2. Training a new model
-**Prerequisite:  Adding new labeled data:**
+ ## 2. Adding new labeled data
 1. Ensure local environment is set up and all existing data is downloaded.
 2. Add the shape file for new labels into [data/raw](data/raw)
 3. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
@@ -55,14 +53,87 @@ These can be used to create annual and in season crop maps.
     ```
 8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
-![Add labeled data](diagrams/add_labeled_data.png)
+## 2. Training a new model
+Training can be done locally or on grid.ai.
 
-**Actual Training**
+#### Training locally
 
 You must have the specified datasets in `data/features`, then inside `scripts/` run:
 ```bash
-python train_model.py --datasets "geowiki_landcover_2017,Kenya" --model_name "Kenya"
+python train_model.py \
+    --train_datasets "geowiki_landcover_2017,Kenya,digitalearthafrica" \
+    --eval_datasets "Kenya" \
+    --target_bbox_key "Kenya"
 ```
+`train_datasets` tells the model to train on data found in:
+- `features/geowiki_landcover_2017/training/*.pkl`
+- `features/Kenya/training/*.pkl`
+- `features/digitalearthafrica/training/*.pkl`
+
+`eval_datasets` tells the model to evaluate on data found in:
+- `features/Kenya/validation/*.pkl`
+- `features/Kenya/testing/*.pkl`
+
+`target_bbox_key` tells the model to use the bounding box "Kenya" found in [src/bounding_boxes.py](src/bounding_boxes.py)
+
+
+#### Training on grid.ai
+Grid.ai is a platform which allows you to train and evaluate several machine learning models in parallel.
+
+To train models on grid.ai :
+```bash
+# Install the CLI
+pip install lightning-grid
+
+# Login
+grid login
+
+# Create datastore
+grid datastore create --source /path/to/crop-mask/data/features --name features
+
+# Create a session
+grid session create
+
+# Check status of session
+grid status
+
+# When session is ready
+grid session ssh <session name>
+
+# Clone repository into session
+git clone https://github.com/nasaharvest/crop-mask.git
+
+# Navigate to crop-mask directory
+cd crop-mask
+
+# Run training script with grid
+grid run \
+    --name <run name> \
+    --instance_type 2_CPU_8gb \
+    --datastore_name features \
+    --datastore_version 1 \
+    --datastore_mount_dir /data/features \
+    --framework lightning scripts/train_model.py \
+    --data_folder /data \
+    --model_dir models \
+    --target_bbox_key Kenya \
+    --eval_datasets Kenya \
+    --train_datasets '["geowiki_landcover_2017,Kenya", "digitalearthafrica,Kenya"]' \
+    --do_not_forecast
+```
+
+You'll be able to track the runs in the [Grid.ai UI](https://grid.ai/) and once all training runs are complete you can download the artifacts (models, tensorboard logs, etc) to analyze them.
+
+```bash
+grid artifacts <run name>
+
+# View tensorboard logs
+tensorboard --logdir=<path to tensorboard logs>
+```
+
+More details about Grid: https://docs.grid.ai/start-here/typical-workflow-cli-user
+
+
 
 ## 3. Running inference locally
 **Prerequisite: Getting unlabeled data:**

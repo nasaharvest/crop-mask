@@ -12,8 +12,9 @@ from torch.utils.data import Dataset
 
 from src.ETL.constants import BANDS
 
-from typing import cast, Tuple, Optional, List, Dict, Sequence, Union
+from typing import cast, Tuple, Optional, List, Dict, Union
 from src.ETL.dataset import LabeledDataset, DataDir
+from src.ETL.ee_boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
 
@@ -29,16 +30,23 @@ class CropDataset(Dataset):
         datasets: List[LabeledDataset],
         probability_threshold: float,
         remove_b1_b10: bool,
-        include_geowiki: bool,
         cache: bool,
         upsample: bool,
         noise_factor: bool,
         normalizing_dict: Optional[Dict] = None,
-        local_train_dataset_size: Optional[int] = None,
+        target_bbox: Optional[BoundingBox] = None,
+        is_local_only: bool = False,
+        is_global_only: bool = False,
     ) -> None:
 
         self.probability_threshold = probability_threshold
-        self.include_geowiki = include_geowiki
+        self.target_bbox = target_bbox
+
+        if is_local_only and is_global_only:
+            raise ValueError("is_local_only and is_global_only cannot both be True")
+
+        self.is_local_only = is_local_only
+        self.is_global_only = is_global_only
 
         assert subset in ["training", "validation", "testing"]
 
@@ -52,53 +60,55 @@ class CropDataset(Dataset):
         # changed to the input noise argument at the end of the
         # init function
         self.noise_factor = 0
-        self.countries = set()
 
-        files_and_nds: List[Tuple] = []
+        all_pickle_files: List[Path] = []
         for dataset in datasets:
-            if not include_geowiki and dataset.is_global:
-                continue
-
-            limit = None
-            if (subset == "training") and local_train_dataset_size and (not dataset.is_global):
-                limit = local_train_dataset_size
-
-            pickle_files_for_dataset, normalizing_dict = self.load_files_and_normalizing_dicts(
+            pickle_files = self.load_pickle_files(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
-                limit=limit,
             )
-            if len(pickle_files_for_dataset) > 0:
-                self.countries.add(dataset.country)
+            all_pickle_files += pickle_files
 
-            files_and_nds.append((pickle_files_for_dataset, normalizing_dict))
+        self.pickle_files: List[Path] = []
+        normalizing_dict_interim = {"n": 0}
+        for p in all_pickle_files:
+            with p.open("rb") as f:
+                datainstance = pickle.load(f)
 
-        if normalizing_dict is not None:
+            # Check if pickle file should be added to CropDataset
+            is_local = datainstance.isin(self.target_bbox)
+            if (
+                (not is_local_only and not is_global_only)
+                or (is_local_only and is_local)
+                or (is_global_only and not is_local)
+            ):
+                self.pickle_files.append(p)
+                if not normalizing_dict:
+                    labelled_array = datainstance.labelled_array
+                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+
+        if normalizing_dict:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
         else:
-            # if no normalizing dict was passed to the consturctor,
-            # then we want to make our own
-            self.normalizing_dict = self.adjust_normalizing_dict(
-                [(len(x[0]), x[1]) for x in files_and_nds]
+            self.normalizing_dict = self._calculate_normalizing_dict(
+                norm_dict=normalizing_dict_interim
             )
-
-        pickle_files: List[Path] = []
-        for files, _ in files_and_nds:
-            pickle_files.extend(files)
-        self.pickle_files = pickle_files
 
         self.cache = False
 
-        self.class_instances: List = []
+        self.local_class_instances: List = []
+        self.global_class_instances: List = []
         if upsample:
-            instances_per_class = self.instances_per_class
+            instances_per_class = self.local_instances_per_class
             max_instances_in_class = max(instances_per_class)
 
             new_pickle_files: List[Path] = []
 
             for idx, num_instances in enumerate(instances_per_class):
                 if num_instances > 0:
-                    new_pickle_files.extend(self.upsample_class(idx, max_instances_in_class))
+                    new_pickle_files.extend(
+                        self.upsample_class(idx, max_instances_in_class, is_local_only=True)
+                    )
             self.pickle_files.extend(new_pickle_files)
 
         if cache:
@@ -109,9 +119,44 @@ class CropDataset(Dataset):
         self.noise_factor = noise_factor
 
     @staticmethod
-    def load_files_and_normalizing_dicts(
+    def _update_normalizing_values(
+        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
+    ) -> None:
+        # given an input array of shape [timesteps, bands]
+        # update the normalizing dict
+        # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+        # https://www.johndcook.com/blog/standard_deviation/
+
+        # initialize
+        if "mean" not in norm_dict:
+            num_bands = array.shape[1]
+            norm_dict["mean"] = np.zeros(num_bands)
+            norm_dict["M2"] = np.zeros(num_bands)
+
+        for time_idx in range(array.shape[0]):
+            norm_dict["n"] += 1
+            x = array[time_idx, :]
+            delta = x - norm_dict["mean"]
+            norm_dict["mean"] += delta / norm_dict["n"]
+            norm_dict["M2"] += delta * (x - norm_dict["mean"])
+
+    @staticmethod
+    def _calculate_normalizing_dict(
+        norm_dict: Dict[str, Union[np.ndarray, int]]
+    ) -> Optional[Dict[str, np.ndarray]]:
+        if "mean" not in norm_dict:
+            logger.warning(
+                "No normalizing dict calculated! Make sure to call _update_normalizing_values"
+            )
+            return None
+        variance = norm_dict["M2"] / (norm_dict["n"] - 1)
+        std = np.sqrt(variance)
+        return {"mean": norm_dict["mean"], "std": std}
+
+    @staticmethod
+    def load_pickle_files(
         features_dir: Path, subset_name: str, limit: Optional[int] = None, file_suffix: str = "pkl"
-    ) -> Tuple[List[Path], Optional[Dict[str, np.ndarray]]]:
+    ) -> List[Path]:
 
         pickle_files_dir = features_dir / subset_name
         if not pickle_files_dir.exists():
@@ -125,15 +170,7 @@ class CropDataset(Dataset):
             if limit and limit < len(pickle_files):
                 pickle_files = pickle_files[:limit]
 
-        # try loading the normalizing dict. By default, if it exists we will use it
-        normalizing_dict_path = features_dir / "normalizing_dict.pkl"
-        if normalizing_dict_path.exists():
-            with normalizing_dict_path.open("rb") as f:
-                normalizing_dict = pickle.load(f)
-        else:
-            normalizing_dict = None
-
-        return pickle_files, normalizing_dict
+        return pickle_files
 
     def _normalize(self, array: np.ndarray) -> np.ndarray:
         if self.normalizing_dict is None:
@@ -181,33 +218,6 @@ class CropDataset(Dataset):
         output_tuple = self[0]
         return output_tuple[0].shape[0]
 
-    @staticmethod
-    def adjust_normalizing_dict(
-        dicts: Sequence[Tuple[int, Optional[Dict[str, np.ndarray]]]]
-    ) -> Optional[Dict[str, np.ndarray]]:
-
-        for _, single_dict in dicts:
-            if single_dict is None:
-                return None
-
-        dicts = cast(Sequence[Tuple[int, Dict[str, np.ndarray]]], dicts)
-
-        new_total = sum([x[0] for x in dicts])
-
-        new_mean = sum([single_dict["mean"] * length for length, single_dict in dicts]) / new_total
-
-        new_variance = (
-            sum(
-                [
-                    (single_dict["std"] ** 2 + (single_dict["mean"] - new_mean) ** 2) * length
-                    for length, single_dict in dicts
-                ]
-            )
-            / new_total
-        )
-
-        return {"mean": new_mean, "std": np.sqrt(new_variance)}
-
     def remove_bands(self, x: np.ndarray) -> np.ndarray:
         """This nested function is so that
         _remove_bands can be called from an unitialized
@@ -239,16 +249,20 @@ class CropDataset(Dataset):
             # batches, timesteps, bands
             return x[:, :, indices_to_keep]
 
-    def upsample_class(self, class_idx: int, max_instances: int) -> List[Path]:
+    def upsample_class(
+        self, class_idx: int, max_instances: int, is_local_only: bool = True
+    ) -> List[Path]:
         """Given a class to upsample and the maximum number of classes,
         update self.pickle_files to reflect the new number of classes
         """
         class_files: List[Path] = []
         for idx, filepath in enumerate(self.pickle_files):
             _, class_int, is_global = self[idx]
-            if is_global == 0:
-                if class_int == class_idx:
-                    class_files.append(filepath)
+            if is_local_only and (is_global == 1):
+                continue
+
+            if class_int == class_idx:
+                class_files.append(filepath)
 
         multiplier = max_instances / len(class_files)
 
@@ -261,31 +275,32 @@ class CropDataset(Dataset):
         return new_files
 
     @property
-    def num_output_classes(self) -> Union[int, Tuple[int, int]]:
-
-        if self.include_geowiki:
-            # multi headed
-            return 1, 1
-        else:
-            return 1
+    def num_output_classes(self) -> Tuple[int, int]:
+        return 1, 1
 
     @property
-    def instances_per_class(self) -> List[int]:
+    def local_instances_per_class(self) -> List[int]:
+        if len(self.local_class_instances) == 0:
+            self.local_class_instances = self.instances_per_class(self.num_output_classes[1], True)
+        return self.local_class_instances
 
-        num_output_classes = self.num_output_classes
-        num_local_output_classes = (
-            num_output_classes[1] if isinstance(num_output_classes, tuple) else num_output_classes
-        )
-        if len(self.class_instances) == 0:
-            # we set a minimum number of output classes since if its 1,
-            # its really 2 (binary)
-            instances_per_class = [0] * max(num_local_output_classes, 2)
-            for i in range(len(self)):
-                _, class_int, is_global = self[i]
-                if is_global == 0:
-                    instances_per_class[int(class_int)] += 1
-            self.class_instances = instances_per_class
-        return self.class_instances
+    @property
+    def global_instances_per_class(self) -> List[int]:
+        if len(self.global_class_instances) == 0:
+            self.global_class_instances = self.instances_per_class(
+                self.num_output_classes[0], False
+            )
+        return self.global_class_instances
+
+    def instances_per_class(self, num_local_output_classes, is_local) -> List[int]:
+        # we set a minimum number of output classes since if its 1,
+        # its really 2 (binary)
+        instances_per_class = [0] * max(num_local_output_classes, 2)
+        for i in range(len(self)):
+            _, class_int, is_global = self[i]
+            if is_local and (is_global == 0) or (not is_local and (is_global == 1)):
+                instances_per_class[int(class_int)] += 1
+        return instances_per_class
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
@@ -303,13 +318,7 @@ class CropDataset(Dataset):
         with target_file.open("rb") as f:
             target_datainstance = pickle.load(f)
 
-        if hasattr(target_datainstance, "is_global"):
-            is_global = int(target_datainstance.is_global)
-        else:
-            logger.error(
-                "target_datainstance missing mandatory field is_global, defaulting is_global to 0"
-            )
-            is_global = 0
+        is_global = not target_datainstance.isin(self.target_bbox)
 
         if hasattr(target_datainstance, "crop_probability"):
             crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
@@ -330,9 +339,25 @@ class CropDataset(Dataset):
 
     @property
     def original_size(self):
-        return self.instances_per_class[0] + self.instances_per_class[1]
+        local_size = self.local_instances_per_class[0] + self.local_instances_per_class[1]
+        global_size = self.global_instances_per_class[0] + self.global_instances_per_class[1]
+        if self.is_local_only:
+            return local_size
+        elif self.is_global_only:
+            return global_size
+        else:
+            return local_size + global_size
 
     @property
     def crop_percentage(self):
-        total_crop = self.instances_per_class[1]
+        if self.original_size == 0:
+            return 0
+
+        if self.is_local_only:
+            total_crop = self.local_instances_per_class[1]
+        elif self.is_global_only:
+            total_crop = self.global_instances_per_class[1]
+        else:
+            total_crop = self.local_instances_per_class[1] + self.global_instances_per_class[1]
+
         return round(float(total_crop / self.original_size), 4)
