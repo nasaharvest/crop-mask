@@ -62,7 +62,7 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
     model_ckpt_path.parent.mkdir(parents=True, exist_ok=True)
     trainer.save_checkpoint(model_ckpt_path)
 
-    sm = torch.jit.script(model)
-    sm.save(str(model_pt_path))
+    # sm = torch.jit.script(model)
+    # sm.save(str(model_pt_path))
 
     return model
