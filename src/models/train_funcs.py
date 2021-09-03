@@ -31,9 +31,16 @@ def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningMo
 
     trainer.fit(model)
 
-    local_train_dataset = model.get_dataset("training", is_local_only=True)
-    global_train_dataset = model.get_dataset("training", is_global_only=True)
-    local_val_dataset = model.get_dataset("validation", is_local_only=True, upsample=False)
+    norm_dict = model.normalizing_dict
+    local_train_dataset = model.get_dataset(
+        "training", is_local_only=True, normalizing_dict=norm_dict
+    )
+    global_train_dataset = model.get_dataset(
+        "training", is_global_only=True, normalizing_dict=norm_dict
+    )
+    local_val_dataset = model.get_dataset(
+        "validation", is_local_only=True, upsample=False, normalizing_dict=norm_dict
+    )
 
     # local train
     hparams.local_train_original_size = local_train_dataset.original_size
