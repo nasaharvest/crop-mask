@@ -43,6 +43,9 @@ class CropDataset(Dataset):
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
 
+        if not self.data_folder.exists():
+            raise FileNotFoundError(f"{self.data_folder} does not exist")
+
         if is_local_only and is_global_only:
             raise ValueError("is_local_only and is_global_only cannot both be True")
 
@@ -64,8 +67,11 @@ class CropDataset(Dataset):
 
         all_pickle_files: List[Path] = []
         for dataset in datasets:
+            features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
+            if not features_dir.exists():
+                raise FileNotFoundError(f"{features_dir} does not exist")
             pickle_files = self.load_pickle_files(
-                features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
+                features_dir=features_dir,
                 subset_name=subset,
             )
             all_pickle_files += pickle_files
@@ -103,7 +109,9 @@ class CropDataset(Dataset):
                 local_or_global_only = "local"
             elif is_global_only:
                 local_or_global_only = "global"
-            raise ValueError(f"No {local_or_global_only} {subset} pkl files found in {datasets}")
+            raise ValueError(
+                f"No {local_or_global_only} {subset} pkl files found in {[d.dataset for d in datasets]}"
+            )
 
         if normalizing_dict:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
