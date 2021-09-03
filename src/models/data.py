@@ -64,7 +64,6 @@ class CropDataset(Dataset):
 
         all_pickle_files: List[Path] = []
         for dataset in datasets:
-            logger.info(f"Loading pickle file names for {dataset.dataset}")
             pickle_files = self.load_pickle_files(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
@@ -74,21 +73,29 @@ class CropDataset(Dataset):
 
         self.pickle_files: List[Path] = []
         normalizing_dict_interim = {"n": 0}
-        for p in all_pickle_files:
-            with p.open("rb") as f:
-                datainstance = pickle.load(f)
 
-            # Check if pickle file should be added to CropDataset
-            is_local = datainstance.isin(self.target_bbox)
-            if (
-                (not is_local_only and not is_global_only)
-                or (is_local_only and is_local)
-                or (is_global_only and not is_local)
-            ):
-                self.pickle_files.append(p)
-                if not normalizing_dict:
-                    labelled_array = datainstance.labelled_array
-                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+        if normalizing_dict and (not is_local_only and not is_global_only):
+            self.pickle_files = all_pickle_files
+        else:
+            if not normalizing_dict:
+                logger.info("Calculating normalizing dict")
+            else:
+                logger.info("Filtering by local and global")
+            for p in tqdm(all_pickle_files):
+                with p.open("rb") as f:
+                    datainstance = pickle.load(f)
+
+                # Check if pickle file should be added to CropDataset
+                is_local = datainstance.isin(self.target_bbox)
+                if (
+                    (not is_local_only and not is_global_only)
+                    or (is_local_only and is_local)
+                    or (is_global_only and not is_local)
+                ):
+                    self.pickle_files.append(p)
+                    if not normalizing_dict:
+                        labelled_array = datainstance.labelled_array
+                        self._update_normalizing_values(normalizing_dict_interim, labelled_array)
 
         if len(self.pickle_files) == 0:
             local_or_global_only = ""
