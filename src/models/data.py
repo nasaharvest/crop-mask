@@ -68,6 +68,7 @@ class CropDataset(Dataset):
                 subset_name=subset,
             )
             all_pickle_files += pickle_files
+            print(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
 
         self.pickle_files: List[Path] = []
         normalizing_dict_interim = {"n": 0}
@@ -86,6 +87,14 @@ class CropDataset(Dataset):
                 if not normalizing_dict:
                     labelled_array = datainstance.labelled_array
                     self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+
+        if len(self.pickle_files) == 0:
+            local_or_global_only = ""
+            if is_local_only:
+                local_or_global_only = "local"
+            elif is_global_only:
+                local_or_global_only = "global"
+            raise ValueError(f"No {local_or_global_only} {subset} pkl files found in {datasets}")
 
         if normalizing_dict:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
