@@ -179,6 +179,7 @@ class Model(pl.LightningModule):
         return DataLoader(
             self.get_dataset(
                 subset="training",
+                normalizing_dict=self.normalizing_dict,
                 upsample=self.hparams.upsample,
             ),
             shuffle=True,
@@ -191,7 +192,7 @@ class Model(pl.LightningModule):
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
-                is_local_only=True,
+                # is_local_only=True,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -202,7 +203,7 @@ class Model(pl.LightningModule):
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
-                is_local_only=True,
+                # is_local_only=True,
             ),
             batch_size=self.hparams.batch_size,
         )
