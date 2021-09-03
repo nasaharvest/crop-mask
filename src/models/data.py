@@ -43,8 +43,8 @@ class CropDataset(Dataset):
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
 
-        if not self.data_folder.exists():
-            raise FileNotFoundError(f"{self.data_folder} does not exist")
+        if not data_folder.exists():
+            raise FileNotFoundError(f"{data_folder} does not exist")
 
         if is_local_only and is_global_only:
             raise ValueError("is_local_only and is_global_only cannot both be True")
