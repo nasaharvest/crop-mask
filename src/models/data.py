@@ -39,6 +39,7 @@ class CropDataset(Dataset):
         is_global_only: bool = False,
     ) -> None:
 
+        logger.info(f"Initializating {subset} CropDataset")
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
 
@@ -63,12 +64,13 @@ class CropDataset(Dataset):
 
         all_pickle_files: List[Path] = []
         for dataset in datasets:
+            logger.info(f"Loading pickle file names for {dataset.dataset}")
             pickle_files = self.load_pickle_files(
                 features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
                 subset_name=subset,
             )
             all_pickle_files += pickle_files
-            print(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
+            logger.info(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
 
         self.pickle_files: List[Path] = []
         normalizing_dict_interim = {"n": 0}
