@@ -30,19 +30,7 @@ def get_metrics(
         if (not k.startswith("encoded")) and ("_global_" not in k)
     }
 
-    local_train_dataset = model.get_dataset("training", is_local_only=True)
-    local_global_dataset = model.get_dataset("training", is_global_only=True)
-    data = {
-        "training_datasets": model.hparams.train_datasets,
-        "local_train_crop_percentage": local_train_dataset.crop_percentage,
-        "local_train_original_size": local_train_dataset.original_size,
-        "local_train_upsamepled_size": len(local_train_dataset),
-        "global_train_crop_percentage": local_global_dataset.crop_percentage,
-        "global_train_original_size": local_global_dataset.original_size,
-        "global_train_upsampled_size": len(local_global_dataset),
-    }
-
-    return {"metrics": metrics, "data": data}
+    return {"metrics": metrics, "data": model.hparams.train_datasets}
 
 
 def get_metrics_for_all_models(test_mode: bool = False):
@@ -54,7 +42,9 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
         model = Model.load_from_checkpoint(str(model_path))
 
-        local_dataset = model.get_dataset(metric_type, is_local_only=True, upsample=False)
+        local_dataset = model.get_dataset(
+            metric_type, is_local_only=True, upsample=False, normalizing_dict=model.normalizing_dict
+        )
 
         key = model.hparams.target_bbox_key
 

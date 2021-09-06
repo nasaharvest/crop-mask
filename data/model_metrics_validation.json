@@ -3,171 +3,33 @@
         "local_validation_dataset_size": 341,
         "local_validation_crop_percentage": 0.4223,
         "models": {
-            "Rwanda4.ckpt": {
+            "Rwanda.ckpt": {
                 "metrics": {
-                    "val_loss": 1.1315,
-                    "val_encoder_mae": 0.5538,
-                    "unencoded_val_local_roc_auc_score": 0.7414,
-                    "unencoded_val_local_precision_score": 0.6291,
-                    "unencoded_val_local_recall_score": 0.6597,
-                    "unencoded_val_local_f1_score": 0.6441,
-                    "unencoded_val_local_accuracy": 0.6921
+                    "val_loss": 0.9013,
+                    "unencoded_val_local_roc_auc_score": 0.7524,
+                    "unencoded_val_local_precision_score": 0.5866,
+                    "unencoded_val_local_recall_score": 0.7292,
+                    "unencoded_val_local_f1_score": 0.6502,
+                    "unencoded_val_local_accuracy": 0.6686
                 },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda",
-                    "local_train_crop_percentage": 0.3801,
-                    "local_train_original_size": 271,
-                    "local_train_upsamepled_size": 336,
-                    "global_train_crop_percentage": 0.3028,
-                    "global_train_original_size": 44232,
-                    "global_train_upsampled_size": 44232
-                }
-            },
-            "Rwanda5.ckpt": {
-                "metrics": {
-                    "val_loss": 2.0292,
-                    "val_encoder_mae": 0.5195,
-                    "unencoded_val_local_roc_auc_score": 0.6703,
-                    "unencoded_val_local_precision_score": 0.4721,
-                    "unencoded_val_local_recall_score": 1.0,
-                    "unencoded_val_local_f1_score": 0.6414,
-                    "unencoded_val_local_accuracy": 0.5279
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,one_acre_fund",
-                    "local_train_crop_percentage": 0.8815,
-                    "local_train_original_size": 1418,
-                    "local_train_upsamepled_size": 2500,
-                    "global_train_crop_percentage": 0.324,
-                    "global_train_original_size": 45620,
-                    "global_train_upsampled_size": 45620
-                }
+                "data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica"
             }
         }
     },
     "Togo": {
-        "local_validation_dataset_size": 261,
-        "local_validation_crop_percentage": 0.5172,
+        "local_validation_dataset_size": 273,
+        "local_validation_crop_percentage": 0.5751,
         "models": {
             "Togo.ckpt": {
                 "metrics": {
-                    "val_loss": 1.1487,
-                    "val_encoder_mae": 0.6008,
-                    "unencoded_val_local_roc_auc_score": 0.7981,
-                    "unencoded_val_local_precision_score": 0.9706,
-                    "unencoded_val_local_recall_score": 0.2444,
-                    "unencoded_val_local_f1_score": 0.3905,
-                    "unencoded_val_local_accuracy": 0.6054
+                    "val_loss": 0.5247,
+                    "unencoded_val_local_roc_auc_score": 0.87,
+                    "unencoded_val_local_precision_score": 0.8444,
+                    "unencoded_val_local_recall_score": 0.7261,
+                    "unencoded_val_local_f1_score": 0.7808,
+                    "unencoded_val_local_accuracy": 0.7656
                 },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,one_acre_fund,open_buildings",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.3137,
-                    "global_train_original_size": 49344,
-                    "global_train_upsampled_size": 49344
-                }
-            },
-            "Togo2.ckpt": {
-                "metrics": {
-                    "val_loss": 1.4308,
-                    "val_encoder_mae": 0.6132,
-                    "unencoded_val_local_roc_auc_score": 0.8306,
-                    "unencoded_val_local_precision_score": 0.9412,
-                    "unencoded_val_local_recall_score": 0.1185,
-                    "unencoded_val_local_f1_score": 0.2105,
-                    "unencoded_val_local_accuracy": 0.5402
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.2765,
-                    "global_train_original_size": 46809,
-                    "global_train_upsampled_size": 46809
-                }
-            },
-            "Togo3.ckpt": {
-                "metrics": {
-                    "val_loss": 0.7589,
-                    "val_encoder_mae": 0.6476,
-                    "unencoded_val_local_roc_auc_score": 0.9528,
-                    "unencoded_val_local_precision_score": 0.8542,
-                    "unencoded_val_local_recall_score": 0.9111,
-                    "unencoded_val_local_f1_score": 0.8817,
-                    "unencoded_val_local_accuracy": 0.8736
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Togo",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.211,
-                    "global_train_original_size": 35440,
-                    "global_train_upsampled_size": 35440
-                }
-            },
-            "Togo4.ckpt": {
-                "metrics": {
-                    "val_loss": 0.7589,
-                    "val_encoder_mae": 0.6476,
-                    "unencoded_val_local_roc_auc_score": 0.9528,
-                    "unencoded_val_local_precision_score": 0.8542,
-                    "unencoded_val_local_recall_score": 0.9111,
-                    "unencoded_val_local_f1_score": 0.8817,
-                    "unencoded_val_local_accuracy": 0.8736
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Togo",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.211,
-                    "global_train_original_size": 35440,
-                    "global_train_upsampled_size": 35440
-                }
-            },
-            "Togo5.ckpt": {
-                "metrics": {
-                    "val_loss": 0.7134,
-                    "val_encoder_mae": 0.6141,
-                    "unencoded_val_local_roc_auc_score": 0.932,
-                    "unencoded_val_local_precision_score": 0.8089,
-                    "unencoded_val_local_recall_score": 0.9407,
-                    "unencoded_val_local_f1_score": 0.8699,
-                    "unencoded_val_local_accuracy": 0.8544
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Togo",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.211,
-                    "global_train_original_size": 35440,
-                    "global_train_upsampled_size": 35440
-                }
-            },
-            "Togo6.ckpt": {
-                "metrics": {
-                    "val_loss": 0.7452,
-                    "val_encoder_mae": 0.6288,
-                    "unencoded_val_local_roc_auc_score": 0.9543,
-                    "unencoded_val_local_precision_score": 0.8377,
-                    "unencoded_val_local_recall_score": 0.9556,
-                    "unencoded_val_local_f1_score": 0.8927,
-                    "unencoded_val_local_accuracy": 0.8812
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Togo,Kenya",
-                    "local_train_crop_percentage": 0.5266,
-                    "local_train_original_size": 1052,
-                    "local_train_upsamepled_size": 1108,
-                    "global_train_crop_percentage": 0.2889,
-                    "global_train_original_size": 42354,
-                    "global_train_upsampled_size": 42354
-                }
+                "data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica"
             }
         }
     },
@@ -177,62 +39,14 @@
         "models": {
             "Uganda.ckpt": {
                 "metrics": {
-                    "val_loss": 0.7465,
-                    "unencoded_val_local_roc_auc_score": 0.6953,
-                    "unencoded_val_local_precision_score": 0.2424,
-                    "unencoded_val_local_recall_score": 0.1538,
-                    "unencoded_val_local_f1_score": 0.1882,
-                    "unencoded_val_local_accuracy": 0.8203
+                    "val_loss": 0.6313,
+                    "unencoded_val_local_roc_auc_score": 0.774,
+                    "unencoded_val_local_precision_score": 0.32,
+                    "unencoded_val_local_recall_score": 0.6154,
+                    "unencoded_val_local_f1_score": 0.4211,
+                    "unencoded_val_local_accuracy": 0.7708
                 },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Uganda",
-                    "local_train_crop_percentage": 0.1261,
-                    "local_train_original_size": 238,
-                    "local_train_upsamepled_size": 416,
-                    "global_train_crop_percentage": 0.211,
-                    "global_train_original_size": 35352,
-                    "global_train_upsampled_size": 35352
-                }
-            },
-            "Uganda4.ckpt": {
-                "metrics": {
-                    "val_loss": 0.7648,
-                    "val_encoder_mae": 0.4738,
-                    "unencoded_val_local_roc_auc_score": 0.7877,
-                    "unencoded_val_local_precision_score": 0.4058,
-                    "unencoded_val_local_recall_score": 0.5385,
-                    "unencoded_val_local_f1_score": 0.4628,
-                    "unencoded_val_local_accuracy": 0.8307
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda",
-                    "local_train_crop_percentage": 0.7501,
-                    "local_train_original_size": 5746,
-                    "local_train_upsamepled_size": 8619,
-                    "global_train_crop_percentage": 0.237,
-                    "global_train_original_size": 38757,
-                    "global_train_upsampled_size": 38757
-                }
-            },
-            "Uganda5.ckpt": {
-                "metrics": {
-                    "val_loss": 3.0886,
-                    "val_encoder_mae": 0.4803,
-                    "unencoded_val_local_roc_auc_score": 0.726,
-                    "unencoded_val_local_precision_score": 0.1753,
-                    "unencoded_val_local_recall_score": 0.9808,
-                    "unencoded_val_local_f1_score": 0.2974,
-                    "unencoded_val_local_accuracy": 0.3724
-                },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,one_acre_fund",
-                    "local_train_crop_percentage": 0.7949,
-                    "local_train_original_size": 7003,
-                    "local_train_upsamepled_size": 11133,
-                    "global_train_crop_percentage": 0.2614,
-                    "global_train_original_size": 40035,
-                    "global_train_upsampled_size": 40035
-                }
+                "data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica"
             }
         }
     },
@@ -242,23 +56,14 @@
         "models": {
             "Kenya.ckpt": {
                 "metrics": {
-                    "val_loss": 0.6293,
-                    "val_encoder_mae": 0.5103,
-                    "unencoded_val_local_roc_auc_score": 0.9609,
-                    "unencoded_val_local_precision_score": 0.9382,
-                    "unencoded_val_local_recall_score": 0.9461,
-                    "unencoded_val_local_f1_score": 0.9422,
-                    "unencoded_val_local_accuracy": 0.9199
+                    "val_loss": 0.2261,
+                    "unencoded_val_local_roc_auc_score": 0.9615,
+                    "unencoded_val_local_precision_score": 0.9114,
+                    "unencoded_val_local_recall_score": 0.9697,
+                    "unencoded_val_local_f1_score": 0.9396,
+                    "unencoded_val_local_accuracy": 0.9141
                 },
-                "data": {
-                    "training_datasets": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,one_acre_fund,open_buildings",
-                    "local_train_crop_percentage": 0.6989,
-                    "local_train_original_size": 8862,
-                    "local_train_upsamepled_size": 12387,
-                    "global_train_crop_percentage": 0.2369,
-                    "global_train_original_size": 41534,
-                    "global_train_upsampled_size": 41534
-                }
+                "data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica"
             }
         }
     }
