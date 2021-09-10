@@ -42,4 +42,10 @@ bounding_boxes = {
     "Uganda": BoundingBox(
         min_lon=29.5794661801, max_lon=35.03599, min_lat=-1.44332244223, max_lat=4.24988494736
     ),
+    "Uganda_surrounding_2": BoundingBox(
+        min_lon=27.5794661801, max_lon=37.03599, min_lat=-3.44332244223, max_lat=6.24988494736
+    ),
+    "Uganda_surrounding_5": BoundingBox(
+        min_lon=24.5794661801, max_lon=40.03599, min_lat=-6.44332244223, max_lat=9.24988494736
+    ),
 }
