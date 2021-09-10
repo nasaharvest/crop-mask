@@ -5,16 +5,28 @@ from pathlib import Path
 from typing import Tuple
 from tqdm import tqdm
 
+import os
+import sys
+
+# Change the working directory to the directory of this script
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+sys.path.append("..")
 from src.models import Model
+from src.bounding_boxes import bounding_boxes
 
 data_dir = Path(__file__).parent.parent / "data"
 
 
 def get_metrics(
-    model: pl.LightningModule, test_mode: bool, alternate_test_sets: Tuple[str, ...] = ()
+    model: pl.LightningModule,
+    test_mode: bool,
+    alternate_test_sets: Tuple[str, ...] = (),
+    alternate_bbox_key=None,
 ):
     if alternate_test_sets:
-        model.eval_datasets = model.load_datasets(list(alternate_test_sets))
+        model.target_bbox = bounding_boxes[alternate_bbox_key]
+        model.eval_datasets = model.load_datasets(list(alternate_test_sets), subset="evaluation")
 
     trainer = pl.Trainer()
     if test_mode:
@@ -29,8 +41,9 @@ def get_metrics(
         for k, v in trainer.callback_metrics.items()
         if (not k.startswith("encoded")) and ("_global_" not in k)
     }
-
-    return {"metrics": metrics, "data": model.hparams.train_datasets}
+    return_obj = {"metrics": metrics, "data": model.hparams.train_datasets}
+    print(f"\n{return_obj}")
+    return return_obj
 
 
 def get_metrics_for_all_models(test_mode: bool = False):
@@ -57,7 +70,6 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
         if model_path.name not in model_metrics[key]["models"]:
             metrics = get_metrics(model, test_mode)
-            print(f"\n{metrics}")
             model_metrics[key]["models"][model_path.name] = metrics
 
     for country_key, value in model_metrics.items():
@@ -68,6 +80,8 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
 
 if __name__ == "__main__":
-    # model = Model.load_from_checkpoint(str(data_dir / "models/Kenya1000.ckpt"))
-    # get_metrics(model, test_mode=False)
-    get_metrics_for_all_models(test_mode=False)
+    model = Model.load_from_checkpoint(str(data_dir / "models/Kenya.ckpt"))
+    get_metrics(
+        model, test_mode=False, alternate_test_sets=("Uganda",), alternate_bbox_key="Uganda"
+    )
+    # get_metrics_for_all_models(test_mode=False)
