@@ -90,7 +90,7 @@ def get_metrics_for_all_models(test_mode: bool = False):
 if __name__ == "__main__":
 
     eval_sets = ["Rwanda", "Kenya", "Togo", "Uganda"]
-    metrics_for_datasets = {}
+    metrics_for_datasets: Dict[str, Dict] = {}
     for model_name in ["Global", "Rwanda", "Kenya", "Togo", "Uganda", "Uganda_surrounding_5"]:
         metrics_for_datasets[model_name] = {}
         model = Model.load_from_checkpoint(str(data_dir / f"models/{model_name}.ckpt"))
