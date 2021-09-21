@@ -2,7 +2,6 @@ from pathlib import Path
 import numpy as np
 import pickle
 import random
-import math
 import logging
 
 from tqdm import tqdm
@@ -39,8 +38,12 @@ class CropDataset(Dataset):
         is_global_only: bool = False,
     ) -> None:
 
+        logger.info(f"Initializating {subset} CropDataset")
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
+
+        if not data_folder.exists():
+            raise FileNotFoundError(f"{data_folder} does not exist")
 
         if is_local_only and is_global_only:
             raise ValueError("is_local_only and is_global_only cannot both be True")
@@ -63,29 +66,71 @@ class CropDataset(Dataset):
 
         all_pickle_files: List[Path] = []
         for dataset in datasets:
+            features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
+            if not features_dir.exists():
+                raise FileNotFoundError(f"{features_dir} does not exist")
             pickle_files = self.load_pickle_files(
-                features_dir=dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder),
+                features_dir=features_dir,
                 subset_name=subset,
             )
             all_pickle_files += pickle_files
+            logger.info(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
 
         self.pickle_files: List[Path] = []
         normalizing_dict_interim = {"n": 0}
-        for p in all_pickle_files:
-            with p.open("rb") as f:
-                datainstance = pickle.load(f)
 
-            # Check if pickle file should be added to CropDataset
-            is_local = datainstance.isin(self.target_bbox)
-            if (
-                (not is_local_only and not is_global_only)
-                or (is_local_only and is_local)
-                or (is_global_only and not is_local)
-            ):
-                self.pickle_files.append(p)
-                if not normalizing_dict:
-                    labelled_array = datainstance.labelled_array
-                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+        self.local_crop_pickle_files: List[Path] = []
+        self.local_non_crop_pickle_files: List[Path] = []
+        self.global_crop_pickle_files: List[Path] = []
+        self.global_non_crop_pickle_files: List[Path] = []
+
+        if normalizing_dict and (not is_local_only and not is_global_only) and not upsample:
+            self.pickle_files = all_pickle_files
+        else:
+            if not normalizing_dict:
+                logger.info("Calculating normalizing dict")
+            else:
+                logger.info("Filtering by local and global")
+
+            for p in tqdm(all_pickle_files):
+                with p.open("rb") as f:
+                    datainstance = pickle.load(f)
+
+                # Check if pickle file should be added to CropDataset
+                is_local = datainstance.isin(self.target_bbox)
+
+                if datainstance.crop_probability > self.probability_threshold:
+                    if is_local:
+                        self.local_crop_pickle_files.append(p)
+                    else:
+                        self.global_crop_pickle_files.append(p)
+                else:
+                    if is_local:
+                        self.local_non_crop_pickle_files.append(p)
+                    else:
+                        self.global_crop_pickle_files.append(p)
+
+                if (
+                    (not is_local_only and not is_global_only)
+                    or (is_local_only and is_local)
+                    or (is_global_only and not is_local)
+                ):
+                    self.pickle_files.append(p)
+                    if not normalizing_dict:
+                        labelled_array = datainstance.labelled_array
+                        self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+
+        if len(self.pickle_files) == 0:
+            local_or_global_only = ""
+            if is_local_only:
+                local_or_global_only = "local"
+            elif is_global_only:
+                local_or_global_only = "global"
+
+            dataset_names = [d.dataset for d in datasets]
+            raise ValueError(
+                f"No {local_or_global_only} {subset} pkl files found in {dataset_names}"
+            )
 
         if normalizing_dict:
             self.normalizing_dict: Optional[Dict] = normalizing_dict
@@ -96,20 +141,20 @@ class CropDataset(Dataset):
 
         self.cache = False
 
-        self.local_class_instances: List = []
-        self.global_class_instances: List = []
         if upsample:
-            instances_per_class = self.local_instances_per_class
-            max_instances_in_class = max(instances_per_class)
+            local_crop = len(self.local_crop_pickle_files)
+            local_non_crop = len(self.local_non_crop_pickle_files)
+            if local_crop == 0 or local_non_crop == 0:
+                raise ValueError("No local or non-local crop pkl files found.")
 
-            new_pickle_files: List[Path] = []
-
-            for idx, num_instances in enumerate(instances_per_class):
-                if num_instances > 0:
-                    new_pickle_files.extend(
-                        self.upsample_class(idx, max_instances_in_class, is_local_only=True)
-                    )
-            self.pickle_files.extend(new_pickle_files)
+            if local_crop > local_non_crop:
+                while local_crop > local_non_crop:
+                    self.pickle_files.append(random.choice(self.local_non_crop_pickle_files))
+                    local_non_crop += 1
+            elif local_crop < local_non_crop:
+                while local_crop < local_non_crop:
+                    self.pickle_files.append(random.choice(self.local_crop_pickle_files))
+                    local_crop += 1
 
         if cache:
             self.x, self.y, self.weights = self.to_array()
@@ -249,58 +294,9 @@ class CropDataset(Dataset):
             # batches, timesteps, bands
             return x[:, :, indices_to_keep]
 
-    def upsample_class(
-        self, class_idx: int, max_instances: int, is_local_only: bool = True
-    ) -> List[Path]:
-        """Given a class to upsample and the maximum number of classes,
-        update self.pickle_files to reflect the new number of classes
-        """
-        class_files: List[Path] = []
-        for idx, filepath in enumerate(self.pickle_files):
-            _, class_int, is_global = self[idx]
-            if is_local_only and (is_global == 1):
-                continue
-
-            if class_int == class_idx:
-                class_files.append(filepath)
-
-        multiplier = max_instances / len(class_files)
-
-        # we will return files which need to be *added* to pickle files
-        # multiplier will definitely be >= 1
-        fraction_multiplier, int_multiplier = math.modf(multiplier - 1)
-
-        new_files = random.sample(class_files, int(fraction_multiplier * len(class_files)))
-        new_files += class_files * int(int_multiplier)
-        return new_files
-
     @property
     def num_output_classes(self) -> Tuple[int, int]:
         return 1, 1
-
-    @property
-    def local_instances_per_class(self) -> List[int]:
-        if len(self.local_class_instances) == 0:
-            self.local_class_instances = self.instances_per_class(self.num_output_classes[1], True)
-        return self.local_class_instances
-
-    @property
-    def global_instances_per_class(self) -> List[int]:
-        if len(self.global_class_instances) == 0:
-            self.global_class_instances = self.instances_per_class(
-                self.num_output_classes[0], False
-            )
-        return self.global_class_instances
-
-    def instances_per_class(self, num_local_output_classes, is_local) -> List[int]:
-        # we set a minimum number of output classes since if its 1,
-        # its really 2 (binary)
-        instances_per_class = [0] * max(num_local_output_classes, 2)
-        for i in range(len(self)):
-            _, class_int, is_global = self[i]
-            if is_local and (is_global == 0) or (not is_local and (is_global == 1)):
-                instances_per_class[int(class_int)] += 1
-        return instances_per_class
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
@@ -339,8 +335,8 @@ class CropDataset(Dataset):
 
     @property
     def original_size(self):
-        local_size = self.local_instances_per_class[0] + self.local_instances_per_class[1]
-        global_size = self.global_instances_per_class[0] + self.global_instances_per_class[1]
+        local_size = len(self.local_crop_pickle_files) + len(self.local_non_crop_pickle_files)
+        global_size = len(self.global_crop_pickle_files) + len(self.global_non_crop_pickle_files)
         if self.is_local_only:
             return local_size
         elif self.is_global_only:
@@ -353,11 +349,12 @@ class CropDataset(Dataset):
         if self.original_size == 0:
             return 0
 
+        total_crop = 0
         if self.is_local_only:
-            total_crop = self.local_instances_per_class[1]
+            total_crop = len(self.local_crop_pickle_files)
         elif self.is_global_only:
-            total_crop = self.global_instances_per_class[1]
+            total_crop = len(self.global_crop_pickle_files)
         else:
-            total_crop = self.local_instances_per_class[1] + self.global_instances_per_class[1]
+            total_crop = len(self.local_crop_pickle_files) + len(self.global_crop_pickle_files)
 
         return round(float(total_crop / self.original_size), 4)
