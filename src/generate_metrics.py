@@ -1,7 +1,6 @@
 import pytorch_lightning as pl
 import json
 from collections import OrderedDict
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, Tuple
 from tqdm import tqdm
