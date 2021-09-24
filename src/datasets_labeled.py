@@ -44,6 +44,11 @@ def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
+    df = df[df[LON].notnull() & df[LAT].notnull() & (df["flagged"] == False)].copy()
+    return df
+
+
 def add_fake_harvest_date(df: pd.DataFrame) -> pd.DataFrame:
     df["end"] = pd.to_datetime(df["start"]) + pd.to_timedelta(timedelta(days=365))
     return df
@@ -383,6 +388,71 @@ labeled_datasets = [
                 end_year=2021,
                 train_val_test=(1.0, 0.0, 0.0),
             ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="Ethiopia",
+        country="Ethiopia",
+        sentinel_dataset="earth_engine_ethiopia",
+        processors=tuple(
+            [
+                Processor(
+                    filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-09-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 1.0, 0.0),
+                    clean_df=clean_ceo_data,
+                ),
+                Processor(
+                    filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-09-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 1.0, 0.0),
+                    clean_df=clean_ceo_data,
+                ),
+            ]
+        )
+        + tuple(
+            [
+                Processor(
+                    filename=f"tigray/{filename}.shp",
+                    crop_prob=1.0,
+                    end_year=2020,
+                    train_val_test=(1.0, 0.0, 0.0),
+                )
+                for filename in ["tigrayWW_crop", "tigrayWW_crop2"]
+            ]
+        )
+        + tuple(
+            [
+                Processor(
+                    filename=f"tigray/{filename}.shp",
+                    crop_prob=0.0,
+                    end_year=2020,
+                    train_val_test=(1.0, 0.0, 0.0),
+                )
+                for filename in [
+                    "tigrayWW_forest",
+                    "tigrayWW_forest2",
+                    "tigrayWW_shrub",
+                    "tigrayWW_shrub2",
+                    "tigrayWW_sparse",
+                    "tigrayWW_sparse2",
+                ]
+            ]
+        )
+        + tuple(
+            [
+                Processor(
+                    filename=f"tigray_non_fallow_crop/nonFallowCrop{year}.shp",
+                    crop_prob=1.0,
+                    end_year=year + 1,
+                    train_val_test=(1.0, 0.0, 0.0),
+                )
+                for year in [2019, 2020]
+            ]
         ),
     ),
 ]
