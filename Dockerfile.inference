@@ -7,6 +7,7 @@ FROM base as reqs
 COPY gcp/inference/requirements.txt requirements.txt
 RUN pip3 install --upgrade pip
 RUN pip install -r requirements.txt
+RUN pip3 install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 FROM reqs as build-torchserve
 COPY gcp/inference/handler.py /home/model-server
@@ -16,13 +17,13 @@ WORKDIR /home/model-server
 
 ARG MODELS
 RUN for m in $MODELS; \
-do torch-model-archiver \
+    do torch-model-archiver \
     --model-name $m \
     --version 1.0 \
     --serialized-file $m.pt \
     --handler handler.py \
     --export-path=model-store; \
-done
+    done
 
 ADD gcp/inference/start.sh /usr/local/bin/start.sh
 RUN chmod 777 /usr/local/bin/start.sh
