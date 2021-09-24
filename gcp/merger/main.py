@@ -19,11 +19,11 @@ def gdal_cmd(cmd_type: str, in_file: str, out_file: str, msg: Optional[str] = No
 
 
 if __name__ == "__main__":
-    p = "/Users/izvonkov/nasaharvest/Uganda2"
+    p = "/Users/izvonkov/nasaharvest/Uganda"
 
     print("Building vrt for each batch")
     for i, d in enumerate(glob(p + "/*/")):
-        # gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=f"{p}/{i}.vrt")
+        gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=f"{p}/{i}.vrt")
         gdal_cmd(cmd_type="gdal_translate", in_file=f"{p}/{i}.vrt", out_file=f"{p}/{i}.tif")
 
     if build_full_vrt:
