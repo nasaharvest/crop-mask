@@ -1,6 +1,7 @@
 export BUCKET=crop-mask-earthengine
 
 cp -R src/ETL gcp/export_unlabeled_function/src
+cp -R src/bounding_boxes.py gcp/export_unlabeled_function/src
 
 gcloud functions deploy export-unlabeled \
     --source=gcp/export_unlabeled_function \
