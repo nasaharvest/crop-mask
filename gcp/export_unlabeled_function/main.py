@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 db = firestore.Client()
 
 BBOX_LIMIT = 25
-SERVICE_ACCOUNT = "nasa-harvest@appspot.gserviceaccount.com"
-PROJECT_ID = "670160663426"
-SECRET_NAME = "google_application_credentials"
-SECRET_VERSION = "2"
+SERVICE_ACCOUNT = "bsos-geog-harvest1@appspot.gserviceaccount.com"
+PROJECT_ID = "1012768714927"
+SECRET_NAME = "google_application_credentials_2"
+SECRET_VERSION = "1"
 
 
 def get_ee_credentials():
@@ -87,12 +87,16 @@ def export_unlabeled(request: Request):
             )
 
         ids = RegionExporter(
-            dest_bucket=dest_bucket,
-            model_name=model_name,
             sentinel_dataset=sentinel_dataset,
             credentials=credentials,
             file_dimensions=file_dimensions,
-        ).export(region_bbox=bbox, season=season, metres_per_polygon=50000)
+        ).export(
+            dest_bucket=dest_bucket,
+            model_name=model_name,
+            region_bbox=bbox,
+            season=season,
+            metres_per_polygon=50000,
+        )
 
         id = f"{model_name}_{sentinel_dataset}"
         data = {
