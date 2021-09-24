@@ -1,5 +1,5 @@
 export TAG=us-central1-docker.pkg.dev/bsos-geog-harvest1/crop-mask/crop-mask
-export MODELS="Kenya Mali Rwanda Togo"
+export MODELS="Global Kenya Rwanda Togo Uganda Uganda_surrounding_20"
 export BUCKET=crop-mask-earthengine
 export URL="https://crop-mask-grxg7bzh2a-uc.a.run.app"
 
