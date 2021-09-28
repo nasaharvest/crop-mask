@@ -187,6 +187,14 @@ Once an inference run is complete the result is several small `.nc` files. These
     ```
 2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
 
+**[OPTIONAL] Uploading to Google Earth Engine**
+1. Use `gsutil` to upload all merged `.tif` files to Google Earth Engine.
+```
+gsutil -m cp "<country>/*.tif" gs://crop-mask-preds-merged/<country>/
+```
+
+2. Use `ee` to upload all merged `.tif` files to Google Earth Engine.
+
 
 ## 5. Tests
 The following tests can be run against the pipeline:
