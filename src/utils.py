@@ -7,6 +7,7 @@ from typing import Optional, Tuple, List
 from pathlib import Path
 import xarray as xr
 import pandas as pd
+import subprocess
 
 from src.ETL.constants import BANDS
 
@@ -106,3 +107,14 @@ def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr
     combined.attrs["band_descriptions"] = BANDS
 
     return combined
+
+
+def get_dvc_dir(dvc_dir_name: str) -> Path:
+    dvc_dir = Path(__file__).parent.parent / f"data/{dvc_dir_name}"
+    if not dvc_dir.exists():
+        subprocess.run(["dvc", "pull", f"data/{dvc_dir_name}"], check=True)
+        if not dvc_dir.exists():
+            raise FileExistsError(f"{str(dvc_dir)} was not found.")
+        if not any(dvc_dir.iterdir()):
+            raise FileExistsError(f"{str(dvc_dir)} should not be empty.")
+    return dvc_dir
