@@ -10,7 +10,7 @@ import sys
 sys.path.append("..")
 
 from scripts.predict import run_inference  # noqa: E402
-from utils import get_dvc_dir  # noqa: E402
+from src.utils import get_dvc_dir  # noqa: E402
 
 
 class IntegrationTestPredict(TestCase):
