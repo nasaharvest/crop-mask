@@ -22,6 +22,7 @@ These can be used to create annual and in season crop maps.
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
+    conda config --set channel_priority true # Ensures conda will install environment
     conda env create -f environment-dev.yml   # Creates environment
     conda activate landcover-mapping      # Activates environment
     ```
