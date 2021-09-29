@@ -2,6 +2,7 @@ from src.ETL.ee_boundingbox import BoundingBox
 
 bounding_boxes = {
     "Ethiopia_Tigray": BoundingBox(min_lon=36.45, max_lon=40.00, min_lat=12.25, max_lat=14.895),
+    "Ethiopia_Tigray_10": BoundingBox(min_lon=26.45, max_lon=50.00, min_lat=2.25, max_lat=24.895),
     "Kenya": BoundingBox(min_lon=33.501, max_lon=42.283, min_lat=-5.202, max_lat=6.002),
     "Kenya_Busia": BoundingBox(
         min_lon=33.88389587402344,
