@@ -189,7 +189,9 @@ class Model(pl.LightningModule):
     def val_dataloader(self):
         return DataLoader(
             self.get_dataset(
-                subset="validation", normalizing_dict=self.normalizing_dict, upsample=False
+                subset="validation",
+                normalizing_dict=self.normalizing_dict,
+                upsample=False if self.trainer is None else self.hparams.upsample,
             ),
             batch_size=self.hparams.batch_size,
         )
