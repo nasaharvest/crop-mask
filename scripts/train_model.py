@@ -25,9 +25,9 @@ data_folder = str(Path(module_path) / "data")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--target_bbox_key", type=str, default="Uganda")
+    parser.add_argument("--target_bbox_key", type=str, default="Ethiopia_Tigray_10")
     parser.add_argument("--train_datasets", type=str, default=all_datasets_str)
-    parser.add_argument("--eval_datasets", type=str, default="Uganda,")
+    parser.add_argument("--eval_datasets", type=str, default="Ethiopia,")
     parser.add_argument("--max_epochs", type=int, default=1000)
     parser.add_argument("--patience", type=int, default=10)
     parser.add_argument("--data_folder", type=str, default=data_folder)
