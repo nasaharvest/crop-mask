@@ -10,7 +10,7 @@ import ee
 import sys
 
 from src.bounding_boxes import bounding_boxes
-from src.ETL.ee_boundingbox import EEBoundingBox
+from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
 from src.ETL.constants import (
     START,
@@ -154,6 +154,7 @@ class RegionExporter(EarthEngineExporter):
         end_date: Optional[date] = None,
         season: Optional[Season] = None,
         metres_per_polygon: Optional[int] = 10000,
+        region_bbox: Optional[BoundingBox] = None,
     ):
         r"""
         Run the regional exporter. For each label, the exporter will export
@@ -168,9 +169,10 @@ class RegionExporter(EarthEngineExporter):
             boxes of (max) area metres_per_polygon * metres_per_polygon. It is better to instead
             split the area once it has been exported
         """
-        if self.sentinel_dataset not in bounding_boxes:
-            raise ValueError(f"{self.sentinel_dataset} was not found in bounding_boxes.py")
-        region_bbox = bounding_boxes[self.sentinel_dataset]
+        if region_bbox is None:
+            if self.sentinel_dataset not in bounding_boxes:
+                raise ValueError(f"{self.sentinel_dataset} was not found in bounding_boxes.py")
+            region_bbox = bounding_boxes[self.sentinel_dataset]
 
         if season is None and end_date is None:
             raise ValueError("One of season or end_date must be specified.")
