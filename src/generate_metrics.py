@@ -89,7 +89,9 @@ def get_metrics_for_all_models(test_mode: bool = False):
 
 if __name__ == "__main__":
 
-    eval_sets = ["Rwanda", "Kenya", "Togo", "Uganda"]
+    # Experiment running models on different validation sets
+    # eval_sets = ["Rwanda", "Kenya", "Togo", "Uganda"]
+    eval_sets = ["Ethiopia"]
     metrics_for_datasets: Dict[str, Dict] = {}
     for model_name in ["Global", "Rwanda", "Kenya", "Togo", "Uganda", "Uganda_surrounding_5"]:
         metrics_for_datasets[model_name] = {}
@@ -97,12 +99,15 @@ if __name__ == "__main__":
 
         for eval_set in eval_sets:
 
-            f1 = get_metrics(
-                model, test_mode=False, alternate_test_sets=(eval_set,), alternate_bbox_key=eval_set
-            )["metrics"]["unencoded_val_local_f1_score"]
+            metrics = get_metrics(
+                model,
+                test_mode=False,
+                alternate_test_sets=(eval_set,),
+                alternate_bbox_key="Ethiopia_Tigray",
+            )["metrics"]
 
-            metrics_for_datasets[model_name][eval_set] = f1
+            metrics_for_datasets[model_name][eval_set] = metrics
 
     print("\n")
     print(metrics_for_datasets)
-    # get_metrics_for_all_models(test_mode=False)
+    get_metrics_for_all_models(test_mode=False)

@@ -36,6 +36,10 @@ These can be used to create annual and in season crop maps.
     dvc pull data/features data/models        # For retraining or inference
     dvc pull data/processed                   # For labeled data analysis
     ```
+    If you get an "invalid grant" error, you may need to run:
+    ```bash
+    gcloud auth application-default login
+    ```
  
  ## 2. Adding new labeled data
 1. Ensure local environment is set up and all existing data is downloaded.
