@@ -22,6 +22,7 @@ These can be used to create annual and in season crop maps.
 ## 1. Setting up a local environment
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
+    conda config --set channel_priority true # Ensures conda will install environment
     conda env create -f environment-dev.yml   # Creates environment
     conda activate landcover-mapping      # Activates environment
     ```
@@ -30,8 +31,9 @@ These can be used to create annual and in season crop maps.
     earthengine authenticate                # Authenticates Earth Engine              
     python -c "import ee; ee.Initialize()"  # Will raise error if not setup 
     ```
-3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated, and run:
+3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and run:
     ```bash
+    gcloud auth application-default login     # Authenticates gcloud
     dvc pull                                  # All data (will take long time)
     dvc pull data/features data/models        # For retraining or inference
     dvc pull data/processed                   # For labeled data analysis
@@ -190,6 +192,14 @@ Once an inference run is complete the result is several small `.nc` files. These
     gsutil -m cp -r "gs://crop-mask-preds/<model>/<dataset>/"
     ```
 2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
+
+**[OPTIONAL] Uploading to Google Earth Engine**
+1. Use `gsutil` to upload all merged `.tif` files to Google Earth Engine.
+```
+gsutil -m cp "<country>/*.tif" gs://crop-mask-preds-merged/<country>/
+```
+
+2. Use `ee` to upload all merged `.tif` files to Google Earth Engine.
 
 
 ## 5. Tests
