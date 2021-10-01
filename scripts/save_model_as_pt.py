@@ -10,10 +10,10 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 sys.path.append("..")
 
-from src.models.model import Model
+from src.models.model import Model  # noqa: E402
 
 if __name__ == "__main__":
-    model_dir = Path(__file__).parent.parent / f"data/models"
+    model_dir = Path(__file__).parent.parent / "data/models"
     for model_ckpt in tqdm(list(model_dir.glob("*.ckpt"))):
 
         model_pt_path = str(model_ckpt).replace(".ckpt", ".pt")
