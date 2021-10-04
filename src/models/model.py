@@ -191,7 +191,7 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                upsample=False if self.trainer is None else self.hparams.upsample,
+                upsample=False,  # if self.trainer is None else self.hparams.upsample,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -547,10 +547,10 @@ class Model(pl.LightningModule):
 
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
-            "--learning_rate": (float, 0.001),
-            "--batch_size": (int, 64),
+            "--learning_rate": (float, 0.005),
+            "--batch_size": (int, 256),
             "--probability_threshold": (float, 0.5),
-            "--input_months": (int, 5),
+            "--input_months": (int, 12),
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
         }
@@ -564,7 +564,7 @@ class Model(pl.LightningModule):
 
         parser.add_argument("--forecast", dest="forecast", action="store_true")
         parser.add_argument("--do_not_forecast", dest="forecast", action="store_false")
-        parser.set_defaults(forecast=True)
+        parser.set_defaults(forecast=False)
 
         parser.add_argument("--cache", dest="cache", action="store_true")
         parser.add_argument("--do_not_cache", dest="cache", action="store_false")
