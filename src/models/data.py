@@ -145,7 +145,7 @@ class CropDataset(Dataset):
             print(f"BEFORE UPSAMPLING: pickle_files: {len(self.pickle_files)}")
             pickle_file_pairs = [
                 ("local", self.local_crop_pickle_files, self.local_non_crop_pickle_files),
-                ("global", self.global_crop_pickle_files, self.global_non_crop_pickle_files),
+                # ("global", self.global_crop_pickle_files, self.global_non_crop_pickle_files),
             ]
 
             for local_or_global, crop_pkl_files, non_crop_pkl_files in pickle_file_pairs:
