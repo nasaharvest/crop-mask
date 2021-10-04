@@ -91,23 +91,36 @@ if __name__ == "__main__":
 
     # Experiment running models on different validation sets
     # eval_sets = ["Rwanda", "Kenya", "Togo", "Uganda"]
-    eval_sets = ["Ethiopia"]
-    metrics_for_datasets: Dict[str, Dict] = {}
-    for model_name in ["Global", "Rwanda", "Kenya", "Togo", "Uganda", "Uganda_surrounding_5"]:
-        metrics_for_datasets[model_name] = {}
-        model = Model.load_from_checkpoint(str(data_dir / f"models/{model_name}.ckpt"))
+    # eval_sets = ["Ethiopia"]
+    # metrics_for_datasets: Dict[str, Dict] = {}
+    # for model_name in ["Global", "Rwanda", "Kenya", "Togo", "Uganda", "Uganda_surrounding_5"]:
+    #     metrics_for_datasets[model_name] = {}
+    #     model = Model.load_from_checkpoint(str(data_dir / f"models/{model_name}.ckpt"))
 
-        for eval_set in eval_sets:
+    #     for eval_set in eval_sets:
 
-            metrics = get_metrics(
-                model,
-                test_mode=False,
-                alternate_test_sets=(eval_set,),
-                alternate_bbox_key="Ethiopia_Tigray",
-            )["metrics"]
+    #         metrics = get_metrics(
+    #             model,
+    #             test_mode=False,
+    #             alternate_test_sets=(eval_set,),
+    #             alternate_bbox_key="Ethiopia_Tigray",
+    #         )["metrics"]
 
-            metrics_for_datasets[model_name][eval_set] = metrics
+    #         metrics_for_datasets[model_name][eval_set] = metrics
 
-    print("\n")
-    print(metrics_for_datasets)
-    get_metrics_for_all_models(test_mode=False)
+    # print("\n")
+    # print(metrics_for_datasets)
+    # get_metrics_for_all_models(test_mode=False)
+
+    model = Model.load_from_checkpoint(str(data_dir / f"models/Ethiopia_Tigray.ckpt"))
+    trainer = pl.Trainer()
+    trainer.model = model
+    trainer.main_progress_bar = tqdm(disable=True)
+    trainer.run_evaluation(test_mode=False)
+
+    metrics = {
+        k: round(float(v), 4)
+        for k, v in trainer.callback_metrics.items()
+        if (not k.startswith("encoded")) and ("_global_" not in k)
+    }
+    print(metrics)
