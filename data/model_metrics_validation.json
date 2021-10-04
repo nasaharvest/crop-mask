@@ -1,16 +1,16 @@
 {
-    "Rwanda": {
+    "Rwanda,": {
         "models": {
             "Rwanda.ckpt": {
                 "metrics": {
-                    "val_loss": 0.8641,
-                    "unencoded_val_local_roc_auc_score": 0.7582,
-                    "unencoded_val_local_precision_score": 0.5729,
-                    "unencoded_val_local_recall_score": 0.7917,
-                    "unencoded_val_local_f1_score": 0.6647,
-                    "unencoded_val_local_accuracy": 0.6628
+                    "val_loss": 0.7718,
+                    "unencoded_val_local_roc_auc_score": 0.7685,
+                    "unencoded_val_local_precision_score": 0.6237,
+                    "unencoded_val_local_recall_score": 0.8056,
+                    "unencoded_val_local_f1_score": 0.703,
+                    "unencoded_val_local_accuracy": 0.7126
                 },
-                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica",
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 341,
                 "local_validation_crop_percentage": 0.4223
             }
@@ -20,48 +20,64 @@
         "models": {
             "Ethiopia_Tigray.ckpt": {
                 "metrics": {
-                    "val_loss": 0.7511,
-                    "val_encoder_mae": 0.3413,
-                    "unencoded_val_local_roc_auc_score": 0.8532,
-                    "unencoded_val_local_precision_score": 0.4726,
-                    "unencoded_val_local_recall_score": 0.7753,
-                    "unencoded_val_local_f1_score": 0.5872,
-                    "unencoded_val_local_accuracy": 0.7927
+                    "val_loss": 0.5172,
+                    "unencoded_val_local_roc_auc_score": 0.8778,
+                    "unencoded_val_local_precision_score": 0.5285,
+                    "unencoded_val_local_recall_score": 0.7303,
+                    "unencoded_val_local_f1_score": 0.6132,
+                    "unencoded_val_local_accuracy": 0.8248
                 },
                 "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 468,
                 "local_validation_crop_percentage": 0.1902
+            },
+            "Ethiopia_Tigray_10.ckpt": {
+                "metrics": {
+                    "val_loss": 0.644,
+                    "unencoded_val_local_roc_auc_score": 0.8737,
+                    "unencoded_val_local_precision_score": 0.4251,
+                    "unencoded_val_local_recall_score": 0.7978,
+                    "unencoded_val_local_f1_score": 0.5547,
+                    "unencoded_val_local_accuracy": 0.7585
+                },
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
+                "local_validation_dataset_size": 472,
+                "local_validation_crop_percentage": 0.1886
             }
         }
     },
-    "Uganda": {
+    "Uganda,": {
         "models": {
             "Global.ckpt": {
                 "metrics": {
-                    "val_loss": 0.5727,
-                    "unencoded_val_local_roc_auc_score": 0.8147,
-                    "unencoded_val_local_precision_score": 0.3254,
-                    "unencoded_val_local_recall_score": 0.6833,
-                    "unencoded_val_local_f1_score": 0.4409,
-                    "unencoded_val_local_accuracy": 0.7729
+                    "val_loss": 0.5785,
+                    "unencoded_val_local_roc_auc_score": 0.8381,
+                    "unencoded_val_local_precision_score": 0.3108,
+                    "unencoded_val_local_recall_score": 0.7667,
+                    "unencoded_val_local_f1_score": 0.4423,
+                    "unencoded_val_local_accuracy": 0.7467
                 },
-                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica",
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 458,
                 "local_validation_crop_percentage": 0.131
             },
             "Uganda.ckpt": {
                 "metrics": {
-                    "val_loss": 0.6313,
-                    "unencoded_val_local_roc_auc_score": 0.774,
-                    "unencoded_val_local_precision_score": 0.32,
-                    "unencoded_val_local_recall_score": 0.6154,
-                    "unencoded_val_local_f1_score": 0.4211,
-                    "unencoded_val_local_accuracy": 0.7708
+                    "val_loss": 0.7155,
+                    "unencoded_val_local_roc_auc_score": 0.8013,
+                    "unencoded_val_local_precision_score": 0.3008,
+                    "unencoded_val_local_recall_score": 0.7692,
+                    "unencoded_val_local_f1_score": 0.4324,
+                    "unencoded_val_local_accuracy": 0.7266
                 },
-                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica",
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 384,
                 "local_validation_crop_percentage": 0.1354
-            },
+            }
+        }
+    },
+    "Uganda": {
+        "models": {
             "Uganda_surrounding_10.ckpt": {
                 "metrics": {
                     "val_loss": 0.59,
@@ -116,35 +132,35 @@
             }
         }
     },
-    "Togo": {
+    "Togo,": {
         "models": {
             "Togo.ckpt": {
                 "metrics": {
-                    "val_loss": 0.4963,
-                    "unencoded_val_local_roc_auc_score": 0.8524,
-                    "unencoded_val_local_precision_score": 0.8235,
-                    "unencoded_val_local_recall_score": 0.8025,
-                    "unencoded_val_local_f1_score": 0.8129,
-                    "unencoded_val_local_accuracy": 0.7875
+                    "val_loss": 0.3409,
+                    "unencoded_val_local_roc_auc_score": 0.9309,
+                    "unencoded_val_local_precision_score": 0.8659,
+                    "unencoded_val_local_recall_score": 0.9045,
+                    "unencoded_val_local_f1_score": 0.8847,
+                    "unencoded_val_local_accuracy": 0.8645
                 },
-                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica",
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 273,
                 "local_validation_crop_percentage": 0.5751
             }
         }
     },
-    "Kenya": {
+    "Kenya,": {
         "models": {
             "Kenya.ckpt": {
                 "metrics": {
-                    "val_loss": 0.1978,
-                    "unencoded_val_local_roc_auc_score": 0.9715,
-                    "unencoded_val_local_precision_score": 0.9403,
-                    "unencoded_val_local_recall_score": 0.9545,
-                    "unencoded_val_local_f1_score": 0.9474,
-                    "unencoded_val_local_accuracy": 0.9268
+                    "val_loss": 0.1496,
+                    "unencoded_val_local_roc_auc_score": 0.9842,
+                    "unencoded_val_local_precision_score": 0.9428,
+                    "unencoded_val_local_recall_score": 0.9714,
+                    "unencoded_val_local_f1_score": 0.9569,
+                    "unencoded_val_local_accuracy": 0.9396
                 },
-                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica",
+                "training_data": "geowiki_landcover_2017,Kenya,Mali,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica,Ethiopia",
                 "local_validation_dataset_size": 861,
                 "local_validation_crop_percentage": 0.6899
             }
