@@ -10,7 +10,7 @@ from pprint import pprint
 
 sys.path.append("..")
 
-from utils import get_dvc_dir  # noqa: E402
+from src.utils import get_dvc_dir  # noqa: E402
 from src.ETL.constants import (  # noqa: E402
     CROP_PROB,
     DEST_TIF,
