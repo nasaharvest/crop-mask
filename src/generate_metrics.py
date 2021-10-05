@@ -20,8 +20,6 @@ data_dir = Path(__file__).parent.parent / "data"
 model_thresholds = {
     "Ethiopia_Tigray": 0.89,
     "Uganda": 0.91,
-    "Uganda_surrounding_2": 0.27,
-    "Uganda_surrounding_10": 0.54,
     "Global": 0.86,
     "Togo": 0.37,
     "Kenya": 0.6,
