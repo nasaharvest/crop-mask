@@ -17,6 +17,16 @@ from src.bounding_boxes import bounding_boxes  # noqa: E402
 
 data_dir = Path(__file__).parent.parent / "data"
 
+model_thresholds = {
+    "Ethiopia_Tigray": 0.89,
+    "Uganda": 0.91,
+    "Uganda_surrounding_2": 0.27,
+    "Uganda_surrounding_10": 0.54,
+    "Global": 0.86,
+    "Togo": 0.37,
+    "Kenya": 0.6,
+}
+
 
 def get_metrics(
     model: pl.LightningModule,
@@ -66,11 +76,13 @@ def get_metrics_for_all_models(test_mode: bool = False):
     for i, model_path in enumerate(model_paths):
         print(f"\n{i+1}/{len(model_paths)}: {model_path.name}")
 
-        # datetime.fromtimestamp(p.stat().st_ctime).strftime("%Y-%m-%d-%H:%M")
-
         model = Model.load_from_checkpoint(str(model_path))
+        if model_path.stem in model_thresholds:
+            model.hparams.probability_threshold = model_thresholds[model_path.stem]
 
         key = model.hparams.eval_datasets
+        if key.endswith(","):
+            key = key[:-1]
 
         if key not in model_metrics:
             model_metrics[key] = {"models": {}}
@@ -90,10 +102,9 @@ def get_metrics_for_all_models(test_mode: bool = False):
 if __name__ == "__main__":
 
     # Experiment running models on different validation sets
-    # eval_sets = ["Rwanda", "Kenya", "Togo", "Uganda"]
-    # eval_sets = ["Ethiopia"]
+    # eval_sets = ["Ethiopia_Tigray_2020"]
     # metrics_for_datasets: Dict[str, Dict] = {}
-    # for model_name in ["Global", "Rwanda", "Kenya", "Togo", "Uganda", "Uganda_surrounding_5"]:
+    # for model_name in ["Ethiopia_Tigray"]:
     #     metrics_for_datasets[model_name] = {}
     #     model = Model.load_from_checkpoint(str(data_dir / f"models/{model_name}.ckpt"))
 
@@ -102,8 +113,7 @@ if __name__ == "__main__":
     #         metrics = get_metrics(
     #             model,
     #             test_mode=False,
-    #             alternate_test_sets=(eval_set,),
-    #             alternate_bbox_key="Ethiopia_Tigray",
+    #             # alternate_test_sets=(eval_set,),
     #         )["metrics"]
 
     #         metrics_for_datasets[model_name][eval_set] = metrics
