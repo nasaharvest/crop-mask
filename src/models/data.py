@@ -17,6 +17,8 @@ from src.ETL.ee_boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
 
+data_threshold = 0.5
+
 
 class CropDataset(Dataset):
 
@@ -27,7 +29,6 @@ class CropDataset(Dataset):
         data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
-        probability_threshold: float,
         remove_b1_b10: bool,
         cache: bool,
         upsample: bool,
@@ -39,7 +40,6 @@ class CropDataset(Dataset):
     ) -> None:
 
         logger.info(f"Initializating {subset} CropDataset")
-        self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
 
         if not data_folder.exists():
@@ -100,7 +100,7 @@ class CropDataset(Dataset):
                 # Check if pickle file should be added to CropDataset
                 is_local = datainstance.isin(self.target_bbox)
 
-                if datainstance.crop_probability > self.probability_threshold:
+                if datainstance.crop_probability > data_threshold:
                     if is_local:
                         self.local_crop_pickle_files.append(p)
                     else:
@@ -333,7 +333,7 @@ class CropDataset(Dataset):
         is_global = not target_datainstance.isin(self.target_bbox)
 
         if hasattr(target_datainstance, "crop_probability"):
-            crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
+            crop_int = int(target_datainstance.crop_probability >= data_threshold)
         else:
             logger.error(
                 "target_datainstance missing mandatory field crop_probability, "
