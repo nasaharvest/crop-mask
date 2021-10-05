@@ -14,7 +14,7 @@ from src.datasets_labeled import labeled_datasets  # noqa: E402
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    dataset_name = "Ethiopia"
+    dataset_name = "Ethiopia_Tigray_2020"
     for d in labeled_datasets:
         if d.dataset == dataset_name:
             d.create_pickled_labeled_dataset()
