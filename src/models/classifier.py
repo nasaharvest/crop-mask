@@ -124,7 +124,7 @@ class Classifier(pl.LightningModule):
             # assumes this is being run from "scripts"
             "--classifier_vector_size": (int, 128),
             "--classifier_base_layers": (int, 1),
-            "--classifier_dropout": (float, 0.2),
+            "--classifier_dropout": (float, 0.1),
             "--num_global_layers": (int, 1),
             "--num_local_layers": (int, 2),
         }
