@@ -68,7 +68,8 @@ class CropDataset(Dataset):
         for dataset in datasets:
             features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
             if not features_dir.exists():
-                raise FileNotFoundError(f"{features_dir} does not exist")
+                logger.warning(f"{features_dir} does not exist, skipping")
+                continue
             pickle_files = self.load_pickle_files(
                 features_dir=features_dir,
                 subset_name=subset,
@@ -108,7 +109,7 @@ class CropDataset(Dataset):
                     if is_local:
                         self.local_non_crop_pickle_files.append(p)
                     else:
-                        self.global_crop_pickle_files.append(p)
+                        self.global_non_crop_pickle_files.append(p)
 
                 if (
                     (not is_local_only and not is_global_only)
@@ -140,21 +141,39 @@ class CropDataset(Dataset):
             )
 
         self.cache = False
-
         if upsample:
-            local_crop = len(self.local_crop_pickle_files)
-            local_non_crop = len(self.local_non_crop_pickle_files)
-            if local_crop == 0 or local_non_crop == 0:
-                raise ValueError("No local or non-local crop pkl files found.")
+            # Upsample local and  global crop pickle files
+            print(f"BEFORE UPSAMPLING: pickle_files: {len(self.pickle_files)}")
+            pickle_file_pairs = [
+                ("local", self.local_crop_pickle_files, self.local_non_crop_pickle_files),
+                # ("global", self.global_crop_pickle_files, self.global_non_crop_pickle_files),
+            ]
 
-            if local_crop > local_non_crop:
-                while local_crop > local_non_crop:
-                    self.pickle_files.append(random.choice(self.local_non_crop_pickle_files))
-                    local_non_crop += 1
-            elif local_crop < local_non_crop:
-                while local_crop < local_non_crop:
-                    self.pickle_files.append(random.choice(self.local_crop_pickle_files))
-                    local_crop += 1
+            for local_or_global, crop_pkl_files, non_crop_pkl_files in pickle_file_pairs:
+                crop = len(crop_pkl_files)
+                non_crop = len(non_crop_pkl_files)
+                if crop == 0 or non_crop == 0:
+                    print(
+                        f"WARNING: {local_or_global} {subset} cannot upsample: "
+                        + f"crop: {crop} and non-crop: {non_crop}"
+                    )
+                elif crop > non_crop:
+                    print(
+                        f"Upsampling: {local_or_global} {subset} "
+                        + f"non-crop: {non_crop} to crop: {crop}"
+                    )
+                    while crop > non_crop:
+                        self.pickle_files.append(random.choice(non_crop_pkl_files))
+                        non_crop += 1
+                elif crop < non_crop:
+                    print(
+                        f"Upsampling: {local_or_global} {subset} "
+                        + f"crop: {crop} to non-crop: {non_crop}"
+                    )
+                    while crop < non_crop:
+                        self.pickle_files.append(random.choice(crop_pkl_files))
+                        crop += 1
+            print(f"AFTER UPSAMPLING: pickle_files: {len(self.pickle_files)}")
 
         if cache:
             self.x, self.y, self.weights = self.to_array()
