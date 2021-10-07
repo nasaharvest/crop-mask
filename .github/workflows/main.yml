@@ -37,7 +37,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: landcover-mapping
-        channel-priority: strict
+        channel-priority: true
         environment-file: environment-dev.yml
         auto-activate-base: false
         use-only-tar-bz2: true
