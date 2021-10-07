@@ -139,6 +139,7 @@ def run_evaluation(
     model = Model.load_from_checkpoint(model_ckpt_path)
     metrics = run_evaluation_on_one_model(model)
     if alternative_threshold:
+        model = Model.load_from_checkpoint(model_ckpt_path)
         model.hparams.probability_threshold = alternative_threshold
         alternative_metrics = run_evaluation_on_one_model(model)
         for k, v in alternative_metrics.items():
