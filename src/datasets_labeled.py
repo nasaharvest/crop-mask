@@ -383,13 +383,33 @@ labeled_datasets = [
         dataset="digitalearthafrica",
         country="global",
         sentinel_dataset="earth_engine_digitalearthafrica",
-        processors=(
-            Processor(
-                filename="Eastern_training_data_20210427.geojson",
-                crop_prob=lambda df: df["Class"],
-                end_year=2021,
-                train_val_test=(1.0, 0.0, 0.0),
-            ),
+        processors=tuple(
+            [
+                Processor(
+                    filename="Eastern_training_data_20210427.geojson",
+                    crop_prob=lambda df: df["Class"].astype(float),
+                    end_year=2021,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+                Processor(
+                    filename="sahael/ceo_td_polys.geojson",
+                    crop_prob=lambda df: df["Class"].astype(float),
+                    end_year=2020,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+                Processor(
+                    filename="sahael/validation_samples.shp",
+                    crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                    end_year=2020,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+                Processor(
+                    filename="sahael/Sahel_region_RE_sample.geojson",
+                    crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                    end_year=2020,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+            ]
         ),
     ),
     LabeledDataset(

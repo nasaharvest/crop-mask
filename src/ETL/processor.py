@@ -140,6 +140,8 @@ class Processor:
             df[CROP_PROB] = self.crop_prob
         else:
             df[CROP_PROB] = self.crop_prob(df)
+            if df[CROP_PROB].dtype != float:
+                raise ValueError("Crop probability must be a float")
 
         if self.end_year:
             df[END] = date(self.end_year, *self.end_month_day)
