@@ -45,7 +45,7 @@ def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = df[df[LON].notnull() & df[LAT].notnull() & (df["flagged"] == False)].copy()
+    df = df[df[LON].notnull() & df[LAT].notnull() & (df["flagged"] == False)].copy()  # noqa E712
     # CEO data may have duplicate samples labeled by the same person
     df = df[~df[[LAT, LON, "email"]].duplicated(keep="first")]
     return df
