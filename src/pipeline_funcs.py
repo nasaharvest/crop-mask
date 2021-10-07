@@ -168,12 +168,13 @@ def model_pipeline(
         threshold = hparams.alternative_threshold if "alternative_threshold" in hparams else None
         model, metrics = run_evaluation(str(model_ckpt_path), threshold)
         print(f"\n\u2714 {model_name} completed evaluation")
+        print(metrics)
 
     else:
         print(f"\u2714 {model_name} beginning training")
         model, metrics = train_model(hparams, model_ckpt_path)
         print(f"\n\u2714 {model_name} completed training and evaluation")
-
+        print(metrics)
         for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
             if key in metrics:
                 if metrics[key] > 0.6:
