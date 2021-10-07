@@ -1,4 +1,4 @@
-name: landcover-mapping2
+name: landcover-mapping
 channels:
   - main
   - pytorch
