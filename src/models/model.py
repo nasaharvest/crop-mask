@@ -167,6 +167,7 @@ class Model(pl.LightningModule):
             data_folder=self.data_folder,
             subset=subset,
             datasets=datasets,
+            probability_threshold=0.5,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
