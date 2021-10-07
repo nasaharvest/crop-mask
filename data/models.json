@@ -89,7 +89,7 @@
         "max_lon": 180,
         "min_lat": -90,
         "max_lat": 90,
-        "alternative_threshold": 0.86,
+        "alternative_threshold": 0.54,
         "eval_datasets": [
             "Uganda"
         ],
@@ -133,7 +133,7 @@
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "alternative_threshold": 0.89,
+        "alternative_threshold": 0.78,
         "eval_datasets": [
             "Ethiopia_Tigray_2021"
         ],
