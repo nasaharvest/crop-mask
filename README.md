@@ -63,24 +63,35 @@ These can be used to create annual and in season crop maps.
 Training can be done locally or on grid.ai.
 
 #### Training locally
-
-You must have the specified datasets in `data/features`, then inside `scripts/` run:
-```bash
-python train_model.py \
-    --train_datasets "geowiki_landcover_2017,Kenya,digitalearthafrica" \
-    --eval_datasets "Kenya" \
-    --target_bbox_key "Kenya"
+Add a new entry to [data/models.json](data/models.json), for example:
+```json
+{
+    "model_name": "Ethiopia_Tigray_2021", 
+    "min_lon": 36.45,
+    "max_lon": 40.00,
+    "min_lat": 12.25,
+    "max_lat": 14.895,
+    "eval_datasets": ["Ethiopia_Tigray_2021"],
+    "train_datasets": ["geowiki_landcover_2017" "Ethiopia"]
+}
 ```
+Then to train and evaluate the model run:
+```python
+python scripts/model_pipeline.py
+```
+
+**What do the does the json entry mean?**
 `train_datasets` tells the model to train on data found in:
 - `features/geowiki_landcover_2017/training/*.pkl`
-- `features/Kenya/training/*.pkl`
-- `features/digitalearthafrica/training/*.pkl`
+- `features/Ethiopia/training/*.pkl`
 
 `eval_datasets` tells the model to evaluate on data found in:
-- `features/Kenya/validation/*.pkl`
+- `features/Ethiopia/validation/*.pkl`
 - `features/Kenya/testing/*.pkl`
 
-`target_bbox_key` tells the model to use the bounding box "Kenya" found in [src/bounding_boxes.py](src/bounding_boxes.py)
+`min/max_lat/lon` tells the model which items to consider in the local and global head
+
+Any other valid model parameter can be added to this entry.
 
 
 #### Training on grid.ai

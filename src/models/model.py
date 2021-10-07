@@ -23,6 +23,7 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
+from src.ETL.ee_boundingbox import BoundingBox
 from src.bounding_boxes import bounding_boxes
 from src.utils import set_seed
 from src.datasets_labeled import labeled_datasets
@@ -77,10 +78,12 @@ class Model(pl.LightningModule):
         self.hparams = hparams
         self.data_folder = Path(hparams.data_folder)
 
-        bbox_key = hparams.target_bbox_key
-        if bbox_key not in bounding_boxes:
-            raise ValueError(f"target_bbox_key: {bbox_key} was not found in bounding_boxes.py")
-        self.target_bbox = bounding_boxes[bbox_key]
+        if "target_bbox_key" in hparams:
+            self.target_bbox = bounding_boxes[hparams.target_bbox_key]
+        else:
+            self.target_bbox = BoundingBox(
+                hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
+            )
 
         self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
         self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
@@ -164,7 +167,7 @@ class Model(pl.LightningModule):
             data_folder=self.data_folder,
             subset=subset,
             datasets=datasets,
-            probability_threshold=self.hparams.probability_threshold,
+            probability_threshold=0.5,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
@@ -333,12 +336,16 @@ class Model(pl.LightningModule):
 
         input_to_encode = x[:, : self.hparams.input_months, :]
 
+        loss: Union[float, torch.Tensor] = 0
         if self.hparams.forecast:
             # we will predict every timestep except the first one
             output_to_predict = x[:, 1:, :]
             encoder_output = self.forecaster(input_to_encode)
-            encoder_loss = self.forecaster_loss(encoder_output, output_to_predict)
-            loss: Union[float, torch.Tensor] = encoder_loss
+
+            # The evaluation dataset may not have ground truth months available
+            # in which case the loss for the forecaster cannot be calculated
+            if training or self.hparams.evaluate_forecast:
+                loss = self.forecaster_loss(encoder_output, output_to_predict)
 
             final_encoded_input = torch.cat(
                 (
@@ -365,10 +372,16 @@ class Model(pl.LightningModule):
             if log_loss:
                 output_dict["log"] = {}
 
-            # we now repeat label and is_global
-            x = torch.cat((self.add_noise(x, training), final_encoded_input), dim=0)
-            label = torch.cat((label, label), dim=0)
-            is_global = torch.cat((is_global, is_global), dim=0)
+            if training or self.hparams.evaluate_forecast:
+                # We only concatente the full time series with the
+                # encoded/forecasted time series if the full time series
+                # is available for evaluation
+                x = torch.cat((self.add_noise(x, training), final_encoded_input), dim=0)
+                label = torch.cat((label, label), dim=0)
+                is_global = torch.cat((is_global, is_global), dim=0)
+            else:
+                x = final_encoded_input
+
         else:
             loss = 0
             output_dict = {}
@@ -448,27 +461,34 @@ class Model(pl.LightningModule):
             torch.cat(encoded_all).detach().cpu().numpy(),
         )
 
+    @staticmethod
+    def _get_output_as_np(outputs, label: str):
+        return torch.cat([x[label] for x in outputs]).detach().cpu().numpy()
+
     def _interpretable_metrics(self, outputs, input_prefix: str, output_prefix: str) -> Dict:
 
         output_dict = {}
 
         if self.hparams.forecast:
-            u_labels, e_labels = self._split_tensor(outputs, f"{input_prefix}label")
+            if self.hparams.evaluate_forecast:
+                u_labels, e_labels = self._split_tensor(outputs, f"{input_prefix}label")
+                u_preds, e_preds = self._split_tensor(outputs, f"{input_prefix}pred")
+            else:
+                e_preds = self._get_output_as_np(outputs, f"{input_prefix}pred")
+                e_labels = self._get_output_as_np(outputs, f"{input_prefix}label")
 
-            u_preds, e_preds = self._split_tensor(outputs, f"{input_prefix}pred")
         else:
-            u_preds = torch.cat([x[f"{input_prefix}pred"] for x in outputs]).detach().cpu().numpy()
-            u_labels = (
-                torch.cat([x[f"{input_prefix}label"] for x in outputs]).detach().cpu().numpy()
-            )
-
-        output_dict.update(
-            self._output_metrics(u_preds, u_labels, f"unencoded_{output_prefix}{input_prefix}")
-        )
+            u_preds = self._get_output_as_np(outputs, f"{input_prefix}pred")
+            u_labels = self._get_output_as_np(outputs, f"{input_prefix}label")
 
         if self.hparams.forecast:
             output_dict.update(
                 self._output_metrics(e_preds, e_labels, f"encoded_{output_prefix}{input_prefix}")
+            )
+
+        if not self.hparams.forecast or (self.hparams.forecast and self.hparams.evaluate_forecast):
+            output_dict.update(
+                self._output_metrics(u_preds, u_labels, f"unencoded_{output_prefix}{input_prefix}")
             )
 
         return output_dict
@@ -495,8 +515,8 @@ class Model(pl.LightningModule):
                 .cpu()
                 .numpy()
             )
-
-            logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
+            if self.hparams.evaluate_forecast:
+                logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
         if self.hparams.multi_headed:
             logs.update(self._interpretable_metrics(outputs, "global_", "val_"))
@@ -542,17 +562,18 @@ class Model(pl.LightningModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
-
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
 
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
-            "--learning_rate": (float, 0.005),
+            "--learning_rate": (float, 0.001),
             "--batch_size": (int, 256),
             "--probability_threshold": (float, 0.5),
             "--input_months": (int, 12),
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
+            "--max_epochs": (int, 1000),
+            "--patience": (int, 10),
         }
 
         for key, val in parser_args.items():

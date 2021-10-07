@@ -68,7 +68,8 @@ class CropDataset(Dataset):
         for dataset in datasets:
             features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
             if not features_dir.exists():
-                raise FileNotFoundError(f"{features_dir} does not exist")
+                logger.warning(f"{features_dir} does not exist, skipping")
+                continue
             pickle_files = self.load_pickle_files(
                 features_dir=features_dir,
                 subset_name=subset,
@@ -153,18 +154,21 @@ class CropDataset(Dataset):
                 non_crop = len(non_crop_pkl_files)
                 if crop == 0 or non_crop == 0:
                     print(
-                        f"WARNING: {local_or_global} {subset} cannot upsample: crop: {crop} and non-crop: {non_crop}"
+                        f"WARNING: {local_or_global} {subset} cannot upsample: "
+                        + f"crop: {crop} and non-crop: {non_crop}"
                     )
                 elif crop > non_crop:
                     print(
-                        f"Upsampling: {local_or_global} {subset} crop: {crop} to non-crop: {non_crop}"
+                        f"Upsampling: {local_or_global} {subset} "
+                        + f"non-crop: {non_crop} to crop: {crop}"
                     )
                     while crop > non_crop:
                         self.pickle_files.append(random.choice(non_crop_pkl_files))
                         non_crop += 1
                 elif crop < non_crop:
                     print(
-                        f"Upsampling: {local_or_global} {subset} crop: {crop} to non-crop: {non_crop}"
+                        f"Upsampling: {local_or_global} {subset} "
+                        + f"crop: {crop} to non-crop: {non_crop}"
                     )
                     while crop < non_crop:
                         self.pickle_files.append(random.choice(crop_pkl_files))

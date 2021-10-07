@@ -45,7 +45,9 @@ def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = df[df[LON].notnull() & df[LAT].notnull() & (df["flagged"] == False)].copy()
+    df = df[df[LON].notnull() & df[LAT].notnull() & (df["flagged"] == False)].copy()  # noqa E712
+    # CEO data may have duplicate samples labeled by the same person
+    df = df[~df[[LAT, LON, "email"]].duplicated(keep="first")]
     return df
 
 
@@ -397,26 +399,6 @@ labeled_datasets = [
         processors=tuple(
             [
                 Processor(
-                    filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-09-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 1.0, 0.0),
-                    clean_df=clean_ceo_data,
-                ),
-                Processor(
-                    filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-09-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 1.0, 0.0),
-                    clean_df=clean_ceo_data,
-                ),
-            ]
-        )
-        + tuple(
-            [
-                Processor(
                     filename=f"tigray/{filename}.shp",
                     crop_prob=1.0,
                     end_year=2020,
@@ -452,6 +434,56 @@ labeled_datasets = [
                     train_val_test=(1.0, 0.0, 0.0),
                 )
                 for year in [2019, 2020]
+            ]
+        ),
+    ),
+    LabeledDataset(
+        dataset="Ethiopia_Tigray_2020",
+        country="Ethiopia",
+        sentinel_dataset="earth_engine_ethiopia_tigray_2020",
+        processors=tuple(
+            [
+                Processor(
+                    filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-10-04.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2021,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+                Processor(
+                    filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-10-04.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2021,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+            ]
+        ),
+    ),
+    LabeledDataset(
+        dataset="Ethiopia_Tigray_2021",
+        country="Ethiopia",
+        sentinel_dataset="earth_engine_ethiopia_tigray_2021",
+        processors=tuple(
+            [
+                Processor(
+                    filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2021-10-04.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2022,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 1.0, 0.0),
+                    clean_df=clean_ceo_data,
+                ),
+                Processor(
+                    filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2022,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 1.0, 0.0),
+                    clean_df=clean_ceo_data,
+                ),
             ]
         ),
     ),
