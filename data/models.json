@@ -155,7 +155,6 @@
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "alternative_threshold": 0.89,
         "input_months": 5,
         "forecast": true,
         "evaluate_forecast": false,
