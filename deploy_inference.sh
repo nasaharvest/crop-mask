@@ -1,7 +1,18 @@
+
+# exit when any command fails
+set -e
+
+# Ensure the models on DVC are being deployed
+dvc pull data/models.dvc
+
 export TAG=us-central1-docker.pkg.dev/bsos-geog-harvest1/crop-mask/crop-mask
-export MODELS="Global Kenya Rwanda Togo Uganda Uganda_surrounding_20"
 export BUCKET=crop-mask-earthengine
 export URL="https://crop-mask-grxg7bzh2a-uc.a.run.app"
+export MODELS=$(
+        python -c \
+        "from pathlib import Path; \
+        print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
+)
 
 docker build -f Dockerfile.inference . --build-arg MODELS="$MODELS" -t $TAG
 docker push $TAG

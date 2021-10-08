@@ -48,14 +48,11 @@ if __name__ == "__main__":
     with models_json.open() as f:
         models_params_list = json.load(f)
 
-    with model_validation_metrics.open() as f:
-        old_model_metrics = json.load(f)
-
     new_model_metrics = {}
     for params in models_params_list:
         hparams = hparams_from_json(params)
         try:
-            model_name, metrics = model_pipeline(hparams, old_model_metrics)
+            model_name, metrics = model_pipeline(hparams)
             new_model_metrics[model_name] = metrics
         except Exception as e:
             print(f"\u2716 {str(e)}")
