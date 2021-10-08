@@ -13,7 +13,7 @@ from src.datasets_labeled import labeled_datasets  # noqa: E402
 from src.bounding_boxes import bounding_boxes  # noqa: E402
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
-from src.utils import get_dvc_dir
+from src.utils import get_dvc_dir  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
