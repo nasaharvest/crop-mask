@@ -63,13 +63,8 @@ def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
     trainer.save_checkpoint(model_ckpt_path)
 
 
-def save_model_pt(model: Model, model_ckpt_path: Path):
-    model_pt_path = model_ckpt_path.with_suffix(".pt")
-    if model_pt_path.exists():
-        model_pt_path.unlink()
-
+def save_model_pt(model: Model, model_pt_path: Path):
     model_pt_path.parent.mkdir(parents=True, exist_ok=True)
-
     sm = torch.jit.script(model)
     sm.save(str(model_pt_path))
 
@@ -139,9 +134,9 @@ def run_evaluation(
     model = Model.load_from_checkpoint(model_ckpt_path)
     metrics = run_evaluation_on_one_model(model)
     if alternative_threshold:
-        model = Model.load_from_checkpoint(model_ckpt_path)
-        model.hparams.probability_threshold = alternative_threshold
-        alternative_metrics = run_evaluation_on_one_model(model)
+        alternative_model = Model.load_from_checkpoint(model_ckpt_path)
+        alternative_model.hparams.probability_threshold = alternative_threshold
+        alternative_metrics = run_evaluation_on_one_model(alternative_model)
         for k, v in alternative_metrics.items():
             metrics[f"thresh{alternative_threshold}_{k}"] = v
 
@@ -150,34 +145,31 @@ def run_evaluation(
     return model, metrics
 
 
-def model_pipeline(
-    hparams: Namespace, old_model_metrics: Dict[str, Dict[str, float]] = {}
-) -> Tuple[str, Dict[str, float]]:
+def model_pipeline(hparams: Namespace) -> Tuple[str, Dict[str, float]]:
 
     hparams = validate(hparams)
 
     model_name = hparams.model_name
     model_ckpt_path = Path(f"{hparams.model_dir}/{model_name}.ckpt")
-
-    if model_name in old_model_metrics:
-        print(f"\u2714 {model_name} exists in old model metrics, skipping.")
-        return model_name, old_model_metrics[model_name]
+    model_pt_path = model_ckpt_path.with_suffix(".pt")
 
     if model_ckpt_path.exists():
-        print(f"\u2714 {model_name} exists, running evaluation only")
+        print(f"\n\u2714 {model_name} exists, running evaluation only")
         threshold = hparams.alternative_threshold if "alternative_threshold" in hparams else None
         model, metrics = run_evaluation(str(model_ckpt_path), threshold)
-        print(f"\n\u2714 {model_name} completed evaluation")
+        print(f" \u2714 {model_name} completed evaluation")
 
     else:
         print(f"\u2714 {model_name} beginning training")
         model, metrics = train_model(hparams, model_ckpt_path)
         print(f"\n\u2714 {model_name} completed training and evaluation")
+        print(metrics)
 
+    if not model_pt_path.exists():
         for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
             if key in metrics:
                 if metrics[key] > 0.6:
-                    save_model_pt(model, model_ckpt_path)
+                    save_model_pt(model, model_pt_path)
                 break
 
     return model_name, metrics
