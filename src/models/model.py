@@ -104,6 +104,9 @@ class Model(pl.LightningModule):
             # The number of instances per dataset (and therefore the weights) can
             # vary between the train / test / val sets - this ensures the normalizing
             # dict stays constant between them
+            if dataset.normalizing_dict is None:
+                raise ValueError("Normalizing dict must be calculated using dataset.")
+
             all_dataset_params[hparams.train_datasets] = {
                 "num_timesteps": dataset.num_timesteps,
                 "input_size": dataset.num_input_features,
