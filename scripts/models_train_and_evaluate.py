@@ -23,7 +23,7 @@ sys.path.append("..")
 
 from src.pipeline_funcs import model_pipeline  # noqa: E402
 from src.models import Model  # noqa: E402
-from src.utils import get_dvc_dir
+from src.utils import get_dvc_dir  # noqa: E402
 
 models_folder = get_dvc_dir("models")
 data_folder = models_folder.parent
