@@ -5,8 +5,11 @@ Exports specified unlabeled dataset using Google Earth Engine
 
 import logging
 from argparse import ArgumentParser
+import os
 import sys
 
+# Change the working directory to the directory of this script
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
 from src.datasets_unlabeled import unlabeled_datasets  # noqa: E402
