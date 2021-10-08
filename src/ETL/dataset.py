@@ -72,6 +72,7 @@ class LabeledDataset(Dataset):
 
     # Process parameters
     processors: Tuple[Processor, ...] = ()
+    tiff_start_index: int = 0
 
     # Engineer parameters
     nan_fill: float = 0.0
@@ -143,7 +144,7 @@ class LabeledDataset(Dataset):
         df[DEST_TIF] = (
             source_filename_safe
             + "/"
-            + df.index.astype(str)
+            + (df.index + self.tiff_start_index).astype(str)
             + "_"
             + df["start_date"].astype(str)
             + "_"
