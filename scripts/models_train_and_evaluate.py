@@ -40,8 +40,14 @@ def hparams_from_json(params):
 
 
 if __name__ == "__main__":
+    retrain_all = True
     models_json = data_folder / "models.json"
     model_validation_metrics = data_folder / "model_metrics_validation.json"
+
+    if retrain_all:
+        all_dataset_params_path = Path(data_folder / "all_dataset_params.json")
+        if all_dataset_params_path.exists():
+            all_dataset_params_path.unlink()
 
     with models_json.open() as f:
         models_params_list = json.load(f)
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     for params in models_params_list:
         hparams = hparams_from_json(params)
         try:
-            model_name, metrics = model_pipeline(hparams)
+            model_name, metrics = model_pipeline(hparams, retrain_all)
             new_model_metrics[model_name] = metrics
         except Exception as e:
             print(f"\u2716 {str(e)}")
