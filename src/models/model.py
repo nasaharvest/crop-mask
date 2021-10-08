@@ -4,6 +4,7 @@ from pathlib import Path
 from src.ETL.dataset import LabeledDataset
 import numpy as np
 import logging
+import json
 import xarray as xr
 from tqdm import tqdm
 from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
@@ -81,28 +82,46 @@ class Model(pl.LightningModule):
         if "target_bbox_key" in hparams:
             self.target_bbox = bounding_boxes[hparams.target_bbox_key]
         else:
+            # Write out parameters explicitly so they are saved in the jit model
+            self.min_lon: float = hparams.min_lon
+            self.max_lon: float = hparams.max_lon
+            self.min_lat: float = hparams.min_lat
+            self.max_lat: float = hparams.max_lat
             self.target_bbox = BoundingBox(
                 hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
             )
 
         self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
         self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
-        dataset = self.get_dataset(subset="training", cache=False)
-        self.num_outputs = dataset.num_output_classes
-        self.num_timesteps = dataset.num_timesteps
-        self.input_size = dataset.num_input_features
 
-        # we save the normalizing dict because we calculate weighted
-        # normalization values based on the datasets we combine.
-        # The number of instances per dataset (and therefore the weights) can
-        # vary between the train / test / val sets - this ensures the normalizing
-        # dict stays constant between them
-        self.normalizing_dict: Optional[Dict[str, np.ndarray]] = dataset.normalizing_dict
+        with (self.data_folder / "all_dataset_params.json").open() as f:
+            all_dataset_params = json.load(f)
+
+        if hparams.train_datasets not in all_dataset_params:
+            dataset = self.get_dataset(subset="training", cache=False)
+            # we save the normalizing dict because we calculate weighted
+            # normalization values based on the datasets we combine.
+            # The number of instances per dataset (and therefore the weights) can
+            # vary between the train / test / val sets - this ensures the normalizing
+            # dict stays constant between them
+            all_dataset_params[hparams.train_datasets] = {
+                "num_timesteps": dataset.num_timesteps,
+                "input_size": dataset.num_input_features,
+                "normalizing_dict": {k: v.tolist() for k, v in dataset.normalizing_dict.items()},
+            }
+
+            with (self.data_folder / "all_dataset_params.json").open("w") as f:
+                json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
+
+        dataset_params = all_dataset_params[hparams.train_datasets]
+        self.num_timesteps = dataset_params["num_timesteps"]
+        self.input_size = dataset_params["input_size"]
 
         # Normalizing dict that is exposed
-        self.normalizing_dict_jit: Dict[str, List[float]] = {}
-        if self.normalizing_dict:
-            self.normalizing_dict_jit = {k: v.tolist() for k, v in self.normalizing_dict.items()}
+        self.normalizing_dict_jit: Dict[str, List[float]] = dataset_params["normalizing_dict"]
+        self.normalizing_dict: Optional[Dict[str, np.ndarray]] = {
+            k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
+        }
 
         if self.hparams.forecast:
             num_output_timesteps = self.num_timesteps - self.hparams.input_months
