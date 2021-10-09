@@ -40,7 +40,7 @@ def hparams_from_json(params):
 
 
 if __name__ == "__main__":
-    retrain_all = True
+    retrain_all = False
     models_json = data_folder / "models.json"
     model_validation_metrics = data_folder / "model_metrics_validation.json"
 
