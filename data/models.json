@@ -16,7 +16,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     },
@@ -37,7 +37,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     },
@@ -58,7 +58,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     },
@@ -79,7 +79,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     },
@@ -89,7 +89,8 @@
         "max_lon": 180,
         "min_lat": -90,
         "max_lat": 90,
-        "alternative_threshold": 0.54,
+        "alternative_threshold": 0.81,
+        "learning_rate": 0.005,
         "eval_datasets": [
             "Uganda"
         ],
@@ -101,7 +102,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     },
@@ -111,7 +112,6 @@
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "alternative_threshold": 0.89,
         "eval_datasets": [
             "Ethiopia_Tigray_2020"
         ],
@@ -123,29 +123,8 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
-        ]
-    },
-    {
-        "model_name": "Ethiopia_Tigray_2021",
-        "min_lon": 36.45,
-        "max_lon": 40.00,
-        "min_lat": 12.25,
-        "max_lat": 14.895,
-        "alternative_threshold": 0.78,
-        "eval_datasets": [
-            "Ethiopia_Tigray_2021"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
+            "digitalearthafrica_sahel",
             "Ethiopia"
         ]
     },
@@ -169,7 +148,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     }
