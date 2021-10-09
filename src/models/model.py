@@ -575,8 +575,8 @@ class Model(pl.LightningModule):
                 .cpu()
                 .numpy()
             )
-
-            output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
+            if self.hparams.evaluate_forecast:
+                output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
         if self.hparams.multi_headed:
             output_dict.update(self._interpretable_metrics(outputs, "global_", "test_"))
