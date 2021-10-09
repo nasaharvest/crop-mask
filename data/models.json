@@ -1,6 +1,7 @@
 [
     {
         "model_name": "Kenya",
+        "alternative_threshold": 0.51,
         "min_lon": 33.501,
         "max_lon": 42.283,
         "min_lat": -5.202,
@@ -17,11 +18,13 @@
             "Uganda",
             "open_buildings",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Togo",
+        "alternative_threshold": 0.31,
         "min_lon": -0.1501,
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
@@ -38,11 +41,13 @@
             "Uganda",
             "open_buildings",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Rwanda",
+        "alternative_threshold": 0.27,
         "min_lon": 28.841,
         "max_lon": 30.909,
         "min_lat": -2.854,
@@ -59,11 +64,13 @@
             "Uganda",
             "open_buildings",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Uganda",
+        "alternative_threshold": 0.89,
         "min_lon": 29.5794661801,
         "max_lon": 35.03599,
         "min_lat": -1.44332244223,
@@ -80,17 +87,17 @@
             "Uganda",
             "open_buildings",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Global",
+        "alternative_threshold": 0.82,
         "min_lon": -180,
         "max_lon": 180,
         "min_lat": -90,
         "max_lat": 90,
-        "alternative_threshold": 0.81,
-        "learning_rate": 0.005,
         "eval_datasets": [
             "Uganda"
         ],
@@ -103,11 +110,13 @@
             "Uganda",
             "open_buildings",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
+        "alternative_threshold": 0.68,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -130,6 +139,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
+        "alternative_threshold": 0.37,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
