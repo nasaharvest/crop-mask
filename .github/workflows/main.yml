@@ -1,8 +1,8 @@
 name: Build 
 
 on:
-  push:
-    branches: [ master ]
+  # push:
+  #   branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -59,24 +59,24 @@ jobs:
         files: coverage.xml
         fail_ci_if_error: true
         verbose: true
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+    # - name: Set up Cloud SDK
+    #   uses: google-github-actions/setup-gcloud@master
+    #   with:
+    #     project_id: ${{ secrets.GCP_PROJECT_ID }}
+    #     service_account_key: ${{ secrets.GCP_SA_KEY }}
+    #     export_default_credentials: true
               
-    - name: Get data for integration test
-      if: github.ref == 'refs/heads/master'
-      run: |
-        dvc pull data/features
-        dvc pull data/models
-        dvc pull data/test
-    - name: Run integration test
-      if: github.ref == 'refs/heads/master'
-      run: |
-        cd test
-        python -m unittest integration_test_predict.py
+    # - name: Get data for integration test
+    #   if: github.ref == 'refs/heads/master'
+    #   run: |
+    #     dvc pull data/features
+    #     dvc pull data/models
+    #     dvc pull data/test
+    # - name: Run integration test
+    #   if: github.ref == 'refs/heads/master'
+    #   run: |
+    #     cd test
+    #     python -m unittest integration_test_predict.py
       
 
 
