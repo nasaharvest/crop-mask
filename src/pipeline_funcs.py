@@ -3,7 +3,7 @@ from pathlib import Path
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from tqdm import tqdm
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import pytorch_lightning as pl
 import torch
@@ -131,7 +131,7 @@ def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, f
 
 
 def run_evaluation(
-    model_ckpt_path: str, alternative_threshold: Optional[float] = None
+    model_ckpt_path: Union[Path, str], alternative_threshold: Optional[float] = None
 ) -> Tuple[Model, Dict[str, float]]:
     model = Model.load_from_checkpoint(model_ckpt_path)
     metrics = run_evaluation_on_one_model(model)
