@@ -165,7 +165,7 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
         for k, v in hparams.__dict__.items():
             if k in model_hparams and model_hparams[k] != v and k != "alternative_threshold":
                 print(
-                    f"\u2714 {model_name} exists, but new parameters for {k} were found, retraining."
+                    f"\u2714 {model_name} exists, but new parameters for {k} were found, retraining"
                 )
                 train = True
                 break
