@@ -161,5 +161,23 @@
             "digitalearthafrica_eastern",
             "Ethiopia"
         ]
+    },
+    {
+        "model_name": "Ethiopia_Bure_Jima_2019",
+        "min_lat": 7.500000,
+        "max_lat": 10.800000,
+        "min_lon": 35.500000,
+        "max_lon": 37.200000,
+        "eval_datasets": [],
+        "train_datasets": []
+    },
+    {
+        "model_name": "Ethiopia_Bure_Jima_2020",
+        "min_lat": 7.500000,
+        "max_lat": 10.800000,
+        "min_lon": 35.500000,
+        "max_lon": 37.200000,
+        "eval_datasets": [],
+        "train_datasets": []
     }
 ]
