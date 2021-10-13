@@ -6,7 +6,7 @@ import os
 import sys
 
 # Change the working directory to the directory of the script
-os.chdir(os.path.dirname(sys.argv[0]))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 sys.path.append("..")
 from src.datasets_labeled import labeled_datasets  # noqa: E402

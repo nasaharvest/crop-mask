@@ -11,7 +11,6 @@ delete the metric entry for the model in ../data/model_valudation_metrics.json
 """
 
 from argparse import ArgumentParser
-from pathlib import Path
 
 import json
 import os
@@ -21,10 +20,13 @@ import sys
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
+
 from src.pipeline_funcs import model_pipeline  # noqa: E402
 from src.models import Model  # noqa: E402
+from src.utils import get_dvc_dir  # noqa: E402
 
-data_folder = Path(__file__).parent.parent / "data"
+models_folder = get_dvc_dir("models")
+data_folder = models_folder.parent
 
 
 def hparams_from_json(params):
@@ -34,8 +36,8 @@ def hparams_from_json(params):
             val = ",".join(val)
         setattr(hparams, key, val)
 
-    hparams.data_folder = str(data_folder)
-    hparams.model_dir = str(data_folder / "models")
+    hparams.data_folder = data_folder
+    hparams.model_dir = models_folder
     return hparams
 
 
