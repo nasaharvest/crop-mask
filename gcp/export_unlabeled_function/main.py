@@ -73,7 +73,7 @@ def export_unlabeled(request: Request):
     sentinel_dataset = request_json["dataset_name"]
 
     start_year = request_json["year"]
-    start_date = date(start_year + 1, 4, 21)  # Made to match default end date from processor
+    start_date = date(start_year, 4, 21)  # Made to match default end date from processor
     num_timesteps = 12
     if date(start_year + 1, 4, 21) > date.today():
         if "num_timesteps" not in request_json:
