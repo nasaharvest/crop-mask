@@ -1,0 +1,9 @@
+{
+    "model_name": "Ethiopia_Tigray_2020",
+    "dataset_name": "Ethiopia_Tigray_2020_v1",
+    "min_lon": 36.45,
+    "max_lon": 40.00,
+    "min_lat": 12.25,
+    "max_lat": 14.895,
+    "year": 2020
+}
