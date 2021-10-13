@@ -5,13 +5,14 @@ import tempfile
 import ee
 import os
 
+from datetime import date
 from flask import abort, Request
 from google.cloud import secretmanager
 from google.cloud import firestore
 from pathlib import Path
 
 from src.ETL.ee_boundingbox import BoundingBox
-from src.ETL.ee_exporter import Season, RegionExporter
+from src.ETL.ee_exporter import RegionExporter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,25 +56,34 @@ def export_unlabeled(request: Request):
          request (Request): Event payload.
     """
     dest_bucket = os.environ.get("DEST_BUCKET")
+    all_model_names = os.environ.get("MODELS").split(" ")
 
     request_json = request.get_json(silent=True)
     logger.info(request_json)
 
     bbox_keys = ["min_lon", "max_lon", "min_lat", "max_lat"]
-    for key in ["model_name", "dataset_name", "season"] + bbox_keys:
+    for key in ["model_name", "dataset_name", "year"] + bbox_keys:
         if key not in request_json:
             abort(400, description=f"{key} is missing from request_json: {request_json}")
 
     model_name = request_json["model_name"]
+    if model_name not in all_model_names:
+        abort(400, description=f"{model_name} not found in: {all_model_names}")
+
     sentinel_dataset = request_json["dataset_name"]
 
-    try:
-        season = Season(request_json["season"])
-    except ValueError as e:
-        logger.exception(e)
-        abort(400, description=str(e))
+    start_year = request_json["year"]
+    start_date = date(start_year + 1, 4, 21)  # Made to match default end date from processor
+    num_timesteps = 12
+    if date(start_year + 1, 4, 21) > date.today():
+        if "num_timesteps" not in request_json:
+            abort(
+                400,
+                description=f"End date is in the future so num_timesteps must be set in request_json: {request_json}",
+            )
+        num_timesteps = request_json["num_timesteps"]
 
-    file_dimensions = request_json.get("file_dimensions", None)
+    file_dimensions = request_json.get("file_dimensions", 256)
     try:
         credentials = get_ee_credentials()
         bbox_args = {k: v for k, v in request_json.items() if k in bbox_keys}
@@ -90,11 +100,12 @@ def export_unlabeled(request: Request):
             sentinel_dataset=sentinel_dataset,
             credentials=credentials,
             file_dimensions=file_dimensions,
+            num_timesteps=num_timesteps,
         ).export(
             dest_bucket=dest_bucket,
             model_name=model_name,
             region_bbox=bbox,
-            season=season,
+            start_date=start_date,
             metres_per_polygon=50000,
         )
 
@@ -103,10 +114,12 @@ def export_unlabeled(request: Request):
             "bbox": bbox.url,
             "model_name": model_name,
             "dataset_name": sentinel_dataset,
+            "start_year": start_year,
+            "num_timesteps": num_timesteps,
             "complete_ee_tasks": 0,
             "total_ee_tasks": len(ids),
             "start_time": str(datetime.datetime.now()),
-            "ee_status": "https://us-central1-nasa-harvest.cloudfunctions.net/ee-status",
+            "ee_status": "https://us-central1-bsos-geog-harvest1.cloudfunctions.net/ee-status",
             "ee_files_exported": 0,
             "predictions_made": 0,
         }
