@@ -4,7 +4,6 @@ Script that uses argument parameters to train an individual model
 import os
 import sys
 from argparse import ArgumentParser
-from pathlib import Path
 import logging
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -14,6 +13,7 @@ from src.datasets_labeled import labeled_datasets  # noqa: E402
 from src.bounding_boxes import bounding_boxes  # noqa: E402
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
+from src.utils import get_dvc_dir  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +22,8 @@ all_datasets_str = ",".join(
     [ld.dataset for ld in labeled_datasets if ld.dataset != "one_acre_fund"]
 )
 
-data_folder = Path(__file__).parent.parent / "data"
+model_folder = get_dvc_dir("models")
+data_folder = model_folder.parent
 
 if __name__ == "__main__":
 
