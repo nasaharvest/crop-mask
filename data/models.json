@@ -1,6 +1,7 @@
 [
     {
         "model_name": "Kenya",
+        "alternative_threshold": 0.51,
         "min_lon": 33.501,
         "max_lon": 42.283,
         "min_lat": -5.202,
@@ -16,12 +17,14 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
+            "digitalearthafrica_eastern",
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Togo",
+        "alternative_threshold": 0.31,
         "min_lon": -0.1501,
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
@@ -37,12 +40,14 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
+            "digitalearthafrica_eastern",
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Rwanda",
+        "alternative_threshold": 0.27,
         "min_lon": 28.841,
         "max_lon": 30.909,
         "min_lat": -2.854,
@@ -58,12 +63,14 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
+            "digitalearthafrica_eastern",
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Uganda",
+        "alternative_threshold": 0.89,
         "min_lon": 29.5794661801,
         "max_lon": 35.03599,
         "min_lat": -1.44332244223,
@@ -79,17 +86,18 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
+            "digitalearthafrica_eastern",
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Global",
+        "alternative_threshold": 0.82,
         "min_lon": -180,
         "max_lon": 180,
         "min_lat": -90,
         "max_lat": 90,
-        "alternative_threshold": 0.54,
         "eval_datasets": [
             "Uganda"
         ],
@@ -101,17 +109,18 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
+            "digitalearthafrica_eastern",
+            "Ethiopia",
+            "digitalearthafrica_sahel"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
+        "alternative_threshold": 0.68,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "alternative_threshold": 0.89,
         "eval_datasets": [
             "Ethiopia_Tigray_2020"
         ],
@@ -123,34 +132,14 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
-            "Ethiopia"
-        ]
-    },
-    {
-        "model_name": "Ethiopia_Tigray_2021",
-        "min_lon": 36.45,
-        "max_lon": 40.00,
-        "min_lat": 12.25,
-        "max_lat": 14.895,
-        "alternative_threshold": 0.78,
-        "eval_datasets": [
-            "Ethiopia_Tigray_2021"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
+            "digitalearthafrica_sahel",
             "Ethiopia"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
+        "alternative_threshold": 0.37,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -169,7 +158,7 @@
             "Rwanda",
             "Uganda",
             "open_buildings",
-            "digitalearthafrica",
+            "digitalearthafrica_eastern",
             "Ethiopia"
         ]
     }

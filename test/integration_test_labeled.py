@@ -3,11 +3,14 @@ from unittest import TestCase
 import glob
 import pandas as pd
 import pickle
+import os
 import sys
+import unittest
 
 from typing import List
 from pprint import pprint
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
 from src.utils import get_dvc_dir  # noqa: E402
@@ -173,3 +176,10 @@ class IntegrationTestLabeledData(TestCase):
                 print(f"\u2714 Mismatches: {num_mismatched}")
 
         self.assertTrue(no_mismatches, "Check logs for mismatched.")
+
+
+if __name__ == "__main__":
+    log_file = "log_file.txt"
+    # with open(log_file, "w") as f:
+    runner = unittest.TextTestRunner(stream=open(os.devnull, "w"), verbosity=2)
+    unittest.main(testRunner=runner)

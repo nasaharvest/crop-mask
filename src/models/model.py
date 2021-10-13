@@ -94,8 +94,12 @@ class Model(pl.LightningModule):
         self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
         self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
 
-        with (self.data_folder / "all_dataset_params.json").open() as f:
-            all_dataset_params = json.load(f)
+        all_dataset_params_path = self.data_folder / "all_dataset_params.json"
+        if all_dataset_params_path.exists():
+            with (self.data_folder / "all_dataset_params.json").open() as f:
+                all_dataset_params = json.load(f)
+        else:
+            all_dataset_params = {}
 
         if hparams.train_datasets not in all_dataset_params:
             dataset = self.get_dataset(subset="training", cache=False)
@@ -113,7 +117,7 @@ class Model(pl.LightningModule):
                 "normalizing_dict": {k: v.tolist() for k, v in dataset.normalizing_dict.items()},
             }
 
-            with (self.data_folder / "all_dataset_params.json").open("w") as f:
+            with all_dataset_params_path.open("w") as f:
                 json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
 
         dataset_params = all_dataset_params[hparams.train_datasets]
@@ -571,8 +575,8 @@ class Model(pl.LightningModule):
                 .cpu()
                 .numpy()
             )
-
-            output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
+            if self.hparams.evaluate_forecast:
+                output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
         if self.hparams.multi_headed:
             output_dict.update(self._interpretable_metrics(outputs, "global_", "test_"))
