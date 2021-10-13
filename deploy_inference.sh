@@ -20,7 +20,15 @@ gcloud run deploy crop-mask --image ${TAG}:latest \
         --memory=4Gi \
         --platform=managed \
         --region=us-central1 \
-        --allow-unauthenticated
+        --allow-unauthenticated \
+        --port 8080
+
+gcloud run deploy crop-mask-management-api --image ${TAG}:latest \
+        --memory=4Gi \
+        --platform=managed \
+        --region=us-central1 \
+        --allow-unauthenticated \
+        --port 8081
 
 gcloud functions deploy trigger-inference \
     --source=gcp/trigger_inference_function \
