@@ -1,0 +1,10 @@
+{
+    "model_name": "Ethiopia_Tigray_2021_w_forecaster",
+    "dataset_name": "Ethiopia_Tigray_2021_v1",
+    "min_lon": 36.45,
+    "max_lon": 40.00,
+    "min_lat": 12.25,
+    "max_lat": 14.895,
+    "year": 2021,
+    "num_timesteps": 5
+}
