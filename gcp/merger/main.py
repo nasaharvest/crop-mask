@@ -2,8 +2,9 @@ from glob import glob
 from pathlib import Path
 from typing import Optional
 import os
+import re
 
-build_full_vrt = False
+build_full_vrt = True
 
 
 def gdal_cmd(cmd_type: str, in_file: str, out_file: str, msg: Optional[str] = None):
@@ -25,14 +26,23 @@ def gdal_cmd(cmd_type: str, in_file: str, out_file: str, msg: Optional[str] = No
 
 
 if __name__ == "__main__":
-    p = "/Users/izvonkov/nasaharvest/Uganda_left"
+    p = "/Users/izvonkov/nasaharvest/Ethiopia_Tigray_2021_v1"
     vrt_dir = Path(p) / "vrts"
     vrt_dir.mkdir(parents=True, exist_ok=True)
     tif_dir = Path(p) / "tifs"
     tif_dir.mkdir(parents=True, exist_ok=True)
 
     print("Building vrt for each batch")
-    for i, d in enumerate(glob(p + "/*/")):
+    for d in glob(p + "/*/"):
+
+        if "batch" not in d:
+            continue
+
+        match = re.search("batch_(.*?)-", d)
+        if match:
+            i = int(match.group(1))
+        else:
+            raise ValueError(f"Cannot parse i from {d}")
         vrt_file = Path(f"{vrt_dir}/{i}.vrt")
         if not vrt_file.exists():
             gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=str(vrt_file))
