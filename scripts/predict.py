@@ -6,9 +6,12 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional
 import logging
+import os
 import subprocess
 import sys
 
+# Change the working directory to the directory of this script
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
 from src.models import Model  # noqa: E402
