@@ -93,7 +93,7 @@
     },
     {
         "model_name": "Global",
-        "alternative_threshold": 0.82,
+        "alternative_threshold": 0.77,
         "min_lon": -180,
         "max_lon": 180,
         "min_lat": -90,
