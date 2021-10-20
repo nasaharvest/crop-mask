@@ -179,9 +179,9 @@ class RegionExporter(EarthEngineExporter):
 
         if end_date is None and start_date is None and season:
             start_date, end_date = self._start_end_dates_using_season(season)
-        elif start_date is None:
+        elif start_date is None and isinstance(end_date, date):
             start_date = end_date - timedelta(days=self.days_per_timestep * self.num_timesteps)
-        elif end_date is None:
+        elif end_date is None and isinstance(start_date, date):
             end_date = start_date + timedelta(days=self.days_per_timestep * self.num_timesteps)
 
         if end_date is None or start_date is None:
