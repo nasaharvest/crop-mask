@@ -21,7 +21,7 @@ def hello_gcs(event, context):
     src_path = f"gs://{bucket_name}/{blob_name}"
     logger.info(src_path)
 
-    available_models = os.environ.get("MODELS")
+    available_models = os.environ.get("MODELS").split(" ")
     model_name = Path(blob_name).parts[0]
     logger.info(f"Extracted model_name: {model_name}")
     if model_name not in available_models:

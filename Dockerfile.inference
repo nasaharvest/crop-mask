@@ -11,6 +11,10 @@ RUN pip3 install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stab
 
 FROM reqs as build-torchserve
 COPY gcp/inference/handler.py /home/model-server
+
+# Ensures that everytime models.dvc is updated 
+# This following docker steps are rerun
+COPY data/models.dvc /home/model-server
 COPY data/models/*.pt /home/model-server
 
 WORKDIR /home/model-server
