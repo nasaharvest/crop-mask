@@ -11,6 +11,7 @@ delete the metric entry for the model in ../data/model_valudation_metrics.json
 """
 
 from argparse import ArgumentParser
+from pathlib import Path
 
 import json
 import os
