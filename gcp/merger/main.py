@@ -1,10 +1,10 @@
+from argparse import ArgumentParser
 from glob import glob
 from pathlib import Path
 from typing import Optional
+
 import os
 import re
-
-build_full_vrt = True
 
 
 def gdal_cmd(cmd_type: str, in_file: str, out_file: str, msg: Optional[str] = None):
@@ -26,7 +26,16 @@ def gdal_cmd(cmd_type: str, in_file: str, out_file: str, msg: Optional[str] = No
 
 
 if __name__ == "__main__":
-    p = "/Users/izvonkov/nasaharvest/Ethiopia_Tigray_2021_v1"
+    parser = ArgumentParser()
+    parser.add_argument("--p", type=str)
+    parser.add_argument("--build_full_vrt", type=bool, default=True)
+    params = parser.parse_args()
+    p = params.p
+    build_full_vrt = params.build_full_vrt
+
+    if p is None:
+        raise ValueError("Please specify path to folder --p")
+
     vrt_dir = Path(p) / "vrts"
     vrt_dir.mkdir(parents=True, exist_ok=True)
     tif_dir = Path(p) / "tifs"
@@ -47,9 +56,12 @@ if __name__ == "__main__":
         if not vrt_file.exists():
             gdal_cmd(cmd_type="gdalbuildvrt", in_file=f"{d}*", out_file=str(vrt_file))
 
-        tif_file = Path(f"{tif_dir}/{i}.tif")
-        if not tif_file.exists():
-            gdal_cmd(cmd_type="gdal_translate_cog", in_file=str(vrt_file), out_file=str(tif_file))
+        if not build_full_vrt:
+            tif_file = Path(f"{tif_dir}/{i}.tif")
+            if not tif_file.exists():
+                gdal_cmd(
+                    cmd_type="gdal_translate_cog", in_file=str(vrt_file), out_file=str(tif_file)
+                )
 
     if build_full_vrt:
         gdal_cmd(
@@ -59,7 +71,7 @@ if __name__ == "__main__":
             msg="Building full vrt",
         )
         gdal_cmd(
-            cmd_type="gdal_translate",
+            cmd_type="gdal_translate_cog",
             in_file=f"{vrt_dir}/final.vrt",
             out_file=f"{tif_dir}/final.tif",
             msg="Vrt to tif",
