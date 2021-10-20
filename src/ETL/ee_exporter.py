@@ -152,6 +152,7 @@ class RegionExporter(EarthEngineExporter):
         dest_bucket: Optional[str] = None,
         model_name: Optional[str] = None,
         end_date: Optional[date] = None,
+        start_date: Optional[date] = None,
         season: Optional[Season] = None,
         metres_per_polygon: Optional[int] = 10000,
         region_bbox: Optional[BoundingBox] = None,
@@ -174,17 +175,16 @@ class RegionExporter(EarthEngineExporter):
                 raise ValueError(f"{self.sentinel_dataset} was not found in bounding_boxes.py")
             region_bbox = bounding_boxes[self.sentinel_dataset]
 
-        if season is None and end_date is None:
-            raise ValueError("One of season or end_date must be specified.")
-
         self.check_earthengine_auth()
 
-        if season:
+        if end_date is None and start_date is None and season:
             start_date, end_date = self._start_end_dates_using_season(season)
-        elif end_date and self.num_timesteps:
-            end_date = end_date
+        elif start_date is None and isinstance(end_date, date):
             start_date = end_date - timedelta(days=self.days_per_timestep * self.num_timesteps)
-        else:
+        elif end_date is None and isinstance(start_date, date):
+            end_date = start_date + timedelta(days=self.days_per_timestep * self.num_timesteps)
+
+        if end_date is None or start_date is None:
             raise ValueError(
                 "Unable to determine start_date, either 'season' or 'end_date' and "
                 "'num_timesteps' must be set."
