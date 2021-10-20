@@ -15,6 +15,7 @@ dependencies:
   - jupyter
   - matplotlib
   - pip
+  - cpuonly
   - pytorch=1.6.0
   - pyproj
   - tqdm
@@ -23,7 +24,6 @@ dependencies:
   - scikit-learn
   - dvc-s3=1.11.16 
   - gdal=3.1.4
-  - rclone
   - flake8
   - pip:
       - pytorch-lightning==0.7.1  # lots of API changes
