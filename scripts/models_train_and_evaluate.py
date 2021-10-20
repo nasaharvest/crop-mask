@@ -11,7 +11,6 @@ delete the metric entry for the model in ../data/model_valudation_metrics.json
 """
 
 from argparse import ArgumentParser
-from pathlib import Path
 
 import json
 import os
@@ -39,6 +38,7 @@ def hparams_from_json(params):
 
     hparams.data_folder = str(data_folder)
     hparams.model_dir = str(models_folder)
+
     return hparams
 
 
