@@ -79,8 +79,8 @@ def export_unlabeled(request: Request):
         if "num_timesteps" not in request_json:
             abort(
                 400,
-                description=f"End date is in the future so num_timesteps must be "
-                "set in request_json: {request_json}",
+                description="End date is in the future so num_timesteps must be "
+                f"set in request_json: {request_json}",
             )
         num_timesteps = request_json["num_timesteps"]
 
@@ -138,12 +138,26 @@ def get_status(request: Request):
          request (Request): Event payload.
     """
     logger.info(f"Called with: {request.args}")
+
+    query_params = list(request.args.values())
+    additional_statuses = query_params[0] if len(query_params) > 0 else ""
+
+    include_completed = "COMPLETED" in additional_statuses
+    include_failed = "FAILED" in additional_statuses
+
+    def include_task(t):
+        if t.state == "COMPLETED":
+            return include_completed
+        if t.state == "FAILED":
+            return include_failed
+        return True
+
     tasks = []
     try:
         credentials = get_ee_credentials()
         ee.Initialize(credentials)
         logger.info("Looping through ee task list:")
-        tasks = [t.status() for t in ee.batch.Task.list() if t.state != "COMPLETED"]
+        tasks = [t.status() for t in ee.batch.Task.list() if include_task(t)]
 
     except Exception as e:
         logger.exception(e)

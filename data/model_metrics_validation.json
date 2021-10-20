@@ -30,16 +30,16 @@
     "Global": {
         "local_val_crop_percentage ": 0.131,
         "local_val_size": 458,
-        "thresh0.82_unencoded_val_local_accuracy": 0.8515,
-        "thresh0.82_unencoded_val_local_f1_score": 0.5,
-        "thresh0.82_unencoded_val_local_precision_score": 0.4474,
-        "thresh0.82_unencoded_val_local_recall_score": 0.5667,
-        "thresh0.82_unencoded_val_local_roc_auc_score": 0.8334,
-        "unencoded_val_local_accuracy": 0.7598,
-        "unencoded_val_local_f1_score": 0.4444,
-        "unencoded_val_local_precision_score": 0.3188,
-        "unencoded_val_local_recall_score": 0.7333,
-        "unencoded_val_local_roc_auc_score": 0.8334
+        "thresh0.77_unencoded_val_local_accuracy": 0.8253,
+        "thresh0.77_unencoded_val_local_f1_score": 0.5,
+        "thresh0.77_unencoded_val_local_precision_score": 0.4,
+        "thresh0.77_unencoded_val_local_recall_score": 0.6667,
+        "thresh0.77_unencoded_val_local_roc_auc_score": 0.8324,
+        "unencoded_val_local_accuracy": 0.7293,
+        "unencoded_val_local_f1_score": 0.4259,
+        "unencoded_val_local_precision_score": 0.2949,
+        "unencoded_val_local_recall_score": 0.7667,
+        "unencoded_val_local_roc_auc_score": 0.8324
     },
     "Kenya": {
         "local_val_crop_percentage ": 0.6899,

@@ -17,10 +17,11 @@ export MODELS=$(
 docker build -f Dockerfile.inference . --build-arg MODELS="$MODELS" -t $TAG
 docker push $TAG
 gcloud run deploy crop-mask --image ${TAG}:latest \
-        --memory=4Gi \
+        --memory=8Gi \
         --platform=managed \
         --region=us-central1 \
         --allow-unauthenticated \
+        --concurrency 10 \
         --port 8080
 
 gcloud run deploy crop-mask-management-api --image ${TAG}:latest \

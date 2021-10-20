@@ -31,10 +31,7 @@ BANDS = [
 ]
 
 temp_dir = tempfile.gettempdir()
-
-storage_client = storage.Client()
 dest_bucket_name = "crop-mask-preds"
-dest_bucket = storage_client.get_bucket(dest_bucket_name)
 
 
 class ModelHandler(BaseHandler):
@@ -182,7 +179,7 @@ class ModelHandler(BaseHandler):
         uri_as_path = Path(uri)
         bucket_name = uri_as_path.parts[1]
         file_name = "/".join(uri_as_path.parts[2:])
-        bucket = storage_client.bucket(bucket_name)
+        bucket = storage.Client().bucket(bucket_name)
         retries = 3
         blob = bucket.blob(file_name)
         for i in range(retries + 1):
@@ -275,6 +272,7 @@ class ModelHandler(BaseHandler):
 
         cloud_dest_parent = "/".join(uri_as_path.parts[2:-1])
         cloud_dest_path_str = f"{cloud_dest_parent}/{local_dest_path.name}"
+        dest_bucket = storage.Client().get_bucket(dest_bucket_name)
         dest_blob = dest_bucket.blob(cloud_dest_path_str)
 
         dest_blob.upload_from_filename(str(local_dest_path))
