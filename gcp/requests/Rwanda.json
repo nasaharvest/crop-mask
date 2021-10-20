@@ -1,10 +1,9 @@
 {
-    "season": "post_season",
     "model_name": "Rwanda",
-    "dataset_name": "Rwanda_batched3",
+    "dataset_name": "Rwanda_v1",
+    "year": 2019,
     "min_lon": 28.841,
     "max_lon": 30.909,
     "min_lat": -2.854,
-    "max_lat": -1.034,
-    "file_dimensions": 256
+    "max_lat": -1.034
 }
