@@ -202,19 +202,27 @@ gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
 
 **Putting it all together**
 Once an inference run is complete the result is several small `.nc` files. These need to be merged into a single `.tif` file. Currently this operation is not automated and requires the user to:
-1. Download the appropriate folder
-    ```bash
-    gsutil -m cp -r "gs://crop-mask-preds/<model>/<dataset>/"
-    ```
-2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
+```bash
+export MODEL="Rwanda"
+export DATASET="Rwanda_v2"
+export START_YEAR=2019
+export END_YEAR=2020
 
-**[OPTIONAL] Uploading to Google Earth Engine**
-1. Use `gsutil` to upload all merged `.tif` files to Google Earth Engine.
-```
-gsutil -m cp "<country>/*.tif" gs://crop-mask-preds-merged/<country>/
-```
+# Download appropriate folder
+gsutil -m cp -r gs://crop-mask-preds/$MODEL/$DATASET/ .
 
-2. Use `ee` to upload all merged `.tif` files to Google Earth Engine.
+# Run gdal merge script
+python gcp/merger/main.py --p <current-dir>/$DATASET
+
+# [OPTIONAL] Upload COG tif output to Google Cloud Storage
+gsutil cp <current-dir>/$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET/
+
+# [OPTIONAL] Upload COG to Google Earth Engine
+earthengine upload image --asset_id users/izvonkov/$DATASET \
+    -ts $START_YEAR-04-01 \
+    -te $END_YEAR-04-01 \
+    gs://crop-mask-preds-merged/$DATASET/final.tif
+```
 
 
 ## 5. Tests
