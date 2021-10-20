@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-FROM pytorch/torchserve:0.3.0-cpu as base
+FROM pytorch/torchserve:0.4.2-cpu as base
 
 USER root
 
