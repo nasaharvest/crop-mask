@@ -18,7 +18,7 @@ jobs:
       uses: mamba-org/provision-with-micromamba@main
       with:
         environment-file: environment-dev.yml
-        environment-name: ladncover-mapping
+        environment-name: landcover-mapping
     - name: Run type checks
       run: |
         mypy src scripts
