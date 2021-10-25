@@ -59,6 +59,8 @@ These can be used to create annual and in season crop maps.
     ```
 8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
+<img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
+
 ## 2. Training a new model
 Training can be done locally or on grid.ai.
 
@@ -77,7 +79,7 @@ Add a new entry to [data/models.json](data/models.json), for example:
 ```
 Then to train and evaluate the model run:
 ```python
-python scripts/model_pipeline.py
+python scripts/train_and_evaluate.py
 ```
 
 **What do the does the json entry mean?**
@@ -86,8 +88,7 @@ python scripts/model_pipeline.py
 - `features/Ethiopia/training/*.pkl`
 
 `eval_datasets` tells the model to evaluate on data found in:
-- `features/Ethiopia/validation/*.pkl`
-- `features/Kenya/testing/*.pkl`
+- `features/Ethiopia_Tigray_2021/validation/*.pkl`
 
 `min/max_lat/lon` tells the model which items to consider in the local and global head
 
