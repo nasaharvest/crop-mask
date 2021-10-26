@@ -24,6 +24,17 @@ class BoundingBox:
             f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
         )
 
+    def contains(self, lat: float, lon: float):
+        return self.min_lat <= lat <= self.max_lat and self.min_lon <= lon <= self.max_lon
+
+    def overlaps(self, other: "BoundingBox"):
+        return (
+            self.min_lat < other.max_lat
+            and self.max_lat > other.min_lat
+            and self.min_lon < other.max_lon
+            and self.max_lon > other.min_lon
+        )
+
 
 @dataclass
 class EEBoundingBox(BoundingBox):
