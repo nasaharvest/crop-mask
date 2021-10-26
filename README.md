@@ -51,8 +51,11 @@ These can be used to create annual and in season crop maps.
     ```bash
     python export_for_labeled.py
     ``` 
-5. Google Earth Engine will automatically export satellite images to Google Drive.
-6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
+5. Google Earth Engine will automatically export satellite images to Google Cloud Storage.
+6. Once the satellite data has been exported, download it by running:
+    ```bash
+    gsutil -m cp -n -r gs://crop-mask-tifs/tifs data/
+    ```
 7. To combine the labels and the satellite images into a machine learning suitable dataset run (from scripts directory):
     ```bash
     python create_features.py
