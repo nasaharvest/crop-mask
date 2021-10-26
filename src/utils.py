@@ -2,12 +2,14 @@ import torch
 import numpy as np
 import logging
 import random
-from datetime import datetime, timedelta
-from typing import Optional, Tuple, List
 from pathlib import Path
 import xarray as xr
 import pandas as pd
 import subprocess
+
+from datetime import datetime, timedelta
+from typing import Optional, Tuple, List, Union
+from tqdm import tqdm
 
 from src.ETL.constants import BANDS
 
@@ -71,7 +73,12 @@ def process_filename(
             return None
 
 
-def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr.DataArray:
+def load_tif(
+    filepath: Path,
+    start_date: Union[datetime, np.datetime64],
+    days_per_timestep: int,
+    pbar: Optional[tqdm] = None,
+) -> xr.DataArray:
     r"""
     The sentinel files exported from google earth have all the timesteps
     concatenated together. This function loads a tif files and splits the
@@ -99,12 +106,20 @@ def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr
         da_split_by_time.append(time_specific_da)
         cur_band += bands_per_timestep
 
+    if type(start_date) == np.datetime64:
+        start_date = pd.Timestamp(start_date).to_pydatetime()
+    if type(days_per_timestep) == np.int64:
+        days_per_timestep = int(days_per_timestep)
+
     timesteps = [
         start_date + timedelta(days=days_per_timestep) * i for i in range(len(da_split_by_time))
     ]
 
     combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
     combined.attrs["band_descriptions"] = BANDS
+
+    if pbar is not None:
+        pbar.update(1)
 
     return combined
 
