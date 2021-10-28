@@ -140,7 +140,9 @@ class Processor:
             df[CROP_PROB] = self.crop_prob
         else:
             df[CROP_PROB] = self.crop_prob(df)
-            if df[CROP_PROB].dtype != float:
+            if df[CROP_PROB].dtype == bool:
+                df[CROP_PROB] = df[CROP_PROB].astype(float)
+            elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
 
         if self.end_year:
@@ -149,15 +151,16 @@ class Processor:
             df[END] = self.end_date_using_overlap(
                 df[self.plant_date_col], df[self.harvest_date_col], total_days, self.end_month_day
             )
+        elif self.custom_start_date:
+            df[START] = self.custom_start_date
+            df[END] = df[START] + total_days
         else:
             raise ValueError(
                 "end_date could not be computed please set either: end_year, "
                 "or plant_date_col and harvest_date_col"
             )
 
-        if self.custom_start_date:
-            df[START] = self.custom_start_date
-        else:
+        if self.custom_start_date is None:
             df[START] = df[END] - total_days
 
         df = df[df[START] >= pd.Timestamp(min_date)]
