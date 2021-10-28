@@ -27,6 +27,9 @@ class BoundingBox:
     def contains(self, lat: float, lon: float):
         return self.min_lat <= lat <= self.max_lat and self.min_lon <= lon <= self.max_lon
 
+    def strict_contains(self, lat: float, lon: float):
+        return self.min_lat < lat < self.max_lat and self.min_lon < lon < self.max_lon
+
     def overlaps(self, other: "BoundingBox"):
         return (
             self.min_lat < other.max_lat
