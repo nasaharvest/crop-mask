@@ -396,7 +396,6 @@ labeled_datasets = [
         dataset="digitalearthafrica_sahel",
         country="global",
         sentinel_dataset="earth_engine_digitalearthafrica_sahel",
-        tiff_start_index=4452,
         processors=tuple(
             [
                 Processor(
@@ -466,30 +465,32 @@ labeled_datasets = [
         )
         + tuple(
             [
-                Processor(
-                    filename=f"tigray_corrective_2021/non_crop.shp",
-                    crop_prob=0.0,
-                    end_year=2021,
-                    train_val_test=(1.0, 0.0, 0.0),
-                ),
-                Processor(
-                    filename=f"tigray_corrective_2021/crop.shp",
-                    crop_prob=1.0,
-                    end_year=2021,
-                    train_val_test=(1.0, 0.0, 0.0),
-                ),
-                Processor(
-                    filename=f"tigray_corrective_2021/non_crop.shp",
-                    crop_prob=0.0,
-                    end_year=2022,
-                    train_val_test=(1.0, 0.0, 0.0),
-                ),
-                Processor(
-                    filename=f"tigray_corrective_2021/crop.shp",
-                    crop_prob=1.0,
-                    end_year=2022,
-                    train_val_test=(1.0, 0.0, 0.0),
-                ),
+                # Processor(
+                #     filename=f"tigray_corrective_2020/non_crop.shp",
+                #     crop_prob=0.0,
+                #     end_year=2021,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
+                # Processor(
+                #     filename=f"tigray_corrective_2020/crop.shp",
+                #     crop_prob=1.0,
+                #     end_year=2021,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
+                # Processor(
+                #     filename=f"tigray_corrective_2021/non_crop.shp",
+                #     crop_prob=0.0,
+                #     custom_start_date=date(2021, 4, 21),
+                #     num_timesteps=6,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
+                # Processor(
+                #     filename=f"tigray_corrective_2021/crop.shp",
+                #     crop_prob=1.0,
+                #     custom_start_date=date(2021, 4, 21),
+                #     num_timesteps=6,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
             ]
         ),
     ),
@@ -527,18 +528,20 @@ labeled_datasets = [
                 Processor(
                     filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2021-10-04.csv",
                     crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2022,
+                    custom_start_date=date(2021, 4, 21),
                     x_y_from_centroid=False,
                     train_val_test=(0.0, 1.0, 0.0),
                     clean_df=clean_ceo_data,
+                    num_timesteps=6,
                 ),
                 Processor(
                     filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
                     crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2022,
+                    custom_start_date=date(2021, 4, 21),
                     x_y_from_centroid=False,
                     train_val_test=(0.0, 1.0, 0.0),
                     clean_df=clean_ceo_data,
+                    num_timesteps=6,
                 ),
             ]
         ),
