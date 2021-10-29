@@ -4,7 +4,6 @@ and exports datasets using Google Earth Engine
 (locally, or to Google Drive)
 """
 import os
-import pandas as pd
 import sys
 
 
