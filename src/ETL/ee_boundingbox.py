@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from math import cos, radians
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 import ee
 import logging
 
@@ -24,6 +24,15 @@ class BoundingBox:
             f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
         )
 
+    @classmethod
+    def from_coords_dict(cls, coords_dict: dict):
+        return cls(
+            min_lat=coords_dict["min_lat"],
+            max_lat=coords_dict["max_lat"],
+            min_lon=coords_dict["min_lon"],
+            max_lon=coords_dict["max_lon"],
+        )
+
     def contains(self, lat: float, lon: float):
         return self.min_lat <= lat <= self.max_lat and self.min_lon <= lon <= self.max_lon
 
@@ -37,6 +46,22 @@ class BoundingBox:
             and self.min_lon < other.max_lon
             and self.max_lon > other.min_lon
         )
+
+    def coords_dict(self, rounded: Optional[int] = None):
+        if rounded:
+            return {
+                "min_lat": round(self.min_lat, rounded),
+                "max_lat": round(self.max_lat, rounded),
+                "min_lon": round(self.min_lon, rounded),
+                "max_lon": round(self.max_lon, rounded),
+            }
+        else:
+            return {
+                "min_lat": self.min_lat,
+                "max_lat": self.max_lat,
+                "min_lon": self.min_lon,
+                "max_lon": self.max_lon,
+            }
 
 
 @dataclass
