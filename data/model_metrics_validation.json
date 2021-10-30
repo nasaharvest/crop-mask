@@ -2,16 +2,11 @@
     "Ethiopia_Tigray_2020": {
         "local_val_crop_percentage ": 0.2715,
         "local_val_size": 512,
-        "thresh0.68_unencoded_val_local_accuracy": 0.707,
-        "thresh0.68_unencoded_val_local_f1_score": 0.6032,
-        "thresh0.68_unencoded_val_local_precision_score": 0.477,
-        "thresh0.68_unencoded_val_local_recall_score": 0.8201,
-        "thresh0.68_unencoded_val_local_roc_auc_score": 0.812,
-        "unencoded_val_local_accuracy": 0.6484,
-        "unencoded_val_local_f1_score": 0.5735,
-        "unencoded_val_local_precision_score": 0.4276,
-        "unencoded_val_local_recall_score": 0.8705,
-        "unencoded_val_local_roc_auc_score": 0.812
+        "unencoded_val_local_accuracy": 0.6328,
+        "unencoded_val_local_f1_score": 0.5688,
+        "unencoded_val_local_precision_score": 0.4175,
+        "unencoded_val_local_recall_score": 0.8921,
+        "unencoded_val_local_roc_auc_score": 0.831
     },
     "Ethiopia_Tigray_2021_w_forecaster": {
         "encoded_val_local_accuracy": 0.6731,
@@ -30,24 +25,39 @@
     "Global": {
         "local_val_crop_percentage ": 0.131,
         "local_val_size": 458,
+        "thresh0.77_unencoded_val_local_accuracy": 0.821,
+        "thresh0.77_unencoded_val_local_f1_score": 0.4605,
+        "thresh0.77_unencoded_val_local_precision_score": 0.3804,
+        "thresh0.77_unencoded_val_local_recall_score": 0.5833,
+        "thresh0.77_unencoded_val_local_roc_auc_score": 0.8276,
         "unencoded_val_local_accuracy": 0.7576,
         "unencoded_val_local_f1_score": 0.4585,
         "unencoded_val_local_precision_score": 0.3241,
         "unencoded_val_local_recall_score": 0.7833,
-        "unencoded_val_local_roc_auc_score": 0.8285
+        "unencoded_val_local_roc_auc_score": 0.8276
     },
     "Kenya": {
         "local_val_crop_percentage ": 0.6899,
         "local_val_size": 861,
-        "unencoded_val_local_accuracy": 0.9408,
-        "unencoded_val_local_f1_score": 0.9583,
-        "unencoded_val_local_precision_score": 0.9316,
+        "thresh0.51_unencoded_val_local_accuracy": 0.9419,
+        "thresh0.51_unencoded_val_local_f1_score": 0.9591,
+        "thresh0.51_unencoded_val_local_precision_score": 0.9331,
+        "thresh0.51_unencoded_val_local_recall_score": 0.9865,
+        "thresh0.51_unencoded_val_local_roc_auc_score": 0.9792,
+        "unencoded_val_local_accuracy": 0.9419,
+        "unencoded_val_local_f1_score": 0.9591,
+        "unencoded_val_local_precision_score": 0.9331,
         "unencoded_val_local_recall_score": 0.9865,
-        "unencoded_val_local_roc_auc_score": 0.9782
+        "unencoded_val_local_roc_auc_score": 0.9792
     },
     "Rwanda": {
         "local_val_crop_percentage ": 0.4223,
         "local_val_size": 341,
+        "thresh0.27_unencoded_val_local_accuracy": 0.6217,
+        "thresh0.27_unencoded_val_local_f1_score": 0.6578,
+        "thresh0.27_unencoded_val_local_precision_score": 0.5322,
+        "thresh0.27_unencoded_val_local_recall_score": 0.8611,
+        "thresh0.27_unencoded_val_local_roc_auc_score": 0.7612,
         "unencoded_val_local_accuracy": 0.6657,
         "unencoded_val_local_f1_score": 0.6724,
         "unencoded_val_local_precision_score": 0.5735,
@@ -57,24 +67,29 @@
     "Togo": {
         "local_val_crop_percentage ": 0.5751,
         "local_val_size": 273,
-        "unencoded_val_local_accuracy": 0.8205,
-        "unencoded_val_local_f1_score": 0.8546,
-        "unencoded_val_local_precision_score": 0.8,
-        "unencoded_val_local_recall_score": 0.9172,
-        "unencoded_val_local_roc_auc_score": 0.9113
+        "thresh0.31_unencoded_val_local_accuracy": 0.8571,
+        "thresh0.31_unencoded_val_local_f1_score": 0.8856,
+        "thresh0.31_unencoded_val_local_precision_score": 0.8207,
+        "thresh0.31_unencoded_val_local_recall_score": 0.9618,
+        "thresh0.31_unencoded_val_local_roc_auc_score": 0.9283,
+        "unencoded_val_local_accuracy": 0.8608,
+        "unencoded_val_local_f1_score": 0.8812,
+        "unencoded_val_local_precision_score": 0.865,
+        "unencoded_val_local_recall_score": 0.8981,
+        "unencoded_val_local_roc_auc_score": 0.9283
     },
     "Uganda": {
         "local_val_crop_percentage ": 0.1354,
         "local_val_size": 384,
-        "thresh0.89_unencoded_val_local_accuracy": 0.8464,
-        "thresh0.89_unencoded_val_local_f1_score": 0.4685,
-        "thresh0.89_unencoded_val_local_precision_score": 0.4407,
+        "thresh0.89_unencoded_val_local_accuracy": 0.8438,
+        "thresh0.89_unencoded_val_local_f1_score": 0.4643,
+        "thresh0.89_unencoded_val_local_precision_score": 0.4333,
         "thresh0.89_unencoded_val_local_recall_score": 0.5,
-        "thresh0.89_unencoded_val_local_roc_auc_score": 0.8054,
+        "thresh0.89_unencoded_val_local_roc_auc_score": 0.8039,
         "unencoded_val_local_accuracy": 0.7786,
         "unencoded_val_local_f1_score": 0.4586,
         "unencoded_val_local_precision_score": 0.3429,
         "unencoded_val_local_recall_score": 0.6923,
-        "unencoded_val_local_roc_auc_score": 0.8054
+        "unencoded_val_local_roc_auc_score": 0.8039
     }
 }
