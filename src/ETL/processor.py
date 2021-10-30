@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
 from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
 import logging
-import xarray as xr
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -38,6 +37,8 @@ class Processor:
     sample_from_polygon: bool = False
     x_y_from_centroid: bool = True
     transform_crs_from: Optional[int] = None
+
+    num_timesteps: int = 12
 
     def __post_init__(self):
         set_seed()
@@ -107,7 +108,7 @@ class Processor:
 
         return gdf_points
 
-    def process(self, raw_folder: Path, total_days) -> Union[pd.DataFrame, xr.DataArray]:
+    def process(self, raw_folder: Path, days_per_timestep: int) -> pd.DataFrame:
         file_path = raw_folder / self.filename
         logger.info(f"Reading in {file_path}")
         if file_path.suffix == ".txt":
@@ -145,6 +146,7 @@ class Processor:
             elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
 
+        total_days = timedelta(days=self.num_timesteps * days_per_timestep)
         if self.end_year:
             df[END] = date(self.end_year, *self.end_month_day)
         elif self.plant_date_col and self.harvest_date_col:
