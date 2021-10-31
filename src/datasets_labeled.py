@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import date, timedelta
 
 from src.ETL.dataset import LabeledDataset
-from src.ETL.label_downloader import RawLabels
 from src.ETL.processor import Processor
 from src.ETL.constants import LON, LAT
 
