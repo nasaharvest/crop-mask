@@ -144,7 +144,7 @@
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "input_months": 5,
+        "input_months": 6,
         "forecast": true,
         "evaluate_forecast": false,
         "eval_datasets": [
