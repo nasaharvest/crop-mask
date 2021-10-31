@@ -75,7 +75,7 @@ def process_filename(
 
 def load_tif(
     filepath: Path,
-    start_date: Union[datetime, np.datetime64],
+    start_date: datetime,
     days_per_timestep: int,
     pbar: Optional[tqdm] = None,
 ) -> xr.DataArray:
@@ -106,21 +106,12 @@ def load_tif(
         da_split_by_time.append(time_specific_da)
         cur_band += bands_per_timestep
 
-    if type(start_date) == np.datetime64:
-        start_date = pd.Timestamp(start_date).to_pydatetime()
-    if type(days_per_timestep) == np.int64:
-        days_per_timestep = int(days_per_timestep)
-
     timesteps = [
         start_date + timedelta(days=days_per_timestep) * i for i in range(len(da_split_by_time))
     ]
 
     combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
     combined.attrs["band_descriptions"] = BANDS
-
-    if pbar is not None:
-        pbar.update(1)
-
     return combined
 
 
