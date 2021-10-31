@@ -9,6 +9,10 @@ COUNTRY = "country"
 NUM_LABELERS = "num_labelers"
 SUBSET = "subset"
 DATASET = "dataset"
+ALREADY_EXISTS = "already_exists"
+FEATURE_FILENAME = "filename"
+FEATURE_PATH = "save_path"
+TIF_PATHS = "tif_paths"
 
 BANDS = [
     "B1",
