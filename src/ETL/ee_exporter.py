@@ -28,9 +28,9 @@ def get_user_input(text_prompt: str) -> str:
 
 
 @memoize
-def get_cloud_tif_list():
+def get_cloud_tif_list(dest_bucket: str):
     client = storage.Client()
-    cloud_tif_list_iterator = client.list_blobs("crop-mask-tifs", prefix="")
+    cloud_tif_list_iterator = client.list_blobs(dest_bucket, prefix="tifs")
     cloud_tif_list = [
         blob.name
         for blob in tqdm(cloud_tif_list_iterator, desc="Loading tifs already on Google Cloud")
@@ -224,8 +224,26 @@ class RegionExporter(EarthEngineExporter):
 
 @dataclass
 class LabelExporter(EarthEngineExporter):
+    """
+    Class for exporting tifs using labels
+    :param dest_bucket: Destination bucket for tif files
+    :param check_gcp: Whether to check Google Cloud Bucket before exporting
+    :param surrounding_metres: The number of metres surrounding each labelled point to export
+    """
+
+    dest_bucket: str = "crop-mask-tifs"
+    check_gcp: bool = True
+    surrounding_metres: int = 80
+
+    def __post_init__(self):
+        self.check_earthengine_auth()
+        self.cloud_tif_list = get_cloud_tif_list(self.dest_bucket) if self.check_gcp else []
+
     @staticmethod
-    def generate_filename(bbox, start_date: date, end_date: date) -> str:
+    def _generate_filename(bbox: BoundingBox, start_date: date, end_date: date) -> str:
+        """
+        Generates filename for tif files that will be exported
+        """
         min_lat = round(bbox.min_lat, 4)
         min_lon = round(bbox.min_lon, 4)
         max_lat = round(bbox.max_lat, 4)
@@ -233,52 +251,56 @@ class LabelExporter(EarthEngineExporter):
         filename = f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}_dates={start_date}_{end_date}"
         return filename
 
+    def _is_file_on_cloud_storage(self, file_name_prefix: str):
+        """
+        Checks if file_name_prefix already exists on Google Cloud Storage
+        """
+        exists_on_cloud = f"tifs/{file_name_prefix}.tif" in self.cloud_tif_list
+        if exists_on_cloud:
+            print(
+                f"{file_name_prefix} already exists in Google Cloud Storage, run command to download:"
+                + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
+            )
+        return exists_on_cloud
+
+    def _export_using_point_and_dates(
+        self, lat: float, lon: float, start_date: date, end_date: date
+    ):
+        """
+        Function to export tif around specified point for a specified date range
+        """
+        bbox = EEBoundingBox.from_centre(
+            mid_lat=lat, mid_lon=lon, surrounding_metres=self.surrounding_metres
+        )
+        file_name_prefix = self._generate_filename(bbox, start_date, end_date)
+
+        if self.check_gcp and self._is_file_on_cloud_storage(file_name_prefix):
+            return
+
+        self._export_for_polygon(
+            file_name_prefix=f"tifs/{file_name_prefix}",
+            dest_bucket=self.dest_bucket,
+            polygon=bbox.to_ee_polygon(),
+            start_date=start_date,
+            end_date=end_date,
+        )
+
     def export(
         self,
         labels: pd.DataFrame,
-        num_labelled_points: Optional[int] = None,
-        surrounding_metres: int = 80,
-        dest_bucket: Optional[str] = "crop-mask-tifs",
     ) -> int:
         r"""
         Run the exporter. For each label, the exporter will export
         int( (end_date - start_date).days / days_per_timestep) timesteps of data,
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
-        :param labels_path: The path to the labels file
-        :param output_folder: The path to the destination of the tif files
-        :param num_labelled_points: (Optional) The number of labelled points to export.
-        :param surrounding_metres: The number of metres surrounding each labelled point to export
         """
-        self.check_earthengine_auth()
-
-        if num_labelled_points:
-            labels = labels[:num_labelled_points]
-
-        cloud_tif_list = get_cloud_tif_list()
-        exporting = 0
         for _, row in tqdm(labels.iterrows(), total=len(labels)):
-            bbox = EEBoundingBox.from_centre(
-                mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+            self._export_using_point_and_dates(
+                lat=row[LAT],
+                lon=row[LON],
+                start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
+                end_date=datetime.strptime(row[END], "%Y-%m-%d").date(),
             )
-            start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
-            end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
-            file_name_prefix = self.generate_filename(bbox, start_date, end_date)
-            if f"tifs/{file_name_prefix}.tif" in cloud_tif_list:
-                print(
-                    f"{file_name_prefix} already exists in Google Cloud Storage, run command to download:"
-                    + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
-                )
-                continue
 
-            self._export_for_polygon(
-                file_name_prefix=f"tifs/{file_name_prefix}",
-                dest_bucket=dest_bucket,
-                polygon=bbox.to_ee_polygon(),
-                start_date=start_date,
-                end_date=end_date,
-            )
-            exporting += 1
-
-        print(f"Exporting: {exporting}, see progress: https://code.earthengine.google.com/")
-        return exporting
+        print(f"See progress: https://code.earthengine.google.com/")
