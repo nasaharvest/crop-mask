@@ -1,10 +1,9 @@
 from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, call, mock_open
+from unittest.mock import patch
 import numpy as np
 import pandas as pd
-import shutil
 import tempfile
 import xarray as xr
 
