@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from math import cos, radians
+from pathlib import Path
 from typing import List, Tuple, Union, Optional
+import re
 import ee
 import logging
 
@@ -23,6 +25,13 @@ class BoundingBox:
         self.url = (
             f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
         )
+
+    @classmethod
+    def from_path(cls, p: Path):
+        decimals_in_p = re.findall("=-?\d*\.?\d*", p.stem)
+        coords = [float(d[1:]) for d in decimals_in_p[0:4]]
+        bbox = cls(min_lat=coords[0], min_lon=coords[1], max_lat=coords[2], max_lon=coords[3])
+        return bbox
 
     @classmethod
     def from_coords_dict(cls, coords_dict: dict):
