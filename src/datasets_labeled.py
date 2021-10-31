@@ -60,7 +60,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
-        sentinel_dataset="earth_engine_geowiki",
         processors=(
             Processor(
                 filename="loc_all_2.txt",
@@ -79,7 +78,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Kenya",
         country="Kenya",
-        sentinel_dataset="earth_engine_kenya",
         processors=(
             Processor(
                 filename="noncrop_labels_v2",
@@ -151,7 +149,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Mali",
         country="Mali",
-        sentinel_dataset="earth_engine_mali",
         processors=(
             Processor(
                 filename="mali_noncrop_2019",
@@ -182,7 +179,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Togo",
         country="Togo",
-        sentinel_dataset="earth_engine_togo",
         processors=(
             Processor(
                 filename="crop_merged_v2",
@@ -226,7 +222,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Rwanda",
         country="Rwanda",
-        sentinel_dataset="earth_engine_rwanda",
         processors=tuple(
             [
                 Processor(
@@ -265,7 +260,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Uganda",
         country="Uganda",
-        sentinel_dataset="earth_engine_uganda",
         processors=tuple(
             [
                 Processor(
@@ -339,7 +333,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="one_acre_fund",
         country="Kenya,Rwanda,Tanzania",
-        sentinel_dataset="earth_engine_one_acre_fund",
         processors=(
             Processor(
                 filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
@@ -357,7 +350,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="open_buildings",
         country="global",
-        sentinel_dataset="earth_engine_open_buildings",
         processors=(
             Processor(
                 filename="177_buildings_confidence_0.9.csv",
@@ -373,7 +365,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="digitalearthafrica_eastern",
         country="global",
-        sentinel_dataset="earth_engine_digitalearthafrica_eastern",
         processors=(
             Processor(
                 filename="Eastern_training_data_20210427.geojson",
@@ -386,7 +377,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
-        sentinel_dataset="earth_engine_digitalearthafrica_sahel",
         processors=tuple(
             [
                 Processor(
@@ -413,7 +403,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia",
         processors=tuple(
             [
                 Processor(
@@ -488,7 +477,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia_tigray_2020",
         processors=tuple(
             [
                 Processor(
@@ -513,7 +501,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia_tigray_2021",
         processors=tuple(
             [
                 Processor(
