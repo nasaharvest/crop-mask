@@ -30,8 +30,11 @@ def get_user_input(text_prompt: str) -> str:
 @memoize
 def get_cloud_tif_list():
     client = storage.Client()
-    cloud_tif_list_iterator = client.list_blobs("crop-mask-tifs", prefix="tifs")
-    cloud_tif_list = [blob.name for blob in cloud_tif_list_iterator]
+    cloud_tif_list_iterator = client.list_blobs("crop-mask-tifs", prefix="")
+    cloud_tif_list = [
+        blob.name
+        for blob in tqdm(cloud_tif_list_iterator, desc="Loading tifs already on Google Cloud")
+    ]
     return cloud_tif_list
 
 
@@ -223,10 +226,10 @@ class RegionExporter(EarthEngineExporter):
 class LabelExporter(EarthEngineExporter):
     @staticmethod
     def generate_filename(bbox, start_date: date, end_date: date) -> str:
-        min_lat = round(bbox.min_lat, 3)
-        min_lon = round(bbox.min_lon, 3)
-        max_lat = round(bbox.max_lat, 3)
-        max_lon = round(bbox.max_lon, 3)
+        min_lat = round(bbox.min_lat, 4)
+        min_lon = round(bbox.min_lon, 4)
+        max_lat = round(bbox.max_lat, 4)
+        max_lon = round(bbox.max_lon, 4)
         filename = f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}_dates={start_date}_{end_date}"
         return filename
 
