@@ -61,15 +61,6 @@ labeled_datasets = [
         dataset="geowiki_landcover_2017",
         country="global",
         sentinel_dataset="earth_engine_geowiki",
-        raw_labels=(
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_all.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_con.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_exp.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all_2.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_con.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_exp.zip"),
-        ),
         processors=(
             Processor(
                 filename="loc_all_2.txt",
