@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
 from enum import Enum
-from pathlib import Path
 from tqdm import tqdm
 from typing import List, Optional, Tuple
 from dataclasses import dataclass
+from google.cloud import storage
 import logging
 import pandas as pd
 import ee
@@ -12,15 +12,8 @@ import sys
 from src.bounding_boxes import bounding_boxes
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
-from src.ETL.constants import (
-    START,
-    END,
-    LAT,
-    LON,
-    GEOWIKI_UNEXPORTED,
-    UGANDA_UNEXPORTED,
-    DEST_TIF,
-)
+from src.ETL.constants import START, END, LAT, LON
+from src.utils import memoize
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +25,14 @@ class Season(Enum):
 
 def get_user_input(text_prompt: str) -> str:
     return input(text_prompt)
+
+
+@memoize
+def get_cloud_tif_list():
+    client = storage.Client()
+    cloud_tif_list_iterator = client.list_blobs("crop-mask-tifs", prefix="tifs")
+    cloud_tif_list = [blob.name for blob in cloud_tif_list_iterator]
+    return cloud_tif_list
 
 
 @dataclass
@@ -47,7 +48,7 @@ class EarthEngineExporter:
         faster, but cloud artefacts can be more pronounced. Default = True
     :param monitor: Whether to monitor each task until it has been run
     """
-    sentinel_dataset: str
+    sentinel_dataset: Optional[str] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
     fast: bool = True
@@ -89,6 +90,9 @@ class EarthEngineExporter:
         file_name_prefix: str,
         dest_bucket: Optional[str] = None,
     ):
+        if end_date > datetime.now().date():
+            raise ValueError(f"{end_date} is in the future")
+
         if self.fast:
             export_func = cloudfree.get_single_image_fast
         else:
@@ -217,14 +221,22 @@ class RegionExporter(EarthEngineExporter):
 
 @dataclass
 class LabelExporter(EarthEngineExporter):
+    @staticmethod
+    def generate_filename(bbox, start_date: date, end_date: date) -> str:
+        min_lat = round(bbox.min_lat, 3)
+        min_lon = round(bbox.min_lon, 3)
+        max_lat = round(bbox.max_lat, 3)
+        max_lon = round(bbox.max_lon, 3)
+        filename = f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}_dates={start_date}_{end_date}"
+        return filename
+
     def export(
         self,
-        labels_path: Path,
-        output_folder: Path = None,
+        labels: pd.DataFrame,
         num_labelled_points: Optional[int] = None,
         surrounding_metres: int = 80,
-        start_from: Optional[int] = None,
-    ):
+        dest_bucket: Optional[str] = "crop-mask-tifs",
+    ) -> int:
         r"""
         Run the exporter. For each label, the exporter will export
         int( (end_date - start_date).days / days_per_timestep) timesteps of data,
@@ -237,50 +249,33 @@ class LabelExporter(EarthEngineExporter):
         """
         self.check_earthengine_auth()
 
-        labels = pd.read_csv(labels_path)
         if num_labelled_points:
             labels = labels[:num_labelled_points]
-        if start_from:
-            labels = labels[start_from:]
 
-        if self.sentinel_dataset == "earth_engine_geowiki":
-            labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
-        elif self.sentinel_dataset == "earth_engine_uganda":
-            labels = labels[~labels.index.isin(UGANDA_UNEXPORTED)]
-
-        # Check if exported files for labels already exist
-        if output_folder and (output_folder / self.sentinel_dataset).exists():
-            num_files = len(list((output_folder / self.sentinel_dataset).glob("**/*.tif")))
-            if num_files >= len(labels):
-                logger.info("All tif files are already exported.")
-                return
-
-        if len(labels) == 0:
-            return
-
-        already_exported = 0
-        with tqdm(total=len(labels), position=0, leave=True) as pbar:
-            for _, row in tqdm(labels.iterrows()):
-                file_name_prefix = f"{self.sentinel_dataset}/{row[DEST_TIF]}"
-                if output_folder and (output_folder / file_name_prefix).exists():
-                    already_exported += 1
-                    pbar.update(1)
-                    continue
-
-                bbox = EEBoundingBox.from_centre(
-                    mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+        cloud_tif_list = get_cloud_tif_list()
+        exporting = 0
+        for _, row in tqdm(labels.iterrows(), total=len(labels)):
+            bbox = EEBoundingBox.from_centre(
+                mid_lat=row[LAT], mid_lon=row[LON], surrounding_metres=surrounding_metres
+            )
+            start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
+            end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
+            file_name_prefix = self.generate_filename(bbox, start_date, end_date)
+            if f"tifs/{file_name_prefix}.tif" in cloud_tif_list:
+                print(
+                    f"{file_name_prefix} already exists in Google Cloud Storage, run command to download:"
+                    + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
                 )
+                continue
 
-                start_date = datetime.strptime(row[START], "%Y-%m-%d").date()
-                end_date = datetime.strptime(row[END], "%Y-%m-%d").date()
-                if end_date > datetime.now().date():
-                    end_date = datetime.now().date()
-                self._export_for_polygon(
-                    file_name_prefix=file_name_prefix,
-                    polygon=bbox.to_ee_polygon(),
-                    start_date=start_date,
-                    end_date=end_date,
-                )
-                pbar.update(1)
+            self._export_for_polygon(
+                file_name_prefix=f"tifs/{file_name_prefix}",
+                dest_bucket=dest_bucket,
+                polygon=bbox.to_ee_polygon(),
+                start_date=start_date,
+                end_date=end_date,
+            )
+            exporting += 1
 
-        print(f"Already exported: {already_exported}")
+        print(f"Exporting: {exporting}, see progress: https://code.earthengine.google.com/")
+        return exporting
