@@ -47,20 +47,20 @@ These can be used to create annual and in season crop maps.
 1. Ensure local environment is set up and all existing data is downloaded.
 2. Add the shape file for new labels into [data/raw](data/raw)
 3. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-4. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
+4. To create ML ready features run:
     ```bash
-    python export_for_labeled.py
-    ``` 
-5. Google Earth Engine will automatically export satellite images to Google Cloud Storage.
-6. Once the satellite data has been exported, download it by running:
-    ```bash
+    # To download satellite data
     gsutil -m cp -n -r gs://crop-mask-tifs/tifs data/
-    ```
-7. To combine the labels and the satellite images into a machine learning suitable dataset run (from scripts directory):
-    ```bash
-    python create_features.py
-    ```
-8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
+
+    # To create features
+    python scripts/create_features
+    ``` 
+
+    If satellite data for the new labels is not available, the satellite data will be downloaded from Google Earth Engine.
+    After running the above script, export progress can be viewed here: https://code.earthengine.google.com/
+    Once all tasks are complete rerun the above commands and the features will be created.
+    
+5. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
 ## 2. Training a new model
 Training can be done locally or on grid.ai.
