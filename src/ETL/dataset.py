@@ -46,7 +46,6 @@ class DataDir(Enum):
     RAW_LABELS_DIR = "raw_labels_dir"
     LABELS_PATH = "labels_path"
     FEATURES_DIR = "features_dir"
-    FEATURES_DIR2 = "features_dir2"
 
 
 @dataclass
@@ -61,7 +60,7 @@ class LabeledDataset:
     def __post_init__(self):
         self.raw_labels_dir = self.get_path(DataDir.RAW_LABELS_DIR)
         self.labels_path = self.get_path(DataDir.LABELS_PATH)
-        self.feature_dir = self.get_path(DataDir.FEATURES_DIR2)
+        self.feature_dir = self.get_path(DataDir.FEATURES_DIR)
         self.feature_dir.mkdir(exist_ok=True, parents=True)
 
     def get_path(self, data_dir: DataDir, root_data_folder: Path = default_data_folder):
@@ -73,8 +72,6 @@ class LabeledDataset:
             return root_data_folder / "processed" / (self.dataset + ".csv")
         if data_dir == DataDir.FEATURES_DIR:
             return root_data_folder / "features" / self.dataset
-        if data_dir == DataDir.FEATURES_DIR2:
-            return root_data_folder / "features2" / self.dataset
 
     @staticmethod
     def merge_sources(sources):
