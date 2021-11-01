@@ -116,7 +116,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.75,
+        "alternative_threshold": 0.33,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
