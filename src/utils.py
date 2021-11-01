@@ -77,7 +77,6 @@ def load_tif(
     filepath: Path,
     start_date: datetime,
     days_per_timestep: int,
-    pbar: Optional[tqdm] = None,
 ) -> xr.DataArray:
     r"""
     The sentinel files exported from google earth have all the timesteps
