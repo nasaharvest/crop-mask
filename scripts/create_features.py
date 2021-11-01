@@ -1,11 +1,8 @@
 """
-Downloads labels if available, processed labels to have common format,
-and exports datasets using Google Earth Engine
-(locally, or to Google Drive)
+Combines the earth observation data with the labels to create (x, y) training data
 """
 import os
 import sys
-
 
 # Change the working directory to the directory of this script
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
