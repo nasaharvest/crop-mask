@@ -8,8 +8,8 @@ import pandas as pd
 import subprocess
 
 from datetime import datetime, timedelta
-from typing import Optional, Tuple, List, Union
-from tqdm import tqdm
+from typing import Optional, Tuple, List
+
 
 from src.ETL.constants import BANDS
 
@@ -115,11 +115,11 @@ def load_tif(
 
 
 def get_data_dir():
-    return Path(__file__).parent.parent / f"data"
+    return Path(__file__).parent.parent / "data"
 
 
 def get_tifs_dir():
-    return Path(__file__).parent.parent / f"data/tifs"
+    return Path(__file__).parent.parent / "data/tifs"
 
 
 def get_dvc_dir(dvc_dir_name: str) -> Path:

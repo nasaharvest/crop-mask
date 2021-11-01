@@ -1,10 +1,8 @@
-from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
 import pandas as pd
-import tempfile
 import xarray as xr
 
 from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, TIF_PATHS
@@ -14,33 +12,6 @@ from src.ETL.engineer import Engineer
 
 class TestEngineer(TestCase):
     """Tests for Engineer"""
-
-    engineer: Engineer
-
-    @classmethod
-    def setUpClass(cls):
-        geospatial_file = tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
-        # mock_glob.return_value = [Path(geospatial_file.name)]
-        cls.mock_labels = pd.DataFrame(
-            {
-                LON: [20, 40],
-                LAT: [30, 50],
-                CROP_PROB: [0.0, 1.0],
-                SUBSET: ["training", "validation"],
-                START: ["2020-01-01", "2020-01-01"],
-                END: ["2021-01-01", "2021-01-01"],
-            }
-        )
-        cls.engineer = Engineer()
-
-    @staticmethod
-    def generate_data_kwargs():
-        return {
-            "path_to_file": Path("mock_file"),
-            "start_date": datetime(2020, 1, 1, 0, 0, 0),
-            "end_date": datetime(2021, 1, 1, 0, 0, 0),
-            "days_per_timestep": 30,
-        }
 
     def test_find_nearest(self):
         val, idx = Engineer._find_nearest([1.0, 2.0, 3.0, 4.0, 5.0], 4.0)
