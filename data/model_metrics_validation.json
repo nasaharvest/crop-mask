@@ -2,16 +2,16 @@
     "Ethiopia_Tigray_2020": {
         "local_val_crop_percentage ": 0.2932,
         "local_val_size": 515,
-        "thresh0.75_unencoded_val_local_accuracy": 0.7612,
-        "thresh0.75_unencoded_val_local_f1_score": 0.6649,
-        "thresh0.75_unencoded_val_local_precision_score": 0.5648,
-        "thresh0.75_unencoded_val_local_recall_score": 0.8079,
-        "thresh0.75_unencoded_val_local_roc_auc_score": 0.8378,
-        "unencoded_val_local_accuracy": 0.699,
-        "unencoded_val_local_f1_score": 0.6247,
-        "unencoded_val_local_precision_score": 0.4924,
-        "unencoded_val_local_recall_score": 0.8543,
-        "unencoded_val_local_roc_auc_score": 0.8378
+        "thresh0.33_unencoded_val_local_accuracy": 0.7612,
+        "thresh0.33_unencoded_val_local_f1_score": 0.6649,
+        "thresh0.33_unencoded_val_local_precision_score": 0.5648,
+        "thresh0.33_unencoded_val_local_recall_score": 0.8079,
+        "thresh0.33_unencoded_val_local_roc_auc_score": 0.8294,
+        "unencoded_val_local_accuracy": 0.7825,
+        "unencoded_val_local_f1_score": 0.6387,
+        "unencoded_val_local_precision_score": 0.6226,
+        "unencoded_val_local_recall_score": 0.6556,
+        "unencoded_val_local_roc_auc_score": 0.8294
     },
     "Ethiopia_Tigray_2021_w_forecaster": {
         "encoded_val_local_accuracy": 0.7008,
