@@ -28,7 +28,7 @@ def get_user_input(text_prompt: str) -> str:
 
 
 @memoize
-def get_cloud_tif_list(dest_bucket: str):
+def get_cloud_tif_list(dest_bucket: str) -> List[str]:
     client = storage.Client()
     cloud_tif_list_iterator = client.list_blobs(dest_bucket, prefix="tifs")
     cloud_tif_list = [
@@ -204,7 +204,7 @@ class RegionExporter(EarthEngineExporter):
             ids = [f"{i}-{self.sentinel_dataset}" for i in range(len(regions))]
         else:
             regions = [region.to_ee_polygon()]
-            ids = [self.sentinel_dataset]
+            ids = [f"{self.sentinel_dataset}"]
 
         dest_folder = self.sentinel_dataset
         for identifier, region in zip(ids, regions):
@@ -248,7 +248,10 @@ class LabelExporter(EarthEngineExporter):
         min_lon = round(bbox.min_lon, 4)
         max_lat = round(bbox.max_lat, 4)
         max_lon = round(bbox.max_lon, 4)
-        filename = f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}_dates={start_date}_{end_date}"
+        filename = (
+            f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}"
+            + f"_dates={start_date}_{end_date}"
+        )
         return filename
 
     def _is_file_on_cloud_storage(self, file_name_prefix: str):
@@ -258,7 +261,7 @@ class LabelExporter(EarthEngineExporter):
         exists_on_cloud = f"tifs/{file_name_prefix}.tif" in self.cloud_tif_list
         if exists_on_cloud:
             print(
-                f"{file_name_prefix} already exists in Google Cloud Storage, run command to download:"
+                f"{file_name_prefix} already exists in Google Cloud, run command to download:"
                 + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
             )
         return exists_on_cloud
@@ -285,10 +288,7 @@ class LabelExporter(EarthEngineExporter):
             end_date=end_date,
         )
 
-    def export(
-        self,
-        labels: pd.DataFrame,
-    ) -> int:
+    def export(self, labels: pd.DataFrame):
         r"""
         Run the exporter. For each label, the exporter will export
         int( (end_date - start_date).days / days_per_timestep) timesteps of data,
@@ -303,4 +303,4 @@ class LabelExporter(EarthEngineExporter):
                 end_date=datetime.strptime(row[END], "%Y-%m-%d").date(),
             )
 
-        print(f"See progress: https://code.earthengine.google.com/")
+        print("See progress: https://code.earthengine.google.com/")

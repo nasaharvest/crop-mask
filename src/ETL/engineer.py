@@ -49,13 +49,13 @@ class Engineer(ABC):
         return 12742 * np.arcsin(np.sqrt(a))
 
     @staticmethod
-    def _distance_point_from_center(lat_idx: int, lon_idx: int, tif):
+    def _distance_point_from_center(lat_idx: int, lon_idx: int, tif) -> int:
         x_dist = np.abs((len(tif.x) - 1) / 2 - lon_idx)
         y_dist = np.abs((len(tif.y) - 1) / 2 - lat_idx)
         return x_dist + y_dist
 
     def _find_matching_point(
-        self, start: str, tif_paths: List[str], label_lon: float, label_lat: float
+        self, start: str, tif_paths: List[Path], label_lon: float, label_lat: float
     ) -> Tuple[np.ndarray, float, float, str]:
         """
         Given a label coordinate (y) this functions finds the associated satellite data (X)

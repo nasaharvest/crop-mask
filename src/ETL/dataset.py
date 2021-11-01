@@ -38,7 +38,7 @@ unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
-    return {p: BoundingBox.from_path(p) for p in tqdm(get_tifs_dir().glob(f"**/*.tif"))}
+    return {p: BoundingBox.from_path(p) for p in tqdm(get_tifs_dir().glob("**/*.tif"))}
 
 
 class DataDir(Enum):
@@ -240,6 +240,7 @@ class LabeledDataset:
 
 @dataclass
 class UnlabeledDataset:
+    sentinel_dataset: str
     season: Season
 
     def export_earth_engine_data(self):
