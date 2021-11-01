@@ -201,7 +201,7 @@ curl https://us-central1-bsos-geog-harvest1.cloudfunctions.net/ee-status?additio
 gsutil du gs://crop-mask-earthengine/<model name>/<dataset> | wc -l
 
 # Amount of files predicted
-gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
+gsutil du gs://crop-mask-preds/<model name>/<dataset> | wc -l
 ```
 
 **Putting it all together**
