@@ -445,13 +445,13 @@ labeled_datasets = [
         + tuple(
             [
                 Processor(
-                    filename=f"tigray_corrective_2020/non_crop.shp",
+                    filename="tigray_corrective_2020/non_crop.shp",
                     crop_prob=0.0,
                     end_year=2021,
                     train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
-                    filename=f"tigray_corrective_2020/crop.shp",
+                    filename="tigray_corrective_2020/crop.shp",
                     crop_prob=1.0,
                     end_year=2021,
                     train_val_test=(1.0, 0.0, 0.0),
