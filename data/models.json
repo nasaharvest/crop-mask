@@ -116,7 +116,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.75,
+        "alternative_threshold": 0.7,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -130,16 +130,13 @@
             "Mali",
             "Togo",
             "Rwanda",
-            "Uganda",
-            "open_buildings",
             "digitalearthafrica_eastern",
-            "digitalearthafrica_sahel",
             "Ethiopia"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
-        "alternative_threshold": 0.55,
+        "alternative_threshold": 0.25,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -156,8 +153,6 @@
             "Mali",
             "Togo",
             "Rwanda",
-            "Uganda",
-            "open_buildings",
             "digitalearthafrica_eastern",
             "Ethiopia"
         ]
