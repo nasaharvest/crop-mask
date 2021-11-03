@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from math import cos, radians
+from pathlib import Path
 from typing import List, Tuple, Union
+import re
 import ee
 import logging
 
@@ -22,6 +24,24 @@ class BoundingBox:
 
         self.url = (
             f"http://bboxfinder.com/#{self.min_lat},{self.min_lon},{self.max_lat},{self.max_lon}"
+        )
+
+    @classmethod
+    def from_path(cls, p: Path):
+        decimals_in_p = re.findall(r"=-?\d*\.?\d*", p.stem)
+        coords = [float(d[1:]) for d in decimals_in_p[0:4]]
+        bbox = cls(min_lat=coords[0], min_lon=coords[1], max_lat=coords[2], max_lon=coords[3])
+        return bbox
+
+    def contains(self, lat: float, lon: float):
+        return self.min_lat <= lat <= self.max_lat and self.min_lon <= lon <= self.max_lon
+
+    def overlaps(self, other: "BoundingBox"):
+        return (
+            self.min_lat < other.max_lat
+            and self.max_lat > other.min_lat
+            and self.min_lon < other.max_lon
+            and self.max_lon > other.min_lon
         )
 
 
