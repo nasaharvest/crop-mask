@@ -1,19 +1,21 @@
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, call
 from pathlib import Path
 from datetime import date
 from typing import Dict
 import pandas as pd
 import tempfile
 import shutil
+from src.ETL.ee_boundingbox import BoundingBox
 
 from src.ETL.ee_exporter import (
     Season,
     LabelExporter,
     RegionExporter,
     EarthEngineExporter,
+    get_cloud_tif_list,
 )
-from src.ETL.constants import DEST_TIF, LAT, LON, START, END
+from src.ETL.constants import LAT, LON, START, END
 
 module = "src.ETL.ee_exporter"
 
@@ -31,36 +33,86 @@ class TestEEExporters(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_data_dir)
 
-    @patch(f"{module}.ee")
     @patch(f"{module}.ee.Geometry.Polygon")
-    @patch(f"{module}.pd.read_csv")
     @patch(f"{module}.EarthEngineExporter._export_for_polygon")
-    def test_export_for_labels(self, mock_export_for_polygon, pd_read_csv, mock_Polygon, ee):
-        pd_read_csv.return_value = pd.DataFrame(
-            {
-                LAT: [1],
-                LON: [1],
-                END: ["2020-04-16"],
-                START: ["2019-04-22"],
-                DEST_TIF: ["tmp/0_2019-04-22_2020-04-16.tif"],
-            }
-        )
+    def test_export_using_point_and_dates(self, mock_export_for_polygon, mock_Polygon):
         mock_poly_return = "mock_poly"
         mock_Polygon.return_value = mock_poly_return
-        ee_dataset = "mock_dataset_name"
-        LabelExporter(sentinel_dataset=ee_dataset).export(
-            labels_path=Path("a/fake/path"),
-            num_labelled_points=None,
-            output_folder=self.temp_data_dir / "raw",
+        LabelExporter(check_gcp=False)._export_using_point_and_dates(
+            lat=1, lon=1, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
-
+        pref = (
+            "tifs/min_lat=0.9993_min_lon=0.9993_max_lat=1.0007_"
+            + "max_lon=1.0007_dates=2019-04-22_2020-04-16"
+        )
         mock_export_for_polygon.assert_called_with(
-            file_name_prefix="mock_dataset_name/tmp/0_2019-04-22_2020-04-16.tif",
+            dest_bucket="crop-mask-tifs",
+            file_name_prefix=pref,
             polygon=mock_poly_return,
             start_date=date(2019, 4, 22),
             end_date=date(2020, 4, 16),
         )
         mock_export_for_polygon.reset_mock()
+
+    @patch(f"{module}.LabelExporter._export_using_point_and_dates")
+    def test_export_for_labels(self, mock_export_using_point_and_dates):
+        mock_labels = pd.DataFrame(
+            {
+                LAT: [1, 2],
+                LON: [1, 2],
+                END: ["2020-04-16", "2020-04-16"],
+                START: ["2019-04-22", "2019-04-22"],
+            }
+        )
+        LabelExporter(check_gcp=False).export(labels=mock_labels)
+        self.assertEqual(mock_export_using_point_and_dates.call_count, 2)
+        mock_export_using_point_and_dates.assert_has_calls(
+            [
+                call(lat=1, lon=1, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)),
+                call(lat=2, lon=2, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)),
+            ]
+        )
+
+    def test_generate_filename(self):
+        bbox = BoundingBox(0, 0, 1, 1)
+        generated = LabelExporter(check_gcp=False)._generate_filename(
+            bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
+        )
+        self.assertEqual(
+            generated, "min_lat=1_min_lon=0_max_lat=1_max_lon=0_dates=2019-04-22_2020-04-16"
+        )
+
+    def test_generate_filename_decimals(self):
+        bbox = BoundingBox(0, 0, 0.0008123, 0.0009432)
+        generated = LabelExporter(check_gcp=False)._generate_filename(
+            bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
+        )
+        self.assertEqual(
+            generated,
+            "min_lat=0.0008_min_lon=0_max_lat=0.0009_max_lon=0_dates=2019-04-22_2020-04-16",
+        )
+
+    @patch(f"{module}.get_cloud_tif_list")
+    def test_is_file_on_cloud_storage_enabled(self, mock_get_cloud_tif_list):
+        exists = LabelExporter(check_gcp=True, dest_bucket="mock_bucket")._is_file_on_cloud_storage(
+            file_name_prefix="mock_filename_prefix"
+        )
+        mock_get_cloud_tif_list.assert_called_once_with("mock_bucket")
+        self.assertFalse(exists)
+
+    @patch(f"{module}.get_cloud_tif_list")
+    def test_is_file_on_cloud_storage_disabled(self, mock_get_cloud_tif_list):
+        exists = LabelExporter(check_gcp=False)._is_file_on_cloud_storage(
+            file_name_prefix="mock_filename_prefix"
+        )
+        mock_get_cloud_tif_list.assert_not_called()
+        self.assertFalse(exists)
+
+    @patch(f"{module}.storage")
+    def test_get_cloud_tif_list(self, mock_storage):
+        mock_storage.Client().list_blobs("mock_bucket").return_value = []
+        tif_list = get_cloud_tif_list("mock_bucket")
+        self.assertEqual(tif_list, [])
 
     @patch(f"{module}.get_user_input")
     @patch(f"{module}.date")

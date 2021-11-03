@@ -1,61 +1,17 @@
-from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
 import pandas as pd
-import shutil
-import tempfile
 import xarray as xr
 
-from src.ETL.constants import CROP_PROB, LAT, LON, SUBSET, START, END
+from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, TIF_PATHS
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
 
 class TestEngineer(TestCase):
     """Tests for Engineer"""
-
-    engineer: Engineer
-
-    @classmethod
-    @patch("src.ETL.engineer.pd.read_csv")
-    @patch("src.ETL.engineer.Path.glob")
-    def setUpClass(cls, mock_glob, mock_read_csv):
-        geospatial_file = tempfile.NamedTemporaryFile(suffix="00_2020-01-01_2021-01-01.tif")
-        mock_glob.return_value = [Path(geospatial_file.name)]
-        mock_read_csv.return_value = pd.DataFrame(
-            {
-                LON: [20, 40],
-                LAT: [30, 50],
-                CROP_PROB: [0.0, 1.0],
-                SUBSET: ["training", "validation"],
-                START: ["2020-01-01", "2020-01-01"],
-                END: ["2021-01-01", "2021-01-01"],
-            }
-        )
-        cls.engineer = Engineer(
-            sentinel_files_path=Path("mock_sentinel_path"),
-            labels_path=Path("mock_labels_path"),
-            save_dir=Path("mock_features_path"),
-            nan_fill=0,
-            max_nan_ratio=0,
-            add_ndvi=False,
-            add_ndwi=False,
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.engineer.save_dir)
-
-    @staticmethod
-    def generate_data_kwargs():
-        return {
-            "path_to_file": Path("mock_file"),
-            "start_date": datetime(2020, 1, 1, 0, 0, 0),
-            "end_date": datetime(2021, 1, 1, 0, 0, 0),
-            "days_per_timestep": 30,
-        }
 
     def test_find_nearest(self):
         val, idx = Engineer._find_nearest([1.0, 2.0, 3.0, 4.0, 5.0], 4.0)
@@ -66,46 +22,110 @@ class TestEngineer(TestCase):
         self.assertEqual(val, 1.0)
         self.assertEqual(idx, 0)
 
-    @patch("src.ETL.engineer.load_tif")
-    def test_create_labeled_data_instance_no_overlap(self, mock_load_tif):
-        mock_load_tif.return_value = xr.DataArray(
-            attrs={"x": np.array([25, 35]), "y": np.array([35, 45])}
-        )
-        kwargs = self.generate_data_kwargs()
-        data_instance = self.engineer._create_labeled_data_instance(**kwargs)
-        self.assertIsNone(data_instance)
+    def test_distance(self):
+        self.assertEqual(Engineer._distance(0, 0, 0.01, 0.01), 1.5725337265584898)
+        self.assertEqual(Engineer._distance(0, 0, 0.01, 0), 1.1119492645167193)
+        self.assertEqual(Engineer._distance(0, 0, 0, 0.01), 1.1119492645167193)
+
+    def test_distance_point_from_center(self):
+        tif = xr.DataArray(attrs={"x": np.array([25, 35, 45]), "y": np.array([35, 45, 55])})
+        self.assertEqual(Engineer._distance_point_from_center(0, 0, tif), 2.0)
+        self.assertEqual(Engineer._distance_point_from_center(0, 1, tif), 1.0)
+        self.assertEqual(Engineer._distance_point_from_center(1, 1, tif), 0.0)
+        self.assertEqual(Engineer._distance_point_from_center(2, 1, tif), 1.0)
 
     @patch("src.ETL.engineer.load_tif")
-    def test_create_labeled_data_instance(self, mock_load_tif):
+    def test_find_matching_point_from_one(self, mock_load_tif):
         mock_load_tif.return_value = xr.DataArray(
-            attrs={"x": np.array([15, 45]), "y": np.array([25, 55])},
             dims=["x", "y"],
             data=np.zeros((55, 45)),
         )
-        kwargs = self.generate_data_kwargs()
-        actual_data_instance = self.engineer._create_labeled_data_instance(**kwargs)
-        expected_data_instance = CropDataInstance(
-            crop_probability=0.0,
-            instance_lat=30,
-            instance_lon=20,
-            label_lat=30,
-            label_lon=20,
-            labelled_array=0.0,
-            data_subset="training",
-            source_file="mock_file",
-            start_date_str="2020-01-01",
-            end_date_str="2021-01-01",
+        labelled_np, closest_lon, closest_lat, source_file = Engineer()._find_matching_point(
+            start="2020-10-10", tif_paths=[Path("mock_file")], label_lon=25, label_lat=35
         )
-        self.assertEqual(expected_data_instance, actual_data_instance)
+        self.assertEqual(closest_lon, 25)
+        self.assertEqual(closest_lat, 35)
+        self.assertEqual(source_file, "mock_file")
+        self.assertEqual(labelled_np, np.array(0.0))
 
     @patch("src.ETL.engineer.load_tif")
-    def test_create_pickled_labeled_dataset(self, mock_load_tif):
-        mock_load_tif.return_value = xr.DataArray(
-            attrs={"x": np.array([15, 45]), "y": np.array([25, 55])},
-            dims=["x", "y"],
-            data=np.zeros((55, 45)),
+    def test_find_matching_point_from_multiple(self, mock_load_tif):
+        tif_paths = [Path("mock1"), Path("mock2"), Path("mock3")]
+
+        def side_effect(path, days_per_timestep, start_date):
+            idx = [i for i, p in enumerate(tif_paths) if p == path][0]
+            return xr.DataArray(
+                dims=["x", "y"],
+                data=np.zeros((10 + idx, 10 + idx)) + idx,
+            )
+
+        mock_load_tif.side_effect = side_effect
+        labelled_np, closest_lon, closest_lat, source_file = Engineer()._find_matching_point(
+            start="2020-10-10", tif_paths=tif_paths, label_lon=8, label_lat=8
         )
-        kwargs = self.generate_data_kwargs()
-        for k in ["path_to_file", "start_date", "end_date"]:
-            del kwargs[k]
-        self.engineer.create_pickled_labeled_dataset(**kwargs)
+        self.assertEqual(closest_lon, 8)
+        self.assertEqual(closest_lat, 8)
+        self.assertEqual(source_file, "mock3")
+        self.assertEqual(labelled_np, np.array(2.0))
+
+    @patch("src.ETL.engineer.Path.open")
+    @patch("src.ETL.engineer.Engineer._find_matching_point")
+    @patch("src.ETL.engineer.process_bands")
+    @patch("src.ETL.engineer.pickle.dump")
+    def test_create_pickled_labeled_dataset(
+        self, mock_dump, mock_process_bands, mock_find_matching_point, mock_open
+    ):
+        mock_find_matching_point.return_value = (
+            None,
+            0.1,
+            0.1,
+            "mock_file",
+        )
+
+        mock_process_bands.return_value = np.array([0.0])
+
+        mock_labels = pd.DataFrame(
+            {
+                LON: [20, 40],
+                LAT: [30, 50],
+                CROP_PROB: [0.0, 1.0],
+                SUBSET: ["training", "validation"],
+                START: ["2020-01-01", "2020-01-01"],
+                END: ["2021-01-01", "2021-01-01"],
+                TIF_PATHS: [[Path("tif1")], [Path("tif2"), Path("tif3")]],
+                FEATURE_PATH: ["feature1", "feature2"],
+            }
+        )
+
+        Engineer().create_pickled_labeled_dataset(mock_labels)
+
+        instances = [
+            CropDataInstance(
+                crop_probability=0.0,
+                instance_lat=0.1,
+                instance_lon=0.1,
+                label_lat=30,
+                label_lon=20,
+                labelled_array=np.array([0.0]),
+                data_subset="training",
+                source_file="mock_file",
+                start_date_str="2020-01-01",
+                end_date_str="2021-01-01",
+            ),
+            CropDataInstance(
+                crop_probability=1.0,
+                instance_lat=0.1,
+                instance_lon=0.1,
+                label_lat=50,
+                label_lon=40,
+                labelled_array=np.array([0.0]),
+                data_subset="validation",
+                source_file="mock_file",
+                start_date_str="2020-01-01",
+                end_date_str="2021-01-01",
+            ),
+        ]
+
+        self.assertEqual(mock_dump.call_count, 2)
+        self.assertEqual(mock_dump.call_args_list[0][0][0], instances[0])
+        self.assertEqual(mock_dump.call_args_list[1][0][0], instances[1])

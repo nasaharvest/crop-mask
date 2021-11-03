@@ -2,12 +2,14 @@ import torch
 import numpy as np
 import logging
 import random
-from datetime import datetime, timedelta
-from typing import Optional, Tuple, List
 from pathlib import Path
 import xarray as xr
 import pandas as pd
 import subprocess
+
+from datetime import datetime, timedelta
+from typing import Optional, Tuple, List
+
 
 from src.ETL.constants import BANDS
 
@@ -71,7 +73,11 @@ def process_filename(
             return None
 
 
-def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr.DataArray:
+def load_tif(
+    filepath: Path,
+    start_date: datetime,
+    days_per_timestep: int,
+) -> xr.DataArray:
     r"""
     The sentinel files exported from google earth have all the timesteps
     concatenated together. This function loads a tif files and splits the
@@ -105,8 +111,15 @@ def load_tif(filepath: Path, start_date: datetime, days_per_timestep: int) -> xr
 
     combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
     combined.attrs["band_descriptions"] = BANDS
-
     return combined
+
+
+def get_data_dir():
+    return Path(__file__).parent.parent / "data"
+
+
+def get_tifs_dir():
+    return Path(__file__).parent.parent / "data/tifs"
 
 
 def get_dvc_dir(dvc_dir_name: str) -> Path:
@@ -118,3 +131,14 @@ def get_dvc_dir(dvc_dir_name: str) -> Path:
         if not any(dvc_dir.iterdir()):
             raise FileExistsError(f"{str(dvc_dir)} should not be empty.")
     return dvc_dir
+
+
+def memoize(f):
+    memo = {}
+
+    def helper(x="default"):
+        if x not in memo:
+            memo[x] = f() if x == "default" else f(x)
+        return memo[x]
+
+    return helper
