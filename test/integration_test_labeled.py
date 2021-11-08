@@ -1,27 +1,17 @@
 from pathlib import Path
 from unittest import TestCase
-import glob
 import pandas as pd
 import pickle
 import os
 import sys
 import unittest
 
-from typing import List
-from pprint import pprint
-
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
-from src.utils import get_dvc_dir  # noqa: E402
-from src.ETL.constants import (  # noqa: E402
-    CROP_PROB,
-    DEST_TIF,
-    SUBSET,
-    GEOWIKI_UNEXPORTED,
-    UGANDA_UNEXPORTED,
-)
-from src.ETL.dataset import LabeledDataset, DataDir  # noqa: E402
+from src.utils import get_dvc_dir, get_data_dir  # noqa: E402
+from src.ETL.constants import CROP_PROB, SUBSET  # noqa: E402
+from src.ETL.dataset import DataDir  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
@@ -31,73 +21,36 @@ class IntegrationTestLabeledData(TestCase):
     @classmethod
     def setUpClass(cls):
         get_dvc_dir("processed")
-        get_dvc_dir("raw")
         get_dvc_dir("features")
+        unexported_file = get_data_dir() / "unexported.txt"
+        cls.unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
-    @staticmethod
-    def get_files(
-        directory: Path,
-        extension=None,
-    ) -> List[str]:
-        if not directory.exists():
-            return []
-        files = glob.glob(str(directory) + "/**", recursive=True)
-        if extension:
-            files = [f.replace(str(directory) + "/", "") for f in files if f.endswith(extension)]
-        return files
-
-    @staticmethod
-    def load_labels(d: LabeledDataset) -> pd.DataFrame:
-        labels = pd.read_csv(d.get_path(DataDir.LABELS_PATH))
-
-        if d.dataset == "geowiki_landcover_2017":
-            labels = labels[~labels.index.isin(GEOWIKI_UNEXPORTED)]
-        elif d.dataset == "Uganda":
-            labels = labels[~labels.index.isin(UGANDA_UNEXPORTED)]
-
+    @classmethod
+    def load_labels(cls, p: Path) -> pd.DataFrame:
+        labels = pd.read_csv(p)
+        labels = labels[~labels["filename"].isin(cls.unexported)]
+        labels = labels[labels[CROP_PROB] != 0.5]
         return labels
 
-    def test_each_label_has_tif(self):
-        all_labels_have_tifs = True
-        print("\n")
-        for d in labeled_datasets:
-            print("-------------------------------")
-            print(f"{d.dataset}")
-
-            labels = self.load_labels(d)
-            parent_tif_dir = d.get_path(DataDir.RAW_IMAGES_DIR)
-            expected = [f for f in labels[DEST_TIF]]
-            expected_old = [str(Path(f).name) for f in labels[DEST_TIF]]
-            actual = self.get_files(parent_tif_dir, extension=".tif")
-            if len(actual) == 0:
-                all_labels_have_tifs = False
-                print("\u2716 WARNING: 0 tifs found")
-                continue
-
-            difference = list(set(expected) - set(actual))
-            if len(difference) == 0:
-                print("\u2714 Labels == tifs")
-                continue
-
-            difference_old = list(set(expected_old) - set(actual))
-            if len(difference_old) == 0:
-                print("\u2714 Labels == tifs (organized with previous convention)")
-            elif len(difference_old) < len(difference):
-                all_labels_have_tifs = False
-                print(f"\u2716 Difference: {len(difference_old)}")
-                pprint(difference_old[:5])
-            else:
-                all_labels_have_tifs = False
-                print(f"\u2716 Difference: {len(difference)}")
-                pprint(difference[:5])
-
-        self.assertTrue(all_labels_have_tifs, "Check logs for which labels or tifs are missing.")
+    @staticmethod
+    def load_features_as_df(features_dir: Path) -> pd.DataFrame:
+        features = []
+        files = []
+        for subset in ["training", "validation", "testing"]:
+            if (features_dir / subset).exists():
+                for p in (features_dir / subset).glob("*.pkl"):
+                    with p.open("rb") as f:
+                        features.append(pickle.load(f))
+                        files.append(p)
+        df = pd.DataFrame([feat.__dict__ for feat in features])
+        df["filename"] = files
+        return df
 
     def test_label_feature_subset_amounts(self):
         all_subsets_correct_size = True
         for d in labeled_datasets:
-            labels = self.load_labels(d)
-            train_val_test_counts = labels[labels[CROP_PROB] != 0.5][SUBSET].value_counts()
+            labels = self.load_labels(d.get_path(DataDir.LABELS_PATH))
+            train_val_test_counts = labels[SUBSET].value_counts()
 
             print("------------------------------")
             print(d.dataset)
@@ -106,7 +59,7 @@ class IntegrationTestLabeledData(TestCase):
                 if subset in train_val_test_counts:
                     labels_in_subset = train_val_test_counts[subset]
                 features_in_subset = len(
-                    self.get_files(d.get_path(DataDir.FEATURES_DIR) / subset, extension=".pkl")
+                    list((d.get_path(DataDir.FEATURES_DIR) / subset).glob("**/*.pkl"))
                 )
                 if labels_in_subset != features_in_subset:
                     all_subsets_correct_size = False
@@ -128,14 +81,7 @@ class IntegrationTestLabeledData(TestCase):
             print("------------------------------")
             print(d.dataset)
 
-            features = []
-            for subset in ["training", "validation", "testing"]:
-                features_dir = d.get_path(DataDir.FEATURES_DIR)
-                if (features_dir / subset).exists():
-                    for p in (features_dir / subset).iterdir():
-                        with p.open("rb") as f:
-                            features.append(pickle.load(f))
-            features_df = pd.DataFrame([feat.__dict__ for feat in features])
+            features_df = self.load_features_as_df(d.get_path(DataDir.FEATURES_DIR))
             cols_to_check = ["label_lon", "label_lat", "start_date_str", "end_date_str"]
             duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
             num_dupes = len(duplicates)
@@ -143,7 +89,6 @@ class IntegrationTestLabeledData(TestCase):
             if num_dupes > 0:
                 no_duplicates = False
                 print(f"\u2716 Duplicates: {num_dupes}")
-                # duplicates.to_csv(f"../data/test/duplicates/{d.dataset}.csv", index=False)
             else:
                 print(f"\u2714 Duplicates: {num_dupes}")
 
@@ -156,16 +101,10 @@ class IntegrationTestLabeledData(TestCase):
             print("------------------------------")
             print(d.dataset)
 
-            features = []
-            for subset in ["training", "validation", "testing"]:
-                features_dir = d.get_path(DataDir.FEATURES_DIR)
-                if (features_dir / subset).exists():
-                    for p in (features_dir / subset).iterdir():
-                        with p.open("rb") as f:
-                            features.append(pickle.load(f))
-            features_df = pd.DataFrame([feat.__dict__ for feat in features])
+            features_df = self.load_features_as_df(d.get_path(DataDir.FEATURES_DIR))
             label_tif_mismatch = features_df[
-                (features_df["label_lon"] - features_df["instance_lon"]) > 0.0001
+                ((features_df["label_lon"] - features_df["instance_lon"]) > 0.0001)
+                | ((features_df["label_lat"] - features_df["instance_lat"]) > 0.0001)
             ]
             num_mismatched = len(label_tif_mismatch)
 
@@ -179,7 +118,5 @@ class IntegrationTestLabeledData(TestCase):
 
 
 if __name__ == "__main__":
-    log_file = "log_file.txt"
-    # with open(log_file, "w") as f:
     runner = unittest.TextTestRunner(stream=open(os.devnull, "w"), verbosity=2)
     unittest.main(testRunner=runner)

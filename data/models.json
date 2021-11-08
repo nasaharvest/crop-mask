@@ -1,7 +1,7 @@
 [
     {
         "model_name": "Kenya",
-        "alternative_threshold": 0.51,
+        "alternative_threshold": 0.82,
         "min_lon": 33.501,
         "max_lon": 42.283,
         "min_lat": -5.202,
@@ -24,7 +24,7 @@
     },
     {
         "model_name": "Togo",
-        "alternative_threshold": 0.31,
+        "alternative_threshold": 0.15,
         "min_lon": -0.1501,
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
@@ -47,7 +47,7 @@
     },
     {
         "model_name": "Rwanda",
-        "alternative_threshold": 0.27,
+        "alternative_threshold": 0.61,
         "min_lon": 28.841,
         "max_lon": 30.909,
         "min_lat": -2.854,
@@ -70,7 +70,7 @@
     },
     {
         "model_name": "Uganda",
-        "alternative_threshold": 0.89,
+        "alternative_threshold": 0.85,
         "min_lon": 29.5794661801,
         "max_lon": 35.03599,
         "min_lat": -1.44332244223,
@@ -93,7 +93,7 @@
     },
     {
         "model_name": "Global",
-        "alternative_threshold": 0.77,
+        "alternative_threshold": 0.9,
         "min_lon": -180,
         "max_lon": 180,
         "min_lat": -90,
@@ -116,7 +116,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.68,
+        "alternative_threshold": 0.7,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -130,21 +130,18 @@
             "Mali",
             "Togo",
             "Rwanda",
-            "Uganda",
-            "open_buildings",
             "digitalearthafrica_eastern",
-            "digitalearthafrica_sahel",
             "Ethiopia"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
-        "alternative_threshold": 0.37,
+        "alternative_threshold": 0.25,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
-        "input_months": 5,
+        "input_months": 6,
         "forecast": true,
         "evaluate_forecast": false,
         "eval_datasets": [
@@ -156,8 +153,6 @@
             "Mali",
             "Togo",
             "Rwanda",
-            "Uganda",
-            "open_buildings",
             "digitalearthafrica_eastern",
             "Ethiopia"
         ]

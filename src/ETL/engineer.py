@@ -3,20 +3,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
-from typing import Tuple, Optional
+from typing import Tuple, List
 import numpy as np
 import logging
-import pandas as pd
 import pickle
 
 from src.band_calculations import process_bands
-from src.ETL.constants import LAT, LON, CROP_PROB, SUBSET, START, END
-from src.utils import set_seed, process_filename, load_tif
+from src.ETL.constants import FEATURE_PATH, LAT, LON, CROP_PROB, SUBSET, START, END, TIF_PATHS
+from src.utils import load_tif
 from .data_instance import CropDataInstance
 
 logger = logging.getLogger(__name__)
-
-mandatory_cols = {LAT, LON, CROP_PROB, SUBSET}
 
 
 @dataclass
@@ -26,25 +23,10 @@ class Engineer(ABC):
     numpy arrays which can be input into the
     machine learning model
     """
-    sentinel_files_path: Path
-    labels_path: Path
-    save_dir: Path
     nan_fill: float = 0.0
     max_nan_ratio: float = 0.3
     add_ndvi: bool = True
     add_ndwi: bool = False
-
-    # should be True if the dataset contains data which will
-    # only be used for evaluation (e.g. the TogoEvaluation dataset)
-    eval_only: bool = False
-
-    def __post_init__(self):
-        set_seed()
-        self.geospatial_files = list(self.sentinel_files_path.glob("**/*.tif"))
-        self.labels = pd.read_csv(self.labels_path)
-        if not mandatory_cols.issubset(set(self.labels.columns)):
-            raise ValueError(f"{self.labels_path} is missing one of {mandatory_cols}")
-        self.save_dir.mkdir(exist_ok=True, parents=True)
 
     @staticmethod
     def _find_nearest(array, value: float) -> Tuple[float, int]:
@@ -53,7 +35,7 @@ class Engineer(ABC):
         return array[idx], idx
 
     @staticmethod
-    def distance(lat1, lon1, lat2, lon2):
+    def _distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """
         haversince formula, inspired by:
         https://stackoverflow.com/questions/41336756/find-the-closest-latitude-and-longitude/41337005
@@ -66,115 +48,79 @@ class Engineer(ABC):
         )
         return 12742 * np.arcsin(np.sqrt(a))
 
-    def _create_labeled_data_instance(
-        self,
-        path_to_file: Path,
-        start_date: datetime,
-        end_date: datetime,
-        days_per_timestep: int,
-    ) -> Optional[CropDataInstance]:
-        r"""
-        Return a tuple of np.ndarrays of shape [n_timesteps, n_features] for
-        1) the anchor (labelled)
+    @staticmethod
+    def _distance_point_from_center(lat_idx: int, lon_idx: int, tif) -> int:
+        x_dist = np.abs((len(tif.x) - 1) / 2 - lon_idx)
+        y_dist = np.abs((len(tif.y) - 1) / 2 - lat_idx)
+        return x_dist + y_dist
+
+    def _find_matching_point(
+        self, start: str, tif_paths: List[Path], label_lon: float, label_lat: float
+    ) -> Tuple[np.ndarray, float, float, str]:
         """
-
-        da = load_tif(path_to_file, days_per_timestep=days_per_timestep, start_date=start_date)
-
-        # first, we find the label encompassed within the da
-        min_lon, min_lat = float(da.x.min()), float(da.y.min())
-        max_lon, max_lat = float(da.x.max()), float(da.y.max())
-        overlap = self.labels[
-            (self.labels[LON] <= max_lon)
-            & (self.labels[LON] >= min_lon)
-            & (self.labels[LAT] <= max_lat)
-            & (self.labels[LAT] >= min_lat)
-            & (self.labels[START] == str(start_date.date()))
-            & (self.labels[END] == str(end_date.date()))
-        ]
-        if len(overlap) == 0:
-            return None
-
-        if len(overlap) == 1:
-            row = overlap.iloc[0]
-            idx = overlap.index[0]
-        else:
-            mean_lat = (min_lat + max_lat) / 2
-            mean_lon = (min_lon + max_lon) / 2
-            dist = self.distance(mean_lat, mean_lon, overlap[LAT], overlap[LON])
-            idx = dist.idxmin()
-            row = overlap.loc[dist.idxmin()]
-
-        self.labels = self.labels.drop(idx)
-
-        if row[CROP_PROB] == 0.5:
-            logger.info("Skipping row because crop_probability is 0.5")
-            return None
-
-        closest_lon, _ = self._find_nearest(da.x, row[LON])
-        closest_lat, _ = self._find_nearest(da.y, row[LAT])
-
-        labelled_np = da.sel(x=closest_lon).sel(y=closest_lat).values
-        labelled_array = process_bands(
-            labelled_np,
-            nan_fill=self.nan_fill,
-            max_nan_ratio=self.max_nan_ratio,
-            add_ndvi=self.add_ndvi,
-            add_ndwi=self.add_ndwi,
-        )
-
-        if labelled_array is None:
-            return None
-
-        return CropDataInstance(
-            crop_probability=row[CROP_PROB],
-            instance_lat=closest_lat,
-            instance_lon=closest_lon,
-            label_lat=row[LAT],
-            label_lon=row[LON],
-            labelled_array=labelled_array,
-            data_subset=row[SUBSET],
-            source_file=path_to_file.stem,
-            start_date_str=row[START],
-            end_date_str=row[END],
-        )
-
-    def create_pickled_labeled_dataset(
-        self,
-        checkpoint: bool = True,
-        include_extended_filenames: bool = True,
-        days_per_timestep: int = 30,
-    ):
-        logger.info(f"Creating pickled labeled dataset: {self.save_dir}")
-        for file_path in tqdm(self.geospatial_files):
-            file_info = process_filename(
-                file_path.name, include_extended_filenames=include_extended_filenames
-            )
-
-            if file_info is None:
-                continue
-
-            identifier, start_date, end_date = file_info
-
-            filename = f"{identifier}_{str(start_date.date())}_{str(end_date.date())}"
-
-            if checkpoint:
-                # we check if the file has already been written
-                if (
-                    (self.save_dir / "validation" / f"{filename}.pkl").exists()
-                    or (self.save_dir / "training" / f"{filename}.pkl").exists()
-                    or (self.save_dir / "testing" / f"{filename}.pkl").exists()
+        Given a label coordinate (y) this functions finds the associated satellite data (X)
+        by looking through one or multiple tif files.
+        Each tif file contains satellite data for a grid of coordinates.
+        So the function finds the closest grid coordinate to the label coordinate.
+        Additional value is given to a grid coordinate that is close to the center of the tif.
+        """
+        start_date = datetime.strptime(start, "%Y-%m-%d")
+        tifs = [load_tif(p, days_per_timestep=30, start_date=start_date) for p in tif_paths]
+        if len(tifs) > 1:
+            min_distance_from_point = np.inf
+            min_distance_from_center = np.inf
+            for i, tif in enumerate(tifs):
+                lon, lon_idx = self._find_nearest(tif.x, label_lon)
+                lat, lat_idx = self._find_nearest(tif.y, label_lat)
+                distance_from_point = self._distance(label_lat, label_lon, lat, lon)
+                distance_from_center = self._distance_point_from_center(lat_idx, lon_idx, tif)
+                if (distance_from_point < min_distance_from_point) or (
+                    distance_from_point == min_distance_from_point
+                    and distance_from_center < min_distance_from_center
                 ):
-                    continue
+                    closest_lon = lon
+                    closest_lat = lat
+                    min_distance_from_center = distance_from_center
+                    min_distance_from_point = distance_from_point
+                    labelled_np = tif.sel(x=lon).sel(y=lat).values
+                    source_file = tif_paths[i].name
+        else:
+            closest_lon = self._find_nearest(tifs[0].x, label_lon)[0]
+            closest_lat = self._find_nearest(tifs[0].y, label_lat)[0]
+            labelled_np = tifs[0].sel(x=closest_lon).sel(y=closest_lat).values
+            source_file = tif_paths[0].name
 
-            instance = self._create_labeled_data_instance(
-                file_path,
-                start_date=start_date,
-                end_date=end_date,
-                days_per_timestep=days_per_timestep,
+        return labelled_np, closest_lon, closest_lat, source_file
+
+    def create_pickled_labeled_dataset(self, labels):
+        for label in tqdm(labels.to_dict(orient="records"), desc="Creating pickled instances"):
+            (tif_data, tif_lon, tif_lat, tif_file) = self._find_matching_point(
+                start=label[START],
+                tif_paths=label[TIF_PATHS],
+                label_lon=label[LON],
+                label_lat=label[LAT],
             )
-            if instance is not None:
-                subset_path = self.save_dir / instance.data_subset
-                subset_path.mkdir(exist_ok=True)
-                save_path = subset_path / f"{filename}.pkl"
-                with save_path.open("wb") as f:
-                    pickle.dump(instance, f)
+            labelled_array = process_bands(
+                tif_data,
+                nan_fill=self.nan_fill,
+                max_nan_ratio=self.max_nan_ratio,
+                add_ndvi=self.add_ndvi,
+                add_ndwi=self.add_ndwi,
+            )
+
+            instance = CropDataInstance(
+                crop_probability=label[CROP_PROB],
+                label_lat=label[LAT],
+                label_lon=label[LON],
+                start_date_str=label[START],
+                end_date_str=label[END],
+                data_subset=label[SUBSET],
+                labelled_array=labelled_array,
+                instance_lat=tif_lat,
+                instance_lon=tif_lon,
+                source_file=tif_file,
+            )
+            save_path = Path(label[FEATURE_PATH])
+            save_path.parent.mkdir(exist_ok=True)
+            with save_path.open("wb") as f:
+                pickle.dump(instance, f)

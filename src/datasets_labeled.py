@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import date, timedelta
 
 from src.ETL.dataset import LabeledDataset
-from src.ETL.label_downloader import RawLabels
 from src.ETL.processor import Processor
 from src.ETL.constants import LON, LAT
 
@@ -60,16 +59,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
-        sentinel_dataset="earth_engine_geowiki",
-        raw_labels=(
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_all.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_con.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/crop_exp.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_all_2.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_con.zip"),
-            RawLabels("http://store.pangaea.de/Publications/See_2017/loc_exp.zip"),
-        ),
         processors=(
             Processor(
                 filename="loc_all_2.txt",
@@ -88,7 +77,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Kenya",
         country="Kenya",
-        sentinel_dataset="earth_engine_kenya",
         processors=(
             Processor(
                 filename="noncrop_labels_v2",
@@ -160,7 +148,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Mali",
         country="Mali",
-        sentinel_dataset="earth_engine_mali",
         processors=(
             Processor(
                 filename="mali_noncrop_2019",
@@ -191,7 +178,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Togo",
         country="Togo",
-        sentinel_dataset="earth_engine_togo",
         processors=(
             Processor(
                 filename="crop_merged_v2",
@@ -235,7 +221,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Rwanda",
         country="Rwanda",
-        sentinel_dataset="earth_engine_rwanda",
         processors=tuple(
             [
                 Processor(
@@ -274,7 +259,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Uganda",
         country="Uganda",
-        sentinel_dataset="earth_engine_uganda",
         processors=tuple(
             [
                 Processor(
@@ -348,7 +332,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="one_acre_fund",
         country="Kenya,Rwanda,Tanzania",
-        sentinel_dataset="earth_engine_one_acre_fund",
         processors=(
             Processor(
                 filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
@@ -366,7 +349,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="open_buildings",
         country="global",
-        sentinel_dataset="earth_engine_open_buildings",
         processors=(
             Processor(
                 filename="177_buildings_confidence_0.9.csv",
@@ -382,7 +364,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="digitalearthafrica_eastern",
         country="global",
-        sentinel_dataset="earth_engine_digitalearthafrica_eastern",
         processors=(
             Processor(
                 filename="Eastern_training_data_20210427.geojson",
@@ -395,8 +376,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
-        sentinel_dataset="earth_engine_digitalearthafrica_sahel",
-        tiff_start_index=4452,
         processors=tuple(
             [
                 Processor(
@@ -423,7 +402,6 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia",
         processors=tuple(
             [
                 Processor(
@@ -463,12 +441,41 @@ labeled_datasets = [
                 )
                 for year in [2019, 2020]
             ]
+        )
+        + tuple(
+            [
+                Processor(
+                    filename="tigray_corrective_2020/non_crop.shp",
+                    crop_prob=0.0,
+                    end_year=2021,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+                Processor(
+                    filename="tigray_corrective_2020/crop.shp",
+                    crop_prob=1.0,
+                    end_year=2021,
+                    train_val_test=(1.0, 0.0, 0.0),
+                ),
+                # Processor(
+                #     filename=f"tigray_corrective_2021/non_crop.shp",
+                #     crop_prob=0.0,
+                #     custom_start_date=date(2021, 4, 21),
+                #     num_timesteps=6,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
+                # Processor(
+                #     filename=f"tigray_corrective_2021/crop.shp",
+                #     crop_prob=1.0,
+                #     custom_start_date=date(2021, 4, 21),
+                #     num_timesteps=6,
+                #     train_val_test=(1.0, 0.0, 0.0),
+                # ),
+            ]
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia_tigray_2020",
         processors=tuple(
             [
                 Processor(
@@ -493,24 +500,25 @@ labeled_datasets = [
     LabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
-        sentinel_dataset="earth_engine_ethiopia_tigray_2021",
         processors=tuple(
             [
                 Processor(
                     filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2021-10-04.csv",
                     crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2022,
+                    custom_start_date=date(2021, 4, 21),
                     x_y_from_centroid=False,
                     train_val_test=(0.0, 1.0, 0.0),
                     clean_df=clean_ceo_data,
+                    num_timesteps=6,
                 ),
                 Processor(
                     filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
                     crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2022,
+                    custom_start_date=date(2021, 4, 21),
                     x_y_from_centroid=False,
                     train_val_test=(0.0, 1.0, 0.0),
                     clean_df=clean_ceo_data,
+                    num_timesteps=6,
                 ),
             ]
         ),
