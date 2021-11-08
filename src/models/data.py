@@ -35,23 +35,23 @@ class CropDataset(Dataset):
         normalizing_dict: Optional[Dict] = None,
         target_bbox: Optional[BoundingBox] = None,
         is_local_only: bool = False,
-        is_global_only: bool = False,
+        timesteps: Optional[List[int]] = None,
     ) -> None:
 
         logger.info(f"Initializating {subset} CropDataset")
-        self.probability_threshold = probability_threshold
-        self.target_bbox = target_bbox
-
+        # ----------------------------------------------------------------------
+        # Check dataset arguments
+        # ----------------------------------------------------------------------
         if not data_folder.exists():
             raise FileNotFoundError(f"{data_folder} does not exist")
 
-        if is_local_only and is_global_only:
-            raise ValueError("is_local_only and is_global_only cannot both be True")
-
-        self.is_local_only = is_local_only
-        self.is_global_only = is_global_only
-
         assert subset in ["training", "validation", "testing"]
+
+        # ----------------------------------------------------------------------
+        # Set up dataset parameters
+        # ----------------------------------------------------------------------
+        self.probability_threshold = probability_threshold
+        self.target_bbox = target_bbox
 
         self.remove_b1_b10 = remove_b1_b10
 
@@ -59,11 +59,24 @@ class CropDataset(Dataset):
         self.y: Optional[torch.Tensor] = None
         self.weights: Optional[torch.Tensor] = None
 
+        self.is_local_only = is_local_only
+
         # this is kept at False in case caching = True. It should be
         # changed to the input noise argument at the end of the
         # init function
         self.noise_factor = 0
+        self.pickle_files: List[Path] = []
+        self.local_crop_pickle_files: List[Path] = []
+        self.local_non_crop_pickle_files: List[Path] = []
+        self.global_crop_pickle_files: List[Path] = []
+        self.global_non_crop_pickle_files: List[Path] = []
+        self.normalizing_dict: Optional[Dict] = normalizing_dict
+        self.num_timesteps: Optional[List[int]] = timesteps
+        self.cache = False
 
+        # ----------------------------------------------------------------------
+        # Load in pickle files from dataset
+        # ----------------------------------------------------------------------
         all_pickle_files: List[Path] = []
         for dataset in datasets:
             features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
@@ -77,104 +90,90 @@ class CropDataset(Dataset):
             all_pickle_files += pickle_files
             logger.info(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
 
-        self.pickle_files: List[Path] = []
-        normalizing_dict_interim = {"n": 0}
-
-        self.local_crop_pickle_files: List[Path] = []
-        self.local_non_crop_pickle_files: List[Path] = []
-        self.global_crop_pickle_files: List[Path] = []
-        self.global_non_crop_pickle_files: List[Path] = []
-
-        if normalizing_dict and (not is_local_only and not is_global_only) and not upsample:
-            self.pickle_files = all_pickle_files
-        else:
-            if not normalizing_dict:
-                logger.info("Calculating normalizing dict")
-            else:
-                logger.info("Filtering by local and global")
-
+        # ----------------------------------------------------------------------
+        # Determine if we need to go through the pickle files to either:
+        # - fiter out non local files
+        # - calculate the normalizing dict
+        # - set the number of timesteps
+        # - figure out which pickle files are local/global for upsampling
+        # ----------------------------------------------------------------------
+        go_through_pickle_files = (
+            is_local_only or upsample or self.normalizing_dict is None or self.num_timesteps is None
+        )
+        if go_through_pickle_files:
+            normalizing_dict_interim = {"n": 0}
+            num_timesteps_set = set()
             for p in tqdm(all_pickle_files):
                 with p.open("rb") as f:
                     datainstance = pickle.load(f)
 
                 # Check if pickle file should be added to CropDataset
                 is_local = datainstance.isin(self.target_bbox)
+                is_crop = datainstance.crop_probability > self.probability_threshold
 
-                if datainstance.crop_probability > self.probability_threshold:
-                    if is_local:
-                        self.local_crop_pickle_files.append(p)
-                    else:
-                        self.global_crop_pickle_files.append(p)
-                else:
-                    if is_local:
-                        self.local_non_crop_pickle_files.append(p)
-                    else:
-                        self.global_non_crop_pickle_files.append(p)
+                if is_local and is_crop:
+                    self.local_crop_pickle_files.append(p)
+                elif is_local and not is_crop:
+                    self.local_non_crop_pickle_files.append(p)
+                elif not is_local and is_crop:
+                    self.global_crop_pickle_files.append(p)
+                elif not is_local and not is_crop:
+                    self.global_non_crop_pickle_files.append(p)
 
-                if (
-                    (not is_local_only and not is_global_only)
-                    or (is_local_only and is_local)
-                    or (is_global_only and not is_local)
-                ):
-                    self.pickle_files.append(p)
-                    if not normalizing_dict:
-                        labelled_array = datainstance.labelled_array
-                        self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+                if is_local_only and not is_local:
+                    continue
 
+                self.pickle_files.append(p)
+                labelled_array = datainstance.labelled_array
+                if self.normalizing_dict is None:
+                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
+                if self.num_timesteps is None:
+                    num_timesteps_set.add(labelled_array.shape[0])
+
+            if self.normalizing_dict is None:
+                self.normalizing_dict = self._calculate_normalizing_dict(
+                    norm_dict=normalizing_dict_interim
+                )
+            if self.num_timesteps is None:
+                self.num_timesteps = list(num_timesteps_set)
+
+        # ----------------------------------------------------------------------
+        # Check pickle files are loaded
+        # ----------------------------------------------------------------------
         if len(self.pickle_files) == 0:
-            local_or_global_only = ""
-            if is_local_only:
-                local_or_global_only = "local"
-            elif is_global_only:
-                local_or_global_only = "global"
-
+            pkl_file_type = "local" if is_local_only else ""
             dataset_names = [d.dataset for d in datasets]
-            raise ValueError(
-                f"No {local_or_global_only} {subset} pkl files found in {dataset_names}"
-            )
+            raise ValueError(f"No {pkl_file_type} {subset} pkl files found in {dataset_names}")
 
-        if normalizing_dict:
-            self.normalizing_dict: Optional[Dict] = normalizing_dict
-        else:
-            self.normalizing_dict = self._calculate_normalizing_dict(
-                norm_dict=normalizing_dict_interim
-            )
-
-        self.cache = False
+        # ----------------------------------------------------------------------
+        # Upsample local crop/non-crop to have equal number of files
+        # ----------------------------------------------------------------------
         if upsample:
-            # Upsample local and  global crop pickle files
             print(f"BEFORE UPSAMPLING: pickle_files: {len(self.pickle_files)}")
-            pickle_file_pairs = [
-                ("local", self.local_crop_pickle_files, self.local_non_crop_pickle_files),
-                # ("global", self.global_crop_pickle_files, self.global_non_crop_pickle_files),
-            ]
 
-            for local_or_global, crop_pkl_files, non_crop_pkl_files in pickle_file_pairs:
-                crop = len(crop_pkl_files)
-                non_crop = len(non_crop_pkl_files)
-                if crop == 0 or non_crop == 0:
-                    print(
-                        f"WARNING: {local_or_global} {subset} cannot upsample: "
-                        + f"crop: {crop} and non-crop: {non_crop}"
-                    )
-                elif crop > non_crop:
-                    print(
-                        f"Upsampling: {local_or_global} {subset} "
-                        + f"non-crop: {non_crop} to crop: {crop}"
-                    )
-                    while crop > non_crop:
-                        self.pickle_files.append(random.choice(non_crop_pkl_files))
-                        non_crop += 1
-                elif crop < non_crop:
-                    print(
-                        f"Upsampling: {local_or_global} {subset} "
-                        + f"crop: {crop} to non-crop: {non_crop}"
-                    )
-                    while crop < non_crop:
-                        self.pickle_files.append(random.choice(crop_pkl_files))
-                        crop += 1
+            crop = len(self.local_crop_pickle_files)
+            non_crop = len(self.local_non_crop_pickle_files)
+            crop_str = f"crop: {crop}"
+            non_crop_str = f"non-crop: {non_crop}"
+
+            if crop == 0 or non_crop == 0:
+                print(f"WARNING: local {subset} cannot upsample: {crop_str} and {non_crop_str}")
+            elif crop > non_crop:
+                print(f"Upsampling: local {subset} {non_crop_str} to {crop_str}")
+                while crop > non_crop:
+                    self.pickle_files.append(random.choice(self.local_non_crop_pickle_files))
+                    non_crop += 1
+            elif crop < non_crop:
+                print(f"Upsampling: local {subset} {crop_str} to {non_crop_str}")
+                while crop < non_crop:
+                    self.pickle_files.append(random.choice(self.local_crop_pickle_files))
+                    crop += 1
+
             print(f"AFTER UPSAMPLING: pickle_files: {len(self.pickle_files)}")
 
+        # ----------------------------------------------------------------------
+        # Cache dataset if necessary
+        # ----------------------------------------------------------------------
         if cache:
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
@@ -275,13 +274,6 @@ class CropDataset(Dataset):
         else:
             return output.shape[1]
 
-    @property
-    def num_timesteps(self) -> int:
-        # assumes the first value in the tuple is x
-        assert len(self.pickle_files) > 0, "No files to load!"
-        output_tuple = self[0]
-        return output_tuple[0].shape[0]
-
     def remove_bands(self, x: np.ndarray) -> np.ndarray:
         """This nested function is so that
         _remove_bands can be called from an unitialized
@@ -345,6 +337,11 @@ class CropDataset(Dataset):
             crop_int = 0
 
         x = self.remove_bands(x=self._normalize(target_datainstance.labelled_array))
+
+        # If x is a partial time series, pad it to full length
+        max_timesteps = max(self.num_timesteps)
+        if x.shape[0] < max_timesteps:
+            x = np.concatenate([x, np.full((max_timesteps - x.shape[0], x.shape[1]), np.nan)])
 
         return (
             torch.from_numpy(x).float(),
