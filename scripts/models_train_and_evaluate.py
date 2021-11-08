@@ -30,8 +30,9 @@ models_folder = get_dvc_dir("models")
 data_folder = models_folder.parent
 
 
-def hparams_from_json(params):
-    hparams = Model.add_model_specific_args(ArgumentParser()).parse_args()
+def hparams_from_json(params, parser):
+    hparams = Model.add_model_specific_args(parser).parse_args()
+    print(hparams)
     for key, val in params.items():
         if type(val) == list:
             val = ",".join(val)
@@ -39,16 +40,19 @@ def hparams_from_json(params):
 
     hparams.data_folder = str(data_folder)
     hparams.model_dir = str(models_folder)
-
     return hparams
 
 
 if __name__ == "__main__":
-    retrain_all = False
+    parser = ArgumentParser()
+    parser.add_argument("--retrain_all", type=bool, default=True)
+    parser.add_argument("--fail_on_error", type=bool, default=True)
+    args = parser.parse_args()
+
     models_json = data_folder / "models.json"
     model_validation_metrics = data_folder / "model_metrics_validation.json"
 
-    if retrain_all:
+    if args.retrain_all:
         all_dataset_params_path = Path(data_folder / "all_dataset_params.json")
         if all_dataset_params_path.exists():
             all_dataset_params_path.unlink()
@@ -58,12 +62,14 @@ if __name__ == "__main__":
 
     new_model_metrics = {}
     for params in models_params_list:
-        hparams = hparams_from_json(params)
+        hparams = hparams_from_json(params, parser)
         try:
-            model_name, metrics = model_pipeline(hparams, retrain_all)
+            model_name, metrics = model_pipeline(hparams, args.retrain_all)
             new_model_metrics[model_name] = metrics
         except Exception as e:
             print(f"\u2716 {str(e)}")
+            if args.fail_on_error:
+                raise e
 
     with model_validation_metrics.open("w") as f:
         json.dump(new_model_metrics, f, ensure_ascii=False, indent=4, sort_keys=True)
