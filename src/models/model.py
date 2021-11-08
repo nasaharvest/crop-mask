@@ -130,9 +130,18 @@ class Model(pl.LightningModule):
             k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
         }
 
-        if self.hparams.forecast:
-            num_output_timesteps = self.num_timesteps - self.hparams.input_months
-            logger.info(f"Predicting {num_output_timesteps} timesteps in the forecaster")
+        self.forecast_all = self.hparams.forecast
+        self.forecast_partial_timeseries_only = (
+            not self.hparams.forecast and len(self.num_timesteps) > 1
+        )
+
+        if self.forecast_all:
+            num_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
+
+        elif self.forecast_partial_timeseries_only:
+            num_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
+
+        if self.forecast_all or self.forecast_partial_timeseries_only:
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
                 output_timesteps=num_output_timesteps,
@@ -182,7 +191,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
         is_local_only: bool = False,
-        is_global_only: bool = False,
     ) -> CropDataset:
         if subset == "training":
             datasets = self.train_datasets
@@ -201,7 +209,6 @@ class Model(pl.LightningModule):
             noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
-            is_global_only=is_global_only,
         )
 
     def train_dataloader(self):
@@ -360,19 +367,37 @@ class Model(pl.LightningModule):
 
         x, label, is_global = batch
 
-        input_to_encode = x[:, : self.hparams.input_months, :]
-
         loss: Union[float, torch.Tensor] = 0
-        if self.hparams.forecast:
-            # we will predict every timestep except the first one
+        output_dict = {}
+
+        if self.forecast_all or self.forecast_partial_timeseries_only:
+            # -------------------------------------------------------------------------------
+            # Forecast
+            # -------------------------------------------------------------------------------
+            if self.forecast_all:
+                input_months = self.hparams.input_months
+            elif self.forecast_partial_timeseries_only:
+                input_months = min(self.num_timesteps)
+
+            input_to_encode = x[:, :input_months]
             output_to_predict = x[:, 1:, :]
             encoder_output = self.forecaster(input_to_encode)
 
-            # The evaluation dataset may not have ground truth months available
-            # in which case the loss for the forecaster cannot be calculated
-            if training or self.hparams.evaluate_forecast:
+            # -------------------------------------------------------------------------------
+            # Compute loss
+            # -------------------------------------------------------------------------------
+            nan_index = torch.isnan(x)
+            batch_has_some_partial_time_series = torch.any(nan_index)
+            batch_has_all_partial_time_series = (
+                x.shape[1] - input_months
+            ) != self.forecaster.output_timesteps
+            if not batch_has_some_partial_time_series and not batch_has_all_partial_time_series:
                 loss = self.forecaster_loss(encoder_output, output_to_predict)
 
+            # -------------------------------------------------------------------------------
+            # Create a full time series by concatenating ground truth with the forecast
+            # [GT for input months, Forecast for output_timesteps]
+            # -------------------------------------------------------------------------------
             final_encoded_input = torch.cat(
                 (
                     (
@@ -380,40 +405,44 @@ class Model(pl.LightningModule):
                         # -1 because the encoder output has no value for the 0th
                         # timestep
                         # fmt: off
-                        encoder_output[:, self.hparams.input_months - 1:, :],
+                        encoder_output[:, input_months - 1:],
                         # fmt: on
                     )
                 ),
                 dim=1,
             )
 
-            output_dict = {}
-            if add_preds:
-                output_dict.update(
-                    {
-                        "encoder_prediction": encoder_output,
-                        "encoder_target": output_to_predict,
-                    }
-                )
-            if log_loss:
-                output_dict["log"] = {}
+            # -------------------------------------------------------------------------------
+            # Set the input to the classifier (x) using the forecasted values
+            # -------------------------------------------------------------------------------
+            if batch_has_all_partial_time_series:
+                x = final_encoded_input
 
-            if training or self.hparams.evaluate_forecast:
+            elif batch_has_some_partial_time_series:
+                x[~nan_index] = self.add_noise(x[~nan_index], training=training)
+                x[nan_index] = final_encoded_input[nan_index]
+                assert torch.any(torch.isnan(x)) == False
+
+            elif not batch_has_some_partial_time_series and not batch_has_all_partial_time_series:
                 # We only concatente the full time series with the
                 # encoded/forecasted time series if the full time series
                 # is available for evaluation
                 x = torch.cat((self.add_noise(x, training), final_encoded_input), dim=0)
                 label = torch.cat((label, label), dim=0)
                 is_global = torch.cat((is_global, is_global), dim=0)
+
+                if add_preds:
+                    output_dict["encoder_prediction"] = encoder_output
+                    output_dict["encoder_target"] = output_to_predict
+
             else:
-                x = final_encoded_input
+                raise ValueError(
+                    "This should never happen. Please report this error to the developers."
+                )
 
         else:
-            loss = 0
-            output_dict = {}
-            if log_loss:
-                output_dict["log"] = {}
-            x = self.add_noise(input_to_encode, training=training)
+            x = x[:, : self.hparams.input_months]
+            x = self.add_noise(x, training=training)
 
         org_global_preds, local_preds = self.classifier(x)
         global_preds = org_global_preds[is_global != 0]
@@ -445,7 +474,7 @@ class Model(pl.LightningModule):
 
         output_dict[loss_label] = loss
         if log_loss:
-            output_dict["log"][loss_label] = loss
+            output_dict["log"] = {loss_label: loss}
         if add_preds:
             output_dict.update(
                 {
@@ -589,6 +618,10 @@ class Model(pl.LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
+
+        print("ADDING model specific args")
+        print(parser)
+        print(parser.parse_args())
 
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
