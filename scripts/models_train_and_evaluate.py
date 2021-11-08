@@ -32,7 +32,6 @@ data_folder = models_folder.parent
 
 def hparams_from_json(params, parser):
     hparams = Model.add_model_specific_args(parser).parse_args()
-    print(hparams)
     for key, val in params.items():
         if type(val) == list:
             val = ",".join(val)
