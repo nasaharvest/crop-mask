@@ -36,7 +36,8 @@ def export(
     file_dimensions: Optional[int] = None,
 ) -> ee.batch.Export:
 
-    description = f"{str(Path(file_name_prefix).parent.stem)}-{str(Path(file_name_prefix).stem)}"
+    # Description of the export cannot contain certrain characters
+    description = str(Path(file_name_prefix).name).replace(".", "-").replace("=", "-")[:100]
     if dest_bucket:
         task = ee.batch.Export.image.toCloudStorage(
             image=image.clip(region),

@@ -47,17 +47,20 @@ These can be used to create annual and in season crop maps.
 1. Ensure local environment is set up and all existing data is downloaded.
 2. Add the shape file for new labels into [data/raw](data/raw)
 3. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-4. To process the labels into a standard format and begin exporting satellite data from Google Earth Engine run (from scripts directory):
+4. To create ML ready features run:
     ```bash
-    python export_for_labeled.py
+    # To download satellite data
+    gsutil -m cp -n -r gs://crop-mask-tifs/tifs data/
+
+    # To create features
+    python scripts/create_features
     ``` 
-5. Google Earth Engine will automatically export satellite images to Google Drive.
-6. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
-7. To combine the labels and the satellite images into a machine learning suitable dataset run (from scripts directory):
-    ```bash
-    python create_features.py
-    ```
-8. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
+
+    If satellite data for the new labels is not available, the satellite data will be downloaded from Google Earth Engine.
+    After running the above script, export progress can be viewed here: https://code.earthengine.google.com/
+    Once all tasks are complete rerun the above commands and the features will be created.
+    
+5. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
 <img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
 
@@ -203,19 +206,27 @@ gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
 
 **Putting it all together**
 Once an inference run is complete the result is several small `.nc` files. These need to be merged into a single `.tif` file. Currently this operation is not automated and requires the user to:
-1. Download the appropriate folder
-    ```bash
-    gsutil -m cp -r "gs://crop-mask-preds/<model>/<dataset>/"
-    ```
-2. Specify the folder location in [gcp/merger/main.py](gcp/merger/main.py) and run the script.
+```bash
+export MODEL="Rwanda"
+export DATASET="Rwanda_v2"
+export START_YEAR=2019
+export END_YEAR=2020
 
-**[OPTIONAL] Uploading to Google Earth Engine**
-1. Use `gsutil` to upload all merged `.tif` files to Google Earth Engine.
-```
-gsutil -m cp "<country>/*.tif" gs://crop-mask-preds-merged/<country>/
-```
+# Download appropriate folder
+gsutil -m cp -r gs://crop-mask-preds/$MODEL/$DATASET/ .
 
-2. Use `ee` to upload all merged `.tif` files to Google Earth Engine.
+# Run gdal merge script
+python gcp/merger/main.py --p <current-dir>/$DATASET
+
+# [OPTIONAL] Upload COG tif output to Google Cloud Storage
+gsutil cp <current-dir>/$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET/
+
+# [OPTIONAL] Upload COG to Google Earth Engine
+earthengine upload image --asset_id users/izvonkov/$DATASET \
+    -ts $START_YEAR-04-01 \
+    -te $END_YEAR-04-01 \
+    gs://crop-mask-preds-merged/$DATASET/final.tif
+```
 
 
 ## 5. Tests
