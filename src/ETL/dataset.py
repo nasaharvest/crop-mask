@@ -16,6 +16,7 @@ from src.ETL.constants import (
     ALREADY_EXISTS,
     COUNTRY,
     CROP_PROB,
+    FEATURE_FILENAME,
     FEATURE_PATH,
     LAT,
     LON,
@@ -104,7 +105,7 @@ class LabeledDataset:
         df[COUNTRY] = self.country
         df[DATASET] = self.dataset
 
-        df["filename"] = (
+        df[FEATURE_FILENAME] = (
             "lat="
             + df[LAT].round(8).astype(str)
             + "_lon="
@@ -175,6 +176,26 @@ class LabeledDataset:
             )
         return tif_paths
 
+    def load_labels(
+        self, allow_processing: bool = False, fail_if_missing_features: bool = False
+    ) -> pd.DataFrame:
+        if allow_processing:
+            labels = self.process_labels()
+        elif self.labels_path.exists():
+            labels = pd.read_csv(self.labels_path)
+        else:
+            raise FileNotFoundError(f"{self.labels_path} does not exist")
+        labels = labels[labels[CROP_PROB] != 0.5]
+        labels = labels[~labels[FEATURE_FILENAME].isin(unexported)]
+        labels["str_f_path"] = labels[SUBSET] + "/" + labels[FEATURE_FILENAME] + ".pkl"
+        labels[FEATURE_PATH] = np.vectorize(lambda p: self.feature_dir / p)(labels["str_f_path"])
+        labels[ALREADY_EXISTS] = np.vectorize(lambda p: p.exists())(labels[FEATURE_PATH])
+        if fail_if_missing_features and not labels[ALREADY_EXISTS].all():
+            raise FileNotFoundError(
+                f"{self.dataset} has missing features: {labels[FEATURE_FILENAME].to_list()}"
+            )
+        return labels
+
     def create_features(self, disable_gee_export: bool = False):
         """
         Features are the (X, y) pairs that are used to train the model.
@@ -188,8 +209,6 @@ class LabeledDataset:
         3. Use the label coordinates to match to the associated satellite data (X)
         4. If the satellite data is missing, download it using Google Earth Engine
         5. Create the features (X, y)
-
-
         """
         print("------------------------------")
         print(self.dataset)
@@ -197,16 +216,12 @@ class LabeledDataset:
         # -------------------------------------------------
         # STEP 1: Obtain the labels
         # -------------------------------------------------
-        labels = self.process_labels()
-        labels = labels[labels[CROP_PROB] != 0.5]
-        labels = labels[~labels["filename"].isin(unexported)]
-        labels[FEATURE_PATH] = self.generate_feature_paths(labels)
+        labels = self.load_labels(allow_processing=True)
 
         # -------------------------------------------------
         # STEP 2: Check if features already exist
         # -------------------------------------------------
         self.prune_features_with_no_label(labels[FEATURE_PATH].to_list())
-        labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
         labels_with_no_features = labels[~labels[ALREADY_EXISTS]].copy()
         if len(labels_with_no_features) == 0:
             self.do_label_and_feature_amounts_match(labels)
