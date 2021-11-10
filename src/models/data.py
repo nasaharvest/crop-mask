@@ -41,9 +41,15 @@ class CropDataset(Dataset):
         if not data_folder.exists():
             raise FileNotFoundError(f"{data_folder} does not exist")
 
-        df = self._load_df_from_datasets(datasets, subset, up_to_year, target_bbox, is_local_only)
+        df = self._load_df_from_datasets(
+            datasets,
+            subset=subset,
+            up_to_year=up_to_year,
+            target_bbox=target_bbox,
+            is_local_only=is_local_only,
+        )
 
-        self.pickle_files: List[Path] = df[FEATURE_PATH].tolist()
+        self.pickle_files: List[Path] = [Path(p) for p in df[FEATURE_PATH].tolist()]
         self.normalizing_dict: Dict = (
             normalizing_dict
             if normalizing_dict
@@ -117,7 +123,7 @@ class CropDataset(Dataset):
 
     @staticmethod
     def _upsampled_files(
-        local_crop_files: List[Path], local_non_crop_files: List[Path]
+        local_crop_files: List[str], local_non_crop_files: List[str]
     ) -> List[Path]:
         local_crop = len(local_crop_files)
         local_non_crop = len(local_non_crop_files)
@@ -135,11 +141,12 @@ class CropDataset(Dataset):
         print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
 
         resample_amount = abs(local_crop - local_non_crop)
-        return np.random.choice(
+        upsampled_str_files = np.random.choice(
             files_to_upsample,
             size=abs(local_crop - local_non_crop),
             replace=resample_amount > len(files_to_upsample),
         ).tolist()
+        return [Path(p) for p in upsampled_str_files]
 
     @staticmethod
     def _update_normalizing_values(
@@ -164,7 +171,7 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(pickle_files: List[Path]) -> Optional[Dict[str, np.ndarray]]:
+    def _calculate_normalizing_dict(pickle_files: List[Path]) -> Dict[str, np.ndarray]:
         norm_dict_interim = {"n": 0}
         for p in tqdm(pickle_files, desc="Calculating normalizing_dict"):
             with p.open("rb") as f:
