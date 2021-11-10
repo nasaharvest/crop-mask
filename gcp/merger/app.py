@@ -4,10 +4,13 @@ import os
 from pathlib import Path
 import tempfile
 import shutil
+from osgeo import gdal, osr
+from gcp.merger.main_andrew_docker import gdal_build_vrt as build
+from gcp.merger.main_andrew_docker import gdal_translate_tif as translate
+
 # from main_andrew import gdal_build_vrt
 # from import_nc_files import get_all_blob
 app = Flask(__name__)
-
 
 # download files from given bucket
 def download_files(bucket_name, storage_client):
@@ -28,7 +31,7 @@ def download_files(bucket_name, storage_client):
             curr_direc.mkdir(parents=True, exist_ok=True)
             blob.download_to_filename(str(temp_dir / blob_path))
             
-        print("The length of the final directory is " + str(len((os.listdir(str(curr_direc))))))
+        print("Length final directory is " + str(len((os.listdir(str(curr_direc))))))
 
     except Exception as e:
         print("This was the exception caught: " + str(e))     
@@ -68,7 +71,7 @@ def gdalmerge():
 
         # tell where files can be found
         result = "Files can be found at " + str(temp_dir)
-        print("The temp directory most defintely does not exist: " + str(temp_dir.exists()))
+        print("The temp directory defintely does not exist: " + str(temp_dir.exists()))
         remove(temp_dir)
         return result
     return "done"
