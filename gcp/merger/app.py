@@ -12,6 +12,7 @@ from gcp.merger.main_andrew_docker import gdal_translate_tif as translate
 # from import_nc_files import get_all_blob
 app = Flask(__name__)
 
+
 # download files from given bucket
 def download_files(bucket_name, storage_client):
     # create temp_directory
@@ -41,18 +42,16 @@ def download_files(bucket_name, storage_client):
     print("Files can be found at " + str(temp_dir))
     return temp_dir
 
+
 # delete given directory
 def remove(temp_dir):
     shutil.rmtree(temp_dir)
+
 
 @app.route('/')
 def hello_world():
     return 'Hey, we have Flask in a Docker container!'
 
-
-# Download helper
-# Merge Helper 
-# Upload 
 
 @app.route('/download', methods = ['POST'])
 def gdalmerge():
@@ -75,6 +74,7 @@ def gdalmerge():
         remove(temp_dir)
         return result
     return "done"
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
