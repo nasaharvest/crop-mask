@@ -44,7 +44,7 @@ def hparams_from_json(params, parser):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--retrain_all", type=bool, default=True)
+    parser.add_argument("--retrain_all", type=bool, default=False)
     parser.add_argument("--fail_on_error", type=bool, default=True)
     args = parser.parse_args()
 
