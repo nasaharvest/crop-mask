@@ -30,14 +30,15 @@ if __name__ == "__main__":
     bbox = bounding_boxes["Ethiopia_Tigray"]
 
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="Ethiopia_Tigray_2020")
+    parser.add_argument("--model_name", type=str, default="Ethiopia_Tigray_2021_w_forecaster")
     parser.add_argument("--min_lat", type=float, default=bbox.min_lat)
     parser.add_argument("--max_lat", type=float, default=bbox.max_lat)
     parser.add_argument("--min_lon", type=float, default=bbox.min_lon)
     parser.add_argument("--max_lon", type=float, default=bbox.max_lon)
     parser.add_argument("--train_datasets", type=str, default=all_datasets_str)
-    parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Tigray_2020")
+    parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Tigray_2021")
     parser.add_argument("--data_folder", type=str, default=str(data_folder))
     parser.add_argument("--model_dir", type=str, default=str(data_folder / "models"))
+    parser.add_argument("--up_to_year", type=int, default=2021)
     hparams = Model.add_model_specific_args(parser).parse_args()
     train_model(hparams)
