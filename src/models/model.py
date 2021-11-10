@@ -101,7 +101,12 @@ class Model(pl.LightningModule):
         else:
             all_dataset_params = {}
 
-        if hparams.train_datasets not in all_dataset_params:
+        normalizing_dict_key = (
+            f"{hparams.train_datasets}_{hparams.up_to_year}"
+            if "up_to_year" in hparams and hparams.up_to_year
+            else hparams.train_datasets
+        )
+        if normalizing_dict_key not in all_dataset_params:
             dataset = self.get_dataset(subset="training", cache=False)
             # we save the normalizing dict because we calculate weighted
             # normalization values based on the datasets we combine.
@@ -111,7 +116,7 @@ class Model(pl.LightningModule):
             if dataset.normalizing_dict is None:
                 raise ValueError("Normalizing dict must be calculated using dataset.")
 
-            all_dataset_params[hparams.train_datasets] = {
+            all_dataset_params[normalizing_dict_key] = {
                 "num_timesteps": dataset.num_timesteps,
                 "input_size": dataset.num_input_features,
                 "normalizing_dict": {k: v.tolist() for k, v in dataset.normalizing_dict.items()},
@@ -120,7 +125,7 @@ class Model(pl.LightningModule):
             with all_dataset_params_path.open("w") as f:
                 json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-        dataset_params = all_dataset_params[hparams.train_datasets]
+        dataset_params = all_dataset_params[normalizing_dict_key]
         self.num_timesteps = dataset_params["num_timesteps"]
         self.input_size = dataset_params["input_size"]
 
@@ -130,8 +135,8 @@ class Model(pl.LightningModule):
             k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
         }
 
-        self.forecast_all = self.hparams.forecast
-        self.forecast_partial_timeseries_only = (
+        self.forecast_all: bool = self.hparams.forecast
+        self.forecast_partial_timeseries_only: bool = (
             not self.hparams.forecast and len(self.num_timesteps) > 1
         )
 
@@ -201,14 +206,13 @@ class Model(pl.LightningModule):
             data_folder=self.data_folder,
             subset=subset,
             datasets=datasets,
-            probability_threshold=0.5,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
-            noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
+            up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
         )
 
     def train_dataloader(self):
@@ -361,6 +365,42 @@ class Model(pl.LightningModule):
         # noise_per_timesteps = noise.repeat(x.shape[0], 1)
         return x + noise
 
+    def _compute_forecaster_loss(
+        self, y_true: torch.Tensor, y_forecast: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Computes the loss for the forecaster
+        If y_true contains nans, then all values other then nans are used for the loss
+        """
+
+        y_nans = torch.isnan(y_true)
+        if y_nans.any() == False:
+            return self.forecaster_loss(y_true, y_forecast)
+
+        nan_batch_index = y_nans.any(dim=1).any(dim=1)
+        nan_month_index = y_nans.any(dim=0).any(dim=1)
+
+        full_shape = (-1, y_true.shape[1], y_true.shape[2])
+        y_true_full = y_true[~nan_batch_index].reshape(full_shape)
+        y_forecast_full = y_forecast[~nan_batch_index].reshape(full_shape)
+
+        partial_shape = (-1, sum(~nan_month_index), y_true.shape[2])
+        y_true_partial = y_true[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
+        y_forecast_partial = y_forecast[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
+
+        assert y_forecast_full.shape[0] + y_forecast_partial.shape[0] == y_forecast.shape[0]
+        assert y_forecast_full[0].shape == y_true_full[0].shape
+        assert torch.all(torch.isnan(y_forecast_full)) == False
+        assert torch.all(torch.isnan(y_forecast_partial)) == False
+
+        total_full_timesteps = y_forecast_full.shape[0] * y_forecast_full.shape[1]
+        total_partial_timesteps = y_forecast_partial.shape[0] * y_forecast_partial.shape[1]
+        w_full = total_full_timesteps / (total_full_timesteps + total_partial_timesteps)
+        w_partial = total_partial_timesteps / (total_full_timesteps + total_partial_timesteps)
+        loss_full = self.forecaster_loss(y_forecast_full, y_true_full)
+        loss_partial = self.forecaster_loss(y_forecast_partial, y_true_partial)
+        return (w_full * loss_full) + (w_partial * loss_partial)
+
     def _split_preds_and_get_loss(
         self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
     ) -> Dict:
@@ -379,20 +419,18 @@ class Model(pl.LightningModule):
             elif self.forecast_partial_timeseries_only:
                 input_months = min(self.num_timesteps)
 
-            input_to_encode = x[:, :input_months]
+            input_to_encode = x[:, :input_months, :]
             output_to_predict = x[:, 1:, :]
             encoder_output = self.forecaster(input_to_encode)
 
             # -------------------------------------------------------------------------------
             # Compute loss
             # -------------------------------------------------------------------------------
-            nan_index = torch.isnan(x)
-            batch_has_some_partial_time_series = torch.any(nan_index)
-            batch_has_all_partial_time_series = (
-                x.shape[1] - input_months
-            ) != self.forecaster.output_timesteps
-            if not batch_has_some_partial_time_series and not batch_has_all_partial_time_series:
-                loss = self.forecaster_loss(encoder_output, output_to_predict)
+            is_full_time_series = x.shape[1] == input_months + self.forecaster.output_timesteps
+            if is_full_time_series:
+                loss = self._compute_forecaster_loss(
+                    y_true=output_to_predict, y_forecast=encoder_output
+                )
 
             # -------------------------------------------------------------------------------
             # Create a full time series by concatenating ground truth with the forecast
@@ -415,30 +453,19 @@ class Model(pl.LightningModule):
             # -------------------------------------------------------------------------------
             # Set the input to the classifier (x) using the forecasted values
             # -------------------------------------------------------------------------------
-            if batch_has_all_partial_time_series:
+            if is_full_time_series:
+                nan_batch_index = x.any(dim=1).any(dim=1)
+                x_full_time_series_w_noise = self.add_noise(x[~nan_batch_index], training=training)
+                assert torch.any(torch.isnan(x_full_time_series_w_noise)) == False
+                x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
+                label = torch.cat((label[~nan_batch_index], label), dim=0)
+                is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
+            else:
                 x = final_encoded_input
 
-            elif batch_has_some_partial_time_series:
-                x[~nan_index] = self.add_noise(x[~nan_index], training=training)
-                x[nan_index] = final_encoded_input[nan_index]
-                assert torch.any(torch.isnan(x)) == False
-
-            elif not batch_has_some_partial_time_series and not batch_has_all_partial_time_series:
-                # We only concatente the full time series with the
-                # encoded/forecasted time series if the full time series
-                # is available for evaluation
-                x = torch.cat((self.add_noise(x, training), final_encoded_input), dim=0)
-                label = torch.cat((label, label), dim=0)
-                is_global = torch.cat((is_global, is_global), dim=0)
-
-                if add_preds:
-                    output_dict["encoder_prediction"] = encoder_output
-                    output_dict["encoder_target"] = output_to_predict
-
-            else:
-                raise ValueError(
-                    "This should never happen. Please report this error to the developers."
-                )
+            if add_preds:
+                output_dict["encoder_prediction"] = encoder_output
+                output_dict["encoder_target"] = output_to_predict
 
         else:
             x = x[:, : self.hparams.input_months]
@@ -618,10 +645,6 @@ class Model(pl.LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-
-        print("ADDING model specific args")
-        print(parser)
-        print(parser.parse_args())
 
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
