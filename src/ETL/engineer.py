@@ -120,6 +120,7 @@ class Engineer(ABC):
                 instance_lon=tif_lon,
                 source_file=tif_file,
             )
-            label[FEATURE_PATH].parent.mkdir(exist_ok=True)
-            with label[FEATURE_PATH].open("wb") as f:
+            save_path = Path(label[FEATURE_PATH])
+            save_path.parent.mkdir(exist_ok=True)
+            with save_path.open("wb") as f:
                 pickle.dump(instance, f)
