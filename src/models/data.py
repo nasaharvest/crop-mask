@@ -1,5 +1,6 @@
 from pathlib import Path
 import numpy as np
+import pandas as pd
 import pickle
 import random
 import logging
@@ -9,7 +10,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.ETL.constants import BANDS
+from src.ETL.constants import BANDS, CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, IS_LOCAL
 
 from typing import cast, Tuple, Optional, List, Dict, Union
 from src.ETL.dataset import LabeledDataset, DataDir
@@ -27,159 +28,118 @@ class CropDataset(Dataset):
         data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
-        probability_threshold: float,
         remove_b1_b10: bool,
         cache: bool,
         upsample: bool,
-        noise_factor: bool,
+        target_bbox: BoundingBox,
+        probability_threshold: float = 0.5,
         normalizing_dict: Optional[Dict] = None,
-        target_bbox: Optional[BoundingBox] = None,
         is_local_only: bool = False,
-        timesteps: Optional[List[int]] = None,
+        up_to_year: Optional[int] = None,
     ) -> None:
-
         logger.info(f"Initializating {subset} CropDataset")
-        # ----------------------------------------------------------------------
-        # Check dataset arguments
-        # ----------------------------------------------------------------------
         if not data_folder.exists():
             raise FileNotFoundError(f"{data_folder} does not exist")
 
-        assert subset in ["training", "validation", "testing"]
+        df = self._load_df_from_datasets(datasets, subset, up_to_year, target_bbox, is_local_only)
 
-        # ----------------------------------------------------------------------
-        # Set up dataset parameters
-        # ----------------------------------------------------------------------
+        self.pickle_files: List[Path] = df[FEATURE_PATH].tolist()
+        self.normalizing_dict: Dict = (
+            normalizing_dict
+            if normalizing_dict
+            else self._calculate_normalizing_dict(self.pickle_files)
+        )
+
+        is_crop = df[CROP_PROB] >= probability_threshold
+        is_local = df[IS_LOCAL]
+        if upsample:
+            self.pickle_files += self._upsampled_files(
+                local_crop_files=df[is_local & is_crop][FEATURE_PATH].to_list(),
+                local_non_crop_files=df[is_local & ~is_crop][FEATURE_PATH].to_list(),
+            )
+
+        # Set parameters for logging
+        self.original_size: int = len(df)
+        self.crop_percentage: float = round(len(df[is_crop]) / len(df), 4)
+
+        # Set parameters needed for __getitem__
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
-
         self.remove_b1_b10 = remove_b1_b10
+        self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
 
+        # Cache dataset if necessary
         self.x: Optional[torch.Tensor] = None
         self.y: Optional[torch.Tensor] = None
         self.weights: Optional[torch.Tensor] = None
-
-        self.is_local_only = is_local_only
-
-        # this is kept at False in case caching = True. It should be
-        # changed to the input noise argument at the end of the
-        # init function
-        self.noise_factor = 0
-        self.pickle_files: List[Path] = []
-        self.local_crop_pickle_files: List[Path] = []
-        self.local_non_crop_pickle_files: List[Path] = []
-        self.global_crop_pickle_files: List[Path] = []
-        self.global_non_crop_pickle_files: List[Path] = []
-        self.normalizing_dict: Optional[Dict] = normalizing_dict
-        self.num_timesteps: Optional[List[int]] = timesteps
         self.cache = False
-
-        # ----------------------------------------------------------------------
-        # Load in pickle files from dataset
-        # ----------------------------------------------------------------------
-        all_pickle_files: List[Path] = []
-        for dataset in datasets:
-            features_dir = dataset.get_path(DataDir.FEATURES_DIR, root_data_folder=data_folder)
-            if not features_dir.exists():
-                logger.warning(f"{features_dir} does not exist, skipping")
-                continue
-            pickle_files = self.load_pickle_files(
-                features_dir=features_dir,
-                subset_name=subset,
-            )
-            all_pickle_files += pickle_files
-            logger.info(f"{dataset.dataset} - {subset}: found {len(pickle_files)} pickle files")
-
-        # ----------------------------------------------------------------------
-        # Determine if we need to go through the pickle files to either:
-        # - fiter out non local files
-        # - calculate the normalizing dict
-        # - set the number of timesteps
-        # - figure out which pickle files are local/global for upsampling
-        # ----------------------------------------------------------------------
-        go_through_pickle_files = (
-            is_local_only or upsample or self.normalizing_dict is None or self.num_timesteps is None
-        )
-        if go_through_pickle_files:
-            normalizing_dict_interim = {"n": 0}
-            num_timesteps_set = set()
-            for p in tqdm(all_pickle_files):
-                with p.open("rb") as f:
-                    datainstance = pickle.load(f)
-
-                # Check if pickle file should be added to CropDataset
-                is_local = datainstance.isin(self.target_bbox)
-                is_crop = datainstance.crop_probability > self.probability_threshold
-
-                if is_local and is_crop:
-                    self.local_crop_pickle_files.append(p)
-                elif is_local and not is_crop:
-                    self.local_non_crop_pickle_files.append(p)
-                elif not is_local and is_crop:
-                    self.global_crop_pickle_files.append(p)
-                elif not is_local and not is_crop:
-                    self.global_non_crop_pickle_files.append(p)
-
-                if is_local_only and not is_local:
-                    continue
-
-                self.pickle_files.append(p)
-                labelled_array = datainstance.labelled_array
-                if self.normalizing_dict is None:
-                    self._update_normalizing_values(normalizing_dict_interim, labelled_array)
-                if self.num_timesteps is None:
-                    num_timesteps_set.add(labelled_array.shape[0])
-
-            if self.normalizing_dict is None:
-                self.normalizing_dict = self._calculate_normalizing_dict(
-                    norm_dict=normalizing_dict_interim
-                )
-            if self.num_timesteps is None:
-                self.num_timesteps = list(num_timesteps_set)
-
-        # ----------------------------------------------------------------------
-        # Check pickle files are loaded
-        # ----------------------------------------------------------------------
-        if len(self.pickle_files) == 0:
-            pkl_file_type = "local" if is_local_only else ""
-            dataset_names = [d.dataset for d in datasets]
-            raise ValueError(f"No {pkl_file_type} {subset} pkl files found in {dataset_names}")
-
-        # ----------------------------------------------------------------------
-        # Upsample local crop/non-crop to have equal number of files
-        # ----------------------------------------------------------------------
-        if upsample:
-            print(f"BEFORE UPSAMPLING: pickle_files: {len(self.pickle_files)}")
-
-            crop = len(self.local_crop_pickle_files)
-            non_crop = len(self.local_non_crop_pickle_files)
-            crop_str = f"crop: {crop}"
-            non_crop_str = f"non-crop: {non_crop}"
-
-            if crop == 0 or non_crop == 0:
-                print(f"WARNING: local {subset} cannot upsample: {crop_str} and {non_crop_str}")
-            elif crop > non_crop:
-                print(f"Upsampling: local {subset} {non_crop_str} to {crop_str}")
-                while crop > non_crop:
-                    self.pickle_files.append(random.choice(self.local_non_crop_pickle_files))
-                    non_crop += 1
-            elif crop < non_crop:
-                print(f"Upsampling: local {subset} {crop_str} to {non_crop_str}")
-                while crop < non_crop:
-                    self.pickle_files.append(random.choice(self.local_crop_pickle_files))
-                    crop += 1
-
-            print(f"AFTER UPSAMPLING: pickle_files: {len(self.pickle_files)}")
-
-        # ----------------------------------------------------------------------
-        # Cache dataset if necessary
-        # ----------------------------------------------------------------------
         if cache:
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
-        # we only save the noise attribute after the arrays have been cached, to
-        # ensure the saved arrays are the noiseless ones
-        self.noise_factor = noise_factor
+
+    @staticmethod
+    def _load_df_from_datasets(
+        datasets: List[LabeledDataset],
+        subset: str,
+        up_to_year: int,
+        target_bbox: BoundingBox,
+        is_local_only: bool,
+    ) -> pd.DataFrame:
+        assert subset in ["training", "validation", "testing"]
+        df = pd.concat([d.load_labels(fail_if_missing_features=True) for d in datasets])
+        df = df[df[SUBSET] == subset]
+        if up_to_year is not None:
+            df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
+
+        df[IS_LOCAL] = (
+            (df[LAT] >= target_bbox.min_lat)
+            & (df[LAT] <= target_bbox.max_lat)
+            & (df[LON] >= target_bbox.min_lon)
+            & (df[LON] <= target_bbox.max_lon)
+        )
+        if is_local_only:
+            df = df[df[IS_LOCAL]]
+
+        if len(df) == 0:
+            raise ValueError(f"No labels for {subset} found")
+
+        return df
+
+    @staticmethod
+    def _compute_num_timesteps(start_col: pd.Series, end_col: pd.Series) -> Tuple[int, ...]:
+        timesteps = (
+            ((pd.to_datetime(end_col) - pd.to_datetime(start_col)) / np.timedelta64(1, "M"))
+            .round()
+            .unique()
+            .astype(int)
+        )
+        return [int(t) for t in timesteps]
+
+    @staticmethod
+    def _upsampled_files(
+        local_crop_files: List[Path], local_non_crop_files: List[Path]
+    ) -> List[Path]:
+        local_crop = len(local_crop_files)
+        local_non_crop = len(local_non_crop_files)
+        if local_crop == local_non_crop:
+            return []
+
+        if local_crop > local_non_crop:
+            arrow = "<-"
+            files_to_upsample = local_non_crop_files
+
+        elif local_crop < local_non_crop:
+            arrow = "->"
+            files_to_upsample = local_crop_files
+
+        print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+
+        resample_amount = abs(local_crop - local_non_crop)
+        return np.random.choice(
+            files_to_upsample,
+            size=abs(local_crop - local_non_crop),
+            replace=resample_amount > len(files_to_upsample),
+        ).tolist()
 
     @staticmethod
     def _update_normalizing_values(
@@ -204,36 +164,16 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(
-        norm_dict: Dict[str, Union[np.ndarray, int]]
-    ) -> Optional[Dict[str, np.ndarray]]:
-        if "mean" not in norm_dict:
-            logger.warning(
-                "No normalizing dict calculated! Make sure to call _update_normalizing_values"
-            )
-            return None
-        variance = norm_dict["M2"] / (norm_dict["n"] - 1)
+    def _calculate_normalizing_dict(pickle_files: List[Path]) -> Optional[Dict[str, np.ndarray]]:
+        norm_dict_interim = {"n": 0}
+        for p in tqdm(pickle_files, desc="Calculating normalizing_dict"):
+            with p.open("rb") as f:
+                labelled_array = pickle.load(f).labelled_array
+            CropDataset._update_normalizing_values(norm_dict_interim, labelled_array)
+
+        variance = norm_dict_interim["M2"] / (norm_dict_interim["n"] - 1)
         std = np.sqrt(variance)
-        return {"mean": norm_dict["mean"], "std": std}
-
-    @staticmethod
-    def load_pickle_files(
-        features_dir: Path, subset_name: str, limit: Optional[int] = None, file_suffix: str = "pkl"
-    ) -> List[Path]:
-
-        pickle_files_dir = features_dir / subset_name
-        if not pickle_files_dir.exists():
-            logger.warning(
-                f"Directory: {pickle_files_dir} not found. Use command: "
-                f"`dvc pull` to get the latest data."
-            )
-            pickle_files = []
-        else:
-            pickle_files = list(pickle_files_dir.glob(f"*.{file_suffix}"))
-            if limit and limit < len(pickle_files):
-                pickle_files = pickle_files[:limit]
-
-        return pickle_files
+        return {"mean": norm_dict_interim["mean"], "std": std}
 
     def _normalize(self, array: np.ndarray) -> np.ndarray:
         if self.normalizing_dict is None:
@@ -254,7 +194,7 @@ class CropDataset(Dataset):
             y_list: List[torch.Tensor] = []
             weight_list: List[torch.Tensor] = []
             logger.info("Loading data into memory")
-            for i in tqdm(range(len(self))):
+            for i in tqdm(range(len(self)), desc="Caching files"):
                 x, y, weight = self[i]
                 x_list.append(x)
                 y_list.append(y)
@@ -281,8 +221,7 @@ class CropDataset(Dataset):
         keeping the convenience of not having to check if remove
         bands is true all the time.
         """
-
-        if self.remove_bands:
+        if self.remove_b1_b10:
             return self._remove_bands(x)
         else:
             return x
@@ -348,29 +287,3 @@ class CropDataset(Dataset):
             torch.tensor(crop_int).float(),
             torch.tensor(is_global).float(),
         )
-
-    @property
-    def original_size(self):
-        local_size = len(self.local_crop_pickle_files) + len(self.local_non_crop_pickle_files)
-        global_size = len(self.global_crop_pickle_files) + len(self.global_non_crop_pickle_files)
-        if self.is_local_only:
-            return local_size
-        elif self.is_global_only:
-            return global_size
-        else:
-            return local_size + global_size
-
-    @property
-    def crop_percentage(self):
-        if self.original_size == 0:
-            return 0
-
-        total_crop = 0
-        if self.is_local_only:
-            total_crop = len(self.local_crop_pickle_files)
-        elif self.is_global_only:
-            total_crop = len(self.global_crop_pickle_files)
-        else:
-            total_crop = len(self.local_crop_pickle_files) + len(self.global_crop_pickle_files)
-
-        return round(float(total_crop / self.original_size), 4)
