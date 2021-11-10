@@ -163,7 +163,7 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
         model = Model.load_from_checkpoint(model_ckpt_path)
         model_hparams = model.hparams.__dict__
         for k, v in hparams.__dict__.items():
-            if k in model_hparams and model_hparams[k] != v and k != "alternative_threshold":
+            if k in model_hparams and model_hparams[k] != v and k not in ["alternative_threshold", "fail_on_error", "retrain_all"]:
                 print(
                     f"\u2714 {model_name} exists, but new parameters for {k} were found, retraining"
                 )
