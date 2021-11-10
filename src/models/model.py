@@ -135,21 +135,19 @@ class Model(pl.LightningModule):
             k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
         }
 
-        self.forecast_all: bool = self.hparams.forecast
-        self.forecast_partial_timeseries_only: bool = (
-            not self.hparams.forecast and len(self.num_timesteps) > 1
-        )
+        forecaster_output_timesteps = 0
+        if self.hparams.forecast:
+            self.forecaster_input_timesteps = self.hparams.input_months
+            forecaster_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
+        elif len(self.num_timesteps) > 1:
+            self.forecaster_input_timesteps = min(self.num_timesteps)
+            forecaster_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
 
-        if self.forecast_all:
-            num_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
-
-        elif self.forecast_partial_timeseries_only:
-            num_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
-
-        if self.forecast_all or self.forecast_partial_timeseries_only:
+        self.forecaster = None
+        if forecaster_output_timesteps > 0:
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
-                output_timesteps=num_output_timesteps,
+                output_timesteps=forecaster_output_timesteps,
                 hparams=hparams,
             )
 
@@ -410,23 +408,20 @@ class Model(pl.LightningModule):
         loss: Union[float, torch.Tensor] = 0
         output_dict = {}
 
-        if self.forecast_all or self.forecast_partial_timeseries_only:
+        if self.forecaster:
             # -------------------------------------------------------------------------------
             # Forecast
             # -------------------------------------------------------------------------------
-            if self.forecast_all:
-                input_months = self.hparams.input_months
-            elif self.forecast_partial_timeseries_only:
-                input_months = min(self.num_timesteps)
-
-            input_to_encode = x[:, :input_months, :]
+            input_to_encode = x[:, : self.forecaster_input_timesteps, :]
             output_to_predict = x[:, 1:, :]
             encoder_output = self.forecaster(input_to_encode)
 
             # -------------------------------------------------------------------------------
             # Compute loss
             # -------------------------------------------------------------------------------
-            is_full_time_series = x.shape[1] == input_months + self.forecaster.output_timesteps
+            is_full_time_series = (
+                x.shape[1] == self.forecaster_input_timesteps + self.forecaster.output_timesteps
+            )
             if is_full_time_series:
                 loss = self._compute_forecaster_loss(
                     y_true=output_to_predict, y_forecast=encoder_output
@@ -443,7 +438,7 @@ class Model(pl.LightningModule):
                         # -1 because the encoder output has no value for the 0th
                         # timestep
                         # fmt: off
-                        encoder_output[:, input_months - 1:],
+                        encoder_output[:, self.forecaster_input_timesteps - 1:],
                         # fmt: on
                     )
                 ),
