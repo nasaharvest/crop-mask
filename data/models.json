@@ -6,6 +6,7 @@
         "max_lon": 42.283,
         "min_lat": -5.202,
         "max_lat": 6.002,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Kenya"
         ],
@@ -29,6 +30,7 @@
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
         "max_lat": 11.115625,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Togo"
         ],
@@ -52,6 +54,7 @@
         "max_lon": 30.909,
         "min_lat": -2.854,
         "max_lat": -1.034,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Rwanda"
         ],
@@ -75,6 +78,7 @@
         "max_lon": 35.03599,
         "min_lat": -1.44332244223,
         "max_lat": 4.24988494736,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Uganda"
         ],
@@ -98,6 +102,7 @@
         "max_lon": 180,
         "min_lat": -90,
         "max_lat": 90,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Uganda"
         ],
@@ -121,6 +126,7 @@
         "max_lon": 40.00,
         "min_lat": 12.25,
         "max_lat": 14.895,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Ethiopia_Tigray_2020"
         ],
@@ -144,6 +150,7 @@
         "input_months": 6,
         "forecast": true,
         "evaluate_forecast": false,
+        "up_to_year": 2021,
         "eval_datasets": [
             "Ethiopia_Tigray_2021"
         ],
@@ -166,6 +173,7 @@
         "max_lat": 14.895,
         "input_months": 6,
         "forecast": false,
+        "up_to_year": 2021,
         "eval_datasets": [
             "Ethiopia_Tigray_2021"
         ],
