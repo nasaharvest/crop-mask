@@ -141,7 +141,7 @@ class LabeledDataset:
                 print(f"\u2714 {subset} amount: {labels_in_subset}")
 
     def prune_features_with_no_label(self, features_with_label: List[str]):
-        for f in list(self.feature_dir.glob("**/*.pkl")):
+        for f in self.feature_dir.glob("**/*.pkl"):
             if str(f) not in features_with_label:
                 f.unlink()
 
@@ -187,9 +187,11 @@ class LabeledDataset:
             raise FileNotFoundError(f"{self.labels_path} does not exist")
         labels = labels[labels[CROP_PROB] != 0.5]
         labels = labels[~labels[FEATURE_FILENAME].isin(unexported)]
-        labels["str_f_path"] = labels[SUBSET] + "/" + labels[FEATURE_FILENAME] + ".pkl"
-        labels[FEATURE_PATH] = np.vectorize(lambda p: self.feature_dir / p)(labels["str_f_path"])
-        labels[ALREADY_EXISTS] = np.vectorize(lambda p: p.exists())(labels[FEATURE_PATH])
+        labels["feature_dir"] = str(self.feature_dir)
+        labels[FEATURE_PATH] = (
+            labels["feature_dir"] + "/" + labels[SUBSET] + "/" + labels[FEATURE_FILENAME] + ".pkl"
+        )
+        labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
         if fail_if_missing_features and not labels[ALREADY_EXISTS].all():
             raise FileNotFoundError(
                 f"{self.dataset} has missing features: {labels[FEATURE_FILENAME].to_list()}"
