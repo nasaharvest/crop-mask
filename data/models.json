@@ -158,6 +158,28 @@
         ]
     },
     {
+        "model_name": "Ethiopia_Tigray_2021_no_forecaster",
+        "alternative_threshold": 0.42,
+        "min_lon": 36.45,
+        "max_lon": 40.00,
+        "min_lat": 12.25,
+        "max_lat": 14.895,
+        "input_months": 6,
+        "forecast": false,
+        "eval_datasets": [
+            "Ethiopia_Tigray_2021"
+        ],
+        "train_datasets": [
+            "geowiki_landcover_2017",
+            "Kenya",
+            "Mali",
+            "Togo",
+            "Rwanda",
+            "digitalearthafrica_eastern",
+            "Ethiopia"
+        ]
+    },
+    {
         "model_name": "Ethiopia_Bure_Jimma_2019",
         "min_lat": 7.500000,
         "max_lat": 10.800000,
