@@ -72,16 +72,16 @@
     "Rwanda": {
         "local_val_crop_percentage ": 0.4223,
         "local_val_size": 341,
-        "thresh0.54_unencoded_val_local_accuracy": 0.7214,
-        "thresh0.54_unencoded_val_local_f1_score": 0.7198,
-        "thresh0.54_unencoded_val_local_precision_score": 0.6256,
-        "thresh0.54_unencoded_val_local_recall_score": 0.8472,
-        "thresh0.54_unencoded_val_local_roc_auc_score": 0.7698,
-        "unencoded_val_local_accuracy": 0.695,
-        "unencoded_val_local_f1_score": 0.7029,
-        "unencoded_val_local_precision_score": 0.5971,
-        "unencoded_val_local_recall_score": 0.8542,
-        "unencoded_val_local_roc_auc_score": 0.7698
+        "thresh0.48_unencoded_val_local_accuracy": 0.7302,
+        "thresh0.48_unencoded_val_local_f1_score": 0.7262,
+        "thresh0.48_unencoded_val_local_precision_score": 0.6354,
+        "thresh0.48_unencoded_val_local_recall_score": 0.8472,
+        "thresh0.48_unencoded_val_local_roc_auc_score": 0.7759,
+        "unencoded_val_local_accuracy": 0.7243,
+        "unencoded_val_local_f1_score": 0.7186,
+        "unencoded_val_local_precision_score": 0.6316,
+        "unencoded_val_local_recall_score": 0.8333,
+        "unencoded_val_local_roc_auc_score": 0.7759
     },
     "Togo": {
         "local_val_crop_percentage ": 0.5751,
