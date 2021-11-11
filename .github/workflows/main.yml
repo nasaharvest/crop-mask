@@ -12,9 +12,11 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - name: Activate environment
-      run: |
-        conda activate landcover-mapping
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
     - name: Run type checks
       run: |
         mypy src scripts
