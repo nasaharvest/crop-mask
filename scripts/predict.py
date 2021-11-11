@@ -45,7 +45,8 @@ def make_prediction(
 
 
 def gdal_merge(unmerged_tifs_folder: Path, output_file: Path) -> Path:
-    command = f"gdal_merge.py -o {output_file} -of gtiff {unmerged_tifs_folder}/*"
+    conda_env = os.environ.get("CONDA_ENV")
+    command = f"{conda_env} gdal_merge.py -o {output_file} -of gtiff {unmerged_tifs_folder}/*"
     logger.info(f"Running: {command}")
     subprocess.Popen(command, shell=True).wait()
     if not output_file.exists():
