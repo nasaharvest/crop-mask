@@ -11,15 +11,15 @@ jobs:
       CONDA: /gpfs/data1/cmongp1/izvonkov/envs/landcover-mapping
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -l $CONDA/bin/{0}
     steps:
     - uses: actions/checkout@v2        
     - name: Run type checks
       run: |
-        $CONDA/bin/mypy src scripts
+        mypy src scripts
     - name: Run flake8
       run: |
-        $CONDA/bin/flake8 src data scripts test gcp
+        flake8 src data scripts test gcp
     - name: Run unit tests
       run: |
         pip install coverage
