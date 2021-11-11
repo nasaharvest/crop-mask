@@ -7,25 +7,19 @@ on:
 jobs:
   test:
     runs-on: self-hosted
+    env:
+      CONDA: /gpfs/data1/cmongp1/izvonkov/envs/landcover-mapping
     defaults:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v2
-    - name: activate conda environment
-      run: |
-        conda --version
-        conda env list
-        conda activate landcover-mapping
-        
+    - uses: actions/checkout@v2        
     - name: Run type checks
       run: |
-        which mypy
-        mypy src scripts
+        $CONDA/bin/mypy src scripts
     - name: Run flake8
       run: |
-        which flake8
-        flake8 src data scripts test gcp
+        $CONDA/bin/flake8 src data scripts test gcp
     - name: Run unit tests
       run: |
         pip install coverage
