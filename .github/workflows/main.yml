@@ -8,23 +8,23 @@ jobs:
   test:
     runs-on: self-hosted
     env:
-      CONDA: /gpfs/data1/cmongp1/izvonkov/envs/landcover-mapping
+      CONDA: /gpfs/data1/cmongp1/izvonkov/envs/landcover-mapping/bin
     defaults:
       run:
-        shell: bash -l $CONDA/bin/{0}
+        shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2        
     - name: Run type checks
       run: |
-        mypy src scripts
+        $CONDA/mypy src scripts
     - name: Run flake8
       run: |
-        flake8 src data scripts test gcp
+        $CONDA/flake8 src data scripts test gcp
     - name: Run unit tests
       run: |
-        pip install coverage
-        coverage run -m unittest
-        coverage xml
+        $CONDA/pip install coverage
+        $CONDA/coverage run -m unittest
+        $CONDA/coverage xml
 #     - name: Upload coverage to Codecov
 #       uses: codecov/codecov-action@v1
 #       with:
