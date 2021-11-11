@@ -2,7 +2,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pickle
-import random
 import logging
 
 from tqdm import tqdm
@@ -13,7 +12,7 @@ from torch.utils.data import Dataset
 from src.ETL.constants import BANDS, CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, IS_LOCAL
 
 from typing import cast, Tuple, Optional, List, Dict, Union
-from src.ETL.dataset import LabeledDataset, DataDir
+from src.ETL.dataset import LabeledDataset
 from src.ETL.ee_boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
