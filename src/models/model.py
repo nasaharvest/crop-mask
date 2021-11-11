@@ -202,6 +202,7 @@ class Model(pl.LightningModule):
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
             is_global_only=is_global_only,
+            up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
         )
 
     def train_dataloader(self):
