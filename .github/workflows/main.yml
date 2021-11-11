@@ -12,36 +12,32 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - name: debugging
+    - name: activate conda environment
       run: |
         conda --version
         conda env list
         conda activate landcover-mapping
-        which python
         
-#     - name: install mamba
-#       uses: mamba-org/provision-with-micromamba@main
-#       with:
-#         environment-file: environment-dev.yml
-#         environment-name: landcover-mapping
-#     - name: Run type checks
-#       run: |
-#         mypy src scripts
-#     - name: Run flake8
-#       run: |
-#         flake8 src data scripts test gcp
-#     - name: Run unit tests
-#       run: |
-#         pip install coverage
-#         coverage run -m unittest
-#         coverage xml
+    - name: Run type checks
+      run: |
+        which mypy
+        mypy src scripts
+    - name: Run flake8
+      run: |
+        which flake8
+        flake8 src data scripts test gcp
+    - name: Run unit tests
+      run: |
+        pip install coverage
+        coverage run -m unittest
+        coverage xml
 #     - name: Upload coverage to Codecov
 #       uses: codecov/codecov-action@v1
 #       with:
 #         token: ${{ secrets.CODECOV_TOKEN }}
 #         files: coverage.xml
 #         fail_ci_if_error: true
-#        verbose: true
+#         verbose: true
     # - name: Set up Cloud SDK
     #   uses: google-github-actions/setup-gcloud@master
     #   with:
