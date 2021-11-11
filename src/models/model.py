@@ -182,7 +182,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
         is_local_only: bool = False,
-        is_global_only: bool = False,
     ) -> CropDataset:
         if subset == "training":
             datasets = self.train_datasets
@@ -200,7 +199,6 @@ class Model(pl.LightningModule):
             upsample=upsample if upsample is not None else self.hparams.upsample,
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
-            is_global_only=is_global_only,
             up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
         )
 
