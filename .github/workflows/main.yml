@@ -1,14 +1,12 @@
 name: Build 
 
 on:
-  # push:
-  #   branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     defaults:
       run:
         shell: bash -l {0}
