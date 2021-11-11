@@ -49,7 +49,7 @@
     },
     {
         "model_name": "Rwanda",
-        "alternative_threshold": 0.54,
+        "alternative_threshold": 0.48,
         "min_lon": 28.841,
         "max_lon": 30.909,
         "min_lat": -2.854,
