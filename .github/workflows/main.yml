@@ -17,6 +17,9 @@ jobs:
         echo $PATH
         cat ~/.bashrc
         cat ~/.bash_profile
+        /apps/python/3.8/anaconda/bin/conda --version
+        which conda
+        conda --version
         
 #     - name: install mamba
 #       uses: mamba-org/provision-with-micromamba@main
