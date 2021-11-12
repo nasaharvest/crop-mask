@@ -298,7 +298,7 @@ class Model(pl.LightningModule):
                 batch_x = batch_x.to(device)
 
             with torch.no_grad():
-                if with_forecaster:
+                if with_forecaster and self.forecaster:
                     batch_x_next = self.forecaster(batch_x)
                     batch_x = torch.cat((batch_x, batch_x_next), dim=1)
 
@@ -372,7 +372,7 @@ class Model(pl.LightningModule):
         """
 
         y_nans = torch.isnan(y_true)
-        if y_nans.any() == False:
+        if bool(y_nans.any()) is False:
             return self.forecaster_loss(y_true, y_forecast)
 
         nan_batch_index = y_nans.any(dim=1).any(dim=1)
@@ -388,8 +388,8 @@ class Model(pl.LightningModule):
 
         assert y_forecast_full.shape[0] + y_forecast_partial.shape[0] == y_forecast.shape[0]
         assert y_forecast_full[0].shape == y_true_full[0].shape
-        assert torch.all(torch.isnan(y_forecast_full)) == False
-        assert torch.all(torch.isnan(y_forecast_partial)) == False
+        assert bool(torch.all(torch.isnan(y_forecast_full))) is False
+        assert bool(torch.all(torch.isnan(y_forecast_partial))) is False
 
         total_full_timesteps = y_forecast_full.shape[0] * y_forecast_full.shape[1]
         total_partial_timesteps = y_forecast_partial.shape[0] * y_forecast_partial.shape[1]
@@ -451,7 +451,7 @@ class Model(pl.LightningModule):
             if is_full_time_series:
                 nan_batch_index = x.any(dim=1).any(dim=1)
                 x_full_time_series_w_noise = self.add_noise(x[~nan_batch_index], training=training)
-                assert torch.any(torch.isnan(x_full_time_series_w_noise)) == False
+                assert bool(torch.any(torch.isnan(x_full_time_series_w_noise))) is False
                 x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
                 label = torch.cat((label[~nan_batch_index], label), dim=0)
                 is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
