@@ -86,7 +86,7 @@ class CropDataset(Dataset):
     def _load_df_from_datasets(
         datasets: List[LabeledDataset],
         subset: str,
-        up_to_year: int,
+        up_to_year: Optional[int],
         target_bbox: BoundingBox,
         is_local_only: bool,
     ) -> pd.DataFrame:
@@ -111,7 +111,7 @@ class CropDataset(Dataset):
         return df
 
     @staticmethod
-    def _compute_num_timesteps(start_col: pd.Series, end_col: pd.Series) -> Tuple[int, ...]:
+    def _compute_num_timesteps(start_col: pd.Series, end_col: pd.Series) -> List[int]:
         timesteps = (
             ((pd.to_datetime(end_col) - pd.to_datetime(start_col)) / np.timedelta64(1, "M"))
             .round()
