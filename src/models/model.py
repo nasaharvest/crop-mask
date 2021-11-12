@@ -182,7 +182,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
         is_local_only: bool = False,
-        is_global_only: bool = False,
     ) -> CropDataset:
         if subset == "training":
             datasets = self.train_datasets
@@ -198,10 +197,9 @@ class Model(pl.LightningModule):
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
-            noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
-            is_global_only=is_global_only,
+            up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
         )
 
     def train_dataloader(self):
