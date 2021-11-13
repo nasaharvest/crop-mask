@@ -13,9 +13,7 @@ sys.path.append("..")
 from src.models import Model
 
 
-def get_validation_df(
-    model_name: str, forecast: bool = False, default_threshold: float = 0.5
-) -> pd.DataFrame:
+def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.DataFrame:
     """Gets validation set for model as a pandas dataframe"""
     model = Model.load_from_checkpoint(f"../data/models/{model_name}.ckpt")
     model = model.eval()
@@ -46,9 +44,6 @@ def get_validation_df(
     # Make predictions on validation set
     x = torch.stack([v[0] for v in val])
     with torch.no_grad():
-        if forecast:
-            forecasted = model.forecaster(x)[:, model.hparams.input_months - 1 :, :]
-            x = torch.cat((x, forecasted), dim=1)
         # model(x) is indexed to get the local predictions (not global at index 0)
         df["y_pred_decimal"] = model(x)[1].numpy().flatten()
 
@@ -56,9 +51,9 @@ def get_validation_df(
     return df
 
 
-def plot_precision_recall_graphs(model_name: str, forecast: bool = False):
+def plot_precision_recall_graphs(model_name: str):
     """Plots precision recall graphs for model"""
-    df = get_validation_df(model_name, forecast=forecast)
+    df = get_validation_df(model_name)
     thresholds = np.arange(0, 1.0, 0.01)
     f1_scores = []
     precision_scores = []
@@ -92,5 +87,5 @@ def plot_precision_recall_graphs(model_name: str, forecast: bool = False):
         f"F1: {best_f1}\nThreshold: {threshold}",
         (thresholds[best_i], f1_scores[best_i] - 0.1),
     )
-    print(f"Threshold: {best_i}, F1: {best_f1}")
+    print(f"Threshold: {thresholds[best_i]}, F1: {best_f1}")
     return best_i, best_f1
