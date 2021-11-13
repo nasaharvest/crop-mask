@@ -1,10 +1,6 @@
 from sklearn.metrics import f1_score
 from unittest import TestCase
-
-import sys
 import torch
-
-sys.path.append("..")
 
 from src.models.model import Model
 from src.utils import get_dvc_dir
@@ -56,7 +52,7 @@ class IntegrationTestModelPt(TestCase):
                 print(f"\u2716 CKPT F1: {ckpt_f1} != PT F1 {pt_f1}")
 
             if (y_pred_ckpt_binary == y_pred_pt_binary).all():
-                print(f"\u2714 CKPT binary preds == PT binary preds")
+                print("\u2714 CKPT binary preds == PT binary preds")
             else:
                 no_differences = False
                 total = len(y_pred_ckpt_binary)
@@ -64,7 +60,7 @@ class IntegrationTestModelPt(TestCase):
                 print(f"\u2716 {diff}/{total} binary predictions don't match")
 
             if (y_pred_ckpt == y_pred_pt).all():
-                print(f"\u2714 CKPT preds == PT preds")
+                print("\u2714 CKPT preds == PT preds")
             else:
                 no_differences = False
                 total = len(y_pred_ckpt)
