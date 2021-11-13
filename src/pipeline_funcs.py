@@ -6,12 +6,12 @@ from tqdm import tqdm
 from typing import Dict, Optional, Tuple, Union
 
 import pytorch_lightning as pl
-import torch
 
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
+from src.utils import get_dvc_dir
 
-
+model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
 
 
@@ -63,14 +63,6 @@ def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
     trainer.save_checkpoint(model_ckpt_path)
 
 
-def save_model_pt(model: Model, model_pt_path: Path):
-    if model_pt_path.exists():
-        model_pt_path.unlink()
-    model_pt_path.parent.mkdir(parents=True, exist_ok=True)
-    sm = torch.jit.script(model)
-    sm.save(str(model_pt_path))
-
-
 def train_model(
     hparams, model_ckpt_path: Optional[Path] = None
 ) -> Tuple[pl.LightningModule, Dict[str, float]]:
@@ -100,7 +92,7 @@ def train_model(
     logger.experiment.add_hparams(vars(hparams), trainer.callback_metrics)
 
     if model_ckpt_path is None:
-        model_ckpt_path = Path(f"{hparams.model_dir}/{hparams.model_name}.ckpt")
+        model_ckpt_path = model_dir / f"{hparams.model_name}.ckpt"
     save_model_ckpt(trainer, model_ckpt_path)
 
     metrics = get_metrics_from_trainer(trainer)
@@ -152,8 +144,7 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
     hparams = validate(hparams)
 
     model_name = hparams.model_name
-    model_ckpt_path = Path(f"{hparams.model_dir}/{model_name}.ckpt")
-    model_pt_path = model_ckpt_path.with_suffix(".pt")
+    model_ckpt_path = model_dir / f"{model_name}.ckpt"
 
     train = False
 
@@ -186,10 +177,9 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
         print(f"\n\u2714 {model_name} completed training and evaluation")
         print(metrics)
 
-    if train or not model_pt_path.exists():
-        for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-            if key in metrics and metrics[key] > 0.6:
-                save_model_pt(model, model_pt_path)
-                break
+    for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
+        if key in metrics and metrics[key] > 0.59:
+            model.save()
+            break
 
     return model_name, metrics
