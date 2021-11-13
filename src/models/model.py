@@ -26,7 +26,7 @@ from sklearn.metrics import (
 
 from src.ETL.ee_boundingbox import BoundingBox
 from src.bounding_boxes import bounding_boxes
-from src.utils import data_dir, set_seed
+from src.utils import data_dir, get_dvc_dir, set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
 from .utils import tif_to_np, preds_to_xr
@@ -630,5 +630,7 @@ class Model(pl.LightningModule):
 
     def save(self):
         sm = torch.jit.script(self)
-        model_path = f"{self.hparams.model_dir}/{self.hparams.target_bbox_key}.pt"
+        model_path = get_dvc_dir("models") / f"{self.hparams.model_name}.pt"
+        if model_path.exists():
+            model_path.unlink()
         sm.save(model_path)
