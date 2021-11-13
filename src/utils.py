@@ -15,6 +15,9 @@ from src.ETL.constants import BANDS
 
 logger = logging.getLogger(__name__)
 
+data_dir = Path(__file__).parent.parent / "data"
+tifs_dir = data_dir / "tifs"
+
 
 def set_seed(seed: int = 42):
     np.random.seed(seed)
@@ -112,14 +115,6 @@ def load_tif(
     combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
     combined.attrs["band_descriptions"] = BANDS
     return combined
-
-
-def get_data_dir():
-    return Path(__file__).parent.parent / "data"
-
-
-def get_tifs_dir():
-    return Path(__file__).parent.parent / "data/tifs"
 
 
 def get_dvc_dir(dvc_dir_name: str) -> Path:
