@@ -238,7 +238,7 @@ export START_YEAR=2019
 export END_YEAR=2020
 
 # Download appropriate folder
-gsutil -m cp -r gs://crop-mask-preds/$MODEL/$DATASET/ .
+gsutil -m cp -n -r gs://crop-mask-preds/$MODEL/$DATASET/ .
 
 # Run gdal merge script
 python gcp/merger/main.py --p <current-dir>/$DATASET
