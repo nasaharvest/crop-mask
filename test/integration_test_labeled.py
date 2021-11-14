@@ -9,7 +9,7 @@ import unittest
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
-from src.utils import get_dvc_dir, get_data_dir  # noqa: E402
+from src.utils import get_dvc_dir, data_dir  # noqa: E402
 from src.ETL.constants import CROP_PROB, SUBSET  # noqa: E402
 from src.ETL.dataset import DataDir  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
@@ -22,7 +22,7 @@ class IntegrationTestLabeledData(TestCase):
     def setUpClass(cls):
         get_dvc_dir("processed")
         get_dvc_dir("features")
-        unexported_file = get_data_dir() / "unexported.txt"
+        unexported_file = data_dir / "unexported.txt"
         cls.unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
     @classmethod
