@@ -189,8 +189,9 @@ https://crop-mask-management-api-grxg7bzh2a-uc.a.run.app/models
 ```bash
 
 curl -X POST http://us-central1-bsos-geog-harvest1.cloudfunctions.net/export-unlabeled \
+    -o - \
     -H "Content-Type:application/json" \
-    -d @gcp/<example>.json 
+    -d @gcp/requests/<example>.json 
 ```
 **Tracking progress**
 ```bash
@@ -201,7 +202,7 @@ curl https://us-central1-bsos-geog-harvest1.cloudfunctions.net/ee-status?additio
 gsutil du gs://crop-mask-earthengine/<model name>/<dataset> | wc -l
 
 # Amount of files predicted
-gsutil du gs://crop-mask-unmerged-preds/<model name>/<dataset> | wc -l
+gsutil du gs://crop-mask-preds/<model name>/<dataset> | wc -l
 ```
 
 **Putting it all together**
