@@ -24,7 +24,6 @@ class CropDataset(Dataset):
 
     def __init__(
         self,
-        data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
         remove_b1_b10: bool,
@@ -37,8 +36,6 @@ class CropDataset(Dataset):
         up_to_year: Optional[int] = None,
     ) -> None:
         logger.info(f"Initializating {subset} CropDataset")
-        if not data_folder.exists():
-            raise FileNotFoundError(f"{data_folder} does not exist")
 
         df = self._load_df_from_datasets(
             datasets,

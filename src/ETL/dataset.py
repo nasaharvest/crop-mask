@@ -10,7 +10,7 @@ import numpy as np
 from .engineer import Engineer
 from .processor import Processor
 from .ee_exporter import LabelExporter, RegionExporter, Season
-from src.utils import get_data_dir, get_tifs_dir, memoize
+from src.utils import data_dir, tifs_dir, memoize
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.constants import (
     ALREADY_EXISTS,
@@ -31,15 +31,13 @@ from src.ETL.constants import (
 
 logger = logging.getLogger(__name__)
 
-default_data_folder: Path = get_data_dir()
-
-unexported_file = default_data_folder / "unexported.txt"
+unexported_file = data_dir / "unexported.txt"
 unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
-    return {p: BoundingBox.from_path(p) for p in tqdm(get_tifs_dir().glob("**/*.tif"))}
+    return {p: BoundingBox.from_path(p) for p in tqdm(tifs_dir.glob("**/*.tif"))}
 
 
 class DataDir(Enum):
@@ -64,7 +62,7 @@ class LabeledDataset:
         self.feature_dir = self.get_path(DataDir.FEATURES_DIR)
         self.feature_dir.mkdir(exist_ok=True, parents=True)
 
-    def get_path(self, data_dir: DataDir, root_data_folder: Path = default_data_folder):
+    def get_path(self, data_dir: DataDir, root_data_folder: Path = data_dir):
         if data_dir == DataDir.RAW_DIR:
             return root_data_folder / "raw"
         if data_dir == DataDir.RAW_LABELS_DIR:
