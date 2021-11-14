@@ -13,7 +13,6 @@ from src.bounding_boxes import bounding_boxes
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
 from src.ETL.constants import START, END, LAT, LON
-from src.utils import memoize
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +24,17 @@ class Season(Enum):
 
 def get_user_input(text_prompt: str) -> str:
     return input(text_prompt)
+
+
+def memoize(f):
+    memo = {}
+
+    def helper(x="default"):
+        if x not in memo:
+            memo[x] = f() if x == "default" else f(x)
+        return memo[x]
+
+    return helper
 
 
 @memoize
