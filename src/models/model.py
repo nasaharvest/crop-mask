@@ -138,19 +138,19 @@ class Model(pl.LightningModule):
         self.forecast = self.hparams.forecast
         self.input_months = self.hparams.input_months
         self.forecaster = torch.nn.Identity()
-        forecaster_output_timesteps = 0
+        self.forecaster_output_timesteps = 0
         if self.forecast:
             self.forecaster_input_timesteps = self.hparams.input_months
-            forecaster_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
+            self.forecaster_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
         elif len(self.num_timesteps) > 1:
             self.forecaster_input_timesteps = min(self.num_timesteps)
-            forecaster_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
+            self.forecaster_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
 
         self.forecaster = torch.nn.Identity()
-        if forecaster_output_timesteps > 0:
+        if self.forecaster_output_timesteps > 0:
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
-                output_timesteps=forecaster_output_timesteps,
+                output_timesteps=self.forecaster_output_timesteps,
                 hparams=hparams,
             )
 
@@ -217,6 +217,7 @@ class Model(pl.LightningModule):
             target_bbox=self.target_bbox,
             is_local_only=is_local_only,
             up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
+            wandb_logger=self.logger,
         )
 
     def train_dataloader(self):
@@ -235,7 +236,8 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                upsample=False,  # if self.trainer is None else self.hparams.upsample,
+                is_local_only=True,
+                upsample=False,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -243,7 +245,10 @@ class Model(pl.LightningModule):
     def test_dataloader(self):
         return DataLoader(
             self.get_dataset(
-                subset="testing", normalizing_dict=self.normalizing_dict, upsample=False
+                subset="testing",
+                normalizing_dict=self.normalizing_dict,
+                upsample=False,
+                is_local_only=True,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -414,7 +419,7 @@ class Model(pl.LightningModule):
         loss: Union[float, torch.Tensor] = 0
         output_dict = {}
 
-        if self.forecaster != torch.nn.Identity():
+        if self.forecaster_output_timesteps > 0:
             # -------------------------------------------------------------------------------
             # Forecast
             # -------------------------------------------------------------------------------
@@ -601,17 +606,13 @@ class Model(pl.LightningModule):
             if self.hparams.evaluate_forecast:
                 logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
-        if self.hparams.multi_headed:
-            logs.update(self._interpretable_metrics(outputs, "global_", "val_"))
-            logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
-        else:
-            logs.update(self._interpretable_metrics(outputs, "", "val_"))
-        return {"val_loss": avg_loss, "log": logs}
+        logs.update(self._interpretable_metrics(outputs, "", "val_"))
+        return {"log": logs}
 
     def test_epoch_end(self, outputs):
 
         avg_loss = torch.stack([x["test_loss"] for x in outputs]).mean().item()
-        output_dict = {"val_loss": avg_loss}
+        output_dict = {"test_loss": avg_loss}
 
         if self.forecast:
             encoder_pred = (
@@ -635,11 +636,7 @@ class Model(pl.LightningModule):
             if self.hparams.evaluate_forecast:
                 output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
-        if self.hparams.multi_headed:
-            output_dict.update(self._interpretable_metrics(outputs, "global_", "test_"))
-            output_dict.update(self._interpretable_metrics(outputs, "local_", "test_"))
-        else:
-            output_dict.update(self._interpretable_metrics(outputs, "", "test_"))
+        output_dict.update(self._interpretable_metrics(outputs, "", "test_"))
 
         return {"progress_bar": output_dict}
 
