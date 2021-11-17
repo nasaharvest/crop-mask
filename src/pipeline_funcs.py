@@ -1,7 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 from pytorch_lightning.callbacks import EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
 from typing import Dict, Optional, Tuple, Union
 
@@ -35,27 +35,6 @@ def validate(hparams: Namespace) -> Namespace:
     return hparams
 
 
-def add_dataset_stats(model: Model, hparams: Namespace) -> Namespace:
-    norm_dict = model.normalizing_dict
-    local_train_dataset = model.get_dataset(
-        "training", is_local_only=True, normalizing_dict=norm_dict
-    )
-    local_val_dataset = model.get_dataset(
-        "validation", is_local_only=True, upsample=False, normalizing_dict=norm_dict
-    )
-
-    # local train
-    hparams.local_train_original_size = local_train_dataset.original_size
-    hparams.local_train_upsampled_size = len(local_train_dataset)
-    hparams.local_train_crop_percentage = local_train_dataset.crop_percentage
-
-    # local val
-    hparams.local_val_size = len(local_val_dataset)
-    hparams.local_val_crop_percentage = local_val_dataset.crop_percentage
-
-    return hparams
-
-
 def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
     if model_ckpt_path.exists():
         model_ckpt_path.unlink()
@@ -77,19 +56,21 @@ def train_model(
         mode="min",
     )
 
-    logger = TensorBoardLogger("tb_logs", name=hparams.eval_datasets)
+    wandb_logger = WandbLogger(project="crop-mask")
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
         checkpoint_callback=False,
-        logger=logger,
+        logger=wandb_logger,
     )
 
     trainer.fit(model)
 
-    hparams = add_dataset_stats(model, hparams)
-    logger.experiment.add_hparams(vars(hparams), trainer.callback_metrics)
+    hparams.local_val_size = wandb_logger.experiment.config["local_validation_original_size"]
+    hparams.local_val_crop_percentage = wandb_logger.experiment.config[
+        "local_validation_crop_percentage"
+    ]
 
     if model_ckpt_path is None:
         model_ckpt_path = model_dir / f"{hparams.model_name}.ckpt"
