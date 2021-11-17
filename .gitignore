@@ -118,6 +118,7 @@ files
 data/**/
 lightning_logs
 tb_logs
+wandb
 
 .env
 
