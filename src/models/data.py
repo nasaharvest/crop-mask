@@ -30,6 +30,7 @@ class CropDataset(Dataset):
         cache: bool,
         upsample: bool,
         target_bbox: BoundingBox,
+        wandb_logger,
         probability_threshold: float = 0.5,
         normalizing_dict: Optional[Dict] = None,
         is_local_only: bool = False,
@@ -54,15 +55,31 @@ class CropDataset(Dataset):
 
         is_crop = df[CROP_PROB] >= probability_threshold
         is_local = df[IS_LOCAL]
+
         if upsample:
             self.pickle_files += self._upsampled_files(
                 local_crop_files=df[is_local & is_crop][FEATURE_PATH].to_list(),
                 local_non_crop_files=df[is_local & ~is_crop][FEATURE_PATH].to_list(),
             )
 
-        # Set parameters for logging
-        self.original_size: int = len(df)
-        self.crop_percentage: float = round(len(df[is_crop]) / len(df), 4)
+        if wandb_logger:
+            to_log = {}
+            if is_local.any():
+                to_log[f"local_{subset}_original_size"] = len(df[is_local])
+                to_log[f"local_{subset}_crop_percentage"] = round(
+                    len(df[is_local & is_crop]) / len(df[is_local]), 4
+                )
+
+            if not is_local.all():
+                to_log[f"global_{subset}_original_size"] = (len(df[~is_local]),)
+                to_log[f"global_{subset}_crop_percentage"] = round(
+                    len(df[~is_local & is_crop]) / len(df[~is_local]), 4
+                )
+
+            if upsample:
+                to_log[f"{subset}_upsampled_size"] = len(self.pickle_files)
+
+            wandb_logger.experiment.config.update(to_log)
 
         # Set parameters needed for __getitem__
         self.probability_threshold = probability_threshold
