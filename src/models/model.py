@@ -606,7 +606,7 @@ class Model(pl.LightningModule):
             if self.hparams.evaluate_forecast:
                 logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
-        logs.update(self._interpretable_metrics(outputs, "", "val_"))
+        logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
@@ -636,7 +636,7 @@ class Model(pl.LightningModule):
             if self.hparams.evaluate_forecast:
                 output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
-        output_dict.update(self._interpretable_metrics(outputs, "", "test_"))
+        output_dict.update(self._interpretable_metrics(outputs, "local_", "test_"))
 
         return {"progress_bar": output_dict}
 
