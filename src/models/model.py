@@ -161,12 +161,11 @@ class Model(pl.LightningModule):
         self.local_loss_function: Callable = F.binary_cross_entropy
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        if not self.forecast:
-            return self.classifier(x)
-        x_existing = x[:, : self.input_months, :]
-        x_forecasted = self.forecaster(x_existing)[:, self.input_months - 1 :, :]
-        x_with_forecast = torch.cat((x_existing, x_forecasted), dim=1)
-        return self.classifier(x_with_forecast)
+        x_input = x[:, : self.input_months, :]
+        if self.forecast:
+            x_forecasted = self.forecaster(x_input)[:, self.input_months - 1 :, :]
+            x_input = torch.cat((x_input, x_forecasted), dim=1)
+        return self.classifier(x_input)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
