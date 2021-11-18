@@ -71,7 +71,7 @@ class CropDataset(Dataset):
                 )
 
             if not is_local.all():
-                to_log[f"global_{subset}_original_size"] = (len(df[~is_local]),)
+                to_log[f"global_{subset}_original_size"] = (len(df[~is_local]))
                 to_log[f"global_{subset}_crop_percentage"] = round(
                     len(df[~is_local & is_crop]) / len(df[~is_local]), 4
                 )
@@ -107,7 +107,7 @@ class CropDataset(Dataset):
         assert subset in ["training", "validation", "testing"]
         df = pd.concat([d.load_labels(fail_if_missing_features=True) for d in datasets])
         df = df[df[SUBSET] == subset]
-        if up_to_year is not None:
+        if up_to_year is not None and subset == "training":
             df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
 
         df[IS_LOCAL] = (
