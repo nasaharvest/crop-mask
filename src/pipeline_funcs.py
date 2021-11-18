@@ -43,7 +43,7 @@ def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
 
 
 def train_model(
-    hparams, model_ckpt_path: Optional[Path] = None
+    hparams, model_ckpt_path: Optional[Path] = None, offline: bool = False
 ) -> Tuple[pl.LightningModule, Dict[str, float]]:
 
     model = Model(hparams)
@@ -56,7 +56,7 @@ def train_model(
         mode="min",
     )
 
-    wandb_logger = WandbLogger(project="crop-mask")
+    wandb_logger = WandbLogger(project="crop-mask", offline=offline)
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,
@@ -120,7 +120,9 @@ def run_evaluation(
     return model, metrics
 
 
-def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, Dict[str, float]]:
+def model_pipeline(
+    hparams: Namespace, retrain_all: bool = False, offline: bool = False
+) -> Tuple[str, Dict[str, float]]:
 
     hparams = validate(hparams)
 
@@ -134,7 +136,12 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
     else:
         model = Model.load_from_checkpoint(model_ckpt_path)
         model_hparams = model.hparams.__dict__
-        params_that_can_change = ["alternative_threshold", "fail_on_error", "retrain_all"]
+        params_that_can_change = [
+            "alternative_threshold",
+            "fail_on_error",
+            "retrain_all",
+            "offline",
+        ]
         for k, v in hparams.__dict__.items():
             if k in model_hparams and model_hparams[k] != v and k not in params_that_can_change:
                 print(
@@ -154,7 +161,7 @@ def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, 
 
     if train:
         print(f"\u2714 {model_name} beginning training")
-        model, metrics = train_model(hparams, model_ckpt_path)
+        model, metrics = train_model(hparams, model_ckpt_path, offline)
         print(f"\n\u2714 {model_name} completed training and evaluation")
         print(metrics)
 
