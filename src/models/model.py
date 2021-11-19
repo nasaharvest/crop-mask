@@ -235,7 +235,7 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                is_local_only=True,
+                is_local_only=False,
                 upsample=False,
             ),
             batch_size=self.hparams.batch_size,
@@ -247,7 +247,7 @@ class Model(pl.LightningModule):
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
-                is_local_only=True,
+                is_local_only=False,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -382,31 +382,38 @@ class Model(pl.LightningModule):
         """
 
         y_nans = torch.isnan(y_true)
+
+        # If there is no nans in the batch compute forecaster loss as usual
         if y_nans.any() == False:
             return self.forecaster_loss(y_true, y_forecast)
 
         nan_batch_index = y_nans.any(dim=1).any(dim=1)
         nan_month_index = y_nans.any(dim=0).any(dim=1)
 
-        full_shape = (-1, y_true.shape[1], y_true.shape[2])
-        y_true_full = y_true[~nan_batch_index].reshape(full_shape)
-        y_forecast_full = y_forecast[~nan_batch_index].reshape(full_shape)
-
         partial_shape = (-1, sum(~nan_month_index), y_true.shape[2])
         y_true_partial = y_true[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
         y_forecast_partial = y_forecast[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
+        assert torch.all(torch.isnan(y_forecast_partial)) == False
+        loss_partial = self.forecaster_loss(y_forecast_partial, y_true_partial)
 
+        # If the batch contains time series with only nans, then return only the partial loss
+        if nan_batch_index.all():
+            assert y_forecast_partial.shape[0] == y_forecast.shape[0]
+            return loss_partial
+
+        # Otherwise the batch contains time series with at least one non nan value, so compute combined loss
+        full_shape = (-1, y_true.shape[1], y_true.shape[2])
+        y_true_full = y_true[~nan_batch_index].reshape(full_shape)
+        y_forecast_full = y_forecast[~nan_batch_index].reshape(full_shape)
         assert y_forecast_full.shape[0] + y_forecast_partial.shape[0] == y_forecast.shape[0]
         assert y_forecast_full[0].shape == y_true_full[0].shape
         assert torch.all(torch.isnan(y_forecast_full)) == False
-        assert torch.all(torch.isnan(y_forecast_partial)) == False
 
         total_full_timesteps = y_forecast_full.shape[0] * y_forecast_full.shape[1]
         total_partial_timesteps = y_forecast_partial.shape[0] * y_forecast_partial.shape[1]
         w_full = total_full_timesteps / (total_full_timesteps + total_partial_timesteps)
         w_partial = total_partial_timesteps / (total_full_timesteps + total_partial_timesteps)
         loss_full = self.forecaster_loss(y_forecast_full, y_true_full)
-        loss_partial = self.forecaster_loss(y_forecast_partial, y_true_partial)
         return (w_full * loss_full) + (w_partial * loss_partial)
 
     def _split_preds_and_get_loss(
