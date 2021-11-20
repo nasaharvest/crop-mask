@@ -56,7 +56,7 @@ def train_model(
         mode="min",
     )
 
-    wandb_logger = WandbLogger(project="crop-mask", offline=offline)
+    wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
     trainer = pl.Trainer(
         default_save_path=hparams.data_folder,
         max_epochs=hparams.max_epochs,

@@ -34,15 +34,23 @@ These can be used to create annual and in season crop maps.
     python -c "import ee; ee.Initialize()"  # Will raise error if not setup
     ```
 3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and run:
+
     ```bash
     gcloud auth application-default login     # Authenticates gcloud
     dvc pull                                  # All data (will take long time)
     dvc pull data/features data/models        # For retraining or inference
     dvc pull data/processed                   # For labeled data analysis
     ```
+
     If you get an "invalid grant" error, you may need to run:
+
     ```bash
     gcloud auth application-default login
+    ```
+
+4. [OPTIONAL] Weights and Biases is used for logging model training, to train and view logs run:
+    ```bash
+    wandb login
     ```
 
 ## 2. Adding new labeled data
