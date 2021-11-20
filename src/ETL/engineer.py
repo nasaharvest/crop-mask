@@ -114,7 +114,6 @@ class Engineer(ABC):
                 label_lon=label[LON],
                 start_date_str=label[START],
                 end_date_str=label[END],
-                data_subset=label[SUBSET],
                 labelled_array=labelled_array,
                 instance_lat=tif_lat,
                 instance_lon=tif_lon,
