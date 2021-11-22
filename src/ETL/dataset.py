@@ -200,8 +200,7 @@ class LabeledDataset:
         labels = self.process_labels()
 
         # set aside conflicting labels that are eliminated
-        eliminated = labels[labels[CROP_PROB] != 1.0]
-        eliminated = eliminated[eliminated[CROP_PROB] != 0.0]
+        eliminated = labels[labels[CROP_PROB] == 0.5]
         print("eliminated amount: "+ str(len(eliminated)))
 
         labels = labels[labels[CROP_PROB] != 0.5]        
