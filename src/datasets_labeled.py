@@ -56,24 +56,7 @@ def add_fake_harvest_date(df: pd.DataFrame) -> pd.DataFrame:
 
 
 labeled_datasets = [
-    LabeledDataset(
-        dataset="geowiki_landcover_2017",
-        country="global",
-        processors=(
-            Processor(
-                filename="loc_all_2.txt",
-                clean_df=clean_geowiki,
-                longitude_col="loc_cent_X",
-                latitude_col="loc_cent_Y",
-                crop_prob=lambda df: df.mean_sumcrop / 100,
-                end_year=2018,
-                end_month_day=(3, 28),
-                custom_start_date=date(2017, 3, 28),
-                x_y_from_centroid=False,
-                train_val_test=(1.0, 0.0, 0.0),
-            ),
-        ),
-    ),
+
     LabeledDataset(
         dataset="Kenya",
         country="Kenya",
@@ -523,4 +506,22 @@ labeled_datasets = [
             ]
         ),
     ),
+    LabeledDataset(
+        dataset="geowiki_landcover_2017",
+        country="global",
+        processors=(
+            Processor(
+                filename="loc_all_2.txt",
+                clean_df=clean_geowiki,
+                longitude_col="loc_cent_X",
+                latitude_col="loc_cent_Y",
+                crop_prob=lambda df: df.mean_sumcrop / 100,
+                end_year=2018,
+                end_month_day=(3, 28),
+                custom_start_date=date(2017, 3, 28),
+                x_y_from_centroid=False,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
+        ),
+    )
 ]
