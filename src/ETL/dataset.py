@@ -198,7 +198,13 @@ class LabeledDataset:
         # STEP 1: Obtain the labels
         # -------------------------------------------------
         labels = self.process_labels()
-        labels = labels[labels[CROP_PROB] != 0.5]
+
+        # set aside conflicting labels that are eliminated
+        eliminated = labels[labels[CROP_PROB] != 1.0]
+        eliminated = eliminated[eliminated[CROP_PROB] != 0.0]
+        print("eliminated amount: "+ str(len(eliminated)))
+
+        labels = labels[labels[CROP_PROB] != 0.5]        
         labels = labels[~labels["filename"].isin(unexported)]
         labels[FEATURE_PATH] = self.generate_feature_paths(labels)
 
