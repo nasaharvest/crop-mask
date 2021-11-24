@@ -58,16 +58,16 @@
     "Kenya": {
         "local_val_crop_percentage ": 0.6899,
         "local_val_size": 861,
-        "thresh0.5_unencoded_val_local_accuracy": 0.9524,
-        "thresh0.5_unencoded_val_local_f1_score": 0.9661,
-        "thresh0.5_unencoded_val_local_precision_score": 0.9496,
-        "thresh0.5_unencoded_val_local_recall_score": 0.9832,
-        "thresh0.5_unencoded_val_local_roc_auc_score": 0.9827,
-        "unencoded_val_local_accuracy": 0.9524,
-        "unencoded_val_local_f1_score": 0.9661,
-        "unencoded_val_local_precision_score": 0.9496,
-        "unencoded_val_local_recall_score": 0.9832,
-        "unencoded_val_local_roc_auc_score": 0.9827
+        "thresh0.52_unencoded_val_local_accuracy": 0.9431,
+        "thresh0.52_unencoded_val_local_f1_score": 0.9597,
+        "thresh0.52_unencoded_val_local_precision_score": 0.9388,
+        "thresh0.52_unencoded_val_local_recall_score": 0.9815,
+        "thresh0.52_unencoded_val_local_roc_auc_score": 0.9825,
+        "unencoded_val_local_accuracy": 0.9408,
+        "unencoded_val_local_f1_score": 0.9581,
+        "unencoded_val_local_precision_score": 0.9358,
+        "unencoded_val_local_recall_score": 0.9815,
+        "unencoded_val_local_roc_auc_score": 0.9825
     },
     "Rwanda": {
         "local_val_crop_percentage ": 0.3569,
