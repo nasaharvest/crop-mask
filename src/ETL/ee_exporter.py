@@ -13,7 +13,6 @@ from src.bounding_boxes import bounding_boxes
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
 from src.ETL.constants import START, END, LAT, LON
-from src.utils import memoize
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +24,17 @@ class Season(Enum):
 
 def get_user_input(text_prompt: str) -> str:
     return input(text_prompt)
+
+
+def memoize(f):
+    memo = {}
+
+    def helper(x="default"):
+        if x not in memo:
+            memo[x] = f() if x == "default" else f(x)
+        return memo[x]
+
+    return helper
 
 
 @memoize
@@ -254,18 +264,6 @@ class LabelExporter(EarthEngineExporter):
         )
         return filename
 
-    def _is_file_on_cloud_storage(self, file_name_prefix: str):
-        """
-        Checks if file_name_prefix already exists on Google Cloud Storage
-        """
-        exists_on_cloud = f"tifs/{file_name_prefix}.tif" in self.cloud_tif_list
-        if exists_on_cloud:
-            print(
-                f"{file_name_prefix} already exists in Google Cloud, run command to download:"
-                + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
-            )
-        return exists_on_cloud
-
     def _export_using_point_and_dates(
         self, lat: float, lon: float, start_date: date, end_date: date
     ):
@@ -277,8 +275,8 @@ class LabelExporter(EarthEngineExporter):
         )
         file_name_prefix = self._generate_filename(bbox, start_date, end_date)
 
-        if self.check_gcp and self._is_file_on_cloud_storage(file_name_prefix):
-            return
+        if self.check_gcp and (f"tifs/{file_name_prefix}.tif" in self.cloud_tif_list):
+            return False
 
         self._export_for_polygon(
             file_name_prefix=f"tifs/{file_name_prefix}",
@@ -287,6 +285,7 @@ class LabelExporter(EarthEngineExporter):
             start_date=start_date,
             end_date=end_date,
         )
+        return True
 
     def export(self, labels: pd.DataFrame):
         r"""
@@ -295,12 +294,24 @@ class LabelExporter(EarthEngineExporter):
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
         """
+        amount_exporting = 0
+        amount_exported = 0
         for _, row in tqdm(labels.iterrows(), total=len(labels)):
-            self._export_using_point_and_dates(
+            is_exporting = self._export_using_point_and_dates(
                 lat=row[LAT],
                 lon=row[LON],
                 start_date=datetime.strptime(row[START], "%Y-%m-%d").date(),
                 end_date=datetime.strptime(row[END], "%Y-%m-%d").date(),
             )
+            if is_exporting:
+                amount_exporting += 1
+            else:
+                amount_exported += 1
 
-        print("See progress: https://code.earthengine.google.com/")
+        if amount_exporting > 0:
+            print("See progress: https://code.earthengine.google.com/")
+        if amount_exported > 0:
+            print(
+                f"{amount_exported} files exist on Google Cloud, run command to download:"
+                + "\ngsutil -m cp -n -r gs://crop-mask-tifs/tifs data/"
+            )

@@ -85,18 +85,17 @@ def export_unlabeled(request: Request):
         num_timesteps = request_json["num_timesteps"]
 
     file_dimensions = request_json.get("file_dimensions", 256)
+    credentials = get_ee_credentials()
+    bbox_args = {k: v for k, v in request_json.items() if k in bbox_keys}
+    bbox = BoundingBox(**bbox_args)
+
+    if is_bbox_too_big(bbox):
+        abort(
+            403,
+            description="The specified bounding box is too large. "
+            "Consider splitting it into several small bounding boxes",
+        )
     try:
-        credentials = get_ee_credentials()
-        bbox_args = {k: v for k, v in request_json.items() if k in bbox_keys}
-        bbox = BoundingBox(**bbox_args)
-
-        if is_bbox_too_big(bbox):
-            abort(
-                403,
-                description="The specified bounding box is too large. "
-                "Consider splitting it into several small bounding boxes",
-            )
-
         ids = RegionExporter(
             sentinel_dataset=sentinel_dataset,
             credentials=credentials,

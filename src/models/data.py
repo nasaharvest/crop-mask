@@ -24,21 +24,19 @@ class CropDataset(Dataset):
 
     def __init__(
         self,
-        data_folder: Path,
         subset: str,
         datasets: List[LabeledDataset],
         remove_b1_b10: bool,
         cache: bool,
         upsample: bool,
         target_bbox: BoundingBox,
+        wandb_logger,
         probability_threshold: float = 0.5,
         normalizing_dict: Optional[Dict] = None,
         is_local_only: bool = False,
         up_to_year: Optional[int] = None,
     ) -> None:
         logger.info(f"Initializating {subset} CropDataset")
-        if not data_folder.exists():
-            raise FileNotFoundError(f"{data_folder} does not exist")
 
         df = self._load_df_from_datasets(
             datasets,
@@ -49,23 +47,40 @@ class CropDataset(Dataset):
         )
 
         self.pickle_files: List[Path] = [Path(p) for p in df[FEATURE_PATH].tolist()]
-        self.normalizing_dict: Dict = (
-            normalizing_dict
-            if normalizing_dict
-            else self._calculate_normalizing_dict(self.pickle_files)
-        )
 
         is_crop = df[CROP_PROB] >= probability_threshold
         is_local = df[IS_LOCAL]
+
         if upsample:
             self.pickle_files += self._upsampled_files(
                 local_crop_files=df[is_local & is_crop][FEATURE_PATH].to_list(),
                 local_non_crop_files=df[is_local & ~is_crop][FEATURE_PATH].to_list(),
             )
 
-        # Set parameters for logging
-        self.original_size: int = len(df)
-        self.crop_percentage: float = round(len(df[is_crop]) / len(df), 4)
+        self.normalizing_dict: Dict = (
+            normalizing_dict
+            if normalizing_dict
+            else self._calculate_normalizing_dict(self.pickle_files)
+        )
+
+        if wandb_logger:
+            to_log: Dict[str, Union[float, int]] = {}
+            if is_local.any():
+                to_log[f"local_{subset}_original_size"] = len(df[is_local])
+                to_log[f"local_{subset}_crop_percentage"] = round(
+                    len(df[is_local & is_crop]) / len(df[is_local]), 4
+                )
+
+            if not is_local.all():
+                to_log[f"global_{subset}_original_size"] = len(df[~is_local])
+                to_log[f"global_{subset}_crop_percentage"] = round(
+                    len(df[~is_local & is_crop]) / len(df[~is_local]), 4
+                )
+
+            if upsample:
+                to_log[f"{subset}_upsampled_size"] = len(self.pickle_files)
+
+            wandb_logger.experiment.config.update(to_log)
 
         # Set parameters needed for __getitem__
         self.probability_threshold = probability_threshold
@@ -93,7 +108,7 @@ class CropDataset(Dataset):
         assert subset in ["training", "validation", "testing"]
         df = pd.concat([d.load_labels(fail_if_missing_features=True) for d in datasets])
         df = df[df[SUBSET] == subset]
-        if up_to_year is not None:
+        if up_to_year is not None and subset == "training":
             df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
 
         df[IS_LOCAL] = (

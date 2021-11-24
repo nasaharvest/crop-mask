@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple
 from tqdm import tqdm
 import logging
 import pandas as pd
@@ -10,7 +9,7 @@ import numpy as np
 from .engineer import Engineer
 from .processor import Processor
 from .ee_exporter import LabelExporter, RegionExporter, Season
-from src.utils import get_data_dir, get_tifs_dir, memoize
+from src.utils import data_dir, tifs_dir, features_dir, memoize
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.constants import (
     ALREADY_EXISTS,
@@ -31,22 +30,13 @@ from src.ETL.constants import (
 
 logger = logging.getLogger(__name__)
 
-default_data_folder: Path = get_data_dir()
-
-unexported_file = default_data_folder / "unexported.txt"
+unexported_file = data_dir / "unexported.txt"
 unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
-    return {p: BoundingBox.from_path(p) for p in tqdm(get_tifs_dir().glob("**/*.tif"))}
-
-
-class DataDir(Enum):
-    RAW_DIR = "raw_dir"
-    RAW_LABELS_DIR = "raw_labels_dir"
-    LABELS_PATH = "labels_path"
-    FEATURES_DIR = "features_dir"
+    return {p: BoundingBox.from_path(p) for p in tqdm(tifs_dir.glob("**/*.tif"))}
 
 
 @dataclass
@@ -59,20 +49,8 @@ class LabeledDataset:
     days_per_timestep: int = 30
 
     def __post_init__(self):
-        self.raw_labels_dir = self.get_path(DataDir.RAW_LABELS_DIR)
-        self.labels_path = self.get_path(DataDir.LABELS_PATH)
-        self.feature_dir = self.get_path(DataDir.FEATURES_DIR)
-        self.feature_dir.mkdir(exist_ok=True, parents=True)
-
-    def get_path(self, data_dir: DataDir, root_data_folder: Path = default_data_folder):
-        if data_dir == DataDir.RAW_DIR:
-            return root_data_folder / "raw"
-        if data_dir == DataDir.RAW_LABELS_DIR:
-            return root_data_folder / "raw" / self.dataset
-        if data_dir == DataDir.LABELS_PATH:
-            return root_data_folder / "processed" / (self.dataset + ".csv")
-        if data_dir == DataDir.FEATURES_DIR:
-            return root_data_folder / "features" / self.dataset
+        self.raw_labels_dir = data_dir / "raw" / self.dataset
+        self.labels_path = data_dir / "processed" / (self.dataset + ".csv")
 
     @staticmethod
     def merge_sources(sources):
@@ -130,24 +108,24 @@ class LabeledDataset:
         return candidate_paths
 
     def do_label_and_feature_amounts_match(self, labels: pd.DataFrame):
+        all_subsets_correct_size = True
+        if not labels[ALREADY_EXISTS].all():
+            labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
         train_val_test_counts = labels[SUBSET].value_counts()
         for subset, labels_in_subset in train_val_test_counts.items():
-            features_in_subset = len(list((self.feature_dir / subset).glob("*.pkl")))
+            features_in_subset = labels[labels[SUBSET] == subset][ALREADY_EXISTS].sum()
             if labels_in_subset != features_in_subset:
                 print(
                     f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features"
                 )
+                all_subsets_correct_size = False
             else:
                 print(f"\u2714 {subset} amount: {labels_in_subset}")
-
-    def prune_features_with_no_label(self, features_with_label: List[str]):
-        for f in self.feature_dir.glob("**/*.pkl"):
-            if str(f) not in features_with_label:
-                f.unlink()
+        return all_subsets_correct_size
 
     def generate_feature_paths(self, labels: pd.DataFrame) -> pd.Series:
-        labels["feature_dir"] = str(self.feature_dir)
-        return labels["feature_dir"] + "/" + labels[SUBSET] + "/" + labels["filename"] + ".pkl"
+        labels["feature_dir"] = str(features_dir)
+        return labels["feature_dir"] + "/" + labels["filename"] + ".pkl"
 
     def match_labels_to_tifs(self, labels: pd.DataFrame) -> pd.Series:
         bbox_for_labels = BoundingBox(
@@ -187,10 +165,8 @@ class LabeledDataset:
             raise FileNotFoundError(f"{self.labels_path} does not exist")
         labels = labels[labels[CROP_PROB] != 0.5]
         labels = labels[~labels[FEATURE_FILENAME].isin(unexported)]
-        labels["feature_dir"] = str(self.feature_dir)
-        labels[FEATURE_PATH] = (
-            labels["feature_dir"] + "/" + labels[SUBSET] + "/" + labels[FEATURE_FILENAME] + ".pkl"
-        )
+        labels["feature_dir"] = str(features_dir)
+        labels[FEATURE_PATH] = labels["feature_dir"] + "/" + labels[FEATURE_FILENAME] + ".pkl"
         labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
         if fail_if_missing_features and not labels[ALREADY_EXISTS].all():
             raise FileNotFoundError(
@@ -223,7 +199,6 @@ class LabeledDataset:
         # -------------------------------------------------
         # STEP 2: Check if features already exist
         # -------------------------------------------------
-        self.prune_features_with_no_label(labels[FEATURE_PATH].to_list())
         labels_with_no_features = labels[~labels[ALREADY_EXISTS]].copy()
         if len(labels_with_no_features) == 0:
             self.do_label_and_feature_amounts_match(labels)

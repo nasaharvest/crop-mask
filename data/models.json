@@ -1,7 +1,7 @@
 [
     {
         "model_name": "Kenya",
-        "alternative_threshold": 0.5,
+        "alternative_threshold": 0.52,
         "min_lon": 33.501,
         "max_lon": 42.283,
         "min_lat": -5.202,
@@ -25,11 +25,11 @@
     },
     {
         "model_name": "Togo",
-        "alternative_threshold": 0.23,
+        "alternative_threshold": 0.65,
         "min_lon": -0.1501,
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
-        "max_lat": 11.115625,
+        "max_lat": 11.1332,
         "up_to_year": 2020,
         "eval_datasets": [
             "Togo"
@@ -49,11 +49,11 @@
     },
     {
         "model_name": "Rwanda",
-        "alternative_threshold": 0.48,
-        "min_lon": 28.841,
-        "max_lon": 30.909,
-        "min_lat": -2.854,
-        "max_lat": -1.034,
+        "alternative_threshold": 0.65,
+        "min_lon": 28.430,
+        "max_lon": 31.013,
+        "min_lat": -3.035,
+        "max_lat": -0.760,
         "up_to_year": 2020,
         "eval_datasets": [
             "Rwanda"
@@ -73,11 +73,11 @@
     },
     {
         "model_name": "Uganda",
-        "alternative_threshold": 0.96,
-        "min_lon": 29.5794661801,
-        "max_lon": 35.03599,
-        "min_lat": -1.44332244223,
-        "max_lat": 4.24988494736,
+        "alternative_threshold": 0.92,
+        "min_lon": 29.1274,
+        "max_lon": 35.1746,
+        "min_lat": -1.6235,
+        "max_lat": 4.2963,
         "up_to_year": 2020,
         "eval_datasets": [
             "Uganda"
@@ -121,11 +121,11 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.48,
+        "alternative_threshold": 0.45,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
-        "max_lat": 14.895,
+        "max_lat": 14.910,
         "up_to_year": 2020,
         "eval_datasets": [
             "Ethiopia_Tigray_2020"
@@ -142,15 +142,15 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
-        "alternative_threshold": 0.25,
+        "alternative_threshold": 0.29,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
-        "max_lat": 14.895,
+        "max_lat": 14.910,
         "input_months": 6,
         "forecast": true,
         "evaluate_forecast": false,
-        "up_to_year": 2021,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Ethiopia_Tigray_2021"
         ],
@@ -166,14 +166,14 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2021_no_forecaster",
-        "alternative_threshold": 0.22,
+        "alternative_threshold": 0.45,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
-        "max_lat": 14.895,
+        "max_lat": 14.910,
         "input_months": 6,
         "forecast": false,
-        "up_to_year": 2021,
+        "up_to_year": 2020,
         "eval_datasets": [
             "Ethiopia_Tigray_2021"
         ],
