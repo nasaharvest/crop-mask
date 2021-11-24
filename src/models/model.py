@@ -106,7 +106,7 @@ class Model(pl.LightningModule):
             else hparams.train_datasets
         )
         if normalizing_dict_key not in all_dataset_params:
-            dataset = self.get_dataset(subset="training", cache=False)
+            dataset = self.get_dataset(subset="training", cache=False, upsample=False)
             # we save the normalizing dict because we calculate weighted
             # normalization values based on the datasets we combine.
             # The number of instances per dataset (and therefore the weights) can

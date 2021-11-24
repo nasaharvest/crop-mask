@@ -47,11 +47,6 @@ class CropDataset(Dataset):
         )
 
         self.pickle_files: List[Path] = [Path(p) for p in df[FEATURE_PATH].tolist()]
-        self.normalizing_dict: Dict = (
-            normalizing_dict
-            if normalizing_dict
-            else self._calculate_normalizing_dict(self.pickle_files)
-        )
 
         is_crop = df[CROP_PROB] >= probability_threshold
         is_local = df[IS_LOCAL]
@@ -62,6 +57,12 @@ class CropDataset(Dataset):
                 local_non_crop_files=df[is_local & ~is_crop][FEATURE_PATH].to_list(),
             )
 
+        self.normalizing_dict: Dict = (
+            normalizing_dict
+            if normalizing_dict
+            else self._calculate_normalizing_dict(self.pickle_files)
+        )
+
         if wandb_logger:
             to_log = {}
             if is_local.any():
@@ -71,7 +72,7 @@ class CropDataset(Dataset):
                 )
 
             if not is_local.all():
-                to_log[f"global_{subset}_original_size"] = (len(df[~is_local]))
+                to_log[f"global_{subset}_original_size"] = len(df[~is_local])
                 to_log[f"global_{subset}_crop_percentage"] = round(
                     len(df[~is_local & is_crop]) / len(df[~is_local]), 4
                 )
