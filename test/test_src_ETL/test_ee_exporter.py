@@ -93,22 +93,6 @@ class TestEEExporters(TestCase):
             "min_lat=0.0008_min_lon=0_max_lat=0.0009_max_lon=0_dates=2019-04-22_2020-04-16",
         )
 
-    @patch(f"{module}.get_cloud_tif_list")
-    def test_is_file_on_cloud_storage_enabled(self, mock_get_cloud_tif_list):
-        exists = LabelExporter(check_gcp=True, dest_bucket="mock_bucket")._is_file_on_cloud_storage(
-            file_name_prefix="mock_filename_prefix"
-        )
-        mock_get_cloud_tif_list.assert_called_once_with("mock_bucket")
-        self.assertFalse(exists)
-
-    @patch(f"{module}.get_cloud_tif_list")
-    def test_is_file_on_cloud_storage_disabled(self, mock_get_cloud_tif_list):
-        exists = LabelExporter(check_gcp=False)._is_file_on_cloud_storage(
-            file_name_prefix="mock_filename_prefix"
-        )
-        mock_get_cloud_tif_list.assert_not_called()
-        self.assertFalse(exists)
-
     @patch(f"{module}.storage")
     def test_get_cloud_tif_list(self, mock_storage):
         mock_storage.Client().list_blobs("mock_bucket").return_value = []
