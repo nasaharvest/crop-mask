@@ -146,6 +146,7 @@ class Processor:
             elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
 
+        # Set end year
         total_days = timedelta(days=self.num_timesteps * days_per_timestep)
         if self.end_year:
             df[END] = date(self.end_year, *self.end_month_day)
@@ -164,6 +165,8 @@ class Processor:
 
         if self.custom_start_date is None:
             df[START] = df[END] - total_days
+        else:
+            df[START] = self.custom_start_date
 
         df = df[df[START] >= pd.Timestamp(min_date)]
 

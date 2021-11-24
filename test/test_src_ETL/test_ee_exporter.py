@@ -70,7 +70,8 @@ class TestEEExporters(TestCase):
             [
                 call(lat=1, lon=1, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)),
                 call(lat=2, lon=2, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)),
-            ]
+            ],
+            any_order=True,
         )
 
     def test_generate_filename(self):
