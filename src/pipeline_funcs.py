@@ -122,17 +122,16 @@ def run_evaluation(
 
 
 def model_pipeline(
-    hparams: Namespace, retrain_all: bool = False, offline: bool = False
+    hparams: Namespace, retrain_all: bool = False, offline: bool = False, eval_only: bool = False
 ) -> Tuple[str, Dict[str, float]]:
 
     hparams = validate(hparams)
 
     model_name = hparams.model_name
     model_ckpt_path = model_dir / f"{model_name}.ckpt"
-
-    train = False
-
-    if retrain_all or not model_ckpt_path.exists():
+    if eval_only:
+        train = False
+    elif retrain_all or not model_ckpt_path.exists():
         train = True
     else:
         model = Model.load_from_checkpoint(model_ckpt_path)
@@ -151,24 +150,22 @@ def model_pipeline(
                 train = True
                 break
 
-        if not train:
-            print(f"\n\u2714 {model_name} exists, running evaluation only")
-            threshold = (
-                hparams.alternative_threshold if "alternative_threshold" in hparams else None
-            )
-            model, metrics = run_evaluation(model_ckpt_path, threshold)
-            print(f" \u2714 {model_name} completed evaluation")
-            train = False
-
     if train:
         print(f"\u2714 {model_name} beginning training")
         model, metrics = train_model(hparams, model_ckpt_path, offline)
         print(f"\n\u2714 {model_name} completed training and evaluation")
         print(metrics)
+        for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
+            if key in metrics and metrics[key] > 0.59:
+                model.save()
+                break
+    elif model_ckpt_path.exists():
+        print(f"\n\u2714 {model_name} exists, running evaluation only")
+        threshold = hparams.alternative_threshold if "alternative_threshold" in hparams else None
+        model, metrics = run_evaluation(model_ckpt_path, threshold)
+        print(f" \u2714 {model_name} completed evaluation")
 
-    for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-        if key in metrics and metrics[key] > 0.59:
-            model.save()
-            break
+    else:
+        raise ValueError(f"{model_name} does not exist")
 
     return model_name, metrics
