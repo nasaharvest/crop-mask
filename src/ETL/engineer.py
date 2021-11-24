@@ -9,7 +9,7 @@ import logging
 import pickle
 
 from src.band_calculations import process_bands
-from src.ETL.constants import FEATURE_PATH, LAT, LON, CROP_PROB, SUBSET, START, END, TIF_PATHS
+from src.ETL.constants import FEATURE_PATH, LAT, LON, CROP_PROB, START, END, TIF_PATHS
 from src.utils import load_tif
 from .data_instance import CropDataInstance
 

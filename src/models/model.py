@@ -384,7 +384,7 @@ class Model(pl.LightningModule):
         y_nans = torch.isnan(y_true)
 
         # If there is no nans in the batch compute forecaster loss as usual
-        if y_nans.any() == False:
+        if bool(y_nans.any()) is False:
             return self.forecaster_loss(y_true, y_forecast)
 
         nan_batch_index = y_nans.any(dim=1).any(dim=1)
@@ -393,7 +393,7 @@ class Model(pl.LightningModule):
         partial_shape = (-1, sum(~nan_month_index), y_true.shape[2])
         y_true_partial = y_true[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
         y_forecast_partial = y_forecast[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
-        assert torch.all(torch.isnan(y_forecast_partial)) == False
+        assert bool(torch.all(torch.isnan(y_forecast_partial))) is False
         loss_partial = self.forecaster_loss(y_forecast_partial, y_true_partial)
 
         # If the batch contains time series with only nans, then return only the partial loss
@@ -401,13 +401,14 @@ class Model(pl.LightningModule):
             assert y_forecast_partial.shape[0] == y_forecast.shape[0]
             return loss_partial
 
-        # Otherwise the batch contains time series with at least one non nan value, so compute combined loss
+        # Otherwise the batch contains time series with at least one non nan value
+        # Compute combined loss
         full_shape = (-1, y_true.shape[1], y_true.shape[2])
         y_true_full = y_true[~nan_batch_index].reshape(full_shape)
         y_forecast_full = y_forecast[~nan_batch_index].reshape(full_shape)
         assert y_forecast_full.shape[0] + y_forecast_partial.shape[0] == y_forecast.shape[0]
         assert y_forecast_full[0].shape == y_true_full[0].shape
-        assert torch.all(torch.isnan(y_forecast_full)) == False
+        assert bool(torch.all(torch.isnan(y_forecast_full))) is False
 
         total_full_timesteps = y_forecast_full.shape[0] * y_forecast_full.shape[1]
         total_partial_timesteps = y_forecast_partial.shape[0] * y_forecast_partial.shape[1]
@@ -468,7 +469,7 @@ class Model(pl.LightningModule):
             if is_full_time_series:
                 nan_batch_index = x.any(dim=1).any(dim=1)
                 x_full_time_series_w_noise = self.add_noise(x[~nan_batch_index], training=training)
-                assert torch.any(torch.isnan(x_full_time_series_w_noise)) == False
+                assert bool(torch.any(torch.isnan(x_full_time_series_w_noise))) is False
                 x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
                 label = torch.cat((label[~nan_batch_index], label), dim=0)
                 is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
