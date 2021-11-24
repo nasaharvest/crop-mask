@@ -48,9 +48,11 @@ if __name__ == "__main__":
     parser.add_argument("--retrain_all", dest="retrain_all", action="store_true")
     parser.add_argument("--fail_on_error", dest="fail_on_error", action="store_true")
     parser.add_argument("--offline", dest="offline", action="store_true")
+    parser.add_argument("--eval_only", dest="eval_only", action="store_true")
     parser.set_defaults(retrain_all=False)
     parser.set_defaults(fail_on_error=False)
     parser.set_defaults(offline=False)
+    parser.set_defaults(eval_only=False)
     args = parser.parse_args()
 
     models_json = data_folder / "models.json"
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         hparams = hparams_from_json(params, parser)
         try:
             model_name, metrics = model_pipeline(
-                hparams, retrain_all=args.retrain_all, offline=args.offline
+                hparams, retrain_all=args.retrain_all, offline=args.offline, eval_only=args.eval_only
             )
             new_model_metrics[model_name] = metrics
         except Exception as e:
