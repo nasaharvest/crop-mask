@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, TIF_PATHS
+from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, TIF_PATHS
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
