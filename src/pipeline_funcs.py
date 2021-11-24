@@ -67,6 +67,7 @@ def train_model(
 
     trainer.fit(model)
 
+    # Save as hparams so they can be output into metrics.json
     hparams.local_val_size = wandb_logger.experiment.config["local_validation_original_size"]
     hparams.local_val_crop_percentage = wandb_logger.experiment.config[
         "local_validation_crop_percentage"
