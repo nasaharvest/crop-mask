@@ -71,7 +71,10 @@ if __name__ == "__main__":
         hparams = hparams_from_json(params, parser)
         try:
             model_name, metrics = model_pipeline(
-                hparams, retrain_all=args.retrain_all, offline=args.offline, eval_only=args.eval_only
+                hparams,
+                retrain_all=args.retrain_all,
+                offline=args.offline,
+                eval_only=args.eval_only,
             )
             new_model_metrics[model_name] = metrics
         except Exception as e:
