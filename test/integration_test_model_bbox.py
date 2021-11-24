@@ -40,7 +40,9 @@ class ModelBooxTest(TestCase):
                     else:
                         print(f"\u2716 {subset}: {len(df[~df[IS_LOCAL]])} examples are not local")
                         print(
-                            f"bbox should contain: min_lat={df[LAT].min()}, max_lat={df[LAT].max()}, min_lon={df[LON].min()}, max_lon={df[LON].max()}"
+                            f"bbox should contain: "
+                            f"min_lat={df[LAT].min()}, max_lat={df[LAT].max()}, "
+                            f"min_lon={df[LON].min()}, max_lon={df[LON].max()}"
                         )
                         non_local_examples_in_eval = True
                 except ValueError as e:

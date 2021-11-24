@@ -457,14 +457,14 @@ labeled_datasets = [
                     train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
-                    filename=f"tigray_corrective_2021/non_crop.shp",
+                    filename="tigray_corrective_2021/non_crop.shp",
                     crop_prob=0.0,
                     custom_start_date=date(2021, 4, 18),
                     num_timesteps=7,
                     train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
-                    filename=f"tigray_corrective_2021/crop.shp",
+                    filename="tigray_corrective_2021/crop.shp",
                     crop_prob=1.0,
                     custom_start_date=date(2021, 4, 18),
                     num_timesteps=7,

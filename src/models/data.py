@@ -64,7 +64,7 @@ class CropDataset(Dataset):
         )
 
         if wandb_logger:
-            to_log = {}
+            to_log: Dict[str, Union[float, int]] = {}
             if is_local.any():
                 to_log[f"local_{subset}_original_size"] = len(df[is_local])
                 to_log[f"local_{subset}_crop_percentage"] = round(
