@@ -22,26 +22,18 @@ jobs:
         $CONDA_ENV/flake8 src data scripts test gcp
     - name: Run unit tests
       run: |
-        $CONDA_ENV/pip install coverage
-        $CONDA_ENV/coverage run -m unittest
-        $CONDA_ENV/coverage xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: coverage.xml
-        fail_ci_if_error: true
-#     - name: Set up Cloud SDK
-#       uses: google-github-actions/setup-gcloud@master
-#       with:
-#         project_id: ${{ secrets.GCP_PROJECT_ID }}
-#         service_account_key: ${{ secrets.GCP_SA_KEY }}
-#         export_default_credentials: true
-              
-#     - name: Get data for integration test
-#       run: |
-#         $CONDA_ENV/dvc pull data/features
-#         $CONDA_ENV/dvc pull data/processed
+        $CONDA_ENV/python -m unittest
+    # - name: Set up Cloud SDK
+    #   uses: google-github-actions/setup-gcloud@master
+    #   with:
+    #     project_id: ${{ secrets.GCP_PROJECT_ID }}
+    #     service_account_key: ${{ secrets.GCP_SA_KEY }}
+    #     export_default_credentials: true              
+    # - name: Get data for integration test
+    #   run: |
+    #     $CONDA_ENV/dvc pull data/features
+    #     $CONDA_ENV/dvc pull data/processed
+    #     $CONDA_ENV/dvc pull data/models
 #     - name: Run integration test
 #       run: |
 #         $CONDA_ENV/python -m unittest test/integration_test_labeled.py

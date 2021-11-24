@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, TIF_PATHS
+from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, TIF_PATHS
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.engineer import Engineer
 
@@ -89,7 +89,6 @@ class TestEngineer(TestCase):
                 LON: [20, 40],
                 LAT: [30, 50],
                 CROP_PROB: [0.0, 1.0],
-                SUBSET: ["training", "validation"],
                 START: ["2020-01-01", "2020-01-01"],
                 END: ["2021-01-01", "2021-01-01"],
                 TIF_PATHS: [[Path("tif1")], [Path("tif2"), Path("tif3")]],
@@ -107,7 +106,6 @@ class TestEngineer(TestCase):
                 label_lat=30,
                 label_lon=20,
                 labelled_array=np.array([0.0]),
-                data_subset="training",
                 source_file="mock_file",
                 start_date_str="2020-01-01",
                 end_date_str="2021-01-01",
@@ -119,7 +117,6 @@ class TestEngineer(TestCase):
                 label_lat=50,
                 label_lon=40,
                 labelled_array=np.array([0.0]),
-                data_subset="validation",
                 source_file="mock_file",
                 start_date_str="2020-01-01",
                 end_date_str="2021-01-01",
