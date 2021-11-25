@@ -3,7 +3,7 @@ from pathlib import Path
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
 import pytorch_lightning as pl
 
@@ -105,7 +105,7 @@ def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, f
 
 
 def run_evaluation(
-    model_ckpt_path: Union[Path, str], alternative_threshold: Optional[float] = None
+    model_ckpt_path: Path, alternative_threshold: Optional[float] = None
 ) -> Tuple[Model, Dict[str, float]]:
     if not model_ckpt_path.exists():
         raise ValueError(f"Model {str(model_ckpt_path)} does not exist")
@@ -135,9 +135,7 @@ def parameter_has_changed(model_ckpt_path: Path, hparams: Namespace) -> bool:
     ]
     for k, v in hparams.__dict__.items():
         if k in model_hparams and model_hparams[k] != v and k not in params_that_can_change:
-            print(
-                f"\u2714 {hparams.model_name} exists, but new parameters for {k} were found, retraining"
-            )
+            print(f"\u2714 {hparams.model_name} exists, but new parameters for {k} were found.")
             return True
     return False
 

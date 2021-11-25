@@ -269,7 +269,9 @@ class LabelExporter(EarthEngineExporter):
         self.ee_task_list = get_ee_task_list() if self.check_ee else []
 
     @staticmethod
-    def _generate_filename_and_desc(bbox: BoundingBox, start_date: date, end_date: date) -> str:
+    def _generate_filename_and_desc(
+        bbox: BoundingBox, start_date: date, end_date: date
+    ) -> Tuple[str, str]:
         """
         Generates filename for tif files that will be exported
         """
