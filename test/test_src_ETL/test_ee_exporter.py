@@ -6,6 +6,8 @@ from typing import Dict
 import pandas as pd
 import tempfile
 import shutil
+
+from pandas.core.indexing import check_bool_indexer
 from src.ETL.ee_boundingbox import BoundingBox
 
 from src.ETL.ee_exporter import (
@@ -28,6 +30,7 @@ class TestEEExporters(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp_data_dir = Path(tempfile.mkdtemp())
+        cls.label_exporter = LabelExporter(check_gcp=False, check_ee=False)
 
     @classmethod
     def tearDownClass(cls):
@@ -38,7 +41,7 @@ class TestEEExporters(TestCase):
     def test_export_using_point_and_dates(self, mock_export_for_polygon, mock_Polygon):
         mock_poly_return = "mock_poly"
         mock_Polygon.return_value = mock_poly_return
-        LabelExporter(check_gcp=False)._export_using_point_and_dates(
+        self.label_exporter._export_using_point_and_dates(
             lat=1, lon=1, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
         pref = (
@@ -69,7 +72,7 @@ class TestEEExporters(TestCase):
                 START: ["2019-04-22", "2019-04-22"],
             }
         )
-        LabelExporter(check_gcp=False).export(labels=mock_labels)
+        LabelExporter(check_gcp=False, check_ee=False).export(labels=mock_labels)
         self.assertEqual(mock_export_using_point_and_dates.call_count, 2)
         mock_export_using_point_and_dates.assert_has_calls(
             [
@@ -81,7 +84,9 @@ class TestEEExporters(TestCase):
 
     def test_generate_filename(self):
         bbox = BoundingBox(0, 0, 1, 1)
-        generated, desc = LabelExporter(check_gcp=False)._generate_filename_and_desc(
+        generated, desc = LabelExporter(
+            check_gcp=False, check_ee=False
+        )._generate_filename_and_desc(
             bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
         self.assertEqual(
@@ -93,7 +98,9 @@ class TestEEExporters(TestCase):
 
     def test_generate_filename_decimals(self):
         bbox = BoundingBox(0, 0, 0.0008123, 0.0009432)
-        generated, desc = LabelExporter(check_gcp=False)._generate_filename_and_desc(
+        generated, desc = LabelExporter(
+            check_gcp=False, check_ee=False
+        )._generate_filename_and_desc(
             bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
         self.assertEqual(
