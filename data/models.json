@@ -193,8 +193,20 @@
         "max_lat": 10.800000,
         "min_lon": 35.500000,
         "max_lon": 37.200000,
-        "eval_datasets": [],
-        "train_datasets": []
+        "up_to_year": 2020,
+        "alternative_threshold": 0.38,
+        "eval_datasets": [
+            "Ethiopia_Bure_Jimma_2019"
+        ],
+        "train_datasets": [
+            "geowiki_landcover_2017",
+            "Kenya",
+            "Mali",
+            "Togo",
+            "Rwanda",
+            "digitalearthafrica_eastern",
+            "Ethiopia"
+        ]
     },
     {
         "model_name": "Ethiopia_Bure_Jimma_2020",
@@ -202,7 +214,19 @@
         "max_lat": 10.800000,
         "min_lon": 35.500000,
         "max_lon": 37.200000,
-        "eval_datasets": [],
-        "train_datasets": []
+        "up_to_year": 2020,
+        "alternative_threshold": 0.28,
+        "eval_datasets": [
+            "Ethiopia_Bure_Jimma_2020"
+        ],
+        "train_datasets": [
+            "geowiki_landcover_2017",
+            "Kenya",
+            "Mali",
+            "Togo",
+            "Rwanda",
+            "digitalearthafrica_eastern",
+            "Ethiopia"
+        ]
     }
 ]
