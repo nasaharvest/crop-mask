@@ -45,9 +45,14 @@ class TestEEExporters(TestCase):
             "tifs/min_lat=0.9993_min_lon=0.9993_max_lat=1.0007_"
             + "max_lon=1.0007_dates=2019-04-22_2020-04-16"
         )
+        description = (
+            "min_lat-0-9993_min_lon-0-9993_max_lat-1-0007_"
+            + "max_lon-1-0007_dates-2019-04-22_2020-04-16"
+        )
         mock_export_for_polygon.assert_called_with(
             dest_bucket="crop-mask-tifs",
             file_name_prefix=pref,
+            description=description,
             polygon=mock_poly_return,
             start_date=date(2019, 4, 22),
             end_date=date(2020, 4, 16),
@@ -76,21 +81,27 @@ class TestEEExporters(TestCase):
 
     def test_generate_filename(self):
         bbox = BoundingBox(0, 0, 1, 1)
-        generated = LabelExporter(check_gcp=False)._generate_filename(
+        generated, desc = LabelExporter(check_gcp=False)._generate_filename_and_desc(
             bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
         self.assertEqual(
             generated, "min_lat=1_min_lon=0_max_lat=1_max_lon=0_dates=2019-04-22_2020-04-16"
         )
+        self.assertEqual(
+            desc, "min_lat-1_min_lon-0_max_lat-1_max_lon-0_dates-2019-04-22_2020-04-16"
+        )
 
     def test_generate_filename_decimals(self):
         bbox = BoundingBox(0, 0, 0.0008123, 0.0009432)
-        generated = LabelExporter(check_gcp=False)._generate_filename(
+        generated, desc = LabelExporter(check_gcp=False)._generate_filename_and_desc(
             bbox=bbox, start_date=date(2019, 4, 22), end_date=date(2020, 4, 16)
         )
         self.assertEqual(
             generated,
             "min_lat=0.0008_min_lon=0_max_lat=0.0009_max_lon=0_dates=2019-04-22_2020-04-16",
+        )
+        self.assertEqual(
+            desc, "min_lat-0-0008_min_lon-0_max_lat-0-0009_max_lon-0_dates-2019-04-22_2020-04-16"
         )
 
     @patch(f"{module}.storage")
