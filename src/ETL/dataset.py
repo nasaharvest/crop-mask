@@ -36,7 +36,10 @@ unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
-    return {p: BoundingBox.from_path(p) for p in tqdm(tifs_dir.glob("**/*.tif"))}
+    return {
+        p: BoundingBox.from_path(p)
+        for p in tqdm(tifs_dir.glob("**/*.tif"), desc="Generating BoundingBoxes from paths")
+    }
 
 
 @dataclass
