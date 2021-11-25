@@ -523,4 +523,52 @@ labeled_datasets = [
             ]
         ),
     ),
+    LabeledDataset(
+        dataset="Ethiopia_Bure_Jimma_2019",
+        country="Ethiopia",
+        processors=tuple(
+            [
+                Processor(
+                    filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+                Processor(
+                    filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+            ]
+        ),
+    ),
+    LabeledDataset(
+        dataset="Ethiopia_Bure_Jimma_2020",
+        country="Ethiopia",
+        processors=tuple(
+            [
+                Processor(
+                    filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+                Processor(
+                    filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
+                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                    end_year=2020,
+                    x_y_from_centroid=False,
+                    train_val_test=(0.0, 0.5, 0.5),
+                    clean_df=clean_ceo_data,
+                ),
+            ]
+        ),
+    ),
 ]
