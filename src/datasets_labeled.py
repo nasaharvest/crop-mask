@@ -70,7 +70,6 @@ labeled_datasets = [
                 end_month_day=(3, 28),
                 custom_start_date=date(2017, 3, 28),
                 x_y_from_centroid=False,
-                train_val_test=(1.0, 0.0, 0.0),
             ),
         ),
     ),
@@ -149,30 +148,10 @@ labeled_datasets = [
         dataset="Mali",
         country="Mali",
         processors=(
-            Processor(
-                filename="mali_noncrop_2019",
-                crop_prob=0.0,
-                end_year=2020,
-                train_val_test=(0.8, 0.1, 0.1),
-            ),
-            Processor(
-                filename="segou_bounds_07212020",
-                crop_prob=1.0,
-                end_year=2019,
-                train_val_test=(0.8, 0.1, 0.1),
-            ),
-            Processor(
-                filename="segou_bounds_07212020",
-                crop_prob=1.0,
-                end_year=2020,
-                train_val_test=(0.8, 0.1, 0.1),
-            ),
-            Processor(
-                filename="sikasso_clean_fields",
-                crop_prob=1.0,
-                end_year=2020,
-                train_val_test=(0.8, 0.1, 0.1),
-            ),
+            Processor(filename="mali_noncrop_2019", crop_prob=0.0, end_year=2020),
+            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2019),
+            Processor(filename="segou_bounds_07212020", crop_prob=1.0, end_year=2020),
+            Processor(filename="sikasso_clean_fields", crop_prob=1.0, end_year=2020),
         ),
     ),
     LabeledDataset(
@@ -289,18 +268,8 @@ labeled_datasets = [
                 ]
             ]
             + [
-                Processor(
-                    filename="Rwanda-non-crop-corrective-v1",
-                    crop_prob=0.0,
-                    end_year=2020,
-                    train_val_test=(1.0, 0, 0),
-                ),
-                Processor(
-                    filename="Rwanda-crop-corrective-v1",
-                    crop_prob=1.0,
-                    end_year=2020,
-                    train_val_test=(1.0, 0, 0),
-                ),
+                Processor(filename="Rwanda-non-crop-corrective-v1", crop_prob=0.0, end_year=2020),
+                Processor(filename="Rwanda-crop-corrective-v1", crop_prob=1.0, end_year=2020),
             ]
         ),
     ),
@@ -331,7 +300,6 @@ labeled_datasets = [
                     crop_prob=0.0,
                     sample_from_polygon=True,
                     x_y_from_centroid=True,
-                    train_val_test=(1.0, 0, 0),
                     end_year=2021,
                 )
                 for filename in [
@@ -349,7 +317,6 @@ labeled_datasets = [
                     clean_df=add_fake_harvest_date,
                     plant_date_col="start",
                     harvest_date_col="end",
-                    train_val_test=(1.0, 0.0, 0.0),
                     x_y_from_centroid=False,
                 ),
                 Processor(
@@ -360,7 +327,6 @@ labeled_datasets = [
                     clean_df=add_fake_harvest_date,
                     plant_date_col="start",
                     harvest_date_col="end",
-                    train_val_test=(1.0, 0.0, 0.0),
                     x_y_from_centroid=False,
                 ),
                 Processor(
@@ -371,7 +337,6 @@ labeled_datasets = [
                     clean_df=add_fake_harvest_date,
                     plant_date_col="start",
                     harvest_date_col="end",
-                    train_val_test=(1.0, 0.0, 0.0),
                     x_y_from_centroid=False,
                 ),
             ]
@@ -390,7 +355,6 @@ labeled_datasets = [
                 harvest_date_col="harvesting_date",
                 plant_date_col="planting_date",
                 x_y_from_centroid=False,
-                train_val_test=(1.0, 0.0, 0.0),
             ),
         ),
     ),
@@ -405,7 +369,6 @@ labeled_datasets = [
                 crop_prob=0.0,
                 end_year=2021,
                 x_y_from_centroid=False,
-                train_val_test=(1.0, 0.0, 0.0),
             ),
         ),
     ),
@@ -417,7 +380,6 @@ labeled_datasets = [
                 filename="Eastern_training_data_20210427.geojson",
                 crop_prob=lambda df: df["Class"].astype(float),
                 end_year=2021,
-                train_val_test=(1.0, 0.0, 0.0),
             ),
         ),
     ),
@@ -430,19 +392,16 @@ labeled_datasets = [
                     filename="ceo_td_polys.geojson",
                     crop_prob=lambda df: df["Class"].astype(float),
                     end_year=2020,
-                    train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
                     filename="validation_samples.shp",
                     crop_prob=lambda df: (df["Class"] == "crop").astype(float),
                     end_year=2020,
-                    train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
                     filename="Sahel_region_RE_sample.geojson",
                     crop_prob=lambda df: (df["Class"] == "crop").astype(float),
                     end_year=2020,
-                    train_val_test=(1.0, 0.0, 0.0),
                 ),
             ]
         ),
@@ -452,23 +411,13 @@ labeled_datasets = [
         country="Ethiopia",
         processors=tuple(
             [
-                Processor(
-                    filename=f"tigray/{filename}.shp",
-                    crop_prob=1.0,
-                    end_year=2020,
-                    train_val_test=(1.0, 0.0, 0.0),
-                )
+                Processor(filename=f"tigray/{filename}.shp", crop_prob=1.0, end_year=2020)
                 for filename in ["tigrayWW_crop", "tigrayWW_crop2"]
             ]
         )
         + tuple(
             [
-                Processor(
-                    filename=f"tigray/{filename}.shp",
-                    crop_prob=0.0,
-                    end_year=2020,
-                    train_val_test=(1.0, 0.0, 0.0),
-                )
+                Processor(filename=f"tigray/{filename}.shp", crop_prob=0.0, end_year=2020)
                 for filename in [
                     "tigrayWW_forest",
                     "tigrayWW_forest2",
@@ -485,7 +434,6 @@ labeled_datasets = [
                     filename=f"tigray_non_fallow_crop/nonFallowCrop{year}.shp",
                     crop_prob=1.0,
                     end_year=year + 1,
-                    train_val_test=(1.0, 0.0, 0.0),
                 )
                 for year in [2019, 2020]
             ]
@@ -493,30 +441,20 @@ labeled_datasets = [
         + tuple(
             [
                 Processor(
-                    filename="tigray_corrective_2020/non_crop.shp",
-                    crop_prob=0.0,
-                    end_year=2021,
-                    train_val_test=(1.0, 0.0, 0.0),
+                    filename="tigray_corrective_2020/non_crop.shp", crop_prob=0.0, end_year=2021
                 ),
-                Processor(
-                    filename="tigray_corrective_2020/crop.shp",
-                    crop_prob=1.0,
-                    end_year=2021,
-                    train_val_test=(1.0, 0.0, 0.0),
-                ),
+                Processor(filename="tigray_corrective_2020/crop.shp", crop_prob=1.0, end_year=2021),
                 Processor(
                     filename="tigray_corrective_2021/non_crop.shp",
                     crop_prob=0.0,
                     custom_start_date=date(2021, 4, 18),
                     num_timesteps=7,
-                    train_val_test=(1.0, 0.0, 0.0),
                 ),
                 Processor(
                     filename="tigray_corrective_2021/crop.shp",
                     crop_prob=1.0,
                     custom_start_date=date(2021, 4, 18),
                     num_timesteps=7,
-                    train_val_test=(1.0, 0.0, 0.0),
                 ),
             ]
         ),
