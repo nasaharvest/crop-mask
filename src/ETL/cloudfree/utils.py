@@ -31,13 +31,11 @@ def export(
     image: ee.Image,
     region: ee.Geometry,
     file_name_prefix: str,
+    description: str,
     monitor: bool = False,
     dest_bucket: Optional[str] = None,
     file_dimensions: Optional[int] = None,
 ) -> ee.batch.Export:
-
-    # Description of the export cannot contain certrain characters
-    description = str(Path(file_name_prefix).name).replace(".", "-").replace("=", "-")[:100]
     if dest_bucket:
         task = ee.batch.Export.image.toCloudStorage(
             image=image.clip(region),

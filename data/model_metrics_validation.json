@@ -1,4 +1,32 @@
 {
+    "Ethiopia_Bure_Jimma_2019": {
+        "local_val_crop_percentage ": 0.3347,
+        "local_val_size": 502,
+        "thresh0.38_unencoded_val_local_accuracy": 0.7849,
+        "thresh0.38_unencoded_val_local_f1_score": 0.6824,
+        "thresh0.38_unencoded_val_local_precision_score": 0.6744,
+        "thresh0.38_unencoded_val_local_recall_score": 0.6905,
+        "thresh0.38_unencoded_val_local_roc_auc_score": 0.836,
+        "unencoded_val_local_accuracy": 0.7869,
+        "unencoded_val_local_f1_score": 0.6625,
+        "unencoded_val_local_precision_score": 0.7047,
+        "unencoded_val_local_recall_score": 0.625,
+        "unencoded_val_local_roc_auc_score": 0.836
+    },
+    "Ethiopia_Bure_Jimma_2020": {
+        "local_val_crop_percentage ": 0.2786,
+        "local_val_size": 463,
+        "thresh0.28_unencoded_val_local_accuracy": 0.8121,
+        "thresh0.28_unencoded_val_local_f1_score": 0.701,
+        "thresh0.28_unencoded_val_local_precision_score": 0.6296,
+        "thresh0.28_unencoded_val_local_recall_score": 0.7907,
+        "thresh0.28_unencoded_val_local_roc_auc_score": 0.8594,
+        "unencoded_val_local_accuracy": 0.8186,
+        "unencoded_val_local_f1_score": 0.6667,
+        "unencoded_val_local_precision_score": 0.6829,
+        "unencoded_val_local_recall_score": 0.6512,
+        "unencoded_val_local_roc_auc_score": 0.8594
+    },
     "Ethiopia_Tigray_2020": {
         "local_val_crop_percentage ": 0.2923,
         "local_val_size": 520,
