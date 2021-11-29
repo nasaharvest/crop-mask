@@ -386,175 +386,150 @@ labeled_datasets = [
     LabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
-        processors=tuple(
-            [
-                Processor(
-                    filename="ceo_td_polys.geojson",
-                    crop_prob=lambda df: df["Class"].astype(float),
-                    end_year=2020,
-                ),
-                Processor(
-                    filename="validation_samples.shp",
-                    crop_prob=lambda df: (df["Class"] == "crop").astype(float),
-                    end_year=2020,
-                ),
-                Processor(
-                    filename="Sahel_region_RE_sample.geojson",
-                    crop_prob=lambda df: (df["Class"] == "crop").astype(float),
-                    end_year=2020,
-                ),
-            ]
+        processors=(
+            Processor(
+                filename="ceo_td_polys.geojson",
+                crop_prob=lambda df: df["Class"].astype(float),
+                end_year=2020,
+            ),
+            Processor(
+                filename="validation_samples.shp",
+                crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                end_year=2020,
+            ),
+            Processor(
+                filename="Sahel_region_RE_sample.geojson",
+                crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                end_year=2020,
+            ),
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
-        processors=tuple(
-            [
-                Processor(filename=f"tigray/{filename}.shp", crop_prob=1.0, end_year=2020)
-                for filename in ["tigrayWW_crop", "tigrayWW_crop2"]
-            ]
-        )
-        + tuple(
-            [
-                Processor(filename=f"tigray/{filename}.shp", crop_prob=0.0, end_year=2020)
-                for filename in [
-                    "tigrayWW_forest",
-                    "tigrayWW_forest2",
-                    "tigrayWW_shrub",
-                    "tigrayWW_shrub2",
-                    "tigrayWW_sparse",
-                    "tigrayWW_sparse2",
-                ]
-            ]
-        )
-        + tuple(
-            [
-                Processor(
-                    filename=f"tigray_non_fallow_crop/nonFallowCrop{year}.shp",
-                    crop_prob=1.0,
-                    end_year=year + 1,
-                )
-                for year in [2019, 2020]
-            ]
-        )
-        + tuple(
-            [
-                Processor(
-                    filename="tigray_corrective_2020/non_crop.shp", crop_prob=0.0, end_year=2021
-                ),
-                Processor(filename="tigray_corrective_2020/crop.shp", crop_prob=1.0, end_year=2021),
-                Processor(
-                    filename="tigray_corrective_2021/non_crop.shp",
-                    crop_prob=0.0,
-                    custom_start_date=date(2021, 4, 18),
-                    num_timesteps=7,
-                ),
-                Processor(
-                    filename="tigray_corrective_2021/crop.shp",
-                    crop_prob=1.0,
-                    custom_start_date=date(2021, 4, 18),
-                    num_timesteps=7,
-                ),
-            ]
+        processors=(
+            Processor(filename=f"tigray/tigrayWW_crop.shp", crop_prob=1.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_crop2.shp", crop_prob=1.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_forest.shp", crop_prob=0.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_forest2.shp", crop_prob=0.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_shrub.shp", crop_prob=0.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_shrub2.shp", crop_prob=0.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_sparse.shp", crop_prob=0.0, end_year=2020),
+            Processor(filename=f"tigray/tigrayWW_sparse2.shp", crop_prob=0.0, end_year=2020),
+            Processor(
+                filename=f"tigray_non_fallow_crop/nonFallowCrop2019.shp",
+                crop_prob=1.0,
+                end_year=2020,
+            ),
+            Processor(
+                filename=f"tigray_non_fallow_crop/nonFallowCrop2020.shp",
+                crop_prob=1.0,
+                end_year=2021,
+            ),
+            Processor(filename="tigray_corrective_2020/non_crop.shp", crop_prob=0.0, end_year=2021),
+            Processor(filename="tigray_corrective_2020/crop.shp", crop_prob=1.0, end_year=2021),
+            Processor(
+                filename="tigray_corrective_2021/non_crop.shp",
+                crop_prob=0.0,
+                custom_start_date=date(2021, 4, 18),
+                num_timesteps=7,
+            ),
+            Processor(
+                filename="tigray_corrective_2021/crop.shp",
+                crop_prob=1.0,
+                custom_start_date=date(2021, 4, 18),
+                num_timesteps=7,
+            ),
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
-        processors=tuple(
-            [
-                Processor(
-                    filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-10-04.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2021,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-                Processor(
-                    filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-10-04.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2021,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-            ]
+        processors=(
+            Processor(
+                filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-10-04.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-10-04.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
-        processors=tuple(
-            [
-                Processor(
-                    filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2021-10-04.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    custom_start_date=date(2021, 4, 18),
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 1.0, 0.0),
-                    clean_df=clean_ceo_data,
-                    num_timesteps=7,
-                ),
-                Processor(
-                    filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    custom_start_date=date(2021, 4, 18),
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 1.0, 0.0),
-                    clean_df=clean_ceo_data,
-                    num_timesteps=7,
-                ),
-            ]
+        processors=(
+            Processor(
+                filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2021-10-04.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                custom_start_date=date(2021, 4, 18),
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 1.0, 0.0),
+                clean_df=clean_ceo_data,
+                num_timesteps=7,
+            ),
+            Processor(
+                filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                custom_start_date=date(2021, 4, 18),
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 1.0, 0.0),
+                clean_df=clean_ceo_data,
+                num_timesteps=7,
+            ),
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2019",
         country="Ethiopia",
-        processors=tuple(
-            [
-                Processor(
-                    filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-                Processor(
-                    filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-            ]
+        processors=(
+            Processor(
+                filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
         ),
     ),
     LabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2020",
         country="Ethiopia",
-        processors=tuple(
-            [
-                Processor(
-                    filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-                Processor(
-                    filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
-                    crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
-                    end_year=2020,
-                    x_y_from_centroid=False,
-                    train_val_test=(0.0, 0.5, 0.5),
-                    clean_df=clean_ceo_data,
-                ),
-            ]
+        processors=(
+            Processor(
+                filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
         ),
     ),
 ]
