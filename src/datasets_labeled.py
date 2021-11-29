@@ -176,6 +176,54 @@ labeled_datasets = [
         ),
     ),
     LabeledDataset(
+        dataset="Mali_lower_CEO_2019",
+        country="Mali",
+        processors=(
+            Processor(
+                filename="ceo-2019-Mali-USAID-ZOIS-lower-(Set-1)--sample-data-2021-11-29.csv",
+                crop_prob=lambda df: (
+                    df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+                ),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+            ),
+            Processor(
+                filename="ceo-2019-Mali-USAID-ZOIS-lower-(Set-2)--sample-data-2021-11-29.csv",
+                crop_prob=lambda df: (
+                    df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+                ),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="Mali_upper_CEO_2019",
+        country="Mali",
+        processors=(
+            Processor(
+                filename="ceo-2019-Mali-USAID-ZOIS-upper-(Set-1)-sample-data-2021-11-25.csv",
+                crop_prob=lambda df: (
+                    df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+                ),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+            ),
+            Processor(
+                filename="ceo-2019-Mali-USAID-ZOIS-upper-(Set-2)-sample-data-2021-11-25.csv",
+                crop_prob=lambda df: (
+                    df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+                ),
+                end_year=2020,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+            ),
+        ),
+    ),
+    LabeledDataset(
         dataset="Togo",
         country="Togo",
         processors=(
