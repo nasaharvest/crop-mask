@@ -48,6 +48,16 @@ def get_cloud_tif_list(dest_bucket: str) -> List[str]:
     return cloud_tif_list
 
 
+@memoize
+def get_ee_task_list(key: str = "description") -> List[str]:
+    task_list = ee.data.getTaskList()
+    return [
+        task[key]
+        for task in tqdm(task_list, desc="Loading Earth Engine tasks")
+        if task["state"] != "COMPLETED"
+    ]
+
+
 @dataclass
 class EarthEngineExporter:
     r"""
@@ -101,6 +111,7 @@ class EarthEngineExporter:
         start_date: date,
         end_date: date,
         file_name_prefix: str,
+        description: str,
         dest_bucket: Optional[str] = None,
     ):
         if end_date > datetime.now().date():
@@ -131,6 +142,7 @@ class EarthEngineExporter:
             file_name_prefix=file_name_prefix,
             monitor=self.monitor,
             file_dimensions=self.file_dimensions,
+            description=description,
         )
 
 
@@ -221,9 +233,13 @@ class RegionExporter(EarthEngineExporter):
             if model_name:
                 dest_folder = f"{model_name}/{self.sentinel_dataset}/batch_{identifier}"
 
+            file_name_prefix = f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}"
+            description = f"{dest_folder}-{identifier}-{str(start_date)}-{str(end_date)}"
+
             self._export_for_polygon(
                 polygon=region,
-                file_name_prefix=f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}",
+                file_name_prefix=file_name_prefix,
+                description=description,
                 start_date=start_date,
                 end_date=end_date,
                 dest_bucket=dest_bucket,
@@ -238,19 +254,24 @@ class LabelExporter(EarthEngineExporter):
     Class for exporting tifs using labels
     :param dest_bucket: Destination bucket for tif files
     :param check_gcp: Whether to check Google Cloud Bucket before exporting
+    :param check_ee: Whether to check Earth Engine before exporting
     :param surrounding_metres: The number of metres surrounding each labelled point to export
     """
 
     dest_bucket: str = "crop-mask-tifs"
     check_gcp: bool = True
+    check_ee: bool = True
     surrounding_metres: int = 80
 
     def __post_init__(self):
         self.check_earthengine_auth()
         self.cloud_tif_list = get_cloud_tif_list(self.dest_bucket) if self.check_gcp else []
+        self.ee_task_list = get_ee_task_list() if self.check_ee else []
 
     @staticmethod
-    def _generate_filename(bbox: BoundingBox, start_date: date, end_date: date) -> str:
+    def _generate_filename_and_desc(
+        bbox: BoundingBox, start_date: date, end_date: date
+    ) -> Tuple[str, str]:
         """
         Generates filename for tif files that will be exported
         """
@@ -262,7 +283,10 @@ class LabelExporter(EarthEngineExporter):
             f"min_lat={min_lat}_min_lon={min_lon}_max_lat={max_lat}_max_lon={max_lon}"
             + f"_dates={start_date}_{end_date}"
         )
-        return filename
+        # Description of the export cannot contain certrain characters
+        description = filename.replace(".", "-").replace("=", "-")[:100]
+
+        return filename, description
 
     def _export_using_point_and_dates(
         self, lat: float, lon: float, start_date: date, end_date: date
@@ -273,13 +297,17 @@ class LabelExporter(EarthEngineExporter):
         bbox = EEBoundingBox.from_centre(
             mid_lat=lat, mid_lon=lon, surrounding_metres=self.surrounding_metres
         )
-        file_name_prefix = self._generate_filename(bbox, start_date, end_date)
+        file_name_prefix, description = self._generate_filename_and_desc(bbox, start_date, end_date)
 
         if self.check_gcp and (f"tifs/{file_name_prefix}.tif" in self.cloud_tif_list):
             return False
 
+        if self.check_ee and (description in self.ee_task_list):
+            return True
+
         self._export_for_polygon(
             file_name_prefix=f"tifs/{file_name_prefix}",
+            description=description,
             dest_bucket=self.dest_bucket,
             polygon=bbox.to_ee_polygon(),
             start_date=start_date,
@@ -296,7 +324,7 @@ class LabelExporter(EarthEngineExporter):
         """
         amount_exporting = 0
         amount_exported = 0
-        for _, row in tqdm(labels.iterrows(), total=len(labels)):
+        for _, row in tqdm(labels.iterrows(), total=len(labels), desc="Exporting on GEE"):
             is_exporting = self._export_using_point_and_dates(
                 lat=row[LAT],
                 lon=row[LON],
@@ -309,7 +337,9 @@ class LabelExporter(EarthEngineExporter):
                 amount_exported += 1
 
         if amount_exporting > 0:
-            print("See progress: https://code.earthengine.google.com/")
+            print(
+                f"Exporting {amount_exporting} see progress: https://code.earthengine.google.com/"
+            )
         if amount_exported > 0:
             print(
                 f"{amount_exported} files exist on Google Cloud, run command to download:"
