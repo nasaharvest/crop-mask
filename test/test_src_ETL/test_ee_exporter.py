@@ -180,6 +180,9 @@ class TestEEExporters(TestCase):
         RegionExporter(sentinel_dataset="Togo").export(
             season=Season.post_season,
             metres_per_polygon=None,
+            region_bbox=BoundingBox(
+                min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
+            ),
         )
         mock_base_ee.Initialize.assert_called()
 
@@ -202,6 +205,9 @@ class TestEEExporters(TestCase):
         RegionExporter(sentinel_dataset="Togo").export(
             season=Season.post_season,
             metres_per_polygon=10000,
+            region_bbox=BoundingBox(
+                min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
+            ),
         )
         mock_base_ee.Initialize.assert_called()
         expected_polygon_count = 1155
