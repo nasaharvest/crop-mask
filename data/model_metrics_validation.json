@@ -97,6 +97,20 @@
         "unencoded_val_local_recall_score": 0.9815,
         "unencoded_val_local_roc_auc_score": 0.9825
     },
+    "Mali_USAID_ZOIS_combined_2019": {
+        "local_val_crop_percentage ": 0.2013,
+        "local_val_size": 606,
+        "thresh0.95_unencoded_val_local_accuracy": 0.7855,
+        "thresh0.95_unencoded_val_local_f1_score": 0.4538,
+        "thresh0.95_unencoded_val_local_precision_score": 0.4655,
+        "thresh0.95_unencoded_val_local_recall_score": 0.4426,
+        "thresh0.95_unencoded_val_local_roc_auc_score": 0.6753,
+        "unencoded_val_local_accuracy": 0.6205,
+        "unencoded_val_local_f1_score": 0.3979,
+        "unencoded_val_local_precision_score": 0.2923,
+        "unencoded_val_local_recall_score": 0.623,
+        "unencoded_val_local_roc_auc_score": 0.6753
+    },
     "Mali_USAID_ZOIS_lower_2019": {
         "local_val_crop_percentage ": 0.3964,
         "local_val_size": 275,
