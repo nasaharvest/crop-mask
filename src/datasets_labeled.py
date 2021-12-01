@@ -542,7 +542,7 @@ labeled_datasets = [
                     (
                         df["Seleccione el cultivo principal en el lote:"].notnull()
                         & ~df["Seleccione el cultivo principal en el lote:"].isin(
-                            ["otro", "campo_natural", "barbecho", "sin_dato"]
+                            ["otro", "barbecho", "sin_dato"]
                         )
                     )
                 ].copy(),
