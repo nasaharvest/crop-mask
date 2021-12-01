@@ -272,6 +272,28 @@
         ]
     },
     {
+        "model_name": "Mali_USAID_ZOIS_combined_2019",
+        "min_lat": 10.36852747,
+        "max_lat": 17.134,
+        "min_lon": -8.348553278,
+        "max_lon": -1.9996060219999094,
+        "up_to_year": 2020,
+        "alternative_threshold": 0.95,
+        "eval_datasets": [
+            "Mali_upper_CEO_2019",
+            "Mali_lower_CEO_2019"
+        ],
+        "train_datasets": [
+            "geowiki_landcover_2017",
+            "Kenya",
+            "Mali",
+            "Togo",
+            "Rwanda",
+            "digitalearthafrica_eastern",
+            "Ethiopia"
+        ]
+    },
+    {
         "model_name": "Argentina_Buenos_Aires_2021",
         "min_lat": -41.2,
         "max_lat": -33.2,
