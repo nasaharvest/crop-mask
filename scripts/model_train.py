@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
 from src.datasets_labeled import labeled_datasets  # noqa: E402
-from src.bounding_boxes import bounding_boxes  # noqa: E402
+from src.ETL.ee_boundingbox import BoundingBox  # noqa: E402
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
 from src.utils import get_dvc_dir  # noqa: E402
@@ -27,7 +27,8 @@ data_folder = model_folder.parent
 
 if __name__ == "__main__":
 
-    bbox = bounding_boxes["Ethiopia_Tigray"]
+    # Ethiopia Tigray bounding box
+    bbox = BoundingBox(min_lon=36.45, max_lon=40.00, min_lat=12.25, max_lat=14.895)
 
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="Ethiopia_Tigray_2021_w_forecaster")

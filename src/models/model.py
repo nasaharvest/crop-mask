@@ -25,7 +25,6 @@ from sklearn.metrics import (
 )
 
 from src.ETL.ee_boundingbox import BoundingBox
-from src.bounding_boxes import bounding_boxes
 from src.utils import data_dir, get_dvc_dir, set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
@@ -78,17 +77,14 @@ class Model(pl.LightningModule):
 
         self.hparams = hparams
 
-        if "target_bbox_key" in hparams:
-            self.target_bbox = bounding_boxes[hparams.target_bbox_key]
-        else:
-            # Write out parameters explicitly so they are saved in the jit model
-            self.min_lon: float = hparams.min_lon
-            self.max_lon: float = hparams.max_lon
-            self.min_lat: float = hparams.min_lat
-            self.max_lat: float = hparams.max_lat
-            self.target_bbox = BoundingBox(
-                hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
-            )
+        # Write out parameters explicitly so they are saved in the jit model
+        self.min_lon: float = hparams.min_lon
+        self.max_lon: float = hparams.max_lon
+        self.min_lat: float = hparams.min_lat
+        self.max_lat: float = hparams.max_lat
+        self.target_bbox = BoundingBox(
+            hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
+        )
 
         self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
         self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
