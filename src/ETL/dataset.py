@@ -23,6 +23,8 @@ from src.ETL.constants import (
     END,
     SOURCE,
     NUM_LABELERS,
+    LABELER_NAMES,
+    LABEL_DUR,
     SUBSET,
     DATASET,
     TIF_PATHS,
@@ -99,7 +101,8 @@ class LabeledDataset:
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
         df = df.groupby([LON, LAT, START, END], as_index=False, sort=False).agg(
-            {SOURCE: self.merge_sources, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
+            {SOURCE: self.merge_sources, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first",
+            LABEL_DUR: "mean"}
         )
         df[COUNTRY] = self.country
         df[DATASET] = self.dataset

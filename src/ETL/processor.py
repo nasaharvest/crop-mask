@@ -30,6 +30,9 @@ class Processor:
     latitude_col: Optional[str] = None
     longitude_col: Optional[str] = None
 
+    label_dur: Optional[int] = None
+    label_names: Optional[str] = None
+
     plant_date_col: Optional[str] = None
     harvest_date_col: Optional[str] = None
 
@@ -125,6 +128,11 @@ class Processor:
             df[LAT] = df[self.latitude_col]
         if self.longitude_col:
             df[LON] = df[self.longitude_col]
+        
+        if self.label_dur:
+            df[LABEL_DUR] = df[self.label_dur]
+        if self.label_names:
+            df[LABELER_NAMES] = df[self.label_names]    
 
         if self.clean_df:
             df = self.clean_df(df)
@@ -186,4 +194,4 @@ class Processor:
         df = df.round({LON: 8, LAT: 8})
         df = self.train_val_test_split(df)
 
-        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET]]
+        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, LABELER_NAMES, LABEL_DUR]]
