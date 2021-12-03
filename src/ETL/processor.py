@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
-from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET
+from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE
 import logging
 import geopandas as gpd
 import numpy as np
@@ -32,6 +32,8 @@ class Processor:
 
     plant_date_col: Optional[str] = None
     harvest_date_col: Optional[str] = None
+
+    crop_type_col: Optional[str] = None
 
     clean_df: Optional[Callable] = None
     sample_from_polygon: bool = False
@@ -125,6 +127,8 @@ class Processor:
             df[LAT] = df[self.latitude_col]
         if self.longitude_col:
             df[LON] = df[self.longitude_col]
+        if self.crop_type_col:
+            df[CROP_TYPE] = df[self.crop_type_col]
 
         if self.clean_df:
             df = self.clean_df(df)
@@ -189,4 +193,4 @@ class Processor:
         df = df.round({LON: 8, LAT: 8})
         df = self.train_val_test_split(df)
 
-        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET]]
+        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE]]
