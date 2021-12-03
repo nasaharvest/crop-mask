@@ -1,7 +1,7 @@
 [
     {
         "model_name": "Kenya",
-        "alternative_threshold": 0.52,
+        "alternative_threshold": 0.6,
         "min_lon": 33.501,
         "max_lon": 42.283,
         "min_lat": -5.202,
@@ -25,7 +25,7 @@
     },
     {
         "model_name": "Togo",
-        "alternative_threshold": 0.65,
+        "alternative_threshold": 0.46,
         "min_lon": -0.1501,
         "max_lon": 1.7779296875,
         "min_lat": 6.08940429687,
@@ -49,7 +49,7 @@
     },
     {
         "model_name": "Rwanda",
-        "alternative_threshold": 0.65,
+        "alternative_threshold": 0.42,
         "min_lon": 28.430,
         "max_lon": 31.013,
         "min_lat": -3.035,
@@ -73,7 +73,7 @@
     },
     {
         "model_name": "Uganda",
-        "alternative_threshold": 0.92,
+        "alternative_threshold": 0.85,
         "min_lon": 29.1274,
         "max_lon": 35.1746,
         "min_lat": -1.6235,
@@ -97,7 +97,7 @@
     },
     {
         "model_name": "Global",
-        "alternative_threshold": 0.81,
+        "alternative_threshold": 0.85,
         "min_lon": -180,
         "max_lon": 180,
         "min_lat": -90,
@@ -121,7 +121,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.45,
+        "alternative_threshold": 0.47,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -142,7 +142,7 @@
     },
     {
         "model_name": "Ethiopia_Tigray_2021_w_forecaster",
-        "alternative_threshold": 0.29,
+        "alternative_threshold": 0.23,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -161,12 +161,13 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Ethiopia_Tigray_2020"
         ]
     },
     {
         "model_name": "Ethiopia_Tigray_2021_no_forecaster",
-        "alternative_threshold": 0.45,
+        "alternative_threshold": 0.38,
         "min_lon": 36.45,
         "max_lon": 40.00,
         "min_lat": 12.25,
@@ -184,7 +185,8 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Ethiopia_Tigray_2020"
         ]
     },
     {
@@ -194,7 +196,7 @@
         "min_lon": 35.500000,
         "max_lon": 37.200000,
         "up_to_year": 2020,
-        "alternative_threshold": 0.33,
+        "alternative_threshold": 0.25,
         "eval_datasets": [
             "Ethiopia_Bure_Jimma_2019"
         ],
@@ -205,7 +207,8 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Ethiopia_Bure_Jimma_2020"
         ]
     },
     {
@@ -215,7 +218,7 @@
         "min_lon": 35.500000,
         "max_lon": 37.200000,
         "up_to_year": 2020,
-        "alternative_threshold": 0.26,
+        "alternative_threshold": 0.69,
         "eval_datasets": [
             "Ethiopia_Bure_Jimma_2020"
         ],
@@ -226,7 +229,8 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Ethiopia_Bure_Jimma_2019"
         ]
     },
     {
@@ -235,7 +239,7 @@
         "max_lat": 12.583134347,
         "min_lon": -8.348553278,
         "max_lon": -4.661010149,
-        "alternative_threshold": 0.08,
+        "alternative_threshold": 0.21,
         "up_to_year": 2020,
         "eval_datasets": [
             "Mali_lower_CEO_2019"
@@ -247,7 +251,8 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Mali_upper_CEO_2019"
         ]
     },
     {
@@ -268,7 +273,8 @@
             "Togo",
             "Rwanda",
             "digitalearthafrica_eastern",
-            "Ethiopia"
+            "Ethiopia",
+            "Mali_lower_CEO_2019"
         ]
     },
     {
@@ -278,7 +284,7 @@
         "min_lon": -8.348553278,
         "max_lon": -1.9996060219999094,
         "up_to_year": 2020,
-        "alternative_threshold": 0.95,
+        "alternative_threshold": 0.4,
         "eval_datasets": [
             "Mali_upper_CEO_2019",
             "Mali_lower_CEO_2019"
