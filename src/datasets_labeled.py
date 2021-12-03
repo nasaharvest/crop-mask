@@ -548,6 +548,7 @@ labeled_datasets = [
                 ].copy(),
                 longitude_col="longitud",
                 latitude_col="latitud",
+                crop_type_col="Seleccione el cultivo principal en el lote:",
                 crop_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
                     ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
                 ),
