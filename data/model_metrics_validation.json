@@ -1,4 +1,18 @@
 {
+    "Argentina_Buenos_Aires_2021": {
+        "local_val_crop_percentage ": 0.449,
+        "local_val_size": 147,
+        "thresh0.54_unencoded_val_local_accuracy": 0.8027,
+        "thresh0.54_unencoded_val_local_f1_score": 0.7563,
+        "thresh0.54_unencoded_val_local_precision_score": 0.8491,
+        "thresh0.54_unencoded_val_local_recall_score": 0.6818,
+        "thresh0.54_unencoded_val_local_roc_auc_score": 0.8232,
+        "unencoded_val_local_accuracy": 0.7687,
+        "unencoded_val_local_f1_score": 0.7344,
+        "unencoded_val_local_precision_score": 0.7581,
+        "unencoded_val_local_recall_score": 0.7121,
+        "unencoded_val_local_roc_auc_score": 0.8232
+    },
     "Ethiopia_Bure_Jimma_2019": {
         "local_val_crop_percentage ": 0.3373,
         "local_val_size": 504,
