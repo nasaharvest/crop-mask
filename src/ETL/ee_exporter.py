@@ -229,7 +229,9 @@ class RegionExporter(EarthEngineExporter):
                 dest_folder = f"{model_name}/{self.sentinel_dataset}/batch_{identifier}"
 
             file_name_prefix = f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}"
-            description = f"{dest_folder}-{identifier}-{str(start_date)}-{str(end_date)}"
+            description = (
+                f"{dest_folder.replace('/', '-')}-{identifier}-{str(start_date)}-{str(end_date)}"
+            )
 
             self._export_for_polygon(
                 polygon=region,
