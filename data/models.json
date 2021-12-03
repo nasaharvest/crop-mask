@@ -299,15 +299,9 @@
         "max_lat": -33.2,
         "min_lon": -63.5,
         "max_lon": -56.6,
-        "up_to_year": 2020,
+        "input_months": 7,
+        "alternative_threshold": 0.54,
         "eval_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
             "Argentina_Buenos_Aires"
         ],
         "train_datasets": [
