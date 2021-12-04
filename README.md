@@ -61,26 +61,14 @@ These can be used to create annual and in season crop maps.
 4. To create ML ready features run:
 
     ```bash
-    # To download satellite data
-    gsutil -m cp -n -r gs://crop-mask-tifs/tifs data/
-
-    # To create features
     python scripts/create_features
     ```
-
-    If satellite data for the new labels is not available, the satellite data will be downloaded from Google Earth Engine.
-    After running the above script, export progress can be viewed here: https://code.earthengine.google.com/
-    Once all tasks are complete rerun the above commands and the features will be created.
 
 5. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
 
 <img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
 
 ## 2. Training a new model
-
-Training can be done locally or on grid.ai.
-
-#### Training locally
 
 Add a new entry to [data/models.json](data/models.json), for example:
 
@@ -99,93 +87,27 @@ Add a new entry to [data/models.json](data/models.json), for example:
 Then to train and evaluate the model run:
 
 ```python
-python scripts/train_and_evaluate.py
+python scripts/models_train_and_evaluate.py
 ```
 
 **What do the does the json entry mean?**
-`train_datasets` tells the model to train on data found in:
-
--   `features/geowiki_landcover_2017/training/*.pkl`
--   `features/Ethiopia/training/*.pkl`
-
-`eval_datasets` tells the model to evaluate on data found in:
-
--   `features/Ethiopia_Tigray_2021/validation/*.pkl`
-
+`train_datasets` which datasets to train on
+`eval_datasets` which datasets to evaluate on
 `min/max_lat/lon` tells the model which items to consider in the local and global head
 
 Any other valid model parameter can be added to this entry.
-
-#### Training on grid.ai
-
-Grid.ai is a platform which allows you to train and evaluate several machine learning models in parallel.
-
-To train models on grid.ai :
-
-```bash
-# Install the CLI
-pip install lightning-grid
-
-# Login
-grid login
-
-# Create datastore
-grid datastore create --source /path/to/crop-mask/data/features --name features
-
-# Create a session
-grid session create
-
-# Check status of session
-grid status
-
-# When session is ready
-grid session ssh <session name>
-
-# Clone repository into session
-git clone https://github.com/nasaharvest/crop-mask.git
-
-# Navigate to crop-mask directory
-cd crop-mask
-
-# Run training script with grid
-grid run \
-    --name <run name> \
-    --instance_type 2_CPU_8gb \
-    --datastore_name features \
-    --datastore_version 1 \
-    --datastore_mount_dir /data/features \
-    --framework lightning scripts/train_model.py \
-    --data_folder /data \
-    --model_dir models \
-    --target_bbox_key Kenya \
-    --eval_datasets Kenya \
-    --train_datasets '["geowiki_landcover_2017,Kenya", "digitalearthafrica,Kenya"]' \
-    --do_not_forecast
-```
-
-You'll be able to track the runs in the [Grid.ai UI](https://grid.ai/) and once all training runs are complete you can download the artifacts (models, tensorboard logs, etc) to analyze them.
-
-```bash
-grid artifacts <run name>
-
-# View tensorboard logs
-tensorboard --logdir=<path to tensorboard logs>
-```
-
-More details about Grid: https://docs.grid.ai/start-here/typical-workflow-cli-user
 
 ## 3. Running inference locally
 
 **Prerequisite: Getting unlabeled data:**
 
 1. Ensure local environment is set up.
-2. In [dataset_unlabeled.py](src/datasets_unlabeled.py) add a new `UnlabeledDataset` object into the `unlabeled_datasets` list and specify the required parameters.
-3. To begin exporting satellite data from Google Earth Engine, run (from scripts directory):
+2. Specify the destination folder and bounding box in scripts/export_for_unlabeled.py and run
     ```bash
-    python export_for_unlabeled.py --dataset_name <dataset name>
+    python scripts/export_for_unlabeled.py
     ```
-4. Google Earth Engine will automatically export satellite images to Google Drive.
-5. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
+3. Google Earth Engine will automatically export satellite images to Google Drive.
+4. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
 
 **Actual inference**
 
@@ -243,8 +165,8 @@ Once an inference run is complete the result is several small `.nc` files. These
 ```bash
 export MODEL="Rwanda"
 export DATASET="Rwanda_v2"
-export START_YEAR=2019
-export END_YEAR=2020
+export START_DATE=2019-04-01
+export END_DATE=2020-04-01
 
 # Download appropriate folder
 gsutil -m cp -n -r gs://crop-mask-preds/$MODEL/$DATASET/ .
@@ -256,10 +178,7 @@ python gcp/merger/main.py --p <current-dir>/$DATASET
 gsutil cp <current-dir>/$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
 
 # [OPTIONAL] Upload COG to Google Earth Engine
-earthengine upload image --asset_id users/izvonkov/$DATASET \
-    -ts $START_YEAR-04-01 \
-    -te $END_YEAR-04-01 \
-    gs://crop-mask-preds-merged/$DATASET
+earthengine upload image --asset_id users/izvonkov/$DATASET -ts $START_DATE -te $END_DATE gs://crop-mask-preds-merged/$DATASET
 ```
 
 ## 5. Tests
