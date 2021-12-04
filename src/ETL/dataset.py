@@ -8,7 +8,7 @@ import numpy as np
 
 from .engineer import Engineer
 from .processor import Processor
-from .ee_exporter import LabelExporter, RegionExporter, Season
+from .ee_exporter import LabelExporter
 from src.utils import data_dir, tifs_dir, features_dir, memoize
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.constants import (
@@ -238,14 +238,3 @@ class LabeledDataset:
             Engineer().create_pickled_labeled_dataset(labels=labels_with_tifs_but_no_features)
 
         self.do_label_and_feature_amounts_match(labels)
-
-
-@dataclass
-class UnlabeledDataset:
-    sentinel_dataset: str
-    season: Season
-
-    def export_earth_engine_data(self):
-        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
-            season=self.season, metres_per_polygon=None
-        )

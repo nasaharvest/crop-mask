@@ -63,14 +63,12 @@ class EarthEngineExporter:
     Setup parameters to download cloud free sentinel data for countries,
     where countries are defined by the simplified large scale
     international boundaries.
-    :param sentinel_dataset: The name of the earth engine dataset
     :param days_per_timestep: The number of days of data to use for each mosaiced image.
     :param num_timesteps: The number of timesteps to export if season is not specified
     :param fast: Whether to use the faster cloudfree exporter. This function is considerably
         faster, but cloud artefacts can be more pronounced. Default = True
     :param monitor: Whether to monitor each task until it has been run
     """
-    sentinel_dataset: Optional[str] = None
     days_per_timestep: int = 30
     num_timesteps: int = 12
     fast: bool = True
@@ -178,6 +176,7 @@ class RegionExporter(EarthEngineExporter):
     def export(
         self,
         region_bbox: BoundingBox,
+        dest_folder: str,
         dest_bucket: Optional[str] = None,
         model_name: Optional[str] = None,
         end_date: Optional[date] = None,
@@ -191,6 +190,7 @@ class RegionExporter(EarthEngineExporter):
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
         :param region_bbox: The bounding box of the region to export
+        :param dest_folder: The folder to export to
         :param dest_bucket: The name of the destination GCP bucket
         :param model_name: The name of the model that data will be fed to
         :param season: The season for which the data should be exported
@@ -218,19 +218,19 @@ class RegionExporter(EarthEngineExporter):
 
         if metres_per_polygon is not None:
             regions = region.to_polygons(metres_per_patch=metres_per_polygon)
-            ids = [f"{i}-{self.sentinel_dataset}" for i in range(len(regions))]
+            ids = [f"{i}-{dest_folder}" for i in range(len(regions))]
         else:
             regions = [region.to_ee_polygon()]
-            ids = [f"{self.sentinel_dataset}"]
+            ids = [f"{dest_folder}"]
 
-        dest_folder = self.sentinel_dataset
+        dest_path = dest_folder
         for identifier, region in zip(ids, regions):
             if model_name:
-                dest_folder = f"{model_name}/{self.sentinel_dataset}/batch_{identifier}"
+                dest_path = f"{model_name}/{dest_folder}/batch_{identifier}"
 
-            file_name_prefix = f"{dest_folder}/{identifier}_{str(start_date)}_{str(end_date)}"
+            file_name_prefix = f"{dest_path}/{identifier}_{str(start_date)}_{str(end_date)}"
             description = (
-                f"{dest_folder.replace('/', '-')}-{identifier}-{str(start_date)}-{str(end_date)}"
+                f"{dest_path.replace('/', '-')}-{identifier}-{str(start_date)}-{str(end_date)}"
             )
 
             self._export_for_polygon(

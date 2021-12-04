@@ -70,7 +70,7 @@ def export_unlabeled(request: Request):
     if model_name not in all_model_names:
         abort(400, description=f"{model_name} not found in: {all_model_names}")
 
-    sentinel_dataset = request_json["dataset_name"]
+    dest_folder = request_json["dataset_name"]
 
     start_year = request_json["year"]
     start_date = date(start_year, 4, 21)  # Made to match default end date from processor
@@ -97,23 +97,23 @@ def export_unlabeled(request: Request):
         )
     try:
         ids = RegionExporter(
-            sentinel_dataset=sentinel_dataset,
             credentials=credentials,
             file_dimensions=file_dimensions,
             num_timesteps=num_timesteps,
         ).export(
             dest_bucket=dest_bucket,
+            dest_folder=dest_folder,
             model_name=model_name,
             region_bbox=bbox,
             start_date=start_date,
             metres_per_polygon=50000,
         )
 
-        id = f"{model_name}_{sentinel_dataset}"
+        id = f"{model_name}_{dest_folder}"
         data = {
             "bbox": bbox.url,
             "model_name": model_name,
-            "dataset_name": sentinel_dataset,
+            "dataset_name": dest_folder,
             "start_year": start_year,
             "num_timesteps": num_timesteps,
             "complete_ee_tasks": 0,
