@@ -99,12 +99,12 @@ Any other valid model parameter can be added to this entry.
 
 ## 3. Running inference locally
 
-**Prerequisite: Getting unlabeled data:**
+**Prerequisite: Getting data for inference:**
 
 1. Ensure local environment is set up.
-2. Specify the destination folder and bounding box in scripts/export_for_unlabeled.py and run
+2. Specify the destination folder and bounding box in scripts/export_region.py and run
     ```bash
-    python scripts/export_for_unlabeled.py
+    python scripts/export_region.py
     ```
 3. Google Earth Engine will automatically export satellite images to Google Drive.
 4. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
@@ -137,7 +137,7 @@ https://crop-mask-management-api-grxg7bzh2a-uc.a.run.app/models
 
 ```bash
 
-curl -X POST http://us-central1-bsos-geog-harvest1.cloudfunctions.net/export-unlabeled \
+curl -X POST http://us-central1-bsos-geog-harvest1.cloudfunctions.net/export-region \
     -o - \
     -H "Content-Type:application/json" \
     -d @gcp/requests/<example>.json

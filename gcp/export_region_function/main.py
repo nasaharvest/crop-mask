@@ -50,7 +50,7 @@ def is_bbox_too_big(bbox: BoundingBox):
     return lat_len * lon_len > BBOX_LIMIT
 
 
-def export_unlabeled(request: Request):
+def export_region(request: Request):
     """
     Args:
          request (Request): Event payload.
