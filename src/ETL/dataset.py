@@ -8,13 +8,14 @@ import numpy as np
 
 from .engineer import Engineer
 from .processor import Processor
-from .ee_exporter import LabelExporter, RegionExporter, Season
+from .ee_exporter import LabelExporter
 from src.utils import data_dir, tifs_dir, features_dir, memoize
 from src.ETL.ee_boundingbox import BoundingBox
 from src.ETL.constants import (
     ALREADY_EXISTS,
     COUNTRY,
     CROP_PROB,
+    CROP_TYPE,
     FEATURE_FILENAME,
     FEATURE_PATH,
     LAT,
@@ -81,7 +82,13 @@ class LabeledDataset:
         # Combine duplicate labels
         df[NUM_LABELERS] = 1
         df = df.groupby([LON, LAT, START, END], as_index=False, sort=False).agg(
-            {SOURCE: self.merge_sources, CROP_PROB: "mean", NUM_LABELERS: "sum", SUBSET: "first"}
+            {
+                SOURCE: self.merge_sources,
+                CROP_PROB: "mean",
+                NUM_LABELERS: "sum",
+                SUBSET: "first",
+                CROP_TYPE: "first",
+            }
         )
         df[COUNTRY] = self.country
         df[DATASET] = self.dataset
@@ -231,14 +238,3 @@ class LabeledDataset:
             Engineer().create_pickled_labeled_dataset(labels=labels_with_tifs_but_no_features)
 
         self.do_label_and_feature_amounts_match(labels)
-
-
-@dataclass
-class UnlabeledDataset:
-    sentinel_dataset: str
-    season: Season
-
-    def export_earth_engine_data(self):
-        RegionExporter(sentinel_dataset=self.sentinel_dataset).export(
-            season=self.season, metres_per_polygon=None
-        )

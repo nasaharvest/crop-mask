@@ -532,4 +532,31 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Argentina_Buenos_Aires",
+        country="Argentina",
+        processors=(
+            Processor(
+                filename="bc_mapeo_del_cultivo_0.csv",
+                clean_df=lambda df: df[
+                    (
+                        df["Seleccione el cultivo principal en el lote:"].notnull()
+                        & ~df["Seleccione el cultivo principal en el lote:"].isin(
+                            ["otro", "barbecho", "sin_dato"]
+                        )
+                    )
+                ].copy(),
+                longitude_col="longitud",
+                latitude_col="latitud",
+                crop_type_col="Seleccione el cultivo principal en el lote:",
+                crop_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
+                    ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
+                ),
+                x_y_from_centroid=False,
+                train_val_test=(0.8, 0.2, 0.0),
+                custom_start_date=date(2021, 4, 18),
+                num_timesteps=7,
+            ),
+        ),
+    ),
 ]
