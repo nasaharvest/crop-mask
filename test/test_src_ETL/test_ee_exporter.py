@@ -177,8 +177,9 @@ class TestEEExporters(TestCase):
     def test_export_for_region_metres_per_polygon_none(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        RegionExporter(sentinel_dataset="Togo").export(
+        RegionExporter().export(
             season=Season.post_season,
+            dest_folder="Togo",
             metres_per_polygon=None,
             region_bbox=BoundingBox(
                 min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
@@ -202,8 +203,9 @@ class TestEEExporters(TestCase):
     def test_export_for_region_metres_per_polygon_set(
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
-        RegionExporter(sentinel_dataset="Togo").export(
+        RegionExporter().export(
             season=Season.post_season,
+            dest_folder="Togo",
             metres_per_polygon=10000,
             region_bbox=BoundingBox(
                 min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
