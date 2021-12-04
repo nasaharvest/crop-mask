@@ -1,0 +1,10 @@
+{
+    "model_name": "Argentina_Buenos_Aires_2021",
+    "dataset_name": "Argentina_Buenos_Aires_2021_v1",
+    "min_lat": -35.9,
+    "max_lat": -34.1,
+    "min_lon": -59.7,
+    "max_lon": -56.6,
+    "year": 2021,
+    "num_timesteps": 7
+}
