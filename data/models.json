@@ -300,12 +300,13 @@
         "min_lon": -63.5,
         "max_lon": -56.6,
         "input_months": 7,
-        "alternative_threshold": 0.54,
+        "alternative_threshold": 0.17,
         "eval_datasets": [
             "Argentina_Buenos_Aires"
         ],
         "train_datasets": [
-            "Argentina_Buenos_Aires"
+            "Argentina_Buenos_Aires",
+            "geowiki_landcover_2017"
         ]
     }
 ]
