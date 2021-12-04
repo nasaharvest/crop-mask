@@ -59,9 +59,7 @@ if __name__ == "__main__":
         if not build_full_vrt:
             tif_file = Path(f"{tif_dir}/{i}.tif")
             if not tif_file.exists():
-                gdal_cmd(
-                    cmd_type="gdal_translate_cog", in_file=str(vrt_file), out_file=str(tif_file)
-                )
+                gdal_cmd(cmd_type="gdal_translate", in_file=str(vrt_file), out_file=str(tif_file))
 
     if build_full_vrt:
         gdal_cmd(
@@ -71,7 +69,7 @@ if __name__ == "__main__":
             msg="Building full vrt",
         )
         gdal_cmd(
-            cmd_type="gdal_translate_cog",
+            cmd_type="gdal_translate",
             in_file=f"{vrt_dir}/final.vrt",
             out_file=f"{tif_dir}/final.tif",
             msg="Vrt to tif",
