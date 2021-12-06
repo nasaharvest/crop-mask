@@ -15,5 +15,5 @@ if __name__ == "__main__":
     dest_folder = "<your destination folder>"
     bounding_box = BoundingBox(0, 1, 0, 1)
     RegionExporter().export(
-        metres_per_polygon=None, dest_folder=dest_folder, region_bbox=bounding_box
+        metres_per_polygon=None, dest_path=dest_folder, region_bbox=bounding_box
     )

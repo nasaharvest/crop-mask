@@ -10,7 +10,6 @@ import shutil
 from src.ETL.ee_boundingbox import BoundingBox
 
 from src.ETL.ee_exporter import (
-    Season,
     LabelExporter,
     RegionExporter,
     EarthEngineExporter,
@@ -112,64 +111,6 @@ class TestEEExporters(TestCase):
         tif_list = get_cloud_tif_list("mock_bucket")
         self.assertEqual(tif_list, [])
 
-    @patch(f"{module}.get_user_input")
-    @patch(f"{module}.date")
-    def test_start_end_dates_using_in_season(self, mock_date, get_user_input):
-        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
-
-        mock_date.today.return_value = date(2021, 1, 23)
-
-        start, end = RegionExporter._start_end_dates_using_season(Season.in_season)
-        self.assertEqual(start, date(2020, 4, 1))
-        self.assertEqual(end, date(2021, 1, 23))
-
-        mock_date.today.return_value = date(2021, 4, 1)
-        start, end = RegionExporter._start_end_dates_using_season(Season.in_season)
-        self.assertEqual(start, date(2020, 4, 1))
-        self.assertEqual(end, date(2021, 4, 1))
-
-        # 1 month span should produce a warning and proceed if user input is yes
-        mock_date.today.return_value = date(2021, 5, 1)
-        get_user_input.return_value = "yes"
-        start, end = RegionExporter._start_end_dates_using_season(Season.in_season)
-        self.assertEqual(start, date(2021, 4, 1))
-        self.assertEqual(end, date(2021, 5, 1))
-
-        # 1 month span should produce a warning and exit if user input is no
-        get_user_input.return_value = "no"
-        self.assertRaises(
-            SystemExit, RegionExporter._start_end_dates_using_season, Season.in_season
-        )
-
-        # 6 month span should produce a warning and exit if user input is no
-        mock_date.today.return_value = date(2021, 10, 1)
-        get_user_input.return_value = "no"
-        self.assertRaises(
-            SystemExit, RegionExporter._start_end_dates_using_season, Season.in_season
-        )
-        self.assertEqual(
-            get_user_input.call_count, 3, "get_user_input should have been called thrice."
-        )
-
-    @patch(f"{module}.date")
-    def test_start_end_dates_using_post_season(self, mock_date):
-        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
-
-        mock_date.today.return_value = date(2021, 1, 23)
-        start, end = RegionExporter._start_end_dates_using_season(Season.post_season)
-        self.assertEqual(start, date(2019, 4, 1))
-        self.assertEqual(end, date(2020, 4, 1))
-
-        mock_date.today.return_value = date(2021, 4, 1)
-        start, end = RegionExporter._start_end_dates_using_season(Season.post_season)
-        self.assertEqual(start, date(2019, 4, 1))
-        self.assertEqual(end, date(2020, 4, 1))
-
-        mock_date.today.return_value = date(2021, 5, 1)
-        start, end = RegionExporter._start_end_dates_using_season(Season.post_season)
-        self.assertEqual(start, date(2020, 4, 1))
-        self.assertEqual(end, date(2021, 4, 1))
-
     @patch(f"{module}.ee")
     @patch(f"{module}.ee.Geometry.Polygon")
     @patch("src.ETL.cloudfree.fast.ee")
@@ -178,8 +119,8 @@ class TestEEExporters(TestCase):
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
         RegionExporter().export(
-            season=Season.post_season,
-            dest_folder="Togo",
+            end_date=date(2020, 4, 16),
+            dest_path="Togo",
             metres_per_polygon=None,
             region_bbox=BoundingBox(
                 min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625
@@ -204,8 +145,8 @@ class TestEEExporters(TestCase):
         self, mock_export_image, mock_cloudfree_ee, mock_ee_polygon, mock_base_ee
     ):
         RegionExporter().export(
-            season=Season.post_season,
-            dest_folder="Togo",
+            end_date=date(2020, 4, 16),
+            dest_path="Togo",
             metres_per_polygon=10000,
             region_bbox=BoundingBox(
                 min_lon=-0.1501, max_lon=1.7779296875, min_lat=6.08940429687, max_lat=11.115625

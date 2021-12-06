@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from enum import Enum
+from pathlib import Path
 from tqdm import tqdm
 from typing import List, Optional, Tuple
 from dataclasses import dataclass
@@ -7,7 +7,6 @@ from google.cloud import storage
 import logging
 import pandas as pd
 import ee
-import sys
 
 from src.ETL.ee_boundingbox import BoundingBox, EEBoundingBox
 from src.ETL import cloudfree
@@ -16,16 +15,8 @@ from src.ETL.constants import START, END, LAT, LON
 logger = logging.getLogger(__name__)
 
 
-class Season(Enum):
-    in_season = "in_season"
-    post_season = "post_season"
-
-
-def get_user_input(text_prompt: str) -> str:
-    return input(text_prompt)
-
-
 def memoize(f):
+    "Stores results of previous function to avoid re-calculating"
     memo = {}
 
     def helper(x="default"):
@@ -38,6 +29,7 @@ def memoize(f):
 
 @memoize
 def get_cloud_tif_list(dest_bucket: str) -> List[str]:
+    """Gets a list of all cloud-free TIFs in a bucket."""
     client = storage.Client()
     cloud_tif_list_iterator = client.list_blobs(dest_bucket, prefix="tifs")
     cloud_tif_list = [
@@ -49,6 +41,7 @@ def get_cloud_tif_list(dest_bucket: str) -> List[str]:
 
 @memoize
 def get_ee_task_list(key: str = "description") -> List[str]:
+    """Gets a list of all active tasks in the EE task list."""
     task_list = ee.data.getTaskList()
     return [
         task[key]
@@ -68,6 +61,8 @@ class EarthEngineExporter:
     :param fast: Whether to use the faster cloudfree exporter. This function is considerably
         faster, but cloud artefacts can be more pronounced. Default = True
     :param monitor: Whether to monitor each task until it has been run
+    :param credentials: The credentials to use for the export. If not specified, the default
+    :param file_dimensions: The dimensions of the exported files.
     """
     days_per_timestep: int = 30
     num_timesteps: int = 12
@@ -145,55 +140,24 @@ class EarthEngineExporter:
 
 @dataclass
 class RegionExporter(EarthEngineExporter):
-    @staticmethod
-    def _start_end_dates_using_season(season: Season) -> Tuple[date, date]:
-        today = date.today()
-        after_april = today.month > 4
-        prev_year = today.year - 1
-        prev_prev_year = today.year - 2
-
-        if season == Season.in_season:
-            start_date = date(today.year if after_april else prev_year, 4, 1)
-            months_between = (today.year - start_date.year) * 12 + today.month - start_date.month
-            if months_between < 7:
-                user_input = get_user_input(
-                    f"WARNING: There are only {months_between} month(s) between today and the "
-                    f"start of the season (April 1st). \nAre you sure you'd like proceed "
-                    f"exporting only {months_between} months? (Y/N):\n"
-                )
-                if any(user_input == no for no in ["n", "N", "no", "NO"]):
-                    sys.exit("Exiting script.")
-
-            return start_date, today
-
-        if season == Season.post_season:
-            start_date = date(prev_year if after_april else prev_prev_year, 4, 1)
-            end_date = date(today.year if after_april else prev_year, 4, 1)
-            return start_date, end_date
-
-        raise ValueError("Season must be in_season or post_season")
-
     def export(
         self,
         region_bbox: BoundingBox,
-        dest_folder: str,
+        dest_path: str,
         dest_bucket: Optional[str] = None,
-        model_name: Optional[str] = None,
         end_date: Optional[date] = None,
         start_date: Optional[date] = None,
-        season: Optional[Season] = None,
         metres_per_polygon: Optional[int] = 10000,
-    ):
+    ) -> List[str]:
         r"""
         Run the regional exporter. For each label, the exporter will export
         data from (end_date - timedelta(days=days_per_timestep * num_timesteps)) to end_date
         where each timestep consists of a mosaic of all available images within the
         days_per_timestep of that timestep.
         :param region_bbox: The bounding box of the region to export
-        :param dest_folder: The folder to export to
+        :param dest_path: The folder path to export to
         :param dest_bucket: The name of the destination GCP bucket
-        :param model_name: The name of the model that data will be fed to
-        :param season: The season for which the data should be exported
+        :param start_date: The start date of the data export
         :param end_date: The end date of the data export
         :param metres_per_polygon: Whether to split the export of a large region into smaller
             boxes of (max) area metres_per_polygon * metres_per_polygon. It is better to instead
@@ -201,9 +165,7 @@ class RegionExporter(EarthEngineExporter):
         """
         self.check_earthengine_auth()
 
-        if end_date is None and start_date is None and season:
-            start_date, end_date = self._start_end_dates_using_season(season)
-        elif start_date is None and isinstance(end_date, date):
+        if start_date is None and isinstance(end_date, date):
             start_date = end_date - timedelta(days=self.days_per_timestep * self.num_timesteps)
         elif end_date is None and isinstance(start_date, date):
             end_date = start_date + timedelta(days=self.days_per_timestep * self.num_timesteps)
@@ -215,28 +177,19 @@ class RegionExporter(EarthEngineExporter):
             )
 
         region = EEBoundingBox.from_bounding_box(region_bbox)
-
+        general_identifier = f"{Path(dest_path).name}_{str(start_date)}_{str(end_date)}"
         if metres_per_polygon is not None:
             regions = region.to_polygons(metres_per_patch=metres_per_polygon)
-            ids = [f"{i}-{dest_folder}" for i in range(len(regions))]
+            ids = [f"{i}_{general_identifier}" for i in range(len(regions))]
         else:
             regions = [region.to_ee_polygon()]
-            ids = [f"{dest_folder}"]
+            ids = [general_identifier]
 
-        dest_path = dest_folder
         for identifier, region in zip(ids, regions):
-            if model_name:
-                dest_path = f"{model_name}/{dest_folder}/batch_{identifier}"
-
-            file_name_prefix = f"{dest_path}/{identifier}_{str(start_date)}_{str(end_date)}"
-            description = (
-                f"{dest_path.replace('/', '-')}-{identifier}-{str(start_date)}-{str(end_date)}"
-            )
-
             self._export_for_polygon(
                 polygon=region,
-                file_name_prefix=file_name_prefix,
-                description=description,
+                file_name_prefix=f"{dest_path}/batch_{identifier}/{identifier}",
+                description=identifier,
                 start_date=start_date,
                 end_date=end_date,
                 dest_bucket=dest_bucket,
