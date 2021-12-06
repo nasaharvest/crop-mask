@@ -102,8 +102,7 @@ def export_region(request: Request):
             num_timesteps=num_timesteps,
         ).export(
             dest_bucket=dest_bucket,
-            dest_folder=dest_folder,
-            model_name=model_name,
+            dest_path=f"{model_name}/{dest_folder}",
             region_bbox=bbox,
             start_date=start_date,
             metres_per_polygon=50000,
