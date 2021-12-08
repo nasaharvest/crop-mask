@@ -255,6 +255,9 @@ class LabelExporter(EarthEngineExporter):
         if self.check_ee and (description in self.ee_task_list):
             return True
 
+        if self.check_ee and len(self.ee_task_list) >= 3000:
+            return True
+
         self._export_for_polygon(
             file_name_prefix=f"tifs/{file_name_prefix}",
             description=description,
