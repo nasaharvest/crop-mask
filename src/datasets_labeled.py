@@ -493,6 +493,8 @@ labeled_datasets = [
                     train_val_test=(0.0, 0.5, 0.5),
                     clean_df=clean_ceo_data,
                     num_timesteps=6,
+                    label_names = "email",
+                    label_dur = "analysis_duration"
                 ),
                 Processor(
                     filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2021-10-04.csv",
@@ -502,6 +504,8 @@ labeled_datasets = [
                     train_val_test=(0.0, 0.5, 0.5),
                     clean_df=clean_ceo_data,
                     num_timesteps=6,
+                    label_names = "email",
+                    label_dur = "analysis_duration"
                 ),
             ]
         ),
