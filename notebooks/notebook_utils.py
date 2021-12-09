@@ -10,7 +10,7 @@ import torch
 
 sys.path.append("..")
 
-from src.models import Model
+from src.models import Model  # noqa: E402s
 
 
 def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.DataFrame:
@@ -20,10 +20,7 @@ def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.Dat
 
     # Load model validation set
     val = model.get_dataset(
-        subset="validation",
-        normalizing_dict=model.normalizing_dict,
-        upsample=False,
-        is_local_only=True,
+        subset="validation", normalizing_dict=model.normalizing_dict, upsample=False
     )
 
     # Load validation features

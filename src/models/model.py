@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
-from src.ETL.dataset import LabeledDataset
 import numpy as np
 import logging
 import json
+import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
@@ -25,6 +25,7 @@ from sklearn.metrics import (
 )
 
 from src.ETL.ee_boundingbox import BoundingBox
+from src.ETL.constants import SUBSET
 from src.utils import data_dir, get_dvc_dir, set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
@@ -77,18 +78,16 @@ class Model(pl.LightningModule):
 
         self.hparams = hparams
 
-        # Write out parameters explicitly so they are saved in the jit model
-        self.min_lon: float = hparams.min_lon
-        self.max_lon: float = hparams.max_lon
-        self.min_lat: float = hparams.min_lat
-        self.max_lat: float = hparams.max_lat
         self.target_bbox = BoundingBox(
-            hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
+            min_lat=hparams.min_lat,
+            max_lat=hparams.max_lat,
+            min_lon=hparams.min_lon,
+            max_lon=hparams.max_lon,
         )
 
-        self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
-        self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
-
+        # --------------------------------------------------
+        # Normalizing dicts
+        # --------------------------------------------------
         all_dataset_params_path = data_dir / "all_dataset_params.json"
         if all_dataset_params_path.exists():
             with (data_dir / "all_dataset_params.json").open() as f:
@@ -96,9 +95,10 @@ class Model(pl.LightningModule):
         else:
             all_dataset_params = {}
 
+        self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None
         normalizing_dict_key = (
-            f"{hparams.train_datasets}_{hparams.up_to_year}"
-            if "up_to_year" in hparams and hparams.up_to_year
+            f"{hparams.train_datasets}_{self.up_to_year}"
+            if self.up_to_year
             else hparams.train_datasets
         )
         if normalizing_dict_key not in all_dataset_params:
@@ -130,6 +130,9 @@ class Model(pl.LightningModule):
             k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
         }
 
+        # ----------------------------------------------------------------------
+        # Forecaster parameters
+        # ----------------------------------------------------------------------
         # Needed so that forecast is exposed to jit
         self.forecast = self.hparams.forecast
         self.input_months = self.hparams.input_months
@@ -167,27 +170,23 @@ class Model(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
 
     @staticmethod
-    def load_datasets(
-        input_dataset_names: Union[str, List[str]], subset: str
-    ) -> List[LabeledDataset]:
+    def load_df(subset: str, train_datasets: str, eval_datasets: str) -> pd.DataFrame:
         """
         Loads the datasets specified in the input_dataset_names list.
         """
-        if isinstance(input_dataset_names, str):
-            input_dataset_names = input_dataset_names.replace(" ", "").split(",")
-            input_dataset_names = list(filter(None, input_dataset_names))
-
-        datasets = []
+        dfs = []
         for d in labeled_datasets:
-            if d.dataset in input_dataset_names:
-                datasets.append(d)
-                input_dataset_names.remove(d.dataset)
+            # If dataset is used for evaluation, take only the right subset out of the dataframe
+            if d.dataset in eval_datasets:
+                df = d.load_labels(allow_processing=False)
+                dfs.append(df[df[SUBSET] == subset])
 
-        for not_found_dataset in input_dataset_names:
-            logger.error(f"Could not find dataset with name: {not_found_dataset}")
+            # If dataset is only used for training, take the whole dataframe
+            elif subset == "training" and d.dataset in train_datasets:
+                df = d.load_labels(allow_processing=False)
+                dfs.append(df)
 
-        logger.info(f"Using {subset} datasets: {[d.dataset for d in datasets]}")
-        return datasets
+        return pd.concat(dfs)
 
     def get_dataset(
         self,
@@ -195,23 +194,19 @@ class Model(pl.LightningModule):
         normalizing_dict: Optional[Dict] = None,
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
-        is_local_only: bool = False,
     ) -> CropDataset:
-        if subset == "training":
-            datasets = self.train_datasets
-        else:
-            datasets = self.eval_datasets
+
+        df = self.load_df(subset, self.hparams.train_datasets, self.hparams.eval_datasets)
 
         return CropDataset(
             subset=subset,
-            datasets=datasets,
+            df=df,
             remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
             target_bbox=self.target_bbox,
-            is_local_only=is_local_only,
-            up_to_year=self.hparams.up_to_year if "up_to_year" in self.hparams else None,
+            up_to_year=self.up_to_year,
             wandb_logger=self.logger,
         )
 
@@ -231,7 +226,6 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                is_local_only=False,
                 upsample=False,
             ),
             batch_size=self.hparams.batch_size,
@@ -243,7 +237,6 @@ class Model(pl.LightningModule):
                 subset="testing",
                 normalizing_dict=self.normalizing_dict,
                 upsample=False,
-                is_local_only=False,
             ),
             batch_size=self.hparams.batch_size,
         )
