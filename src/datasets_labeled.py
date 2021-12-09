@@ -559,4 +559,26 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Malawi_CEO_2021",
+        country="Malawi",
+        processors=(
+            Processor(
+                filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-1)-sample-data-2021-12-09.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-2)-sample-data-2021-12-09.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.0, 0.5, 0.5),
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
 ]
