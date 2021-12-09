@@ -90,10 +90,10 @@ Then to train and evaluate the model run:
 python scripts/models_train_and_evaluate.py
 ```
 
-**What do the does the json entry mean?**
-`train_datasets` which datasets to train on
-`eval_datasets` which datasets to evaluate on
-`min/max_lat/lon` tells the model which items to consider in the local and global head
+**Json entry keys**
+- `train_datasets` which datasets to train on
+- `eval_datasets` which datasets to evaluate on
+- `min/max_lat/lon` tells the model which items to consider in the local and global head
 
 Any other valid model parameter can be added to this entry.
 

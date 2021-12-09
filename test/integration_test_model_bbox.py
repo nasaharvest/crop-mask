@@ -1,12 +1,10 @@
 from unittest import TestCase
 
 import json
+from src.models.model import Model
 
 from src.utils import data_dir
-from src.ETL.constants import IS_LOCAL, LAT, LON
-from src.datasets_labeled import labeled_datasets
-from src.ETL.ee_boundingbox import BoundingBox
-from src.models.data import CropDataset
+from src.ETL.constants import LAT, LON
 
 
 class ModelBooxTest(TestCase):
@@ -17,28 +15,21 @@ class ModelBooxTest(TestCase):
 
         non_local_examples_in_eval = False
         for c in model_configurations:
-            target_bbox = BoundingBox(
-                min_lon=c["min_lon"],
-                max_lon=c["max_lon"],
-                min_lat=c["min_lat"],
-                max_lat=c["max_lat"],
-            )
-            ds = [d for d in labeled_datasets if d.dataset in c["eval_datasets"]]
             print("--------------------------------------------------")
             print(c["model_name"])
             for subset in ["validation", "testing"]:
                 try:
-                    df = CropDataset._load_df_from_datasets(
-                        datasets=ds,
-                        subset=subset,
-                        target_bbox=target_bbox,
-                        is_local_only=False,
-                        up_to_year=2050,
+                    df = Model.load_df(subset, c["train_datasets"], c["eval_datasets"])
+                    is_local = (
+                        (df[LAT] >= c["min_lat"])
+                        & (df[LAT] <= c["max_lat"])
+                        & (df[LON] >= c["min_lon"])
+                        & (df[LON] <= c["max_lon"])
                     )
-                    if df[IS_LOCAL].all():
+                    if is_local.all():
                         print(f"\u2714 {subset}: all {len(df)} examples are local")
                     else:
-                        print(f"\u2716 {subset}: {len(df[~df[IS_LOCAL]])} examples are not local")
+                        print(f"\u2716 {subset}: {len(df[~is_local])} examples are not local")
                         print(
                             f"bbox should contain: "
                             f"min_lat={df[LAT].min()}, max_lat={df[LAT].max()}, "
