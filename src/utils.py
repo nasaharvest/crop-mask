@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 data_dir = Path(__file__).parent.parent / "data"
 tifs_dir = data_dir / "tifs"
 features_dir = data_dir / "features"
+models_dir = data_dir / "models"
 
 
 def set_seed(seed: int = 42):
