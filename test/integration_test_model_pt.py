@@ -23,7 +23,6 @@ class IntegrationTestModelPt(TestCase):
                 subset="validation",
                 normalizing_dict=model_ckpt.normalizing_dict,
                 upsample=False,
-                is_local_only=True,
                 cache=False,
             )
             # Get tensors from validation set

@@ -9,10 +9,9 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.ETL.constants import BANDS, CROP_PROB, FEATURE_PATH, LAT, LON, SUBSET, START, END, IS_LOCAL
+from src.ETL.constants import BANDS, CROP_PROB, FEATURE_PATH, LAT, LON, START, END
 
 from typing import cast, Tuple, Optional, List, Dict, Union
-from src.ETL.dataset import LabeledDataset
 from src.ETL.ee_boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
@@ -24,8 +23,8 @@ class CropDataset(Dataset):
 
     def __init__(
         self,
+        df: pd.DataFrame,
         subset: str,
-        datasets: List[LabeledDataset],
         remove_b1_b10: bool,
         cache: bool,
         upsample: bool,
@@ -33,23 +32,21 @@ class CropDataset(Dataset):
         wandb_logger,
         probability_threshold: float = 0.5,
         normalizing_dict: Optional[Dict] = None,
-        is_local_only: bool = False,
         up_to_year: Optional[int] = None,
     ) -> None:
-        logger.info(f"Initializating {subset} CropDataset")
 
-        df = self._load_df_from_datasets(
-            datasets,
-            subset=subset,
-            up_to_year=up_to_year,
-            target_bbox=target_bbox,
-            is_local_only=is_local_only,
-        )
+        if subset == "training" and up_to_year is not None:
+            df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
 
         self.pickle_files: List[Path] = [Path(p) for p in df[FEATURE_PATH].tolist()]
 
         is_crop = df[CROP_PROB] >= probability_threshold
-        is_local = df[IS_LOCAL]
+        is_local = (
+            (df[LAT] >= target_bbox.min_lat)
+            & (df[LAT] <= target_bbox.max_lat)
+            & (df[LON] >= target_bbox.min_lon)
+            & (df[LON] <= target_bbox.max_lon)
+        )
 
         if upsample:
             self.pickle_files += self._upsampled_files(
@@ -96,34 +93,6 @@ class CropDataset(Dataset):
         if cache:
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
-
-    @staticmethod
-    def _load_df_from_datasets(
-        datasets: List[LabeledDataset],
-        subset: str,
-        up_to_year: Optional[int],
-        target_bbox: BoundingBox,
-        is_local_only: bool,
-    ) -> pd.DataFrame:
-        assert subset in ["training", "validation", "testing"]
-        df = pd.concat([d.load_labels(fail_if_missing_features=True) for d in datasets])
-        df = df[df[SUBSET] == subset]
-        if up_to_year is not None and subset == "training":
-            df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
-
-        df[IS_LOCAL] = (
-            (df[LAT] >= target_bbox.min_lat)
-            & (df[LAT] <= target_bbox.max_lat)
-            & (df[LON] >= target_bbox.min_lon)
-            & (df[LON] <= target_bbox.max_lon)
-        )
-        if is_local_only:
-            df = df[df[IS_LOCAL]]
-
-        if len(df) == 0:
-            raise ValueError(f"No labels for {subset} found")
-
-        return df
 
     @staticmethod
     def _compute_num_timesteps(start_col: pd.Series, end_col: pd.Series) -> List[int]:

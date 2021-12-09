@@ -13,7 +13,6 @@ ALREADY_EXISTS = "already_exists"
 FEATURE_FILENAME = "filename"
 FEATURE_PATH = "save_path"
 TIF_PATHS = "tif_paths"
-IS_LOCAL = "is_local"
 CROP_TYPE = "crop_type"
 
 BANDS = [
