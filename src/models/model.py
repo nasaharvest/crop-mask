@@ -95,9 +95,10 @@ class Model(pl.LightningModule):
         else:
             all_dataset_params = {}
 
+        self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None
         normalizing_dict_key = (
-            f"{hparams.train_datasets}_{hparams.up_to_year}"
-            if "up_to_year" in hparams and hparams.up_to_year
+            f"{hparams.train_datasets}_{self.up_to_year}"
+            if self.up_to_year
             else hparams.train_datasets
         )
         if normalizing_dict_key not in all_dataset_params:
@@ -205,7 +206,7 @@ class Model(pl.LightningModule):
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
             target_bbox=self.target_bbox,
-            up_to_year=self.hparams.up_to_year,
+            up_to_year=self.up_to_year,
             wandb_logger=self.logger,
         )
 

@@ -1,9 +1,12 @@
-# exit when any command fails
+#!/bin/bash
 set -e
+set -x
 
-conda activate landcover-mapping
+CONDA_ENV=/opt/anaconda3/envs/landcover-mapping/bin
 
-python scripts/models_train_and_evaluate.py --offline --retrain_all
+$CONDA_ENV/dvc pull -f
 
-dvc commit -f
-dvc push
+$CONDA_ENV/python scripts/models_train_and_evaluate.py --offline --retrain_all
+
+$CONDA_ENV/dvc commit -f
+$CONDA_ENV/dvc push
