@@ -129,7 +129,8 @@ class Processor:
             df[LON] = df[self.longitude_col]
         if self.crop_type_col:
             df[CROP_TYPE] = df[self.crop_type_col]
-
+        else:
+            df[CROP_TYPE] = None
         if self.clean_df:
             df = self.clean_df(df)
 
