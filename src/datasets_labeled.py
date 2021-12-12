@@ -606,4 +606,24 @@ labeled_datasets = [
         country="Malawi",
         processors=(Processor(filename="malawi_fao.geojson", crop_prob=1.0, end_year=2021),),
     ),
+    LabeledDataset(
+        dataset="Zambia_CEO_2019",
+        country="Zambia",
+        processors=(
+            Processor(
+                filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
+                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
+                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
 ]
