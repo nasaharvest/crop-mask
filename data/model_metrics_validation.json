@@ -111,6 +111,20 @@
         "unencoded_val_local_recall_score": 0.9747,
         "unencoded_val_local_roc_auc_score": 0.983
     },
+    "Malawi_2021": {
+        "local_val_crop_percentage ": 0.1127,
+        "local_val_size": 479,
+        "thresh0.56_unencoded_val_local_accuracy": 0.8601,
+        "thresh0.56_unencoded_val_local_f1_score": 0.5621,
+        "thresh0.56_unencoded_val_local_precision_score": 0.4343,
+        "thresh0.56_unencoded_val_local_recall_score": 0.7963,
+        "thresh0.56_unencoded_val_local_roc_auc_score": 0.8831,
+        "unencoded_val_local_accuracy": 0.8455,
+        "unencoded_val_local_f1_score": 0.5432,
+        "unencoded_val_local_precision_score": 0.4074,
+        "unencoded_val_local_recall_score": 0.8148,
+        "unencoded_val_local_roc_auc_score": 0.8831
+    },
     "Mali_USAID_ZOIS_combined_2019": {
         "local_val_crop_percentage ": 0.2013,
         "local_val_size": 606,
