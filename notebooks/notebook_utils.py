@@ -1,6 +1,5 @@
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score, precision_score, recall_score
-from tqdm.notebook import tqdm
 from typing import Tuple
 
 import numpy as np
@@ -8,9 +7,10 @@ import pandas as pd
 import pickle
 import sys
 import torch
+from pathlib import Path
 
 sys.path.append("..")
-
+from src.ETL.constants import FEATURE_PATH  # noqa: E402s
 from src.models import Model  # noqa: E402s
 
 
@@ -24,19 +24,16 @@ def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.Dat
         subset="validation", normalizing_dict=model.normalizing_dict, upsample=False
     )
 
-    # Load validation features
-    validation_features = []
-    for i, target_file in tqdm(enumerate(val.pickle_files)):
-        with target_file.open("rb") as f:
-            feature = pickle.load(f)
-            # Check that model valdilation set and features validation set is the same
-            assert val[i][1].numpy() == round(
-                feature.crop_probability
-            ), f"{val[i][1].numpy()} != {feature.crop_probability}"
-            validation_features.append(feature.__dict__)
+    df = val.df
 
-    # Initialize a dataframe with all features
-    df = pd.DataFrame(validation_features)
+    def get_feature(feature_file):
+        with Path(feature_file).open("rb") as f:
+            f = pickle.load(f)
+        return f.instance_lat, f.instance_lon, f.source_file
+
+    df["instance_lat"], df["instance_lon"], df["source_file"] = zip(
+        *df[FEATURE_PATH].apply(get_feature)
+    )
     df["y_true"] = df["crop_probability"].apply(lambda prob: 1 if prob > 0.5 else 0)
 
     # Make predictions on validation set
@@ -46,6 +43,7 @@ def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.Dat
         df["y_pred_decimal"] = model(x)[1].numpy().flatten()
 
     df["y_pred"] = df["y_pred_decimal"].apply(lambda pred: 1 if pred > default_threshold else 0)
+    df["errors"] = df["y_true"] != df["y_pred"]
     return df
 
 
@@ -73,8 +71,9 @@ def best_f1_threshold(model_name: str, plot: bool = False) -> Tuple[float, float
         axs[0].set_xlabel("Recall")
         axs[0].set_ylabel("Precision")
         axs[0].set_title("Precision Recall Curve")
-        axs[0].plot(recall_scores[best_i], precision_scores[best_i],
-                    "r*", label=f"Best F1: {best_f1}")
+        axs[0].plot(
+            recall_scores[best_i], precision_scores[best_i], "r*", label=f"Best F1: {best_f1}"
+        )
         axs[0].legend()
 
         axs[1].plot(thresholds, f1_scores)
