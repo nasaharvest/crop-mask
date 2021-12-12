@@ -160,7 +160,7 @@ def model_pipeline(
         print(f"\n\u2714 {model_name} completed training and evaluation")
         print(metrics)
         for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-            if key in metrics and metrics[key] > 0.59:
+            if key in metrics and metrics[key] > 0.54:
                 model.save()
                 break
     else:
