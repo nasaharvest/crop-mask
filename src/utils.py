@@ -19,6 +19,7 @@ data_dir = Path(__file__).parent.parent / "data"
 tifs_dir = data_dir / "tifs"
 features_dir = data_dir / "features"
 models_dir = data_dir / "models"
+raw_dir = data_dir / "raw"
 
 
 def set_seed(seed: int = 42):
