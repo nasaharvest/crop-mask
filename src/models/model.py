@@ -140,6 +140,7 @@ class Model(pl.LightningModule):
         self.forecast_all = self.hparams.forecast
         self.input_months = self.hparams.input_months
         self.forecast_training_data = self.hparams.input_months > min(self.num_timesteps)
+        self.forecaster = torch.nn.Identity()
         if self.forecast_all:
             self.forecaster_input_timesteps = self.hparams.input_months
             self.forecaster = Forecaster(
@@ -154,8 +155,6 @@ class Model(pl.LightningModule):
                 output_timesteps=self.hparams.input_months - min(self.num_timesteps),
                 hparams=hparams,
             )
-        else:
-            self.forecaster = torch.nn.Identity()
         self.forecaster_loss = F.smooth_l1_loss
 
         self.classifier = Classifier(input_size=self.input_size, hparams=hparams)
