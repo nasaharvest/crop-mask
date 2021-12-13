@@ -65,7 +65,7 @@ jobs:
     - name: Deploy Docker inference image
       run: |
         chmod +x ./deploy_inference.sh
-        deploy_inference.sh
+        ./deploy_inference.sh
       
 
 
