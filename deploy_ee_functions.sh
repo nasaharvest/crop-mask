@@ -11,9 +11,10 @@ export MODELS=$(
         print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
 )
 
-cp -R src/ETL gcp/export_region_function/src/
+mkdir -p gcp/export_region_function/src/ETL 
+cp -r src/ETL/* gcp/export_region_function/src/ETL
 
-echo $(ls gcp/export_region_function/src)
+echo $(ls gcp/export_region_function/src/ETL)
 
 gcloud functions deploy export-region \
     --source=gcp/export_region_function \
