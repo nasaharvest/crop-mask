@@ -11,7 +11,9 @@ export MODELS=$(
         print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
 )
 
-cp -R src/ETL gcp/export_region_function/src
+cp -R src/ETL gcp/export_region_function/src/
+
+echo $(ls gcp/export_region_function/src)
 
 gcloud functions deploy export-region \
     --source=gcp/export_region_function \
@@ -30,4 +32,4 @@ gcloud functions deploy ee-status \
     --runtime=python39 \
     --entry-point=get_status
 
-rm -rf gcp/export_region_function/src/*
+rm -rf gcp/export_region_function/src
