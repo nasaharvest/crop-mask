@@ -568,7 +568,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 end_year=2021,
                 x_y_from_centroid=False,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.5, 0.5, 0.0),
                 clean_df=clean_ceo_data,
             ),
             Processor(
@@ -576,7 +576,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 end_year=2021,
                 x_y_from_centroid=False,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.5, 0.5, 0.0),
                 clean_df=clean_ceo_data,
             ),
         ),
@@ -605,6 +605,11 @@ labeled_datasets = [
         dataset="Malawi_FAO",
         country="Malawi",
         processors=(Processor(filename="malawi_fao.geojson", crop_prob=1.0, end_year=2021),),
+    ),
+    LabeledDataset(
+        dataset="Malawi_FAO_corrected",
+        country="Malawi",
+        processors=(Processor(filename="MWI_MWI_LC_FO_202106.shp", crop_prob=1.0, end_year=2021),),
     ),
     LabeledDataset(
         dataset="Zambia_CEO_2019",
