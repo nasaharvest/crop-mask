@@ -13,10 +13,11 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v2        
+    - uses: actions/checkout@v2
+      with:
+          clean: false
     - name: Run type checks
       run: |
-        echo $PATH
         $CONDA_ENV/mypy src scripts
     - name: Run flake8
       run: |
