@@ -36,9 +36,11 @@ jobs:
         $CONDA_ENV/dvc pull data/features
         $CONDA_ENV/dvc pull data/processed
         $CONDA_ENV/dvc pull data/models
-    - name: Run integration test
+    - name: Run integration tests
       run: |
         $CONDA_ENV/python -m unittest test/integration_test_labeled.py
+        $CONDA_ENV/python -m unittest test/integration_test_model_bbox.py
+        $CONDA_ENV/python -m unittest test/integration_test_model_evaluation.py
       
 
 
