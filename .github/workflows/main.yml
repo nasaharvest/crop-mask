@@ -17,14 +17,11 @@ jobs:
       with:
           clean: false
     - name: Run type checks
-      run: |
-        $CONDA_ENV/mypy src scripts
+      run: $CONDA_ENV/mypy src scripts
     - name: Run flake8
-      run: |
-        $CONDA_ENV/flake8 src data scripts test gcp
+      run: $CONDA_ENV/flake8 src data scripts test gcp
     - name: Run unit tests
-      run: |
-        $CONDA_ENV/python -m unittest
+      run: $CONDA_ENV/python -m unittest
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@master
       with:
@@ -36,11 +33,12 @@ jobs:
         $CONDA_ENV/dvc pull data/features
         $CONDA_ENV/dvc pull data/processed
         $CONDA_ENV/dvc pull data/models
-    - name: Run integration tests
-      run: |
-        $CONDA_ENV/python -m unittest test/integration_test_labeled.py
-        $CONDA_ENV/python -m unittest test/integration_test_model_bbox.py
-        $CONDA_ENV/python -m unittest test/integration_test_model_evaluation.py
+    - name: Integration test - Data integrity
+      run: $CONDA_ENV/python -m unittest test/integration_test_labeled.py
+    - name: Integration test - Model bboxes match evaluation sets
+      run: $CONDA_ENV/python -m unittest test/integration_test_model_bbox.py
+    - name: Integration test - Model results are consistent
+      run: $CONDA_ENV/python -m unittest test/integration_test_model_evaluation.py
       
 
 
