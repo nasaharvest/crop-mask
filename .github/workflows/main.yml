@@ -61,9 +61,10 @@ jobs:
     # - name: Deploy Earth Engine Function
     #   run: |
     #     chmod +x ./deploy_ee_functions.sh
-    #     ./deploy_ee_functions.sh
+    #     ./deploy_ee_functions.sh 
     - name: Deploy Docker inference image
       run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
         chmod +x ./deploy_inference.sh
         ./deploy_inference.sh
       
