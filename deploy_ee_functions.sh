@@ -10,11 +10,12 @@ export MODELS=$(
         "from pathlib import Path; \
         print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
 )
+export ETLPATH=gcp/export_region_function/src/ETL
 
-mkdir -p gcp/export_region_function/src/ETL 
-cp -r src/ETL/* gcp/export_region_function/src/ETL
+mkdir -p $ETLPATH 
+cp -r src/ETL/* $ETLPATH
 
-echo $(ls gcp/export_region_function/src/ETL)
+echo $(ls $ETLPATH)
 
 gcloud functions deploy export-region \
     --source=gcp/export_region_function \
@@ -33,4 +34,4 @@ gcloud functions deploy ee-status \
     --runtime=python39 \
     --entry-point=get_status
 
-rm -rf gcp/export_region_function/src
+rm -rf $ETLPATH
