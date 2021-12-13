@@ -319,18 +319,18 @@
         "model_name": "Malawi_2021",
         "min_lat": -17.135,
         "max_lat": -9.23004908,
-        "min_lon": -180,
-        "max_lon": 180,
+        "min_lon": 32.546460201,
+        "max_lon": 36.223361562,
         "noise_factor": 0.2,
-        "alternative_threshold": 0.56,
+        "alternative_threshold": 0.51,
+        "max_epochs": 8,
         "eval_datasets": [
             "Malawi_CEO_2020"
         ],
         "train_datasets": [
-            "Malawi_CEO_2019",
-            "Malawi_FAO",
-            "open_buildings",
-            "digitalearthafrica_eastern"
+            "Malawi_CEO_2020",
+            "Malawi_FAO_corrected",
+            "open_buildings"
         ]
     }
 ]
