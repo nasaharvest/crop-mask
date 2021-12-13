@@ -616,6 +616,7 @@ class Model(pl.LightningModule):
                 logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
         logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
+        logs["epoch"] = self.current_epoch
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
