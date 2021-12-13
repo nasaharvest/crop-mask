@@ -48,18 +48,16 @@ jobs:
     # if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
+    - uses: google-github-actions/setup-gcloud@master
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true   
-    - name: Set up DVC  
-      uses: iterative/setup-dvc@v1
+    - uses: iterative/setup-dvc@v1
       with:
         version: '1.11.16'
     - name: Deploy Earth Engine Function
-      run: ./deploy_ee_function.sh
+      run: ./deploy_ee_functions.sh
     # - name: Deploy Docker inference image
     #   run: deploy_inference.sh
       
