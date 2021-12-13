@@ -57,7 +57,9 @@ jobs:
       with:
         version: '1.11.16'
     - name: Deploy Earth Engine Function
-      run: ./deploy_ee_functions.sh
+      run: |
+        chmod +x deploy_functions.sh
+        ./deploy_ee_functions.sh
     # - name: Deploy Docker inference image
     #   run: deploy_inference.sh
       
