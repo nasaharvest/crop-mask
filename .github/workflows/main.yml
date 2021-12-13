@@ -47,6 +47,7 @@ jobs:
     # needs: test
     # if: github.ref == 'refs/heads/master'
     steps:
+    - uses: actions/checkout@v2
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@master
       with:
