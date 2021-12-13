@@ -7,7 +7,7 @@ from src.utils import data_dir
 from src.ETL.constants import LAT, LON
 
 
-class ModelBooxTest(TestCase):
+class ModelBboxTest(TestCase):
     def test_model_bbox(self):
         # Read in models.json
         with (data_dir / "models.json").open("rb") as f:
