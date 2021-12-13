@@ -58,12 +58,14 @@ jobs:
         version: '1.11.16'
     - name: Get latest models
       run: dvc pull data/models -f
-    - name: Deploy Earth Engine Function
+    # - name: Deploy Earth Engine Function
+    #   run: |
+    #     chmod +x ./deploy_ee_functions.sh
+    #     ./deploy_ee_functions.sh
+    - name: Deploy Docker inference image
       run: |
-        chmod +x ./deploy_ee_functions.sh
-        ./deploy_ee_functions.sh
-    # - name: Deploy Docker inference image
-    #   run: deploy_inference.sh
+        chmod +x ./deploy_inference.sh
+        deploy_inference.sh
       
 
 
