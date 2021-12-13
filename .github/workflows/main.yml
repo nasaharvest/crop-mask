@@ -57,7 +57,7 @@ jobs:
       with:
         version: '1.11.16'
     - name: Get latest models
-      run: dvc pull data/models -fs
+      run: dvc pull data/models -f
     - name: Deploy Earth Engine Function
       run: |
         chmod +x ./deploy_ee_functions.sh
