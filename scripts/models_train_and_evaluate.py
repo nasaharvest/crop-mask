@@ -24,7 +24,7 @@ sys.path.append("..")
 
 from src.pipeline_funcs import model_pipeline  # noqa: E402
 from src.models import Model  # noqa: E402
-from src.utils import get_dvc_dir  # noqa: E402
+from src.utils import get_dvc_dir, metrics_file  # noqa: E402
 
 models_folder = get_dvc_dir("models")
 data_folder = models_folder.parent
@@ -56,7 +56,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     models_json = data_folder / "models.json"
-    model_validation_metrics = data_folder / "model_metrics_validation.json"
 
     if args.retrain_all:
         all_dataset_params_path = Path(data_folder / "all_dataset_params.json")
@@ -82,5 +81,5 @@ if __name__ == "__main__":
             if args.fail_on_error:
                 raise e
 
-    with model_validation_metrics.open("w") as f:
+    with metrics_file.open("w") as f:
         json.dump(new_model_metrics, f, ensure_ascii=False, indent=4, sort_keys=True)

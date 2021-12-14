@@ -85,11 +85,12 @@ def train_model(
 
 
 def get_metrics_from_trainer(trainer: pl.LightningModule) -> Dict[str, float]:
-    return {
-        k: round(float(v), 4)
-        for k, v in trainer.callback_metrics.items()
-        if ("_global_" not in k and "loss" not in k)
-    }
+    metrics = {}
+    for k, v in trainer.callback_metrics.items():
+        if "_global_" in k or "loss" in k or "epoch" in k:
+            continue
+        metrics[k] = round(float(v), 4)
+    return metrics
 
 
 def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, float]:
@@ -160,7 +161,7 @@ def model_pipeline(
         print(f"\n\u2714 {model_name} completed training and evaluation")
         print(metrics)
         for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-            if key in metrics and metrics[key] > 0.59:
+            if key in metrics and metrics[key] > 0.54:
                 model.save()
                 break
     else:

@@ -1,0 +1,9 @@
+{
+    "model_name": "Malawi_2021",
+    "dataset_name": "Malawi_2021_v1_bbox1",
+    "min_lat": -17.066764146,
+    "max_lat": -13.0,
+    "min_lon": 32.546460201,
+    "max_lon": 36.223361562,
+    "year": 2020
+}
