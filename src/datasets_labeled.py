@@ -559,4 +559,96 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Malawi_CEO_2020",
+        country="Malawi",
+        processors=(
+            Processor(
+                filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-1)-sample-data-2021-12-09.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.5, 0.5, 0.0),
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-2)-sample-data-2021-12-09.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                end_year=2021,
+                x_y_from_centroid=False,
+                train_val_test=(0.5, 0.5, 0.0),
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="Malawi_CEO_2019",
+        country="Malawi",
+        processors=(
+            Processor(
+                filename="ceo-2019-Malawi-Cropland-(RCMRD-Set-1)-sample-data-2021-12-10.csv",
+                crop_prob=lambda df: (df["Crop/non"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2019-Malawi-Cropland-(RCMRD-Set-2)-sample-data-2021-12-10.csv",
+                crop_prob=lambda df: (df["Crop/non"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="Malawi_FAO",
+        country="Malawi",
+        processors=(Processor(filename="malawi_fao.geojson", crop_prob=1.0, end_year=2021),),
+    ),
+    LabeledDataset(
+        dataset="Malawi_FAO_corrected",
+        country="Malawi",
+        processors=(Processor(filename="MWI_MWI_LC_FO_202106.shp", crop_prob=1.0, end_year=2021),),
+    ),
+    LabeledDataset(
+        dataset="Zambia_CEO_2019",
+        country="Zambia",
+        processors=(
+            Processor(
+                filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
+                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
+                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    LabeledDataset(
+        dataset="Tanzania_CEO_2019",
+        country="Tanzania",
+        processors=(
+            Processor(
+                filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-1)-sample-data-2021-12-13.csv",
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-2)-sample-data-2021-12-13.csv",
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                end_year=2020,
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
 ]

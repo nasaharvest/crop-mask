@@ -96,11 +96,14 @@ class Model(pl.LightningModule):
             all_dataset_params = {}
 
         self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None
-        normalizing_dict_key = (
-            f"{hparams.train_datasets}_{self.up_to_year}"
-            if self.up_to_year
-            else hparams.train_datasets
-        )
+        self.start_month = hparams.start_month if "start_month" in hparams else "April"
+
+        normalizing_dict_key = hparams.train_datasets
+        if self.up_to_year:
+            normalizing_dict_key += f"_{self.up_to_year}"
+        if self.start_month != "April":
+            normalizing_dict_key += f"_{self.start_month}"
+
         if normalizing_dict_key not in all_dataset_params:
             dataset = self.get_dataset(subset="training", cache=False, upsample=False)
             # we save the normalizing dict because we calculate weighted
@@ -134,26 +137,25 @@ class Model(pl.LightningModule):
         # Forecaster parameters
         # ----------------------------------------------------------------------
         # Needed so that forecast is exposed to jit
-        self.forecast = self.hparams.forecast
+        self.forecast_all = self.hparams.forecast
         self.input_months = self.hparams.input_months
+        self.forecast_training_data = self.hparams.input_months > min(self.num_timesteps)
         self.forecaster = torch.nn.Identity()
-        self.forecaster_output_timesteps = 0
-        if self.forecast:
+        if self.forecast_all:
             self.forecaster_input_timesteps = self.hparams.input_months
-            self.forecaster_output_timesteps = max(self.num_timesteps) - self.hparams.input_months
-        elif len(self.num_timesteps) > 1:
-            self.forecaster_input_timesteps = min(self.num_timesteps)
-            self.forecaster_output_timesteps = self.hparams.input_months - min(self.num_timesteps)
-
-        self.forecaster = torch.nn.Identity()
-        if self.forecaster_output_timesteps > 0:
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
-                output_timesteps=self.forecaster_output_timesteps,
+                output_timesteps=max(self.num_timesteps) - self.hparams.input_months,
                 hparams=hparams,
             )
-
-            self.forecaster_loss = F.smooth_l1_loss
+        elif self.forecast_training_data:
+            self.forecaster_input_timesteps = min(self.num_timesteps)
+            self.forecaster = Forecaster(
+                num_bands=self.input_size,
+                output_timesteps=self.hparams.input_months - min(self.num_timesteps),
+                hparams=hparams,
+            )
+        self.forecaster_loss = F.smooth_l1_loss
 
         self.classifier = Classifier(input_size=self.input_size, hparams=hparams)
         self.global_loss_function: Callable = F.binary_cross_entropy
@@ -161,7 +163,7 @@ class Model(pl.LightningModule):
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         x_input = x[:, : self.input_months, :]
-        if self.forecast:
+        if self.forecast_all:
             x_forecasted = self.forecaster(x_input)[:, self.input_months - 1 :, :]
             x_input = torch.cat((x_input, x_forecasted), dim=1)
         return self.classifier(x_input)
@@ -208,6 +210,7 @@ class Model(pl.LightningModule):
             target_bbox=self.target_bbox,
             up_to_year=self.up_to_year,
             wandb_logger=self.logger,
+            start_month=self.start_month,
         )
 
     def train_dataloader(self):
@@ -415,7 +418,7 @@ class Model(pl.LightningModule):
         loss: Union[float, torch.Tensor] = 0
         output_dict = {}
 
-        if self.forecaster_output_timesteps > 0:
+        if self.forecast_all or (self.forecast_training_data and training):
             # -------------------------------------------------------------------------------
             # Forecast
             # -------------------------------------------------------------------------------
@@ -456,12 +459,21 @@ class Model(pl.LightningModule):
             # Set the input to the classifier (x) using the forecasted values
             # -------------------------------------------------------------------------------
             if is_full_time_series:
-                nan_batch_index = x.any(dim=1).any(dim=1)
-                x_full_time_series_w_noise = self.add_noise(x[~nan_batch_index], training=training)
-                assert bool(torch.any(torch.isnan(x_full_time_series_w_noise))) is False
-                x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
-                label = torch.cat((label[~nan_batch_index], label), dim=0)
-                is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
+                nan_batch_index = torch.isnan(x).any(dim=1).any(dim=1)
+                if training:
+                    x_full_time_series_w_noise = self.add_noise(
+                        x[~nan_batch_index], training=training
+                    )
+                    assert bool(torch.any(torch.isnan(x_full_time_series_w_noise))) is False
+                    x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
+                    label = torch.cat((label[~nan_batch_index], label), dim=0)
+                    is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
+                else:
+                    # No nans allowed in the evaluation sets
+                    assert bool(nan_batch_index.any()) is False
+                    x = torch.cat((x, final_encoded_input), dim=0)
+                    label = torch.cat((label, label), dim=0)
+                    is_global = torch.cat((is_global, is_global), dim=0)
             else:
                 x = final_encoded_input
 
@@ -553,7 +565,7 @@ class Model(pl.LightningModule):
 
         output_dict = {}
 
-        if self.forecast:
+        if self.forecast_all:
             if self.hparams.evaluate_forecast:
                 u_labels, e_labels = self._split_tensor(outputs, f"{input_prefix}label")
                 u_preds, e_preds = self._split_tensor(outputs, f"{input_prefix}pred")
@@ -565,12 +577,12 @@ class Model(pl.LightningModule):
             u_preds = self._get_output_as_np(outputs, f"{input_prefix}pred")
             u_labels = self._get_output_as_np(outputs, f"{input_prefix}label")
 
-        if self.forecast:
+        if self.forecast_all:
             output_dict.update(
                 self._output_metrics(e_preds, e_labels, f"encoded_{output_prefix}{input_prefix}")
             )
 
-        if not self.forecast or (self.forecast and self.hparams.evaluate_forecast):
+        if not self.forecast_all or (self.forecast_all and self.hparams.evaluate_forecast):
             output_dict.update(
                 self._output_metrics(u_preds, u_labels, f"unencoded_{output_prefix}{input_prefix}")
             )
@@ -580,7 +592,7 @@ class Model(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         logs = {"val_loss": avg_loss}
-        if self.forecast:
+        if self.forecast_all:
             encoder_pred = (
                 torch.cat(
                     [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
@@ -603,6 +615,7 @@ class Model(pl.LightningModule):
                 logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
 
         logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
+        logs["epoch"] = self.current_epoch
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
@@ -610,7 +623,7 @@ class Model(pl.LightningModule):
         avg_loss = torch.stack([x["test_loss"] for x in outputs]).mean().item()
         output_dict = {"test_loss": avg_loss}
 
-        if self.forecast:
+        if self.forecast_all:
             encoder_pred = (
                 torch.cat(
                     [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
