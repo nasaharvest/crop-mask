@@ -172,10 +172,11 @@ export END_DATE=2020-04-01
 gsutil -m cp -n -r gs://crop-mask-preds/$MODEL/$DATASET/ .
 
 # Run gdal merge script
-python gcp/merger/main.py --p <current-dir>/$DATASET
+cd crop-mask
+python gcp/merger/main.py --p ../$DATASET
 
 # [OPTIONAL] Upload COG tif output to Google Cloud Storage
-gsutil cp <current-dir>/$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
+gsutil cp ../$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
 
 # [OPTIONAL] Upload COG to Google Earth Engine
 earthengine upload image --asset_id users/izvonkov/$DATASET -ts $START_DATE -te $END_DATE gs://crop-mask-preds-merged/$DATASET

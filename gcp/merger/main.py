@@ -47,7 +47,7 @@ if __name__ == "__main__":
         if "batch" not in d:
             continue
 
-        match = re.search("batch_(.*?)-", d)
+        match = re.search("batch_(.*?)_", d)
         if match:
             i = int(match.group(1))
         else:
