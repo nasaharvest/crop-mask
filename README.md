@@ -29,8 +29,6 @@ These can be used to create annual and in season crop maps.
     conda env create -f environment-dev.yml   # Creates environment
     conda activate landcover-mapping      # Activates environment
     ```
-
-
 2. [OPTIONAL] When adding new labeled data, Google Earth Engine is used to export Satellite data. To authenticate Earth Engine run:
     ```bash
     earthengine authenticate                # Authenticates Earth Engine
