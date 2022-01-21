@@ -12,6 +12,7 @@ These can be used to create annual and in season crop maps.
 ## Contents
 
 -   [1. Setting up a local environment](#1-setting-up-a-local-environment)
+-   [1.1. Setting up local environment for running shapefile notebook](#1.1-setting-up-local-environment-for-running-shapefile-notebook)
 -   [2. Training a new model](#2-training-a-new-model)
 -   [3. Running inference locally](#3-running-inference-locally)
 -   [4. Running inference at scale (on GCP)](#4-running-inference-at-scale--on-gcp-)
@@ -20,7 +21,7 @@ These can be used to create annual and in season crop maps.
 -   [7. Acknowledgments](#7-acknowledgments)
 -   [8. Reference](#8-reference)
 
-## 1. Setting up a local environment
+## 1. Setting up a local environment for development
 
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
@@ -51,6 +52,17 @@ These can be used to create annual and in season crop maps.
 4. [OPTIONAL] Weights and Biases is used for logging model training, to train and view logs run:
     ```bash
     wandb login
+    ```
+
+## 1.1 Setting up local environment for running shapefile notebook
+1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
+    ```bash
+    conda env create -f environment-lite.yml   # Creates environment
+    conda activate landcover-lite      # Activates environment
+    ```
+2. Start the jupyter server by running:
+    ```bash
+    jupyter notebook
     ```
 
 ## 2. Adding new labeled data
