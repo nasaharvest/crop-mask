@@ -1,0 +1,5 @@
+outs:
+- md5: 015a01778bf4299ca2fb224a8420d72c.dir
+  size: 1065547
+  nfiles: 12
+  path: ref_samples_area
