@@ -1,4 +1,3 @@
-from datetime import date, timedelta
 from pathlib import Path
 from unittest import TestCase
 
@@ -6,39 +5,25 @@ import pandas as pd
 import tempfile
 import shutil
 
+from src.ETL.constants import SUBSET
 from src.ETL.processor import Processor
 
 
 class TestProcessor(TestCase):
+    def test_train_val_test_split(self):
+        df = pd.DataFrame({"col": list(range(100))})
 
-    temp_data_dir: Path
+        df = Processor.train_val_test_split(df, (1.0, 0.0, 0.0))
+        expected_subsets = {"training": 100}
+        self.assertEqual(df[SUBSET].value_counts().to_dict(), expected_subsets)
 
-    @classmethod
-    def setUpClass(cls):
-        cls.temp_data_dir = Path(tempfile.mkdtemp())
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.temp_data_dir)
-
-    def test_end_date_using_max_overlap(self):
-        kwargs = {
-            "planting_date_col": pd.to_datetime([date(2019, 11, 1)]),
-            "harvest_date_col": pd.to_datetime([date(2020, 3, 1)]),
-            "end_month_day": (4, 16),
-            "total_days": timedelta(30 * 12),
-        }
-        end_date = Processor.end_date_using_overlap(**kwargs)
-        self.assertEqual(2020, end_date[0].year)
-
-        # Test when range misses end date by a bit
-        kwargs["planting_date_col"] = pd.to_datetime([date(2019, 11, 1)])
-        kwargs["harvest_date_col"] = pd.to_datetime([date(2020, 5, 1)])
-        end_date = Processor.end_date_using_overlap(**kwargs)
-        self.assertEqual(2020, end_date[0].year)
-
-        # Test when range misses end date by a lot
-        kwargs["planting_date_col"] = pd.to_datetime([date(2019, 11, 1)])
-        kwargs["harvest_date_col"] = pd.to_datetime([date(2020, 11, 1)])
-        end_date = Processor.end_date_using_overlap(**kwargs)
-        self.assertEqual(2021, end_date[0].year)
+        df = Processor.train_val_test_split(df, (0.8, 0.1, 0.1))
+        actual_subsets = df[SUBSET].value_counts().to_dict()
+        threshold = 10
+        self.assertTrue(
+            abs(actual_subsets["training"] - 80) < threshold, actual_subsets["training"]
+        )
+        self.assertTrue(
+            abs(actual_subsets["validation"] - 10) < threshold, actual_subsets["validation"]
+        )
+        self.assertTrue(abs(actual_subsets["testing"] - 10) < threshold, actual_subsets["testing"])
