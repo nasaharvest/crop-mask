@@ -9,23 +9,19 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.ETL.constants import BANDS, CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
+from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
 
 from typing import cast, Tuple, Optional, List, Dict, Union
-from src.ETL.ee_boundingbox import BoundingBox
+from src.ETL.boundingbox import BoundingBox
 
 logger = logging.getLogger(__name__)
 
 
 class CropDataset(Dataset):
-
-    bands_to_remove = ["B1", "B10"]
-
     def __init__(
         self,
         df: pd.DataFrame,
         subset: str,
-        remove_b1_b10: bool,
         cache: bool,
         upsample: bool,
         target_bbox: BoundingBox,
@@ -105,7 +101,6 @@ class CropDataset(Dataset):
         # Set parameters needed for __getitem__
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
-        self.remove_b1_b10 = remove_b1_b10
         self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
 
         # Cache dataset if necessary
@@ -117,13 +112,16 @@ class CropDataset(Dataset):
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
 
-    @staticmethod
-    def _compute_num_timesteps(start_col: pd.Series, end_col: pd.Series) -> List[int]:
+    def _compute_num_timesteps(self, start_col: pd.Series, end_col: pd.Series) -> List[int]:
+        df_start_date = pd.to_datetime(start_col).apply(
+            lambda dt: dt.replace(month=self.start_month_index + 1)
+        )
+        df_candidate_end_date = df_start_date.apply(lambda dt: dt.replace(year=dt.year + 1))
+        df_data_end_date = pd.to_datetime(end_col)
+        df_end_date = pd.DataFrame([df_data_end_date, df_candidate_end_date]).min(axis=0)
+        # Pick min available end date
         timesteps = (
-            ((pd.to_datetime(end_col) - pd.to_datetime(start_col)) / np.timedelta64(1, "M"))
-            .round()
-            .unique()
-            .astype(int)
+            ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().unique().astype(int)
         )
         return [int(t) for t in timesteps]
 
@@ -135,6 +133,8 @@ class CropDataset(Dataset):
         # update the normalizing dict
         # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
         # https://www.johndcook.com/blog/standard_deviation/
+        if array is None:
+            raise ValueError("Array is None")
 
         # initialize
         if "mean" not in norm_dict:
@@ -200,36 +200,6 @@ class CropDataset(Dataset):
         else:
             return output.shape[1]
 
-    def remove_bands(self, x: np.ndarray) -> np.ndarray:
-        """This nested function is so that
-        _remove_bands can be called from an unitialized
-        dataset, speeding things up at inference while still
-        keeping the convenience of not having to check if remove
-        bands is true all the time.
-        """
-        if self.remove_b1_b10:
-            return self._remove_bands(x)
-        else:
-            return x
-
-    @classmethod
-    def _remove_bands(cls, x: np.ndarray) -> np.ndarray:
-        """
-        Expects the input to be of shape [timesteps, bands]
-        """
-        indices_to_remove: List[int] = []
-        for band in cls.bands_to_remove:
-            indices_to_remove.append(BANDS.index(band))
-
-        bands_index = 1 if len(x.shape) == 2 else 2
-        indices_to_keep = [i for i in range(x.shape[bands_index]) if i not in indices_to_remove]
-        if len(x.shape) == 2:
-            # timesteps, bands
-            return x[:, indices_to_keep]
-        else:
-            # batches, timesteps, bands
-            return x[:, :, indices_to_keep]
-
     @property
     def num_output_classes(self) -> Tuple[int, int]:
         return 1, 1
@@ -244,32 +214,28 @@ class CropDataset(Dataset):
                 cast(torch.Tensor, self.weights)[index],
             )
 
-        target_file = Path(self.df.iloc[index][FEATURE_PATH])
+        row = self.df.iloc[index]
+
+        target_file = Path(row[FEATURE_PATH])
 
         # first, we load up the target file
         with target_file.open("rb") as f:
             target_datainstance = pickle.load(f)
 
-        is_global = not target_datainstance.isin(self.target_bbox)
-
-        if hasattr(target_datainstance, "crop_probability"):
-            crop_int = int(target_datainstance.crop_probability >= self.probability_threshold)
-        else:
-            logger.error(
-                "target_datainstance missing mandatory field crop_probability, "
-                "defaulting crop_int to 0"
-            )
-            crop_int = 0
-
-        x = self.remove_bands(x=self._normalize(target_datainstance.labelled_array))
+        x = target_datainstance.labelled_array
+        x = x[self.start_month_index : self.start_month_index + 12]
+        x = self._normalize(x)
 
         # If x is a partial time series, pad it to full length
         max_timesteps = max(self.num_timesteps)
         if x.shape[0] < max_timesteps:
             x = np.concatenate([x, np.full((max_timesteps - x.shape[0], x.shape[1]), np.nan)])
 
+        crop_int = int(row["is_crop"])
+        is_global = int(not row["is_local"])
+
         return (
-            torch.from_numpy(x[self.start_month_index :]).float(),
+            torch.from_numpy(x).float(),
             torch.tensor(crop_int).float(),
             torch.tensor(is_global).float(),
         )
