@@ -30,3 +30,4 @@ dependencies:
     - pip:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
+          - cropharvest==0.2.0
