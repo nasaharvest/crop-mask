@@ -17,7 +17,7 @@ import json
 import os
 import sys
 import warnings
-warnings.filterwarnings("ignore")
+# warnings.filterwarnings("ignore")
 
 # Change the working directory to the directory of this script
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
