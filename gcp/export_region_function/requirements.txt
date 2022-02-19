@@ -1,4 +1,4 @@
-cropharvest>=0.2.0
+git+https://git@github.com/nasaharvest/cropharvest.git
 earthengine-api==0.1.264
 google-cloud-firestore
 google-cloud-secret-manager
