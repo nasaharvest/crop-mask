@@ -4,13 +4,13 @@ FROM pytorch/torchserve:0.4.2-cpu as base
 USER root
 
 FROM base as reqs
-COPY gcp/inference/requirements.txt requirements.txt
+COPY requirements-inference.txt requirements.txt
 RUN pip3 install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip3 install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 FROM reqs as build-torchserve
-COPY gcp/inference/handler.py /home/model-server
+COPY src/torchserve_handler.py /home/model-server/handler.py
 
 # Ensures that everytime models.dvc is updated 
 # This following docker steps are rerun
@@ -29,7 +29,7 @@ RUN for m in $MODELS; \
     --export-path=model-store; \
     done
 
-ADD gcp/inference/start.sh /usr/local/bin/start.sh
+ADD scripts/torchserve_start.sh /usr/local/bin/start.sh
 RUN chmod 777 /usr/local/bin/start.sh
 ENV MODELS ${MODELS}
 CMD ["/usr/local/bin/start.sh", "\"${MODELS}\""]
