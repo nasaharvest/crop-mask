@@ -16,7 +16,7 @@ from src.ETL.dataset import load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
-def check_empty_features(features_df, remove=False):
+def check_empty_features(features_df: pd.DataFrame, remove: bool = False) -> bool:
     """
     Some exported tif data may have nan values
     """
@@ -32,7 +32,7 @@ def check_empty_features(features_df, remove=False):
         return False
 
 
-def check_duplicates(features_df: pd.DataFrame, remove=False):
+def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> bool:
     """
     Can happen when not all tifs have been downloaded and different labels are matched to same tif
     """
@@ -61,6 +61,8 @@ if __name__ == "__main__":
         "Mali",
         "Rwanda",
         "Togo",
+        "Ethiopia_Bure_Jimma_2019",
+        "Ethiopia_Bure_Jimma_2020",
     ]
 
     for d in labeled_datasets:
