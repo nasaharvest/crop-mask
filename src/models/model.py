@@ -1,13 +1,9 @@
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 
 import numpy as np
-import logging
 import json
 import pandas as pd
-import xarray as xr
-from tqdm import tqdm
-from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
+from typing import Callable, Tuple, Dict, Any, Type, Optional, List, Union
 
 import torch
 from torch.nn import functional as F
@@ -24,16 +20,13 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
-from src.ETL.ee_boundingbox import BoundingBox
+from src.ETL.boundingbox import BoundingBox
 from src.ETL.constants import SUBSET
 from src.utils import data_dir, get_dvc_dir, set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
-from .utils import tif_to_np, preds_to_xr
 from .forecaster import Forecaster
 from .classifier import Classifier
-
-logger = logging.getLogger(__name__)
 
 
 class Model(pl.LightningModule):
@@ -61,7 +54,6 @@ class Model(pl.LightningModule):
         parameter is only used if hparams.multi_headed is True. Default = 10
     :param hparams.noise_factor: The standard deviation of the random noise to add to the
         raw inputs to the classifier. Default = 0.1
-    :param hparams.remove_b1_b10: Whether or not to remove the B1 and B10 bands. Default = True
     :param hparams.forecast: Whether or not to forecast the partial time series. Default = True
     :param hparams.cache: Whether to load all the data into memory during training. Default = True
     :param hparams.upsample: Whether to oversample the under-represented class so that each class
@@ -77,6 +69,8 @@ class Model(pl.LightningModule):
         set_seed()
 
         self.hparams = hparams
+
+        self.batch_size = hparams.batch_size
 
         self.target_bbox = BoundingBox(
             min_lat=hparams.min_lat,
@@ -99,10 +93,10 @@ class Model(pl.LightningModule):
         self.start_month = hparams.start_month if "start_month" in hparams else "April"
 
         normalizing_dict_key = hparams.train_datasets
+        if self.start_month:
+            normalizing_dict_key += f"_{self.start_month}"
         if self.up_to_year:
             normalizing_dict_key += f"_{self.up_to_year}"
-        if self.start_month != "April":
-            normalizing_dict_key += f"_{self.start_month}"
 
         if normalizing_dict_key not in all_dataset_params:
             dataset = self.get_dataset(subset="training", cache=False, upsample=False)
@@ -179,13 +173,13 @@ class Model(pl.LightningModule):
         dfs = []
         for d in labeled_datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
-            if d.dataset in eval_datasets:
-                df = d.load_labels(allow_processing=False)
+            if d.dataset in eval_datasets.split(","):
+                df = d.load_labels(allow_processing=False, fail_if_missing_features=True)
                 dfs.append(df[df[SUBSET] == subset])
 
             # If dataset is only used for training, take the whole dataframe
-            elif subset == "training" and d.dataset in train_datasets:
-                df = d.load_labels(allow_processing=False)
+            elif subset == "training" and d.dataset in train_datasets.split(","):
+                df = d.load_labels(allow_processing=False, fail_if_missing_features=False)
                 dfs.append(df)
 
         return pd.concat(dfs)
@@ -203,7 +197,6 @@ class Model(pl.LightningModule):
         return CropDataset(
             subset=subset,
             df=df,
-            remove_b1_b10=self.hparams.remove_b1_b10,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
@@ -242,89 +235,6 @@ class Model(pl.LightningModule):
                 upsample=False,
             ),
             batch_size=self.hparams.batch_size,
-        )
-
-    def predict(
-        self,
-        path_to_file: Path,
-        with_forecaster: bool,
-        batch_size: int = 64,
-        add_ndvi: bool = True,
-        add_ndwi: bool = False,
-        nan_fill: float = 0,
-        days_per_timestep: int = 30,
-        local_head: bool = True,
-        use_gpu: bool = True,
-        disable_tqdm: bool = False,
-    ) -> xr.Dataset:
-
-        # check if a GPU is available, and if it is
-        # move the model onto the GPU
-        device: Optional[torch.device] = None
-        if use_gpu:
-            use_cuda = torch.cuda.is_available()
-            if not use_cuda:
-                logger.warning("No GPU - not using one")
-            else:
-                logger.info("Using GPU")
-            device = torch.device("cuda" if use_cuda else "cpu")
-            self.to(device)
-
-        self.eval()
-
-        input_data = tif_to_np(
-            path_to_file,
-            add_ndvi=add_ndvi,
-            add_ndwi=add_ndwi,
-            nan=nan_fill,
-            normalizing_dict=self.normalizing_dict,
-            days_per_timestep=days_per_timestep,
-        )
-
-        if with_forecaster:
-            input_data.x = input_data.x[:, : self.input_months, :]
-
-        predictions: List[np.ndarray] = []
-        cur_i = 0
-
-        pbar = tqdm(total=input_data.x.shape[0] - 1, disable=disable_tqdm)
-        while cur_i < (input_data.x.shape[0] - 1):
-            # fmt: off
-            batch_x_np = input_data.x[cur_i: cur_i + batch_size]
-            # fmt: on
-            if self.hparams.remove_b1_b10:
-                batch_x_np = CropDataset._remove_bands(batch_x_np)
-            batch_x = torch.from_numpy(batch_x_np).float()
-
-            if use_gpu and (device is not None):
-                batch_x = batch_x.to(device)
-
-            with torch.no_grad():
-                if with_forecaster:
-                    batch_x_next = self.forecaster(batch_x)
-                    batch_x = torch.cat((batch_x, batch_x_next), dim=1)
-
-                global_preds, local_preds = self.classifier(batch_x)
-                if local_head:
-                    batch_preds = local_preds
-                else:
-                    batch_preds = global_preds
-
-                # back to the CPU, if necessary
-                batch_preds = batch_preds.cpu()
-
-            predictions.append(cast(torch.Tensor, batch_preds).numpy())
-            cur_i += batch_size
-            pbar.update(batch_size)
-
-        all_preds = np.concatenate(predictions, axis=0)
-        if len(all_preds.shape) == 1:
-            all_preds = np.expand_dims(all_preds, axis=-1)
-
-        return preds_to_xr(
-            all_preds,
-            lats=input_data.lat,
-            lons=input_data.lon,
         )
 
     def _output_metrics(
@@ -656,7 +566,7 @@ class Model(pl.LightningModule):
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
             "--learning_rate": (float, 0.001),
-            "--batch_size": (int, 256),
+            "--batch_size": (int, 128),
             "--probability_threshold": (float, 0.5),
             "--input_months": (int, 12),
             "--alpha": (float, 10),
@@ -667,10 +577,6 @@ class Model(pl.LightningModule):
 
         for key, val in parser_args.items():
             parser.add_argument(key, type=val[0], default=val[1])
-
-        parser.add_argument("--remove_b1_b10", dest="remove_b1_b10", action="store_true")
-        parser.add_argument("--keep_b1_b10", dest="remove_b1_b10", action="store_false")
-        parser.set_defaults(remove_b1_b10=True)
 
         parser.add_argument("--forecast", dest="forecast", action="store_true")
         parser.add_argument("--do_not_forecast", dest="forecast", action="store_false")
@@ -692,4 +598,4 @@ class Model(pl.LightningModule):
         model_path = get_dvc_dir("models") / f"{self.hparams.model_name}.pt"
         if model_path.exists():
             model_path.unlink()
-        sm.save(model_path)
+        sm.save(str(model_path))
