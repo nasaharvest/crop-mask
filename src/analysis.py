@@ -28,7 +28,7 @@ def sentinel_as_tci(sentinel_ds: xr.DataArray, scale: bool = True) -> xr.DataArr
 def plot_results(model_preds: xr.Dataset, tci_path: Path, savepath: Path, prefix: str = "") -> None:
 
     multi_output = len(model_preds.data_vars) > 1
-    da, _ = Engineer.load_tif(tci_path, start_date=datetime(2020, 1, 1))
+    da, _ = Engineer.load_tif(tci_path, start_date=datetime(2020, 1, 1), num_timesteps=None)
 
     tci = sentinel_as_tci(da, scale=False).isel(time=-1)
 
