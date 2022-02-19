@@ -126,7 +126,7 @@ class Processor:
             df[CROP_PROB] = self.crop_prob
         else:
             df[CROP_PROB] = self.crop_prob(df)
-            if df[CROP_PROB].dtype == bool:
+            if df[CROP_PROB].dtype == bool or df[CROP_PROB].dtype == int:
                 df[CROP_PROB] = df[CROP_PROB].astype(float)
             elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
