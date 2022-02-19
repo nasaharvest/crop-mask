@@ -14,12 +14,11 @@ These can be used to create annual and in season crop maps.
 -   [1. Setting up a local environment](#1-setting-up-a-local-environment)
 -   [1.1. Setting up local environment for running shapefile notebook](#1.1-setting-up-local-environment-for-running-shapefile-notebook)
 -   [2. Training a new model](#2-training-a-new-model)
--   [3. Running inference locally](#3-running-inference-locally)
--   [4. Running inference at scale (on GCP)](#4-running-inference-at-scale--on-gcp-)
--   [5. Tests](#5-tests)
--   [6. Previously generated crop maps](#6-previously-generated-crop-maps)
--   [7. Acknowledgments](#7-acknowledgments)
--   [8. Reference](#8-reference)
+-   [3. Running inference at scale (on GCP)](#3-running-inference-at-scale--on-gcp-)
+-   [4. Tests](#4-tests)
+-   [5. Previously generated crop maps](#5-previously-generated-crop-maps)
+-   [6. Acknowledgments](#6-acknowledgments)
+-   [7. Reference](#7-reference)
 
 ## 1. Setting up a local environment for development
 
@@ -109,25 +108,7 @@ python scripts/models_train_and_evaluate.py
 
 Any other valid model parameter can be added to this entry.
 
-## 3. Running inference locally
-
-**Prerequisite: Getting data for inference:**
-
-1. Ensure local environment is set up.
-2. Specify the destination folder and bounding box in scripts/export_region.py and run
-    ```bash
-    python scripts/export_region.py
-    ```
-3. Google Earth Engine will automatically export satellite images to Google Drive.
-4. Once the satellite data has been exported, download it from Google Drive into [data/raw](data/raw).
-
-**Actual inference**
-
-```bash
-python predict.py --model_name "Kenya" --local_path_to_tif_files "../data/raw/<dataset name>
-```
-
-## 4. Running inference at scale (on GCP)
+## 3. Running inference at scale (on GCP)
 
 **Deploying**
 
@@ -185,7 +166,7 @@ gsutil -m cp -n -r gs://crop-mask-preds/$MODEL/$DATASET/ .
 
 # Run gdal merge script
 cd crop-mask
-python gcp/merger/main.py --p ../$DATASET
+python scripts/merge.py --p ../$DATASET
 
 # [OPTIONAL] Upload COG tif output to Google Cloud Storage
 gsutil cp ../$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
@@ -194,7 +175,7 @@ gsutil cp ../$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
 earthengine upload image --asset_id users/izvonkov/$DATASET -ts $START_DATE -te $END_DATE gs://crop-mask-preds-merged/$DATASET
 ```
 
-## 5. Tests
+## 4. Tests
 
 The following tests can be run against the pipeline:
 
@@ -209,7 +190,7 @@ python -m unittest integration_test_labeled.py
 python -m unittest integration_test_predict.py
 ```
 
-## 6. Previously generated crop maps
+## 5. Previously generated crop maps
 
 Google Earth Engine:
 
@@ -220,11 +201,11 @@ Zenodo
 
 -   [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
 
-## 7. Acknowledgments
+## 6. Acknowledgments
 
 This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
 
-## 8. Reference
+## 7. Reference
 
 If you find this code useful, please cite the following paper:
 
