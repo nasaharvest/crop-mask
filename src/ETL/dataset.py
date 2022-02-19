@@ -103,7 +103,9 @@ def find_matching_point(
     Additional value is given to a grid coordinate that is close to the center of the tif.
     """
     start_date = datetime.strptime(start, "%Y-%m-%d")
-    tif_slope_tuples = [Engineer.load_tif(p, start_date=start_date) for p in tif_paths]
+    tif_slope_tuples = [
+        Engineer.load_tif(p, start_date=start_date, num_timesteps=None) for p in tif_paths
+    ]
     if len(tif_slope_tuples) > 1:
         min_distance_from_point = np.inf
         min_distance_from_center = np.inf
@@ -148,6 +150,11 @@ def create_pickled_labeled_dataset(labels):
             label_lat=label[LAT],
         )
 
+        if labelled_array is None:
+            with open(missing_data_file, "a") as f:
+                f.write("\n" + label[FEATURE_FILENAME])
+            continue
+
         instance = CropDataInstance(
             labelled_array=labelled_array,
             instance_lat=tif_lat,
@@ -173,6 +180,19 @@ def do_label_and_feature_amounts_match(labels: pd.DataFrame):
         else:
             print(f"\u2714 {subset} amount: {labels_in_subset}")
     return all_subsets_correct_size
+
+
+def load_all_features_as_df() -> pd.DataFrame:
+    features = []
+    files = list(features_dir.glob("*.pkl"))
+    print("------------------------------")
+    print("Loading all features...")
+    for p in files:
+        with p.open("rb") as f:
+            features.append(pickle.load(f))
+    df = pd.DataFrame([feat.__dict__ for feat in features])
+    df["filename"] = files
+    return df
 
 
 @dataclass
@@ -257,7 +277,7 @@ class LabeledDataset:
             )
         return labels
 
-    def create_features(self, disable_gee_export: bool = False):
+    def create_features(self, disable_gee_export: bool = False) -> List[str]:
         """
         Features are the (X, y) pairs that are used to train the model.
         In this case,
@@ -285,7 +305,7 @@ class LabeledDataset:
         labels_with_no_features = labels[~labels[ALREADY_EXISTS]].copy()
         if len(labels_with_no_features) == 0:
             do_label_and_feature_amounts_match(labels)
-            return
+            return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
 
         # -------------------------------------------------
         # STEP 3: Match labels to tif files (X)
@@ -305,11 +325,10 @@ class LabeledDataset:
                 labels_with_no_tifs[START] = pd.to_datetime(labels_with_no_tifs[START]).dt.date
                 labels_with_no_tifs[END] = pd.to_datetime(labels_with_no_tifs[END]).dt.date
                 EarthEngineExporter(
-                    labels=labels_with_no_tifs,
                     check_ee=True,
                     check_gcp=True,
                     dest_bucket="crop-mask-tifs2",
-                ).export_for_labels()
+                ).export_for_labels(labels=labels_with_no_tifs)
 
         # -------------------------------------------------
         # STEP 5: Create the features (X, y)
@@ -318,3 +337,5 @@ class LabeledDataset:
             create_pickled_labeled_dataset(labels=labels_with_tifs_but_no_features)
 
         do_label_and_feature_amounts_match(labels)
+
+        return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
