@@ -118,7 +118,7 @@ class CropDataset(Dataset):
         )
         df_candidate_end_date = df_start_date.apply(lambda dt: dt.replace(year=dt.year + 1))
         df_data_end_date = pd.to_datetime(end_col)
-        df_end_date = pd.DataFrame([df_data_end_date, df_candidate_end_date]).min(axis=0)
+        df_end_date = pd.DataFrame({"1": df_data_end_date, "2": df_candidate_end_date}).min(axis=1)
         # Pick min available end date
         timesteps = (
             ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().unique().astype(int)
@@ -179,7 +179,7 @@ class CropDataset(Dataset):
             x_list: List[torch.Tensor] = []
             y_list: List[torch.Tensor] = []
             weight_list: List[torch.Tensor] = []
-            logger.info("Loading data into memory")
+            print("Loading data into memory")
             for i in tqdm(range(len(self)), desc="Caching files"):
                 x, y, weight = self[i]
                 x_list.append(x)
