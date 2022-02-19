@@ -1,6 +1,0 @@
-cropharvest>=0.2.0
-google-cloud-storage
-netCDF4
-pandas
-rasterio
-xarray
