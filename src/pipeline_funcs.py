@@ -57,6 +57,17 @@ def train_model(
     )
 
     wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
+    wandb_logger.experiment.config.update(
+        {
+            "available_timesteps": model.available_timesteps,
+            "forecast_eval_data": model.forecast_eval_data,
+            "forecast_training_data": model.forecast_training_data,
+            "forecast_timesteps": model.forecast_timesteps,
+            "train_num_timesteps": tuple(model.train_num_timesteps),
+            "eval_num_timesteps": tuple(model.eval_num_timesteps),
+        }
+    )
+
     trainer = pl.Trainer(
         default_save_path=str(data_dir),
         max_epochs=hparams.max_epochs,
