@@ -23,10 +23,8 @@ class Inference:
         self.batch_size = self.model.batch_size
 
     @staticmethod
-    def _start_date_from_str(path: Union[Path, str]) -> datetime:
-        if isinstance(path, str):
-            path = Path(path)
-        dates = re.findall(r"\d{4}-\d{2}-\d{2}", path.stem)
+    def start_date_from_str(path: Union[Path, str]) -> datetime:
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", str(path))
         if len(dates) != 2:
             raise ValueError(f"{path} should have start and end date")
         start_date_str, _ = dates
@@ -83,7 +81,12 @@ class Inference:
             _, batch_preds_local = self.model.forward(batch_x)
         return batch_preds_local.cpu().numpy()
 
-    def run(self, local_path: Path, start_date: Optional[datetime] = None, dest_path: Optional[Path] = None) -> xr.Dataset:
+    def run(
+        self,
+        local_path: Path,
+        start_date: Optional[datetime] = None,
+        dest_path: Optional[Path] = None,
+    ) -> xr.Dataset:
         if start_date is None:
             start_date = self._start_date_from_str(local_path)
         x_np, flat_lat, flat_lon = self._tif_to_np(local_path, start_date, self.normalizing_dict)

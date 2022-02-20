@@ -11,7 +11,7 @@ tif_name = "min_lat=14.9517_min_lon=-86.2507_max_lat=14.9531_max_lon=-86.2493_da
 
 class TestInference(TestCase):
     def test_start_date_from_str(self):
-        actual_start_date = Inference._start_date_from_str(tif_name)
+        actual_start_date = Inference.start_date_from_str(tif_name)
         expected_start_date = datetime(2017, 1, 1, 0, 0)
         self.assertEqual(actual_start_date, expected_start_date)
 
