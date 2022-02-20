@@ -138,21 +138,15 @@ class Model(pl.LightningModule):
         self.forecast_eval_data = self.input_months > min(self.eval_num_timesteps)
         self.forecast_training_data = self.input_months > min(self.train_num_timesteps)
         self.available_timesteps = min(self.eval_num_timesteps + self.train_num_timesteps)
-        to_log = {
-            "forecast_eval_data": self.forecast_eval_data,
-            "forecast_training_data": self.forecast_training_data,
-        }
         if self.input_months > self.available_timesteps:
+            self.forecast_timesteps = (self.input_months - self.available_timesteps)
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
-                output_timesteps=(self.input_months - self.available_timesteps),
+                output_timesteps=self.forecast_timesteps,
                 hparams=hparams,
             )
-            to_log["output_timesteps"] = self.forecaster.output_timesteps
-            to_log["available_timesteps"] = self.available_timesteps
-
-        if self.logger:
-            self.logger.experiment.config.update(to_log)
+        else:
+            self.forecast_timesteps = 0
 
         self.forecaster_loss = F.smooth_l1_loss
 
@@ -481,7 +475,7 @@ class Model(pl.LightningModule):
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
             "--max_epochs": (int, 1000),
-            "--patience": (int, 10),
+            "--patience": (int, 5),
         }
 
         for key, val in parser_args.items():
