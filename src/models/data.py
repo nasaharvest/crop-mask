@@ -2,8 +2,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pickle
-import logging
 
+from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
 
 import torch
@@ -13,8 +13,6 @@ from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MON
 
 from typing import cast, Tuple, Optional, List, Dict, Union
 from src.ETL.boundingbox import BoundingBox
-
-logger = logging.getLogger(__name__)
 
 
 class CropDataset(Dataset):
@@ -28,6 +26,7 @@ class CropDataset(Dataset):
         wandb_logger,
         start_month: str = "April",
         probability_threshold: float = 0.5,
+        input_months: int = 12,
         normalizing_dict: Optional[Dict] = None,
         up_to_year: Optional[int] = None,
     ) -> None:
@@ -38,6 +37,7 @@ class CropDataset(Dataset):
             df = df[pd.to_datetime(df[START]).dt.year <= up_to_year]
 
         self.start_month_index = MONTHS.index(start_month)
+        self.input_months = input_months
 
         df["is_crop"] = df[CROP_PROB] >= probability_threshold
         df["is_local"] = (
@@ -51,8 +51,12 @@ class CropDataset(Dataset):
         local_non_crop = len(df[df["is_local"] & ~df["is_crop"]])
         local_difference = np.abs(local_crop - local_non_crop)
 
+        self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
+
         if wandb_logger:
-            to_log: Dict[str, Union[float, int]] = {}
+            to_log: Dict[str, Union[float, int, List]] = {
+                f"{subset}_num_timesteps": self.num_timesteps
+            }
             if df["is_local"].any():
                 to_log[f"local_{subset}_original_size"] = len(df[df["is_local"]])
                 to_log[f"local_{subset}_crop_percentage"] = round(
@@ -101,7 +105,6 @@ class CropDataset(Dataset):
         # Set parameters needed for __getitem__
         self.probability_threshold = probability_threshold
         self.target_bbox = target_bbox
-        self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
 
         # Cache dataset if necessary
         self.x: Optional[torch.Tensor] = None
@@ -116,7 +119,9 @@ class CropDataset(Dataset):
         df_start_date = pd.to_datetime(start_col).apply(
             lambda dt: dt.replace(month=self.start_month_index + 1)
         )
-        df_candidate_end_date = df_start_date.apply(lambda dt: dt.replace(year=dt.year + 1))
+        df_candidate_end_date = df_start_date.apply(
+            lambda dt: dt + relativedelta(months=+self.input_months)
+        )
         df_data_end_date = pd.to_datetime(end_col)
         df_end_date = pd.DataFrame({"1": df_data_end_date, "2": df_candidate_end_date}).min(axis=1)
         # Pick min available end date
@@ -223,13 +228,12 @@ class CropDataset(Dataset):
             target_datainstance = pickle.load(f)
 
         x = target_datainstance.labelled_array
-        x = x[self.start_month_index : self.start_month_index + 12]
+        x = x[self.start_month_index : self.start_month_index + self.input_months]
         x = self._normalize(x)
 
         # If x is a partial time series, pad it to full length
-        max_timesteps = max(self.num_timesteps)
-        if x.shape[0] < max_timesteps:
-            x = np.concatenate([x, np.full((max_timesteps - x.shape[0], x.shape[1]), np.nan)])
+        if x.shape[0] < self.input_months:
+            x = np.concatenate([x, np.full((self.input_months - x.shape[0], x.shape[1]), np.nan)])
 
         crop_int = int(row["is_crop"])
         is_global = int(not row["is_local"])
