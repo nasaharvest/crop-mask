@@ -6,12 +6,9 @@ from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
 from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE
-import logging
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-
-logger = logging.getLogger(__name__)
 
 # https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2
 min_date = date(2015, 7, 1)
@@ -90,7 +87,7 @@ class Processor:
 
     def process(self, raw_folder: Path) -> pd.DataFrame:
         file_path = raw_folder / self.filename
-        logger.info(f"Reading in {file_path}")
+        print(f"Reading in {file_path}")
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
         elif file_path.suffix == ".csv":
@@ -109,11 +106,6 @@ class Processor:
         if self.clean_df:
             df = self.clean_df(df)
 
-        if self.crop_type_col:
-            df[CROP_TYPE] = df[self.crop_type_col]
-        else:
-            df[CROP_TYPE] = None
-
         if self.sample_from_polygon:
             df = df[df.geometry != None]  # noqa: E711
             df["samples"] = (df.geometry.area / 0.001).astype(int)
@@ -130,6 +122,11 @@ class Processor:
                 df[CROP_PROB] = df[CROP_PROB].astype(float)
             elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
+
+        if self.crop_type_col:
+            df[CROP_TYPE] = df[self.crop_type_col]
+        else:
+            df[CROP_TYPE] = None
 
         if self.start_year:
             df[START] = date(self.start_year, 1, 1)
