@@ -6,7 +6,7 @@ from pathlib import Path
 from google.cloud import storage
 from ts.torch_handler.base_handler import BaseHandler
 
-from src.inference import Inference
+from inference import Inference
 
 temp_dir = tempfile.gettempdir()
 dest_bucket_name = "crop-mask-preds"
@@ -51,7 +51,7 @@ class ModelHandler(BaseHandler):
         sys.path.append(model_dir)
         self.inference_module = Inference(model=self.model)
 
-    def inference(self, data, *args, **kwargs):
+    def preprocess(self, data) -> str:
         print(data)
         print("HANDLER: Starting preprocessing")
         try:
@@ -59,10 +59,15 @@ class ModelHandler(BaseHandler):
         except Exception:
             raise ValueError("'uri' not found.")
 
+        return uri
+
+    def inference(self, data, *args, **kwargs):
+        uri = data
         local_path = self.download_file(uri)
         uri_as_path = Path(uri)
         local_dest_path = Path(tempfile.gettempdir() + f"/pred_{uri_as_path.stem}.nc")
 
+        print("HANDLER: Starting inference")
         self.inference_module.run(local_path=local_path, dest_path=local_dest_path)
         print("HANDLER: Completed inference")
 
