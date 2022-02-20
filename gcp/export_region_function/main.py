@@ -1,18 +1,16 @@
-import datetime
 import logging
 import json
 import tempfile
 import ee
 import os
 
-from datetime import date
+from cropharvest.countries import BBox
+from cropharvest.eo import EarthEngineExporter
+from datetime import datetime
 from flask import abort, Request
 from google.cloud import secretmanager
 from google.cloud import firestore
 from pathlib import Path
-
-from src.ETL.ee_boundingbox import BoundingBox
-from src.ETL.ee_exporter import RegionExporter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ def get_ee_credentials():
     return credentials
 
 
-def is_bbox_too_big(bbox: BoundingBox):
+def is_bbox_too_big(bbox: BBox):
     lat_len = bbox.max_lat - bbox.min_lat
     lon_len = bbox.max_lon - bbox.min_lon
     return lat_len * lon_len > BBOX_LIMIT
@@ -59,10 +57,11 @@ def export_region(request: Request):
     all_model_names = os.environ.get("MODELS").split(" ")
 
     request_json = request.get_json(silent=True)
+    logger.info("Resquest json:")
     logger.info(request_json)
 
     bbox_keys = ["min_lon", "max_lon", "min_lat", "max_lat"]
-    for key in ["model_name", "dataset_name", "year"] + bbox_keys:
+    for key in ["model_name", "version", "start_date", "end_date"] + bbox_keys:
         if key not in request_json:
             abort(400, description=f"{key} is missing from request_json: {request_json}")
 
@@ -70,24 +69,14 @@ def export_region(request: Request):
     if model_name not in all_model_names:
         abort(400, description=f"{model_name} not found in: {all_model_names}")
 
-    dest_folder = request_json["dataset_name"]
-
-    start_year = request_json["year"]
-    start_date = date(start_year, 4, 21)  # Made to match default end date from processor
-    num_timesteps = 12
-    if date(start_year + 1, 4, 21) > date.today():
-        if "num_timesteps" not in request_json:
-            abort(
-                400,
-                description="End date is in the future so num_timesteps must be "
-                f"set in request_json: {request_json}",
-            )
-        num_timesteps = request_json["num_timesteps"]
+    version = request_json["version"]
+    start_date = datetime.strptime(request_json["start_date"], "%Y-%m-%d").date()
+    end_date = datetime.strptime(request_json["end_date"], "%Y-%m-%d").date()
 
     file_dimensions = request_json.get("file_dimensions", 256)
     credentials = get_ee_credentials()
     bbox_args = {k: v for k, v in request_json.items() if k in bbox_keys}
-    bbox = BoundingBox(**bbox_args)
+    bbox = BBox(**bbox_args)
 
     if is_bbox_too_big(bbox):
         abort(
@@ -96,33 +85,32 @@ def export_region(request: Request):
             "Consider splitting it into several small bounding boxes",
         )
     try:
-        ids = RegionExporter(
-            credentials=credentials,
-            file_dimensions=file_dimensions,
-            num_timesteps=num_timesteps,
-        ).export(
-            dest_bucket=dest_bucket,
-            dest_path=f"{model_name}/{dest_folder}",
-            region_bbox=bbox,
+        bbox_name = f"{model_name}/{version}"
+        ids = EarthEngineExporter(
+            credentials=credentials, dest_bucket=dest_bucket, check_ee=True, check_gcp=True
+        ).export_for_bbox(
+            bbox=bbox,
+            bbox_name=bbox_name,
             start_date=start_date,
+            end_date=end_date,
             metres_per_polygon=50000,
+            file_dimensions=file_dimensions,
         )
 
-        id = f"{model_name}_{dest_folder}"
         data = {
             "bbox": bbox.url,
             "model_name": model_name,
-            "dataset_name": dest_folder,
-            "start_year": start_year,
-            "num_timesteps": num_timesteps,
+            "version": version,
+            "start_date": str(start_date),
+            "end_date": str(end_date),
             "complete_ee_tasks": 0,
             "total_ee_tasks": len(ids),
-            "start_time": str(datetime.datetime.now()),
+            "run_start_time": str(datetime.now()),
             "ee_status": "https://us-central1-bsos-geog-harvest1.cloudfunctions.net/ee-status",
             "ee_files_exported": 0,
             "predictions_made": 0,
         }
-        db.collection("crop-mask-runs").document(id).set(data)
+        db.collection("crop-mask-runs").document(bbox_name).set(data)
         return data
 
     except Exception as e:
