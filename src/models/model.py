@@ -17,12 +17,11 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    mean_absolute_error,
 )
 
 from src.ETL.boundingbox import BoundingBox
 from src.ETL.constants import SUBSET
-from src.utils import data_dir, get_dvc_dir, set_seed
+from src.utils import get_dvc_dir, set_seed
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
 from .forecaster import Forecaster
@@ -39,8 +38,6 @@ class Model(pl.LightningModule):
     --------
     The default values for these parameters are set in add_model_specific_args
 
-    :param hparams.data_folder: The path to the data. Default (assumes the model
-        is being run from the scripts directory) = "../data"
     :param hparams.learning_rate: The learning rate. Default = 0.001
     :param hparams.batch_size: The batch size. Default = 64
     :param hparams.probability_threshold: The probability threshold to use to label GeoWiki

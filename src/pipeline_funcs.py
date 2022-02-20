@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
-from src.utils import get_dvc_dir
+from src.utils import get_dvc_dir, data_dir
 
 model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
@@ -58,7 +58,7 @@ def train_model(
 
     wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
     trainer = pl.Trainer(
-        default_save_path=hparams.data_folder,
+        default_save_path=str(data_dir),
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
         checkpoint_callback=False,
