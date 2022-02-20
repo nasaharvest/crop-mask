@@ -18,6 +18,7 @@ gcloud functions deploy export-region \
     --runtime=python37 \
     --entry-point=export_region \
     --timeout=300s \
+    --memory 512MB \
     --set-env-vars DEST_BUCKET=$BUCKET \
     --set-env-vars MODELS="$MODELS"
 
@@ -26,5 +27,5 @@ gcloud functions deploy ee-status \
     --trigger-http \
     --allow-unauthenticated \
     --runtime=python39 \
-    --entry-point=get_status
-
+    --entry-point=get_status \
+    --memory 512MB 
