@@ -72,6 +72,7 @@ These can be used to create annual and in season crop maps.
 4. To create ML ready features run:
 
     ```bash
+    gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
     python scripts/create_features
     ```
 
