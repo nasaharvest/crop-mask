@@ -24,10 +24,7 @@ sys.path.append("..")
 
 from src.pipeline_funcs import model_pipeline  # noqa: E402
 from src.models import Model  # noqa: E402
-from src.utils import get_dvc_dir, metrics_file  # noqa: E402
-
-models_folder = get_dvc_dir("models")
-data_folder = models_folder.parent
+from src.utils import metrics_file, data_dir  # noqa: E402
 
 
 def hparams_from_json(params, parser):
@@ -37,8 +34,6 @@ def hparams_from_json(params, parser):
             val = ",".join(val)
         setattr(hparams, key, val)
 
-    hparams.data_folder = str(data_folder)
-    hparams.model_dir = str(models_folder)
     return hparams
 
 
@@ -55,10 +50,10 @@ if __name__ == "__main__":
     parser.set_defaults(eval_only=False)
     args = parser.parse_args()
 
-    models_json = data_folder / "models.json"
+    models_json = data_dir / "models.json"
 
     if args.retrain_all:
-        all_dataset_params_path = Path(data_folder / "all_dataset_params.json")
+        all_dataset_params_path = Path(data_dir / "all_dataset_params.json")
         if all_dataset_params_path.exists():
             all_dataset_params_path.unlink()
 

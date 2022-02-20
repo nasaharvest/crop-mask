@@ -12,14 +12,10 @@ from src.datasets_labeled import labeled_datasets  # noqa: E402
 from src.ETL.boundingbox import BoundingBox  # noqa: E402
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
-from src.utils import get_dvc_dir  # noqa: E402
 
 all_datasets_str = ",".join(
     [ld.dataset for ld in labeled_datasets if ld.dataset != "one_acre_fund"]
 )
-
-model_folder = get_dvc_dir("models")
-data_folder = model_folder.parent
 
 if __name__ == "__main__":
 
@@ -38,8 +34,6 @@ if __name__ == "__main__":
         default="geowiki_landcover_2017,digitalearthafrica_eastern,Ethiopia,Kenya,Mali,Ethiopia_Tigray_2020",
     )
     parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Tigray_2021")
-    parser.add_argument("--data_folder", type=str, default=str(data_folder))
-    parser.add_argument("--model_dir", type=str, default=str(data_folder / "models"))
     # parser.add_argument("--up_to_year", type=int, default=2020)
     parser.add_argument("--start_month", type=str, default="February")
     parser.add_argument("--input_months", type=int, default=12)
