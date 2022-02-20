@@ -51,22 +51,8 @@ def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> bool:
 
 if __name__ == "__main__":
 
-    datasets_to_process = [
-        "Ethiopia_Tigray_2020",
-        "Ethiopia_Tigray_2021",
-        "geowiki_landcover_2017",
-        "digitalearthafrica_eastern",
-        "Ethiopia",
-        "Kenya",
-        "Mali",
-        "Rwanda",
-        "Togo",
-        "Ethiopia_Bure_Jimma_2019",
-        "Ethiopia_Bure_Jimma_2020",
-    ]
-
     for d in labeled_datasets:
-        if d.dataset in datasets_to_process:
+        if d.dataset != "one_acre_fund":
             d.create_features()
 
     features_df = load_all_features_as_df()
