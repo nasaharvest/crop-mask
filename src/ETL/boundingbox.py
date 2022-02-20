@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 import re
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass

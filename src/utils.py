@@ -1,12 +1,9 @@
 from typing import Tuple
 import torch
 import numpy as np
-import logging
 import random
 from pathlib import Path
 import subprocess
-
-logger = logging.getLogger(__name__)
 
 data_dir = Path(__file__).parent.parent / "data"
 tifs_dir = data_dir / "tifs"

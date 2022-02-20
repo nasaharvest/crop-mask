@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
 from tqdm import tqdm
-import logging
 import pandas as pd
 import pickle
 import numpy as np
@@ -39,8 +38,6 @@ from src.ETL.constants import (
     TIF_PATHS,
 )
 from src.ETL.data_instance import CropDataInstance
-
-logger = logging.getLogger(__name__)
 
 unexported_file = data_dir / "unexported.txt"
 unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
