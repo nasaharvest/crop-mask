@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 from google.cloud import storage
 from ts.torch_handler.base_handler import BaseHandler
+from typing import Tuple
 
 from inference import Inference
 
@@ -15,6 +16,8 @@ dest_bucket_name = "crop-mask-preds"
 class ModelHandler(BaseHandler):
     """
     A custom model handler implementation.
+    The basehandler calls initialize() on server start up and
+    preprocess(), inference(), and postprocess() on each request.
     """
 
     def __init__(self):
@@ -61,21 +64,29 @@ class ModelHandler(BaseHandler):
 
         return uri
 
-    def inference(self, data, *args, **kwargs):
+    def inference(self, data, *args, **kwargs) -> Tuple[str, str]:
         uri = data
         local_path = self.download_file(uri)
         uri_as_path = Path(uri)
         local_dest_path = Path(tempfile.gettempdir() + f"/pred_{uri_as_path.stem}.nc")
 
         print("HANDLER: Starting inference")
-        self.inference_module.run(local_path=local_path, dest_path=local_dest_path)
+        start_date = self.inference_module.start_date_from_str(uri)
+        print(f"HANDLER: Start date: {start_date}")
+        self.inference_module.run(
+            local_path=local_path, start_date=start_date, dest_path=local_dest_path
+        )
         print("HANDLER: Completed inference")
 
         cloud_dest_parent = "/".join(uri_as_path.parts[2:-1])
         cloud_dest_path_str = f"{cloud_dest_parent}/{local_dest_path.name}"
         dest_bucket = storage.Client().get_bucket(dest_bucket_name)
         dest_blob = dest_bucket.blob(cloud_dest_path_str)
-
         dest_blob.upload_from_filename(str(local_dest_path))
-        print(f"HANDLER: Uploaded to gs://{dest_bucket_name}/{cloud_dest_path_str}")
-        return [{"src_uri": uri, "dest_uri": f"gs://{dest_bucket_name}/{cloud_dest_path_str}"}]
+        dest_uri = f"gs://{dest_bucket_name}/{cloud_dest_path_str}"
+        print(f"HANDLER: Uploaded to {dest_uri}")
+        return uri, dest_uri
+
+    def postprocess(self, data):
+        uri, dest_uri = data
+        return [{"src_uri": uri, "dest_uri": dest_uri}]
