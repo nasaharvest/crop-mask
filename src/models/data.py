@@ -54,9 +54,7 @@ class CropDataset(Dataset):
         self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
 
         if wandb_logger:
-            to_log: Dict[str, Union[float, int, List]] = {
-                f"{subset}_num_timesteps": self.num_timesteps
-            }
+            to_log: Dict[str, Union[float, int]] = {}
             if df["is_local"].any():
                 to_log[f"local_{subset}_original_size"] = len(df[df["is_local"]])
                 to_log[f"local_{subset}_crop_percentage"] = round(
