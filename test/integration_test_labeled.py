@@ -15,7 +15,6 @@ sys.path.append("..")
 from src.ETL.constants import ALREADY_EXISTS, FEATURE_FILENAME, LAT, LON, FEATURE_PATH, START, END
 from src.ETL.data_instance import CropDataInstance
 from src.ETL.dataset import do_label_and_feature_amounts_match, load_all_features_as_df
-from src.utils import features_dir, memoize  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
