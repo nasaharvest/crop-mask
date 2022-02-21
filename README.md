@@ -42,12 +42,6 @@ These can be used to create annual and in season crop maps.
     dvc pull data/processed                   # For labeled data analysis
     ```
 
-    If you get an "invalid grant" error, you may need to run:
-
-    ```bash
-    gcloud auth application-default login
-    ```
-
 4. [OPTIONAL] Weights and Biases is used for logging model training, to train and view logs run:
     ```bash
     wandb login
@@ -73,7 +67,7 @@ These can be used to create annual and in season crop maps.
 
     ```bash
     gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
-    python scripts/create_features
+    python scripts/create_features.py
     ```
 
 5. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
@@ -81,33 +75,16 @@ These can be used to create annual and in season crop maps.
 <img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
 
 ## 2. Training a new model
-
-Add a new entry to [data/models.json](data/models.json), for example:
-
-```json
-{
-    "model_name": "Ethiopia_Tigray_2021",
-    "min_lon": 36.45,
-    "max_lon": 40.00,
-    "min_lat": 12.25,
-    "max_lat": 14.895,
-    "eval_datasets": ["Ethiopia_Tigray_2021"],
-    "train_datasets": ["geowiki_landcover_2017" "Ethiopia"]
-}
+```bash
+python scripts/model_train.py \
+    --min_lon 36.45 \
+    --max_lon 40.00 \
+    --min_lat 12.25 \
+    -- max_lat 14.895 \
+    --model_name Ethiopia_Tigray_2020 \
+    --eval_datasets Ethiopia_Tigray_2020
 ```
-
-Then to train and evaluate the model run:
-
-```python
-python scripts/models_train_and_evaluate.py
-```
-
-**Json entry keys**
-- `train_datasets` which datasets to train on
-- `eval_datasets` which datasets to evaluate on
-- `min/max_lat/lon` tells the model which items to consider in the local and global head
-
-Any other valid model parameter can be added to this entry.
+After training is complete a new entry will be added to [data/models.json](data/models.json) with metrics and a link to all configuration parameters.
 
 ## 3. Running inference at scale (on GCP)
 
