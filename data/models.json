@@ -1,24 +1,24 @@
 {
     "Ethiopia_Tigray_2020": {
         "metrics": {
-            "accuracy": 0.8057,
-            "f1_score": 0.6735,
-            "f1_score_max": 0.6735,
-            "precision_score": 0.6306,
-            "recall_score": 0.7226,
-            "roc_auc_score": 0.8525
+            "accuracy": 0.8076,
+            "f1_score": 0.6757,
+            "f1_score_max": 0.6757,
+            "precision_score": 0.6329,
+            "recall_score": 0.7246,
+            "roc_auc_score": 0.8533
         },
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/cmmw9peh"
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1xws3n3i"
     },
     "Ethiopia_Tigray_2021": {
         "metrics": {
-            "accuracy": 0.8061,
-            "f1_score": 0.7177,
-            "f1_score_max": 0.7177,
-            "precision_score": 0.7177,
-            "recall_score": 0.7177,
-            "roc_auc_score": 0.8492
+            "accuracy": 0.814,
+            "f1_score": 0.7273,
+            "f1_score_max": 0.7273,
+            "precision_score": 0.7317,
+            "recall_score": 0.7229,
+            "roc_auc_score": 0.8613
         },
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/u8lzllj9"
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ipmbpo4"
     }
 }
