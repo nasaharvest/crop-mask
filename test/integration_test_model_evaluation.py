@@ -1,6 +1,6 @@
 from sklearn.metrics import f1_score
 from tqdm import tqdm
-from typing import Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple
 from unittest import TestCase
 import json
 import torch
@@ -12,14 +12,14 @@ from src.utils import get_dvc_dir, models_file
 
 class IntegrationTestModelEvaluation(TestCase):
 
-    scores: List[Tuple[str, Optional[float], Optional[float], Optional[float]]] = []
+    scores: List[Tuple[Any, ...]] = []
 
     @classmethod
     def setUpClass(cls) -> None:
 
         model_dir = get_dvc_dir("models")
         with models_file.open("rb") as f:
-            models_dict = json.load(f)
+            models_dict: Dict[str, Any] = json.load(f)
 
         for model_name, model_dict in tqdm(models_dict.items()):
 
@@ -59,23 +59,23 @@ class IntegrationTestModelEvaluation(TestCase):
 
             trainer_f1 = round(trainer.callback_metrics["f1_score"], 4)
 
-            # cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
 
             # Can't load model.pt on GEOG cluster so manually skipping
-            if not (model_dir / f"{model_name}.pt").exists():
-                cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
-                continue
+            # if not (model_dir / f"{model_name}.pt").exists():
+            #     cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+            #     continue
 
-            model_pt = torch.jit.load(str(model_dir / f"{model_name}.pt"))
-            model_pt.eval()
+            # model_pt = torch.jit.load(str(model_dir / f"{model_name}.pt"))
+            # model_pt.eval()
 
-            with torch.no_grad():
-                y_pred_pt = model_pt(x)[1].numpy()
+            # with torch.no_grad():
+            #     y_pred_pt = model_pt(x)[1].numpy()
 
-            y_pred_pt_binary = y_pred_pt > 0.5
-            pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
+            # y_pred_pt_binary = y_pred_pt > 0.5
+            # pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
 
-            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
+            # cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
 
     def test_model_eval(self):
         no_differences = True

@@ -9,7 +9,7 @@ from cropharvest.eo import EarthEngineExporter
 from datetime import datetime
 from flask import abort, Request
 from google.cloud import secretmanager
-from google.cloud import firestore
+from google.cloud import firestore  # type: ignore
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)

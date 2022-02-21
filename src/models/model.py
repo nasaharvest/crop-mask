@@ -79,12 +79,11 @@ class Model(pl.LightningModule):
         # --------------------------------------------------
         # Normalizing dicts
         # --------------------------------------------------
+        all_dataset_params: Dict[str, Any] = {}
         all_dataset_params_path = data_dir / "all_dataset_params.json"
         if all_dataset_params_path.exists():
-            with (data_dir / "all_dataset_params.json").open() as f:
+            with all_dataset_params_path.open() as f:
                 all_dataset_params = json.load(f)
-        else:
-            all_dataset_params: Dict[str, Any] = {}
 
         self.input_months = self.hparams.input_months
         self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None

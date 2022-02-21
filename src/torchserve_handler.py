@@ -3,7 +3,7 @@ import tempfile
 import time
 
 from pathlib import Path
-from google.cloud import storage
+from google.cloud import storage  # type: ignore
 from ts.torch_handler.base_handler import BaseHandler
 from typing import Tuple
 
