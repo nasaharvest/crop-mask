@@ -21,7 +21,7 @@ from sklearn.metrics import (
 
 from src.ETL.boundingbox import BoundingBox
 from src.ETL.constants import SUBSET
-from src.utils import get_dvc_dir, set_seed
+from src.utils import get_dvc_dir, set_seed, data_dir
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
 from .forecaster import Forecaster
@@ -79,12 +79,12 @@ class Model(pl.LightningModule):
         # --------------------------------------------------
         # Normalizing dicts
         # --------------------------------------------------
-        # all_dataset_params_path = data_dir / "all_dataset_params.json"
-        # if all_dataset_params_path.exists():
-        #     with (data_dir / "all_dataset_params.json").open() as f:
-        #         all_dataset_params = json.load(f)
-        # else:
-        all_dataset_params = {}
+        all_dataset_params_path = data_dir / "all_dataset_params.json"
+        if all_dataset_params_path.exists():
+            with (data_dir / "all_dataset_params.json").open() as f:
+                all_dataset_params = json.load(f)
+        else:
+            all_dataset_params: Dict[str, Any] = {}
 
         self.input_months = self.hparams.input_months
         self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None
@@ -98,7 +98,12 @@ class Model(pl.LightningModule):
 
         if normalizing_dict_key not in all_dataset_params:
             train_dataset = self.get_dataset(subset="training", cache=False, upsample=False)
-            val_dataset = self.get_dataset(subset="validation", cache=False, upsample=False)
+            val_dataset = self.get_dataset(
+                subset="validation",
+                cache=False,
+                upsample=False,
+                normalizing_dict=train_dataset.normalizing_dict,
+            )
             # we save the normalizing dict because we calculate weighted
             # normalization values based on the datasets we combine.
             # The number of instances per dataset (and therefore the weights) can
@@ -116,13 +121,13 @@ class Model(pl.LightningModule):
                 },
             }
 
-            # with all_dataset_params_path.open("w") as f:
-            #     json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
+            with all_dataset_params_path.open("w") as f:
+                json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
 
         dataset_params = all_dataset_params[normalizing_dict_key]
-        self.train_num_timesteps = dataset_params["train_num_timesteps"]
-        self.eval_num_timesteps = dataset_params["val_num_timesteps"]
-        self.input_size = dataset_params["input_size"]
+        self.train_num_timesteps: List[int] = dataset_params["train_num_timesteps"]
+        self.eval_num_timesteps: List[int] = dataset_params["val_num_timesteps"]
+        self.input_size: int = dataset_params["input_size"]
 
         # Normalizing dict that is exposed
         self.normalizing_dict_jit: Dict[str, List[float]] = dataset_params["normalizing_dict"]
@@ -139,7 +144,7 @@ class Model(pl.LightningModule):
         self.forecast_training_data = self.input_months > min(self.train_num_timesteps)
         self.available_timesteps = min(self.eval_num_timesteps + self.train_num_timesteps)
         if self.input_months > self.available_timesteps:
-            self.forecast_timesteps = (self.input_months - self.available_timesteps)
+            self.forecast_timesteps = self.input_months - self.available_timesteps
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
                 output_timesteps=self.forecast_timesteps,
@@ -153,6 +158,9 @@ class Model(pl.LightningModule):
         self.classifier = Classifier(input_size=self.input_size, hparams=hparams)
         self.global_loss_function: Callable = F.binary_cross_entropy
         self.local_loss_function: Callable = F.binary_cross_entropy
+
+        # Used during training to track max f1_score
+        self.f1_scores: List[float] = []
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.forecast_eval_data:
@@ -256,6 +264,8 @@ class Model(pl.LightningModule):
         output_dict["f1_score"] = f1_score(labels, preds)
         output_dict["accuracy"] = accuracy_score(labels, preds)
 
+        self.f1_scores.append(output_dict["f1_score"])
+        output_dict["f1_score_max"] = max(self.f1_scores)
         return output_dict
 
     def add_noise(self, x: torch.Tensor, training: bool) -> torch.Tensor:
@@ -324,7 +334,7 @@ class Model(pl.LightningModule):
         x, label, is_global = batch
 
         loss: Union[float, torch.Tensor] = 0
-        output_dict = {}
+        output_dict: Dict[str, Union[float, torch.Tensor, Dict]] = {}
 
         if self.forecast_eval_data or (training and self.forecast_training_data):
             # -------------------------------------------------------------------------------
@@ -367,7 +377,7 @@ class Model(pl.LightningModule):
             if training:
                 # Use the original AND forecasted time series to train
                 if x_has_nans:
-                    # Use the forecasted time series and the original full time series which are available
+                    # Use forecasted time series and the original full time series if available
                     nan_batch_index = torch.isnan(x).any(dim=1).any(dim=1)
                     x_full_time_series_w_noise = self.add_noise(
                         x[~nan_batch_index], training=training
@@ -377,7 +387,7 @@ class Model(pl.LightningModule):
                     label = torch.cat((label[~nan_batch_index], label), dim=0)
                     is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
                 else:
-                    # Use the forecasted time series and original full time series for training
+                    # Use forecasted time series and original full time series for training
                     x = torch.cat((x, final_encoded_input), dim=0)
                     label = torch.cat((label, label), dim=0)
                     is_global = torch.cat((is_global, is_global), dim=0)
@@ -455,6 +465,8 @@ class Model(pl.LightningModule):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         logs = {"val_loss": avg_loss, "epoch": self.current_epoch}
         logs.update(self._interpretable_metrics(outputs, "local_"))
+        if self.current_epoch > 0 and self.f1_scores[-1] == max(self.f1_scores):
+            self.trainer.save_checkpoint(get_dvc_dir("models") / f"{self.hparams.model_name}.ckpt")
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
@@ -475,7 +487,7 @@ class Model(pl.LightningModule):
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
             "--max_epochs": (int, 1000),
-            "--patience": (int, 5),
+            "--patience": (int, 10),
         }
 
         for key, val in parser_args.items():
