@@ -13,7 +13,7 @@ sys.path.append("..")
 from src.pipeline_funcs import run_evaluation  # noqa: E402
 
 if __name__ == "__main__":
-    model_name = "Ethiopia_Tigray_2021"
+    model_name = "Ethiopia_Tigray_2020"
     model_ckpt_path = Path(f"../data/models/{model_name}.ckpt")
     _, metrics = run_evaluation(model_ckpt_path)
     print(metrics)

@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
-from src.utils import get_dvc_dir, data_dir
+from src.utils import get_dvc_dir, data_dir, models_file
 
 model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
@@ -115,8 +115,7 @@ def run_evaluation(
         for k, v in alternative_metrics.items():
             metrics[f"thresh{alternative_threshold}_{k}"] = v
 
-    model_json_path = data_dir / "models.json"
-    with model_json_path.open() as f:
+    with models_file.open() as f:
         models_dict = json.load(f)
 
     models_dict[model.hparams.model_name] = {
@@ -124,7 +123,7 @@ def run_evaluation(
         "metrics": metrics,
     }
 
-    with model_json_path.open("w") as f:
+    with models_file.open("w") as f:
         json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
 
     return model, metrics
