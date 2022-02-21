@@ -9,13 +9,10 @@ from cropharvest.eo import EarthEngineExporter
 from datetime import datetime
 from flask import abort, Request
 from google.cloud import secretmanager
-from google.cloud import firestore  # type: ignore
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-db = firestore.Client()
 
 BBOX_LIMIT = 25
 SERVICE_ACCOUNT = "bsos-geog-harvest1@appspot.gserviceaccount.com"
@@ -61,7 +58,7 @@ def export_region(request: Request):
     else:
         raise ValueError("MODELS is not set")
 
-    request_json = request.get_json()
+    request_json = request.get_json()  # type: ignore
     logger.info("Resquest json:")
     logger.info(request_json)
 
@@ -115,7 +112,7 @@ def export_region(request: Request):
             "ee_files_exported": 0,
             "predictions_made": 0,
         }
-        db.collection("crop-mask-runs").document(bbox_name).set(data)
+
         return data
 
     except Exception as e:
