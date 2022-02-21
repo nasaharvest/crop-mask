@@ -1,32 +1,29 @@
 from sklearn.metrics import f1_score
 from tqdm import tqdm
+from typing import Dict, List, Tuple, Optional
 from unittest import TestCase
 import json
 import torch
 import pytorch_lightning as pl
 
 from src.models.model import Model
-from src.utils import get_dvc_dir, metrics_file
+from src.utils import get_dvc_dir, models_file
 
 
 class IntegrationTestModelEvaluation(TestCase):
+
+    scores: List[Tuple[str, Optional[float], Optional[float], Optional[float]]] = []
+
     @classmethod
     def setUpClass(cls) -> None:
-        cls.scores = []
 
         model_dir = get_dvc_dir("models")
-        with metrics_file.open("r") as f:
-            model_metrics = json.load(f)
+        with models_file.open("rb") as f:
+            models_dict = json.load(f)
 
-        for model_name, metric_dict in tqdm(model_metrics.items()):
-            if "encoded_val_local_f1_score" in metric_dict:
-                key = "encoded_val_local_f1_score"
-            elif "unencoded_val_local_f1_score" in metric_dict:
-                key = "unencoded_val_local_f1_score"
-            else:
-                raise ValueError(f"No F1 score in {metric_dict}")
+        for model_name, model_dict in tqdm(models_dict.items()):
 
-            recorded_f1 = metric_dict[key]
+            recorded_f1 = model_dict["metrics"]["f1_score"]
 
             if not (model_dir / f"{model_name}.ckpt").exists():
                 cls.scores.append((model_name, recorded_f1, None, None, None))
@@ -60,25 +57,25 @@ class IntegrationTestModelEvaluation(TestCase):
             trainer.main_progress_bar = tqdm(disable=True)
             trainer.run_evaluation(test_mode=False)
 
-            trainer_f1 = round(trainer.callback_metrics[key], 4)
+            trainer_f1 = round(trainer.callback_metrics["f1_score"], 4)
 
-            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+            # cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
 
             # Can't load model.pt on GEOG cluster so manually skipping
-            # if not (model_dir / f"{model_name}.pt").exists():
-            #     cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
-            #     continue
+            if not (model_dir / f"{model_name}.pt").exists():
+                cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+                continue
 
-            # model_pt = torch.jit.load(model_dir / f"{model_name}.pt")
-            # model_pt.eval()
+            model_pt = torch.jit.load(str(model_dir / f"{model_name}.pt"))
+            model_pt.eval()
 
-            # with torch.no_grad():
-            #     y_pred_pt = model_pt(x)[1].numpy()
+            with torch.no_grad():
+                y_pred_pt = model_pt(x)[1].numpy()
 
-            # y_pred_pt_binary = y_pred_pt > 0.5
-            # pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
+            y_pred_pt_binary = y_pred_pt > 0.5
+            pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
 
-            # cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
+            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
 
     def test_model_eval(self):
         no_differences = True

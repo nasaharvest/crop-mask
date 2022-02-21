@@ -3,28 +3,31 @@ from unittest import TestCase
 import json
 from src.models.model import Model
 
-from src.utils import data_dir
+from src.utils import models_file, models_dir
 from src.ETL.constants import LAT, LON
 
 
 class ModelBboxTest(TestCase):
     def test_model_bbox(self):
         # Read in models.json
-        with (data_dir / "models.json").open("rb") as f:
-            model_configurations = json.load(f)
+        with models_file.open("rb") as f:
+            models_dict = json.load(f)
 
         non_local_examples_in_eval = False
-        for c in model_configurations:
+        for model_name, _ in models_dict.items():
             print("--------------------------------------------------")
-            print(c["model_name"])
+            print(model_name)
+            model = Model.load_from_checkpoint(models_dir / f"{model_name}.ckpt")
             for subset in ["validation", "testing"]:
                 try:
-                    df = Model.load_df(subset, c["train_datasets"], c["eval_datasets"])
+                    df = Model.load_df(
+                        subset, model.hparams.train_datasets, model.hparams.eval_datasets
+                    )
                     is_local = (
-                        (df[LAT] >= c["min_lat"])
-                        & (df[LAT] <= c["max_lat"])
-                        & (df[LON] >= c["min_lon"])
-                        & (df[LON] <= c["max_lon"])
+                        (df[LAT] >= model.hparams.min_lat)
+                        & (df[LAT] <= model.hparams.max_lat)
+                        & (df[LON] >= model.hparams.min_lon)
+                        & (df[LON] <= model.hparams.max_lon)
                     )
                     if is_local.all():
                         print(f"\u2714 {subset}: all {len(df)} examples are local")
