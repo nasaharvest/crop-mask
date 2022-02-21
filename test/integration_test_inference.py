@@ -7,7 +7,10 @@ from src.utils import get_dvc_dir, data_dir
 from src.models.model import Model
 
 model_name = "Ethiopia_Tigray_2020"
-tif_file = "min_lat=14.9517_min_lon=-86.2507_max_lat=14.9531_max_lon=-86.2493_dates=2017-01-01_2018-12-31_all.tif"
+tif_file = (
+    "min_lat=14.9517_min_lon=-86.2507_max_lat=14.9531_"
+    + "max_lon=-86.2493_dates=2017-01-01_2018-12-31_all.tif"
+)
 
 
 class TestIntegrationInference(TestCase):

@@ -12,9 +12,20 @@ import unittest
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
-from src.ETL.constants import ALREADY_EXISTS, FEATURE_FILENAME, LAT, LON, FEATURE_PATH, START, END
-from src.ETL.data_instance import CropDataInstance
-from src.ETL.dataset import do_label_and_feature_amounts_match, load_all_features_as_df
+from src.ETL.constants import (  # noqa: E402
+    ALREADY_EXISTS,
+    FEATURE_FILENAME,
+    LAT,
+    LON,
+    FEATURE_PATH,
+    START,
+    END,
+)
+from src.ETL.data_instance import CropDataInstance  # noqa: E402
+from src.ETL.dataset import (  # noqa: E402
+    do_label_and_feature_amounts_match,
+    load_all_features_as_df,
+)
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
@@ -131,9 +142,12 @@ class IntegrationTestLabeledData(TestCase):
                 mark = "\u2716"
                 last_word = "mismatch"
                 all_label_and_feature_ranges_match = False
-                # To delete: labels.reset_index(drop=True)[feature_month_amount != label_month_amount][FEATURE_PATH].apply(lambda p: Path(p).unlink())
+            # Code to delete:
+            # labels.reset_index(drop=True)[feature_month_amount != label_month_amount]
+            # [FEATURE_PATH].apply(lambda p: Path(p).unlink())
             print(
-                f"{mark} {name} label {label_ranges} and feature {feature_ranges} ranges {last_word}"
+                f"{mark} {name} label {label_ranges} and "
+                + f"feature {feature_ranges} ranges {last_word}"
             )
         self.assertTrue(
             all_label_and_feature_ranges_match, "Check logs for which subsets have different sizes."

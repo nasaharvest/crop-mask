@@ -32,7 +32,7 @@ class TestDataset(TestCase):
     def test_find_matching_point_from_multiple(self, mock_load_tif):
         tif_paths = [Path("mock1"), Path("mock2"), Path("mock3")]
 
-        def side_effect(path, start_date):
+        def side_effect(path, start_date, num_timesteps):
             idx = [i for i, p in enumerate(tif_paths) if p == path][0]
             return (
                 xr.DataArray(
