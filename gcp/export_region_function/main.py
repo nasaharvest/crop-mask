@@ -61,7 +61,7 @@ def export_region(request: Request):
     else:
         raise ValueError("MODELS is not set")
 
-    request_json = request.get_json(silent=True)
+    request_json = request.get_json()
     logger.info("Resquest json:")
     logger.info(request_json)
 
