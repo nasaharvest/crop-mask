@@ -1,9 +1,6 @@
-from pathlib import Path
 from unittest import TestCase
 
 import pandas as pd
-import tempfile
-import shutil
 
 from src.ETL.constants import SUBSET
 from src.ETL.processor import Processor

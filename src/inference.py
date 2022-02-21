@@ -16,11 +16,13 @@ class Inference:
     a pytorch jit model on a single tif file.
     """
 
-    def __init__(self, model: torch.nn.Module, device: Optional[torch.device] = None):
+    def __init__(self, model, device: Optional[torch.device] = None):
         self.model = model
         self.device = device
-        self.normalizing_dict = {k: np.array(v) for k, v in self.model.normalizing_dict_jit.items()}
-        self.batch_size = self.model.batch_size
+        self.normalizing_dict: Dict[str, np.ndarray] = {
+            k: np.array(v) for k, v in self.model.normalizing_dict_jit.items()
+        }
+        self.batch_size: int = self.model.batch_size
 
     @staticmethod
     def start_date_from_str(path: Union[Path, str]) -> datetime:
@@ -88,7 +90,7 @@ class Inference:
         dest_path: Optional[Path] = None,
     ) -> xr.Dataset:
         if start_date is None:
-            start_date = self._start_date_from_str(local_path)
+            start_date = self.start_date_from_str(local_path)
         x_np, flat_lat, flat_lon = self._tif_to_np(local_path, start_date, self.normalizing_dict)
         batches = [
             x_np[i : i + self.batch_size] for i in range(0, (x_np.shape[0] - 1), self.batch_size)

@@ -54,7 +54,12 @@ def export_region(request: Request):
          request (Request): Event payload.
     """
     dest_bucket = os.environ.get("DEST_BUCKET")
-    all_model_names = os.environ.get("MODELS").split(" ")
+
+    models_env = os.environ.get("MODELS")
+    if isinstance(models_env, str):
+        all_model_names = models_env.split(" ")
+    else:
+        raise ValueError("MODELS is not set")
 
     request_json = request.get_json(silent=True)
     logger.info("Resquest json:")

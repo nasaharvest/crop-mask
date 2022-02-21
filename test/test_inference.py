@@ -6,7 +6,10 @@ import numpy as np
 from src.inference import Inference
 from src.utils import data_dir
 
-tif_name = "min_lat=14.9517_min_lon=-86.2507_max_lat=14.9531_max_lon=-86.2493_dates=2017-01-01_2018-12-31_all.tif"
+tif_name = (
+    "min_lat=14.9517_min_lon=-86.2507_max_lat=14.9531_"
+    + "max_lon=-86.2493_dates=2017-01-01_2018-12-31_all.tif"
+)
 
 
 class TestInference(TestCase):
