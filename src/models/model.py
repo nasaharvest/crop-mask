@@ -167,7 +167,7 @@ class Model(pl.LightningModule):
             x_input = x[:, : self.available_timesteps, :]
             x_forecasted = self.forecaster(x_input)[:, self.available_timesteps - 1 :, :]
             x = torch.cat((x_input, x_forecasted), dim=1)
-        return self.classifier(x_input)
+        return self.classifier(x)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
