@@ -5,6 +5,7 @@ from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
 from typing import Dict, Optional, Tuple
 
+import json
 import pytorch_lightning as pl
 
 from src.datasets_labeled import labeled_datasets
@@ -35,18 +36,7 @@ def validate(hparams: Namespace) -> Namespace:
     return hparams
 
 
-def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
-    if model_ckpt_path.exists():
-        model_ckpt_path.unlink()
-    model_ckpt_path.parent.mkdir(parents=True, exist_ok=True)
-    trainer.save_checkpoint(model_ckpt_path)
-
-
-def train_model(
-    hparams, model_ckpt_path: Optional[Path] = None, offline: bool = False
-) -> Tuple[pl.LightningModule, Dict[str, float]]:
-
-    model = Model(hparams)
+def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dict[str, float]]:
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
@@ -57,14 +47,17 @@ def train_model(
     )
 
     wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
+    hparams.wandb_url = wandb_logger.experiment.get_url()
+    model = Model(hparams)
+
     wandb_logger.experiment.config.update(
         {
             "available_timesteps": model.available_timesteps,
             "forecast_eval_data": model.forecast_eval_data,
             "forecast_training_data": model.forecast_training_data,
             "forecast_timesteps": model.forecast_timesteps,
-            "train_num_timesteps": tuple(model.train_num_timesteps),
-            "eval_num_timesteps": tuple(model.eval_num_timesteps),
+            "train_num_timesteps": model.train_num_timesteps,
+            "eval_num_timesteps": model.eval_num_timesteps,
         }
     )
 
@@ -72,25 +65,17 @@ def train_model(
         default_save_path=str(data_dir),
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
-        checkpoint_callback=False,
         logger=wandb_logger,
     )
 
     trainer.fit(model)
 
-    # Save as hparams so they can be output into metrics.json
-    hparams.local_val_size = wandb_logger.experiment.config["local_validation_original_size"]
-    hparams.local_val_crop_percentage = wandb_logger.experiment.config[
-        "local_validation_crop_percentage"
-    ]
+    model, metrics = run_evaluation(
+        model_ckpt_path=get_dvc_dir("models") / f"{hparams.model_name}.ckpt"
+    )
 
-    if model_ckpt_path is None:
-        model_ckpt_path = model_dir / f"{hparams.model_name}.ckpt"
-    save_model_ckpt(trainer, model_ckpt_path)
-
-    metrics = get_metrics_from_trainer(trainer)
-    metrics["local_val_size"] = hparams.local_val_size
-    metrics["local_val_crop_percentage "] = hparams.local_val_crop_percentage
+    if metrics["f1_score"] > 0.6:
+        model.save()
 
     return model, metrics
 
@@ -130,55 +115,16 @@ def run_evaluation(
         for k, v in alternative_metrics.items():
             metrics[f"thresh{alternative_threshold}_{k}"] = v
 
-    metrics["local_val_size"] = model.hparams.local_val_size
-    metrics["local_val_crop_percentage "] = model.hparams.local_val_crop_percentage
+    model_json_path = data_dir / "models.json"
+    with model_json_path.open() as f:
+        models_dict = json.load(f)
+
+    models_dict[model.hparams.model_name] = {
+        "params": model.hparams.wandb_url,
+        "metrics": metrics,
+    }
+
+    with model_json_path.open("w") as f:
+        json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
+
     return model, metrics
-
-
-def parameter_has_changed(model_ckpt_path: Path, hparams: Namespace) -> bool:
-    """Checks if ckpt model parameters are different from hparams being passed"""
-    model = Model.load_from_checkpoint(model_ckpt_path)
-    model_hparams = model.hparams.__dict__
-    params_that_can_change = [
-        "alternative_threshold",
-        "fail_on_error",
-        "retrain_all",
-        "offline",
-    ]
-    for k, v in hparams.__dict__.items():
-        if k in model_hparams and model_hparams[k] != v and k not in params_that_can_change:
-            print(f"\u2714 {hparams.model_name} exists, but new parameters for {k} were found.")
-            return True
-    return False
-
-
-def model_pipeline(
-    hparams: Namespace, retrain_all: bool = False, offline: bool = False, eval_only: bool = False
-) -> Tuple[str, Dict[str, float]]:
-
-    hparams = validate(hparams)
-
-    model_name = hparams.model_name
-    model_ckpt_path = model_dir / f"{model_name}.ckpt"
-
-    # Determine if training is necessary
-    if eval_only is False and (
-        retrain_all
-        or not model_ckpt_path.exists()
-        or parameter_has_changed(model_ckpt_path, hparams)
-    ):
-        print(f"\u2714 {model_name} beginning training")
-        model, metrics = train_model(hparams, model_ckpt_path, offline)
-        print(f"\n\u2714 {model_name} completed training and evaluation")
-        print(metrics)
-        for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-            if key in metrics and metrics[key] > 0.54:
-                model.save()
-                break
-    else:
-        print(f"\n\u2714 {model_name} exists, running evaluation only")
-        threshold = hparams.alternative_threshold if "alternative_threshold" in hparams else None
-        model, metrics = run_evaluation(model_ckpt_path, threshold)
-        print(f" \u2714 {model_name} completed evaluation")
-
-    return model_name, metrics
