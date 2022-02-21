@@ -37,7 +37,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_lon", type=float, default=bbox.max_lon)
     parser.add_argument("--train_datasets", type=str, default=train_datasets_str)
     parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Tigray_2021")
-    #parser.add_argument("--up_to_year", type=int, default=2020)
+    # parser.add_argument("--up_to_year", type=int, default=2020)
     parser.add_argument("--start_month", type=str, default="February")
     parser.add_argument("--input_months", type=int, default=12)
     hparams = Model.add_model_specific_args(parser).parse_args()
