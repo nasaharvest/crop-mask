@@ -5,10 +5,7 @@ import torch
 from torch import nn
 
 from typing import Any, Dict, List, Tuple, Type
-import logging
 from .lstm import UnrolledLSTM
-
-logger = logging.getLogger(__name__)
 
 
 class Classifier(pl.LightningModule):
@@ -60,7 +57,6 @@ class Classifier(pl.LightningModule):
 
         global_classification_layers: List[nn.Module] = []
         num_global_layers = hparams.num_global_layers
-        logger.info(f"Using {num_global_layers} layers for the global classifier")
         for i in range(num_global_layers):
             global_classification_layers.append(
                 nn.Linear(
@@ -82,7 +78,6 @@ class Classifier(pl.LightningModule):
         if self.hparams.multi_headed:
 
             num_local_layers = hparams.num_local_layers
-            logger.info(f"Using {num_local_layers} layers for the local classifier")
             local_classification_layers: List[nn.Module] = []
             for i in range(num_local_layers):
                 local_classification_layers.append(

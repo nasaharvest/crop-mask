@@ -77,10 +77,6 @@ class Forecaster(pl.LightningModule):
         parser_args: Dict[str, Tuple[Type, Any]] = {
             "--forecasting_vector_size": (int, 256),
             "--forecasting_dropout": (float, 0.2),
-            # If the validation and training dataset do not contain the entire time series
-            # it will not be possible to evaluate the forecaster on those datasets and this value
-            # should be set to false
-            "--evaluate_forecast": (bool, True),
         }
 
         for key, vals in parser_args.items():

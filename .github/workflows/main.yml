@@ -19,9 +19,9 @@ jobs:
       with:
           clean: false
     - name: Run type checks
-      run: $CONDA_ENV/mypy src scripts
+      run: $CONDA_ENV/mypy .
     - name: Run flake8
-      run: $CONDA_ENV/flake8 src data scripts test gcp
+      run: $CONDA_ENV/flake8 .
     - name: Run unit tests
       run: $CONDA_ENV/python -m unittest
     - name: Set up Cloud SDK
