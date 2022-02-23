@@ -5,7 +5,9 @@
 
 This repository contains code and data to generate annual and in-season crop masks. 
 
-To create a crop-mask using an already trained model follow the instructions in this notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/googlecolab/colabtools/blob/master/notebooks/crop_mask_inference.ipynb)
+To create a crop-mask using an already trained model click Open In Colab button below: 
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/crop_mask_inference.ipynb)
 
 
 
