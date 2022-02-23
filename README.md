@@ -3,7 +3,13 @@
 [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/main.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions)
 [![codecov](https://codecov.io/gh/nasaharvest/crop-mask/branch/master/graph/badge.svg?token=MARPAEPZMS)](https://codecov.io/gh/nasaharvest/crop-mask)
 
-This repository contains code and data to generate annual and in-season crop masks. Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
+This repository contains code and data to generate annual and in-season crop masks. 
+
+To create a crop-mask using an already trained model follow the instructions in this notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/nasaharvest/crop-mask/blob/master/notebooks/crop_mask_inference.ipynb)
+
+
+
+Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="diagrams/models.png" alt="models" height="200px"/>
 
@@ -14,11 +20,10 @@ These can be used to create annual and in season crop maps.
 -   [1. Setting up a local environment](#1-setting-up-a-local-environment)
 -   [1.1. Setting up local environment for running shapefile notebook](#1.1-setting-up-local-environment-for-running-shapefile-notebook)
 -   [2. Training a new model](#2-training-a-new-model)
--   [3. Running inference at scale (on GCP)](#3-running-inference-at-scale--on-gcp-)
--   [4. Tests](#4-tests)
--   [5. Previously generated crop maps](#5-previously-generated-crop-maps)
--   [6. Acknowledgments](#6-acknowledgments)
--   [7. Reference](#7-reference)
+-   [3. Tests](#4-tests)
+-   [4. Previously generated crop maps](#5-previously-generated-crop-maps)
+-   [5. Acknowledgments](#6-acknowledgments)
+-   [6. Reference](#7-reference)
 
 ## 1. Setting up a local environment for development
 
@@ -74,7 +79,7 @@ These can be used to create annual and in season crop maps.
 
 <img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
 
-## 2. Training a new model
+## 3. Training a new model
 ```bash
 python scripts/model_train.py \
     --min_lon 36.45 \
@@ -86,80 +91,20 @@ python scripts/model_train.py \
 ```
 After training is complete a new entry will be added to [data/models.json](data/models.json) with metrics and a link to all configuration parameters.
 
-## 3. Running inference at scale (on GCP)
-
-**Deploying**
-
-1. Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and authenticated.
-2. Ensure you have a secret in GCP titled `GOOGLE_APPLICATION_CREDENTIALS`; this will allow Google Earth Engine to be authenticated.
-3. Run the following to deploy the project into Google Cloud:
-
+Save the model to the repository by running:
 ```bash
-gsutil mb gs://crop-mask-earthengine
-gsutil mb gs://crop-mask-preds
-sh deploy_ee_functions.sh
-sh deploy_inference.sh
+dvc commit data/models.dvc
+dvc push data/models
 ```
-
-**Checking which models are available**
-https://crop-mask-management-api-grxg7bzh2a-uc.a.run.app/models
-
-**Actual inference at scale**
-
-```bash
-
-curl -X POST http://us-central1-bsos-geog-harvest1.cloudfunctions.net/export-region \
-    -o - \
-    -H "Content-Type:application/json" \
-    -d @gcp/requests/<example>.json
-```
-
-**Tracking progress**
-
-```bash
-# Earth Engine progress
-curl https://us-central1-bsos-geog-harvest1.cloudfunctions.net/ee-status?additional=FAILED,COMPLETED | python -mjson.tool
-
-# Amount of files exported
-gsutil du gs://crop-mask-earthengine/<model name>/<dataset> | wc -l
-
-# Amount of files predicted
-gsutil du gs://crop-mask-preds/<model name>/<dataset> | wc -l
-```
-
-**Addressing missed predictions (Not automated)**
-When processing 100,000 tif files it is highly likely that crop-mask inference may fail on some files due to issues with not scaling up fast enough. Run the cells in [notebooks/fix-preds-on-gcloud.ipynb](notebooks/fix-preds-on-gcloud.ipynb) to address this problem.
-
-**Putting it all together (Not automated)**
-Once an inference run is complete the result is several small `.nc` files. These need to be merged into a single `.tif` file. Currently this operation is not automated and requires the user to:
-
-```bash
-export MODEL="Rwanda"
-export DATASET="Rwanda_v2"
-export START_DATE=2019-04-01
-export END_DATE=2020-04-01
-
-# Download appropriate folder
-gsutil -m cp -n -r gs://crop-mask-preds/$MODEL/$DATASET/ .
-
-# Run gdal merge script
-cd crop-mask
-python scripts/merge.py --p ../$DATASET
-
-# [OPTIONAL] Upload COG tif output to Google Cloud Storage
-gsutil cp ../$DATASET/tifs/final.tif gs://crop-mask-preds-merged/$DATASET
-
-# [OPTIONAL] Upload COG to Google Earth Engine
-earthengine upload image --asset_id users/izvonkov/$DATASET -ts $START_DATE -te $END_DATE gs://crop-mask-preds-merged/$DATASET
-```
+The model will be deployed when these files are merged into the main branch.
 
 ## 4. Tests
 
 The following tests can be run against the pipeline:
 
 ```bash
-flake8 --max-line-length 100 src data scripts test # code formatting
-mypy src data scripts  # type checking
+flake8 . # code formatting
+mypy .  # type checking
 python -m unittest # unit tests
 
 # Integration tests
