@@ -43,7 +43,7 @@ class Processor:
     latitude_col: Optional[str] = None
     longitude_col: Optional[str] = None
 
-    label_dur: Optional[int] = None
+    label_dur: Optional[str] = None
     label_names: Optional[str] = None
 
     crop_type_col: Optional[str] = None
@@ -118,9 +118,14 @@ class Processor:
             df[LON] = df[self.longitude_col]
 
         if self.label_dur:
-            df[LABEL_DUR] = df[self.label_dur]
+            df[LABEL_DUR] = df[self.label_dur].astype(str)
+        else:
+            df[LABEL_DUR] = ""
+
         if self.label_names:
-            df[LABELER_NAMES] = df[self.label_names]
+            df[LABELER_NAMES] = df[self.label_names].astype(str)
+        else:
+            df[LABELER_NAMES] = ""
 
         if self.clean_df:
             df = self.clean_df(df)
