@@ -20,5 +20,16 @@
             "roc_auc_score": 0.8613
         },
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ipmbpo4"
+    },
+    "Rwanda_2019": {
+        "metrics": {
+            "accuracy": 0.7137,
+            "f1_score": 0.6617,
+            "f1_score_max": 0.6617,
+            "precision_score": 0.5783,
+            "recall_score": 0.7733,
+            "roc_auc_score": 0.7826
+        },
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3ipgjbql"
     }
 }
