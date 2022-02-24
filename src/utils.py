@@ -1,125 +1,22 @@
+from typing import Tuple
 import torch
 import numpy as np
-import logging
 import random
 from pathlib import Path
-import xarray as xr
-import pandas as pd
 import subprocess
 
-from datetime import datetime, timedelta
-from typing import Optional, Tuple, List
-
-
-from src.ETL.constants import BANDS
-
-logger = logging.getLogger(__name__)
+data_dir = Path(__file__).parent.parent / "data"
+tifs_dir = data_dir / "tifs"
+features_dir = data_dir / "features"
+models_dir = data_dir / "models"
+raw_dir = data_dir / "raw"
+models_file = data_dir / "models.json"
 
 
 def set_seed(seed: int = 42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
-
-
-def process_filename(
-    filename: str, include_extended_filenames: bool
-) -> Optional[Tuple[str, datetime, datetime]]:
-    r"""
-    Given an exported sentinel file, process it to get the start
-    and end dates of the data. This assumes the filename ends with '.tif'
-    """
-    date_format = "%Y-%m-%d"
-    if filename[-4:] != ".tif":
-        raise ValueError(f"Filename: {filename} must end with .tif")
-
-    filename_components = filename[:-4].split("_")
-    if len(filename_components) < 3:
-        raise ValueError(
-            f"Filename: {filename} must have an identifier, start, and end date separated by '_'"
-        )
-
-    identifier = filename_components[-3]
-    start_date_str = filename_components[-2]
-    end_date_str = filename_components[-1]
-
-    start_date = datetime.strptime(start_date_str, date_format)
-
-    try:
-        end_date = datetime.strptime(end_date_str, date_format)
-        return identifier, start_date, end_date
-
-    except ValueError:
-        if include_extended_filenames:
-            end_list = end_date_str.split("-")
-            end_year, end_month, end_day = (
-                end_list[0],
-                end_list[1],
-                end_list[2],
-            )
-
-            # if we allow extended filenames, we want to
-            # differentiate them too
-            id_number = end_list[3]
-            identifier = f"{identifier}-{id_number}"
-
-            return (
-                identifier,
-                start_date,
-                datetime(int(end_year), int(end_month), int(end_day)),
-            )
-        else:
-            logger.warning(f"Unexpected filename {filename} - skipping")
-            return None
-
-
-def load_tif(
-    filepath: Path,
-    start_date: datetime,
-    days_per_timestep: int,
-) -> xr.DataArray:
-    r"""
-    The sentinel files exported from google earth have all the timesteps
-    concatenated together. This function loads a tif files and splits the
-    timesteps
-    """
-
-    # this mirrors the eo-learn approach
-    # also, we divide by 10,000, to remove the scaling factor
-    # https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2
-    da = xr.open_rasterio(filepath).rename("FEATURES") / 10000
-
-    da_split_by_time: List[xr.DataArray] = []
-
-    bands_per_timestep = len(BANDS)
-    num_bands = len(da.band)
-
-    assert (
-        num_bands % bands_per_timestep == 0
-    ), "Total number of bands not divisible by the expected bands per timestep"
-
-    cur_band = 0
-    while cur_band + bands_per_timestep <= num_bands:
-        time_specific_da = da.isel(band=slice(cur_band, cur_band + bands_per_timestep))
-        time_specific_da["band"] = range(bands_per_timestep)
-        da_split_by_time.append(time_specific_da)
-        cur_band += bands_per_timestep
-
-    timesteps = [
-        start_date + timedelta(days=days_per_timestep) * i for i in range(len(da_split_by_time))
-    ]
-
-    combined = xr.concat(da_split_by_time, pd.Index(timesteps, name="time"))
-    combined.attrs["band_descriptions"] = BANDS
-    return combined
-
-
-def get_data_dir():
-    return Path(__file__).parent.parent / "data"
-
-
-def get_tifs_dir():
-    return Path(__file__).parent.parent / "data/tifs"
 
 
 def get_dvc_dir(dvc_dir_name: str) -> Path:
@@ -142,3 +39,29 @@ def memoize(f):
         return memo[x]
 
     return helper
+
+
+def find_nearest(array, value: float) -> Tuple[float, int]:
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx], idx
+
+
+def distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+    haversince formula, inspired by:
+    https://stackoverflow.com/questions/41336756/find-the-closest-latitude-and-longitude/41337005
+    """
+    p = 0.017453292519943295
+    a = (
+        0.5
+        - np.cos((lat2 - lat1) * p) / 2
+        + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
+    )
+    return 12742 * np.arcsin(np.sqrt(a))
+
+
+def distance_point_from_center(lat_idx: int, lon_idx: int, tif) -> int:
+    x_dist = np.abs((len(tif.x) - 1) / 2 - lon_idx)
+    y_dist = np.abs((len(tif.y) - 1) / 2 - lat_idx)
+    return x_dist + y_dist

@@ -1,0 +1,6 @@
+git+https://git@github.com/nasaharvest/cropharvest.git
+google-cloud-storage
+netCDF4
+pandas
+rasterio
+xarray

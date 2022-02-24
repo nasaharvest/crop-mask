@@ -1,17 +1,18 @@
 from argparse import Namespace
 from pathlib import Path
 from pytorch_lightning.callbacks import EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
+import json
 import pytorch_lightning as pl
-import torch
 
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
+from src.utils import get_dvc_dir, data_dir, models_file
 
-
+model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
 
 
@@ -35,47 +36,7 @@ def validate(hparams: Namespace) -> Namespace:
     return hparams
 
 
-def add_dataset_stats(model: Model, hparams: Namespace) -> Namespace:
-    norm_dict = model.normalizing_dict
-    local_train_dataset = model.get_dataset(
-        "training", is_local_only=True, normalizing_dict=norm_dict
-    )
-    local_val_dataset = model.get_dataset(
-        "validation", is_local_only=True, upsample=False, normalizing_dict=norm_dict
-    )
-
-    # local train
-    hparams.local_train_original_size = local_train_dataset.original_size
-    hparams.local_train_upsampled_size = len(local_train_dataset)
-    hparams.local_train_crop_percentage = local_train_dataset.crop_percentage
-
-    # local val
-    hparams.local_val_size = len(local_val_dataset)
-    hparams.local_val_crop_percentage = local_val_dataset.crop_percentage
-
-    return hparams
-
-
-def save_model_ckpt(trainer: pl.Trainer, model_ckpt_path: Path):
-    if model_ckpt_path.exists():
-        model_ckpt_path.unlink()
-    model_ckpt_path.parent.mkdir(parents=True, exist_ok=True)
-    trainer.save_checkpoint(model_ckpt_path)
-
-
-def save_model_pt(model: Model, model_pt_path: Path):
-    if model_pt_path.exists():
-        model_pt_path.unlink()
-    model_pt_path.parent.mkdir(parents=True, exist_ok=True)
-    sm = torch.jit.script(model)
-    sm.save(str(model_pt_path))
-
-
-def train_model(
-    hparams, model_ckpt_path: Optional[Path] = None
-) -> Tuple[pl.LightningModule, Dict[str, float]]:
-
-    model = Model(hparams)
+def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dict[str, float]]:
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
@@ -85,37 +46,47 @@ def train_model(
         mode="min",
     )
 
-    logger = TensorBoardLogger("tb_logs", name=hparams.eval_datasets)
+    wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
+    hparams.wandb_url = wandb_logger.experiment.get_url()
+    model = Model(hparams)
+
+    wandb_logger.experiment.config.update(
+        {
+            "available_timesteps": model.available_timesteps,
+            "forecast_eval_data": model.forecast_eval_data,
+            "forecast_training_data": model.forecast_training_data,
+            "forecast_timesteps": model.forecast_timesteps,
+            "train_num_timesteps": model.train_num_timesteps,
+            "eval_num_timesteps": model.eval_num_timesteps,
+        }
+    )
+
     trainer = pl.Trainer(
-        default_save_path=hparams.data_folder,
+        default_save_path=str(data_dir),
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
-        checkpoint_callback=False,
-        logger=logger,
+        logger=wandb_logger,
     )
 
     trainer.fit(model)
 
-    hparams = add_dataset_stats(model, hparams)
-    logger.experiment.add_hparams(vars(hparams), trainer.callback_metrics)
+    model, metrics = run_evaluation(
+        model_ckpt_path=get_dvc_dir("models") / f"{hparams.model_name}.ckpt"
+    )
 
-    if model_ckpt_path is None:
-        model_ckpt_path = Path(f"{hparams.model_dir}/{hparams.model_name}.ckpt")
-    save_model_ckpt(trainer, model_ckpt_path)
-
-    metrics = get_metrics_from_trainer(trainer)
-    metrics["local_val_size"] = hparams.local_val_size
-    metrics["local_val_crop_percentage "] = hparams.local_val_crop_percentage
+    if metrics["f1_score"] > 0.6:
+        model.save()
 
     return model, metrics
 
 
 def get_metrics_from_trainer(trainer: pl.LightningModule) -> Dict[str, float]:
-    return {
-        k: round(float(v), 4)
-        for k, v in trainer.callback_metrics.items()
-        if ("_global_" not in k and "loss" not in k)
-    }
+    metrics = {}
+    for k, v in trainer.callback_metrics.items():
+        if "_global_" in k or "loss" in k or "epoch" in k:
+            continue
+        metrics[k] = round(float(v), 4)
+    return metrics
 
 
 def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, float]:
@@ -131,8 +102,10 @@ def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, f
 
 
 def run_evaluation(
-    model_ckpt_path: Union[Path, str], alternative_threshold: Optional[float] = None
+    model_ckpt_path: Path, alternative_threshold: Optional[float] = None
 ) -> Tuple[Model, Dict[str, float]]:
+    if not model_ckpt_path.exists():
+        raise ValueError(f"Model {str(model_ckpt_path)} does not exist")
     model = Model.load_from_checkpoint(model_ckpt_path)
     metrics = run_evaluation_on_one_model(model)
     if alternative_threshold:
@@ -142,53 +115,15 @@ def run_evaluation(
         for k, v in alternative_metrics.items():
             metrics[f"thresh{alternative_threshold}_{k}"] = v
 
-    metrics["local_val_size"] = model.hparams.local_val_size
-    metrics["local_val_crop_percentage "] = model.hparams.local_val_crop_percentage
+    with models_file.open() as f:
+        models_dict = json.load(f)
+
+    models_dict[model.hparams.model_name] = {
+        "params": model.hparams.wandb_url,
+        "metrics": metrics,
+    }
+
+    with models_file.open("w") as f:
+        json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
+
     return model, metrics
-
-
-def model_pipeline(hparams: Namespace, retrain_all: bool = False) -> Tuple[str, Dict[str, float]]:
-
-    hparams = validate(hparams)
-
-    model_name = hparams.model_name
-    model_ckpt_path = Path(f"{hparams.model_dir}/{model_name}.ckpt")
-    model_pt_path = model_ckpt_path.with_suffix(".pt")
-
-    train = False
-
-    if retrain_all or not model_ckpt_path.exists():
-        train = True
-    else:
-        model = Model.load_from_checkpoint(model_ckpt_path)
-        model_hparams = model.hparams.__dict__
-        for k, v in hparams.__dict__.items():
-            if k in model_hparams and model_hparams[k] != v and k != "alternative_threshold":
-                print(
-                    f"\u2714 {model_name} exists, but new parameters for {k} were found, retraining"
-                )
-                train = True
-                break
-
-        if not train:
-            print(f"\n\u2714 {model_name} exists, running evaluation only")
-            threshold = (
-                hparams.alternative_threshold if "alternative_threshold" in hparams else None
-            )
-            model, metrics = run_evaluation(model_ckpt_path, threshold)
-            print(f" \u2714 {model_name} completed evaluation")
-            train = False
-
-    if train:
-        print(f"\u2714 {model_name} beginning training")
-        model, metrics = train_model(hparams, model_ckpt_path)
-        print(f"\n\u2714 {model_name} completed training and evaluation")
-        print(metrics)
-
-    if train or not model_pt_path.exists():
-        for key in ["unencoded_val_local_f1_score", "encoded_val_local_f1_score"]:
-            if key in metrics and metrics[key] > 0.6:
-                save_model_pt(model, model_pt_path)
-                break
-
-    return model_name, metrics

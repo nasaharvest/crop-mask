@@ -1,60 +1,72 @@
 name: Build 
 
 on:
-  # push:
-  #   branches: [ master ]
   pull_request:
+    branches: [ master ]
+  push:
     branches: [ master ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    env:
+      CONDA_ENV: /gpfs/data1/cmongp1/izvonkov/envs/landcover-mapping/bin
     defaults:
       run:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - name: install mamba
-      uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-file: environment-dev.yml
-        environment-name: landcover-mapping
+          clean: false
     - name: Run type checks
-      run: |
-        mypy src scripts
+      run: $CONDA_ENV/mypy .
     - name: Run flake8
-      run: |
-        flake8 src data scripts test gcp
+      run: $CONDA_ENV/flake8 .
     - name: Run unit tests
-      run: |
-        pip install coverage
-        coverage run -m unittest
-        coverage xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      run: $CONDA_ENV/python -m unittest
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: coverage.xml
-        fail_ci_if_error: true
-        verbose: true
-    # - name: Set up Cloud SDK
-    #   uses: google-github-actions/setup-gcloud@master
-    #   with:
-    #     project_id: ${{ secrets.GCP_PROJECT_ID }}
-    #     service_account_key: ${{ secrets.GCP_SA_KEY }}
-    #     export_default_credentials: true
-              
-    # - name: Get data for integration test
-    #   if: github.ref == 'refs/heads/master'
-    #   run: |
-    #     dvc pull data/features
-    #     dvc pull data/models
-    #     dvc pull data/test
-    # - name: Run integration test
-    #   if: github.ref == 'refs/heads/master'
-    #   run: |
-    #     cd test
-    #     python -m unittest integration_test_predict.py
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true              
+    - name: Get data for integration test
+      run: |
+        $CONDA_ENV/dvc pull data/features -f
+        $CONDA_ENV/dvc pull data/processed -f
+        $CONDA_ENV/dvc pull data/models -f
+    - name: Integration test - Data integrity
+      run: $CONDA_ENV/python -m unittest test/integration_test_labeled.py
+    - name: Integration test - Model bboxes match evaluation sets
+      run: $CONDA_ENV/python -m unittest test/integration_test_model_bbox.py
+    - name: Integration test - Model results are consistent
+      run: $CONDA_ENV/python -m unittest test/integration_test_model_evaluation.py
+
+  deploy: 
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - uses: actions/checkout@v2
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true   
+    - uses: iterative/setup-dvc@v1
+      with:
+        version: '1.11.16'
+    - name: Get latest models
+      run: dvc pull data/models -f
+    - name: Deploy Earth Engine Function
+      run: |
+        chmod +x ./deploy_ee_functions.sh
+        ./deploy_ee_functions.sh 
+    - name: Deploy Docker inference image
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
+        chmod +x ./deploy_inference.sh
+        ./deploy_inference.sh
       
 
 
