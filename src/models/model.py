@@ -259,9 +259,9 @@ class Model(pl.LightningModule):
 
         preds = (preds > self.hparams.probability_threshold).astype(int)
 
-        output_dict["precision_score"] = precision_score(labels, preds, zero_division=1)
-        output_dict["recall_score"] = recall_score(labels, preds, zero_division=1)
-        output_dict["f1_score"] = f1_score(labels, preds, zero_division=1)
+        output_dict["precision_score"] = precision_score(labels, preds, zero_division=0)
+        output_dict["recall_score"] = recall_score(labels, preds, zero_division=0)
+        output_dict["f1_score"] = f1_score(labels, preds, zero_division=0)
         output_dict["accuracy"] = accuracy_score(labels, preds)
 
         self.f1_scores.append(output_dict["f1_score"])
