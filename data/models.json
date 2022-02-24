@@ -1,178 +1,35 @@
-[
-    {
-        "model_name": "Kenya",
-        "alternative_threshold": 0.82,
-        "min_lon": 33.501,
-        "max_lon": 42.283,
-        "min_lat": -5.202,
-        "max_lat": 6.002,
-        "eval_datasets": [
-            "Kenya"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
-            "digitalearthafrica_sahel"
-        ]
+{
+    "Ethiopia_Tigray_2020": {
+        "metrics": {
+            "accuracy": 0.8076,
+            "f1_score": 0.6757,
+            "f1_score_max": 0.6757,
+            "precision_score": 0.6329,
+            "recall_score": 0.7246,
+            "roc_auc_score": 0.8533
+        },
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1xws3n3i"
     },
-    {
-        "model_name": "Togo",
-        "alternative_threshold": 0.15,
-        "min_lon": -0.1501,
-        "max_lon": 1.7779296875,
-        "min_lat": 6.08940429687,
-        "max_lat": 11.115625,
-        "eval_datasets": [
-            "Togo"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
-            "digitalearthafrica_sahel"
-        ]
+    "Ethiopia_Tigray_2021": {
+        "metrics": {
+            "accuracy": 0.814,
+            "f1_score": 0.7273,
+            "f1_score_max": 0.7273,
+            "precision_score": 0.7317,
+            "recall_score": 0.7229,
+            "roc_auc_score": 0.8613
+        },
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ipmbpo4"
     },
-    {
-        "model_name": "Rwanda",
-        "alternative_threshold": 0.61,
-        "min_lon": 28.841,
-        "max_lon": 30.909,
-        "min_lat": -2.854,
-        "max_lat": -1.034,
-        "eval_datasets": [
-            "Rwanda"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
-            "digitalearthafrica_sahel"
-        ]
-    },
-    {
-        "model_name": "Uganda",
-        "alternative_threshold": 0.85,
-        "min_lon": 29.5794661801,
-        "max_lon": 35.03599,
-        "min_lat": -1.44332244223,
-        "max_lat": 4.24988494736,
-        "eval_datasets": [
-            "Uganda"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
-            "digitalearthafrica_sahel"
-        ]
-    },
-    {
-        "model_name": "Global",
-        "alternative_threshold": 0.9,
-        "min_lon": -180,
-        "max_lon": 180,
-        "min_lat": -90,
-        "max_lat": 90,
-        "eval_datasets": [
-            "Uganda"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "Uganda",
-            "open_buildings",
-            "digitalearthafrica_eastern",
-            "Ethiopia",
-            "digitalearthafrica_sahel"
-        ]
-    },
-    {
-        "model_name": "Ethiopia_Tigray_2020",
-        "alternative_threshold": 0.7,
-        "min_lon": 36.45,
-        "max_lon": 40.00,
-        "min_lat": 12.25,
-        "max_lat": 14.895,
-        "eval_datasets": [
-            "Ethiopia_Tigray_2020"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "digitalearthafrica_eastern",
-            "Ethiopia"
-        ]
-    },
-    {
-        "model_name": "Ethiopia_Tigray_2021_w_forecaster",
-        "alternative_threshold": 0.25,
-        "min_lon": 36.45,
-        "max_lon": 40.00,
-        "min_lat": 12.25,
-        "max_lat": 14.895,
-        "input_months": 6,
-        "forecast": true,
-        "evaluate_forecast": false,
-        "eval_datasets": [
-            "Ethiopia_Tigray_2021"
-        ],
-        "train_datasets": [
-            "geowiki_landcover_2017",
-            "Kenya",
-            "Mali",
-            "Togo",
-            "Rwanda",
-            "digitalearthafrica_eastern",
-            "Ethiopia"
-        ]
-    },
-    {
-        "model_name": "Ethiopia_Bure_Jimma_2019",
-        "min_lat": 7.500000,
-        "max_lat": 10.800000,
-        "min_lon": 35.500000,
-        "max_lon": 37.200000,
-        "eval_datasets": [],
-        "train_datasets": []
-    },
-    {
-        "model_name": "Ethiopia_Bure_Jimma_2020",
-        "min_lat": 7.500000,
-        "max_lat": 10.800000,
-        "min_lon": 35.500000,
-        "max_lon": 37.200000,
-        "eval_datasets": [],
-        "train_datasets": []
+    "Rwanda_2019": {
+        "metrics": {
+            "accuracy": 0.7137,
+            "f1_score": 0.6617,
+            "f1_score_max": 0.6617,
+            "precision_score": 0.5783,
+            "recall_score": 0.7733,
+            "roc_auc_score": 0.7826
+        },
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3ipgjbql"
     }
-]
+}

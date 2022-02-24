@@ -4,7 +4,7 @@ import numpy as np
 import cartopy.crs as ccrs
 from datetime import datetime
 import xarray as xr
-from src.utils import load_tif
+from cropharvest.engineer import Engineer
 
 
 def sentinel_as_tci(sentinel_ds: xr.DataArray, scale: bool = True) -> xr.DataArray:
@@ -28,11 +28,9 @@ def sentinel_as_tci(sentinel_ds: xr.DataArray, scale: bool = True) -> xr.DataArr
 def plot_results(model_preds: xr.Dataset, tci_path: Path, savepath: Path, prefix: str = "") -> None:
 
     multi_output = len(model_preds.data_vars) > 1
+    da, _ = Engineer.load_tif(tci_path, start_date=datetime(2020, 1, 1), num_timesteps=None)
 
-    tci = sentinel_as_tci(
-        load_tif(tci_path, start_date=datetime(2020, 1, 1), days_per_timestep=30),
-        scale=False,
-    ).isel(time=-1)
+    tci = sentinel_as_tci(da, scale=False).isel(time=-1)
 
     tci = tci.sortby("x").sortby("y")
     model_preds = model_preds.sortby("lat").sortby("lon")

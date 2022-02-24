@@ -1,0 +1,5 @@
+git+https://git@github.com/nasaharvest/cropharvest.git
+earthengine-api==0.1.264
+google-cloud-secret-manager
+tqdm
+pandas

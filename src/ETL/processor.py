@@ -1,18 +1,32 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
 from pathlib import Path
 from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
-from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, LABEL_DUR, LABELER_NAMES
-import logging
+from src.ETL.constants import (
+    SOURCE,
+    CROP_PROB,
+    START,
+    END,
+    LON,
+    LAT,
+    SUBSET,
+    CROP_TYPE,
+    LABEL_DUR,
+    LABELER_NAMES,
+)
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger(__name__)
+# https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2
+min_date = date(2015, 7, 1)
 
-min_date = date(2017, 3, 28)
+# Maximum date is 3 months back due to limitation of ERA5
+# https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5
+max_date = date.today().replace(day=1) + relativedelta(months=-3)
 
 
 @dataclass
@@ -21,11 +35,10 @@ class Processor:
     filename: str
     crop_prob: Union[float, Callable]
 
-    train_val_test: Tuple[float, float, float] = (0.8, 0.2, 0.0)
+    train_val_test: Tuple[float, float, float] = (1.0, 0.0, 0.0)
 
-    end_month_day: Tuple[int, int] = (4, 16)
-    end_year: Optional[int] = None
-    custom_start_date: Optional[date] = None
+    start_year: Optional[int] = None
+    plant_date_col: Optional[str] = None
 
     latitude_col: Optional[str] = None
     longitude_col: Optional[str] = None
@@ -33,15 +46,12 @@ class Processor:
     label_dur: Optional[int] = None
     label_names: Optional[str] = None
 
-    plant_date_col: Optional[str] = None
-    harvest_date_col: Optional[str] = None
+    crop_type_col: Optional[str] = None
 
     clean_df: Optional[Callable] = None
     sample_from_polygon: bool = False
     x_y_from_centroid: bool = True
     transform_crs_from: Optional[int] = None
-
-    num_timesteps: int = 12
 
     def __post_init__(self):
         set_seed()
@@ -49,39 +59,17 @@ class Processor:
             raise ValueError("train_val_test must sum to 1.0")
 
     @staticmethod
-    def end_date_using_overlap(planting_date_col, harvest_date_col, total_days, end_month_day):
-        def _date_overlap(start1: date, end1: date, start2: date, end2: date) -> int:
-            overlaps = start1 <= end2 and end1 >= start2
-            if not overlaps:
-                return 0
-            overlap_days = (min(end1, end2) - max(start1, start2)).days
-            return overlap_days
+    def _to_date(d):
+        if type(d) == np.datetime64:
+            return d.astype("M8[D]").astype("O")
+        elif type(d) == str:
+            return pd.to_datetime(d).date()
+        else:
+            return d.date()
 
-        def _to_date(d):
-            if type(d) == np.datetime64:
-                return d.astype("M8[D]").astype("O")
-            elif type(d) == str:
-                return pd.to_datetime(d).date()
-            else:
-                return d.date()
-
-        def compute_end_date(planting_date, harvest_date):
-            planting_date = _to_date(planting_date)
-            harvest_date = _to_date(harvest_date)
-            potential_end_dates = [
-                date(harvest_date.year + diff, *end_month_day) for diff in [2, 1, 0, -1]
-            ]
-            potential_end_dates = [d for d in potential_end_dates if d < datetime.now().date()]
-            end_date = max(
-                potential_end_dates,
-                key=lambda d: _date_overlap(planting_date, harvest_date, d - total_days, d),
-            )
-            return end_date
-
-        return np.vectorize(compute_end_date)(planting_date_col, harvest_date_col)
-
-    def train_val_test_split(self, df: pd.DataFrame):
-        _, val, test = self.train_val_test
+    @staticmethod
+    def train_val_test_split(df: pd.DataFrame, train_val_test: Tuple[float, float, float]):
+        _, val, test = train_val_test
         random_float = np.random.rand(len(df))
 
         df[SUBSET] = "testing"
@@ -111,9 +99,9 @@ class Processor:
 
         return gdf_points
 
-    def process(self, raw_folder: Path, days_per_timestep: int) -> pd.DataFrame:
+    def process(self, raw_folder: Path) -> pd.DataFrame:
         file_path = raw_folder / self.filename
-        logger.info(f"Reading in {file_path}")
+        print(f"Reading in {file_path}")
         if file_path.suffix == ".txt":
             df = pd.read_csv(file_path, sep="\t")
         elif file_path.suffix == ".csv":
@@ -128,11 +116,11 @@ class Processor:
             df[LAT] = df[self.latitude_col]
         if self.longitude_col:
             df[LON] = df[self.longitude_col]
-        
+
         if self.label_dur:
             df[LABEL_DUR] = df[self.label_dur]
         if self.label_names:
-            df[LABELER_NAMES] = df[self.label_names]    
+            df[LABELER_NAMES] = df[self.label_names]
 
         if self.clean_df:
             df = self.clean_df(df)
@@ -149,34 +137,35 @@ class Processor:
             df[CROP_PROB] = self.crop_prob
         else:
             df[CROP_PROB] = self.crop_prob(df)
-            if df[CROP_PROB].dtype == bool:
+            if df[CROP_PROB].dtype == bool or df[CROP_PROB].dtype == int:
                 df[CROP_PROB] = df[CROP_PROB].astype(float)
             elif df[CROP_PROB].dtype != float:
                 raise ValueError("Crop probability must be a float")
 
-        total_days = timedelta(days=self.num_timesteps * days_per_timestep)
-        if self.end_year:
-            df[END] = date(self.end_year, *self.end_month_day)
-        elif self.plant_date_col and self.harvest_date_col:
-            df[END] = self.end_date_using_overlap(
-                df[self.plant_date_col], df[self.harvest_date_col], total_days, self.end_month_day
-            )
-        elif self.custom_start_date:
-            df[START] = self.custom_start_date
-            df[END] = df[START] + total_days
+        if self.crop_type_col:
+            df[CROP_TYPE] = df[self.crop_type_col]
         else:
-            raise ValueError(
-                "end_date could not be computed please set either: end_year, "
-                "or plant_date_col and harvest_date_col"
+            df[CROP_TYPE] = None
+
+        if self.start_year:
+            df[START] = date(self.start_year, 1, 1)
+            df[END] = date(self.start_year + 1, 12, 31)
+        elif self.plant_date_col:
+            df[START] = np.vectorize(self._to_date)(df[self.plant_date_col])
+            df[START] = np.vectorize(lambda d: d.replace(month=1, day=1))(df[START])
+            df[END] = np.vectorize(lambda d: d.replace(year=d.year + 1, month=12, day=31))(
+                df[START]
             )
+        else:
+            raise ValueError("Must specify either start_year or plant_date_col")
 
-        if self.custom_start_date is None:
-            df[START] = df[END] - total_days
+        if (df[END] >= max_date).any():
+            df.loc[df[END] >= max_date, END] = max_date - timedelta(days=1)
+        if (df[START] <= min_date).any():
+            df.loc[df[START] <= min_date, START] = min_date
 
-        df = df[df[START] >= pd.Timestamp(min_date)]
-
-        df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")
+        df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")
 
         if self.x_y_from_centroid:
             df = df[df.geometry != None]  # noqa: E711
@@ -192,6 +181,8 @@ class Processor:
 
         df = df.dropna(subset=[LON, LAT, CROP_PROB])
         df = df.round({LON: 8, LAT: 8})
-        df = self.train_val_test_split(df)
+        df = self.train_val_test_split(df, self.train_val_test)
 
-        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, LABELER_NAMES, LABEL_DUR]]
+        return df[
+            [SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE, LABELER_NAMES, LABEL_DUR]
+        ]

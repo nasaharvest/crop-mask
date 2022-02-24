@@ -1,0 +1,5 @@
+name: landcover-lite
+dependencies:
+  - cartopy
+  - jupyter
+  - geopandas

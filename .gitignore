@@ -116,6 +116,10 @@ files
 
 # the data folder
 data/**/
+!data/shapefiles
 lightning_logs
 tb_logs
+wandb
+
+.env
 

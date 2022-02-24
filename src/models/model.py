@@ -1,13 +1,9 @@
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 
-from src.ETL.dataset import LabeledDataset
 import numpy as np
-import logging
 import json
-import xarray as xr
-from tqdm import tqdm
-from typing import cast, Callable, Tuple, Dict, Any, Type, Optional, List, Union
+import pandas as pd
+from typing import Callable, Tuple, Dict, Any, Type, Optional, List, Union
 
 import torch
 from torch.nn import functional as F
@@ -21,19 +17,15 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    mean_absolute_error,
 )
 
-from src.ETL.ee_boundingbox import BoundingBox
-from src.bounding_boxes import bounding_boxes
-from src.utils import set_seed
+from src.ETL.boundingbox import BoundingBox
+from src.ETL.constants import ALREADY_EXISTS, SUBSET
+from src.utils import get_dvc_dir, set_seed, data_dir
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
-from .utils import tif_to_np, preds_to_xr
 from .forecaster import Forecaster
 from .classifier import Classifier
-
-logger = logging.getLogger(__name__)
 
 
 class Model(pl.LightningModule):
@@ -46,8 +38,6 @@ class Model(pl.LightningModule):
     --------
     The default values for these parameters are set in add_model_specific_args
 
-    :param hparams.data_folder: The path to the data. Default (assumes the model
-        is being run from the scripts directory) = "../data"
     :param hparams.learning_rate: The learning rate. Default = 0.001
     :param hparams.batch_size: The batch size. Default = 64
     :param hparams.probability_threshold: The probability threshold to use to label GeoWiki
@@ -61,7 +51,6 @@ class Model(pl.LightningModule):
         parameter is only used if hparams.multi_headed is True. Default = 10
     :param hparams.noise_factor: The standard deviation of the random noise to add to the
         raw inputs to the classifier. Default = 0.1
-    :param hparams.remove_b1_b10: Whether or not to remove the B1 and B10 bands. Default = True
     :param hparams.forecast: Whether or not to forecast the partial time series. Default = True
     :param hparams.cache: Whether to load all the data into memory during training. Default = True
     :param hparams.upsample: Whether to oversample the under-represented class so that each class
@@ -77,52 +66,67 @@ class Model(pl.LightningModule):
         set_seed()
 
         self.hparams = hparams
-        self.data_folder = Path(hparams.data_folder)
 
-        if "target_bbox_key" in hparams:
-            self.target_bbox = bounding_boxes[hparams.target_bbox_key]
-        else:
-            # Write out parameters explicitly so they are saved in the jit model
-            self.min_lon: float = hparams.min_lon
-            self.max_lon: float = hparams.max_lon
-            self.min_lat: float = hparams.min_lat
-            self.max_lat: float = hparams.max_lat
-            self.target_bbox = BoundingBox(
-                hparams.min_lon, hparams.max_lon, hparams.min_lat, hparams.max_lat
-            )
+        self.batch_size = hparams.batch_size
 
-        self.train_datasets = self.load_datasets(hparams.train_datasets, subset="training")
-        self.eval_datasets = self.load_datasets(hparams.eval_datasets, subset="evaluation")
+        self.target_bbox = BoundingBox(
+            min_lat=hparams.min_lat,
+            max_lat=hparams.max_lat,
+            min_lon=hparams.min_lon,
+            max_lon=hparams.max_lon,
+        )
 
-        all_dataset_params_path = self.data_folder / "all_dataset_params.json"
+        # --------------------------------------------------
+        # Normalizing dicts
+        # --------------------------------------------------
+        all_dataset_params: Dict[str, Any] = {}
+        all_dataset_params_path = data_dir / "all_dataset_params.json"
         if all_dataset_params_path.exists():
-            with (self.data_folder / "all_dataset_params.json").open() as f:
+            with all_dataset_params_path.open() as f:
                 all_dataset_params = json.load(f)
-        else:
-            all_dataset_params = {}
 
-        if hparams.train_datasets not in all_dataset_params:
-            dataset = self.get_dataset(subset="training", cache=False)
+        self.input_months = self.hparams.input_months
+        self.up_to_year = hparams.up_to_year if "up_to_year" in hparams else None
+        self.start_month = hparams.start_month if "start_month" in hparams else "April"
+
+        normalizing_dict_key = hparams.train_datasets
+        if self.start_month:
+            normalizing_dict_key += f"_{self.start_month}"
+        if self.up_to_year:
+            normalizing_dict_key += f"_{self.up_to_year}"
+
+        if normalizing_dict_key not in all_dataset_params:
+            train_dataset = self.get_dataset(subset="training", cache=False, upsample=False)
+            val_dataset = self.get_dataset(
+                subset="validation",
+                cache=False,
+                upsample=False,
+                normalizing_dict=train_dataset.normalizing_dict,
+            )
             # we save the normalizing dict because we calculate weighted
             # normalization values based on the datasets we combine.
             # The number of instances per dataset (and therefore the weights) can
             # vary between the train / test / val sets - this ensures the normalizing
             # dict stays constant between them
-            if dataset.normalizing_dict is None:
+            if train_dataset.normalizing_dict is None:
                 raise ValueError("Normalizing dict must be calculated using dataset.")
 
-            all_dataset_params[hparams.train_datasets] = {
-                "num_timesteps": dataset.num_timesteps,
-                "input_size": dataset.num_input_features,
-                "normalizing_dict": {k: v.tolist() for k, v in dataset.normalizing_dict.items()},
+            all_dataset_params[normalizing_dict_key] = {
+                "train_num_timesteps": train_dataset.num_timesteps,
+                "val_num_timesteps": val_dataset.num_timesteps,
+                "input_size": train_dataset.num_input_features,
+                "normalizing_dict": {
+                    k: v.tolist() for k, v in train_dataset.normalizing_dict.items()
+                },
             }
 
             with all_dataset_params_path.open("w") as f:
                 json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-        dataset_params = all_dataset_params[hparams.train_datasets]
-        self.num_timesteps = dataset_params["num_timesteps"]
-        self.input_size = dataset_params["input_size"]
+        dataset_params = all_dataset_params[normalizing_dict_key]
+        self.train_num_timesteps: List[int] = dataset_params["train_num_timesteps"]
+        self.eval_num_timesteps: List[int] = dataset_params["val_num_timesteps"]
+        self.input_size: int = dataset_params["input_size"]
 
         # Normalizing dict that is exposed
         self.normalizing_dict_jit: Dict[str, List[float]] = dataset_params["normalizing_dict"]
@@ -130,50 +134,62 @@ class Model(pl.LightningModule):
             k: np.array(v) for k, v in dataset_params["normalizing_dict"].items()
         }
 
-        if self.hparams.forecast:
-            num_output_timesteps = self.num_timesteps - self.hparams.input_months
-            logger.info(f"Predicting {num_output_timesteps} timesteps in the forecaster")
+        # ----------------------------------------------------------------------
+        # Forecaster parameters
+        # ----------------------------------------------------------------------
+        # Needed so that forecast is exposed to jit
+        self.forecaster = torch.nn.Identity()
+        self.forecast_eval_data = self.input_months > min(self.eval_num_timesteps)
+        self.forecast_training_data = self.input_months > min(self.train_num_timesteps)
+        self.available_timesteps = min(self.eval_num_timesteps + self.train_num_timesteps)
+        if self.input_months > self.available_timesteps:
+            self.forecast_timesteps = self.input_months - self.available_timesteps
             self.forecaster = Forecaster(
                 num_bands=self.input_size,
-                output_timesteps=num_output_timesteps,
+                output_timesteps=self.forecast_timesteps,
                 hparams=hparams,
             )
+        else:
+            self.forecast_timesteps = 0
 
-            self.forecaster_loss = F.smooth_l1_loss
+        self.forecaster_loss = F.smooth_l1_loss
 
         self.classifier = Classifier(input_size=self.input_size, hparams=hparams)
         self.global_loss_function: Callable = F.binary_cross_entropy
         self.local_loss_function: Callable = F.binary_cross_entropy
 
+        # Used during training to track max f1_score
+        self.f1_scores: List[float] = []
+
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        # To keep the ABC happy
+        if self.forecast_eval_data:
+            x_input = x[:, : self.available_timesteps, :]
+            x_forecasted = self.forecaster(x_input)[:, self.available_timesteps - 1 :, :]
+            x = torch.cat((x_input, x_forecasted), dim=1)
         return self.classifier(x)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
 
     @staticmethod
-    def load_datasets(
-        input_dataset_names: Union[str, List[str]], subset: str
-    ) -> List[LabeledDataset]:
+    def load_df(subset: str, train_datasets: str, eval_datasets: str) -> pd.DataFrame:
         """
         Loads the datasets specified in the input_dataset_names list.
         """
-        if isinstance(input_dataset_names, str):
-            input_dataset_names = input_dataset_names.replace(" ", "").split(",")
-            input_dataset_names = list(filter(None, input_dataset_names))
-
-        datasets = []
+        dfs = []
         for d in labeled_datasets:
-            if d.dataset in input_dataset_names:
-                datasets.append(d)
-                input_dataset_names.remove(d.dataset)
+            # If dataset is used for evaluation, take only the right subset out of the dataframe
+            if d.dataset in eval_datasets.split(","):
+                df = d.load_labels(allow_processing=False, fail_if_missing_features=True)
+                dfs.append(df[df[SUBSET] == subset])
 
-        for not_found_dataset in input_dataset_names:
-            logger.error(f"Could not find dataset with name: {not_found_dataset}")
+            # If dataset is only used for training, take the whole dataframe
+            elif subset == "training" and d.dataset in train_datasets.split(","):
+                df = d.load_labels(allow_processing=False, fail_if_missing_features=False)
+                df = df[df[ALREADY_EXISTS]].copy()
+                dfs.append(df)
 
-        logger.info(f"Using {subset} datasets: {[d.dataset for d in datasets]}")
-        return datasets
+        return pd.concat(dfs)
 
     def get_dataset(
         self,
@@ -181,27 +197,21 @@ class Model(pl.LightningModule):
         normalizing_dict: Optional[Dict] = None,
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
-        is_local_only: bool = False,
-        is_global_only: bool = False,
     ) -> CropDataset:
-        if subset == "training":
-            datasets = self.train_datasets
-        else:
-            datasets = self.eval_datasets
+
+        df = self.load_df(subset, self.hparams.train_datasets, self.hparams.eval_datasets)
 
         return CropDataset(
-            data_folder=self.data_folder,
             subset=subset,
-            datasets=datasets,
-            probability_threshold=0.5,
-            remove_b1_b10=self.hparams.remove_b1_b10,
+            df=df,
             normalizing_dict=normalizing_dict,
             cache=self.hparams.cache if cache is None else cache,
             upsample=upsample if upsample is not None else self.hparams.upsample,
-            noise_factor=self.hparams.noise_factor if subset != "testing" else 0,
             target_bbox=self.target_bbox,
-            is_local_only=is_local_only,
-            is_global_only=is_global_only,
+            up_to_year=self.up_to_year,
+            wandb_logger=self.logger,
+            start_month=self.start_month,
+            input_months=self.input_months,
         )
 
     def train_dataloader(self):
@@ -220,7 +230,7 @@ class Model(pl.LightningModule):
             self.get_dataset(
                 subset="validation",
                 normalizing_dict=self.normalizing_dict,
-                upsample=False,  # if self.trainer is None else self.hparams.upsample,
+                upsample=False,
             ),
             batch_size=self.hparams.batch_size,
         )
@@ -228,97 +238,14 @@ class Model(pl.LightningModule):
     def test_dataloader(self):
         return DataLoader(
             self.get_dataset(
-                subset="testing", normalizing_dict=self.normalizing_dict, upsample=False
+                subset="testing",
+                normalizing_dict=self.normalizing_dict,
+                upsample=False,
             ),
             batch_size=self.hparams.batch_size,
         )
 
-    def predict(
-        self,
-        path_to_file: Path,
-        with_forecaster: bool,
-        batch_size: int = 64,
-        add_ndvi: bool = True,
-        add_ndwi: bool = False,
-        nan_fill: float = 0,
-        days_per_timestep: int = 30,
-        local_head: bool = True,
-        use_gpu: bool = True,
-        disable_tqdm: bool = False,
-    ) -> xr.Dataset:
-
-        # check if a GPU is available, and if it is
-        # move the model onto the GPU
-        device: Optional[torch.device] = None
-        if use_gpu:
-            use_cuda = torch.cuda.is_available()
-            if not use_cuda:
-                logger.warning("No GPU - not using one")
-            else:
-                logger.info("Using GPU")
-            device = torch.device("cuda" if use_cuda else "cpu")
-            self.to(device)
-
-        self.eval()
-
-        input_data = tif_to_np(
-            path_to_file,
-            add_ndvi=add_ndvi,
-            add_ndwi=add_ndwi,
-            nan=nan_fill,
-            normalizing_dict=self.normalizing_dict,
-            days_per_timestep=days_per_timestep,
-        )
-
-        if with_forecaster:
-            input_data.x = input_data.x[:, : self.hparams.input_months, :]
-
-        predictions: List[np.ndarray] = []
-        cur_i = 0
-
-        pbar = tqdm(total=input_data.x.shape[0] - 1, disable=disable_tqdm)
-        while cur_i < (input_data.x.shape[0] - 1):
-            # fmt: off
-            batch_x_np = input_data.x[cur_i: cur_i + batch_size]
-            # fmt: on
-            if self.hparams.remove_b1_b10:
-                batch_x_np = CropDataset._remove_bands(batch_x_np)
-            batch_x = torch.from_numpy(batch_x_np).float()
-
-            if use_gpu and (device is not None):
-                batch_x = batch_x.to(device)
-
-            with torch.no_grad():
-                if with_forecaster:
-                    batch_x_next = self.forecaster(batch_x)
-                    batch_x = torch.cat((batch_x, batch_x_next), dim=1)
-
-                global_preds, local_preds = self.classifier(batch_x)
-                if local_head:
-                    batch_preds = local_preds
-                else:
-                    batch_preds = global_preds
-
-                # back to the CPU, if necessary
-                batch_preds = batch_preds.cpu()
-
-            predictions.append(cast(torch.Tensor, batch_preds).numpy())
-            cur_i += batch_size
-            pbar.update(batch_size)
-
-        all_preds = np.concatenate(predictions, axis=0)
-        if len(all_preds.shape) == 1:
-            all_preds = np.expand_dims(all_preds, axis=-1)
-
-        return preds_to_xr(
-            all_preds,
-            lats=input_data.lat,
-            lons=input_data.lon,
-        )
-
-    def _output_metrics(
-        self, preds: np.ndarray, labels: np.ndarray, prefix: str = ""
-    ) -> Dict[str, float]:
+    def _output_metrics(self, preds: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
 
         if len(preds) == 0:
             # sometimes this happens in the warmup
@@ -328,15 +255,17 @@ class Model(pl.LightningModule):
         if not (labels == labels[0]).all():
             # This can happen when lightning does its warm up on a subset of the
             # validation data
-            output_dict[f"{prefix}roc_auc_score"] = roc_auc_score(labels, preds)
+            output_dict["roc_auc_score"] = roc_auc_score(labels, preds)
 
         preds = (preds > self.hparams.probability_threshold).astype(int)
 
-        output_dict[f"{prefix}precision_score"] = precision_score(labels, preds, zero_division=1)
-        output_dict[f"{prefix}recall_score"] = recall_score(labels, preds, zero_division=1)
-        output_dict[f"{prefix}f1_score"] = f1_score(labels, preds, zero_division=1)
-        output_dict[f"{prefix}accuracy"] = accuracy_score(labels, preds)
+        output_dict["precision_score"] = precision_score(labels, preds, zero_division=1)
+        output_dict["recall_score"] = recall_score(labels, preds, zero_division=1)
+        output_dict["f1_score"] = f1_score(labels, preds, zero_division=1)
+        output_dict["accuracy"] = accuracy_score(labels, preds)
 
+        self.f1_scores.append(output_dict["f1_score"])
+        output_dict["f1_score_max"] = max(self.f1_scores)
         return output_dict
 
     def add_noise(self, x: torch.Tensor, training: bool) -> torch.Tensor:
@@ -354,25 +283,80 @@ class Model(pl.LightningModule):
         # noise_per_timesteps = noise.repeat(x.shape[0], 1)
         return x + noise
 
+    def _compute_forecaster_loss(
+        self, y_true: torch.Tensor, y_forecast: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Computes the loss for the forecaster
+        If y_true contains nans, then all values other then nans are used for the loss
+        """
+
+        y_nans = torch.isnan(y_true)
+
+        # If there is no nans in the batch compute forecaster loss as usual
+        if y_nans.any().item() is False:
+            return self.forecaster_loss(y_true, y_forecast)
+
+        nan_batch_index = y_nans.any(dim=1).any(dim=1)
+        nan_month_index = y_nans.any(dim=0).any(dim=1)
+
+        partial_shape = (-1, sum(~nan_month_index), y_true.shape[2])
+        y_true_partial = y_true[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
+        y_forecast_partial = y_forecast[nan_batch_index][:, ~nan_month_index].reshape(partial_shape)
+        assert bool(torch.all(torch.isnan(y_forecast_partial))) is False
+        loss_partial = self.forecaster_loss(y_forecast_partial, y_true_partial)
+
+        # If the batch contains time series with only nans, then return only the partial loss
+        if nan_batch_index.all():
+            assert y_forecast_partial.shape[0] == y_forecast.shape[0]
+            return loss_partial
+
+        # Otherwise the batch contains time series with at least one non nan value
+        # Compute combined loss
+        full_shape = (-1, y_true.shape[1], y_true.shape[2])
+        y_true_full = y_true[~nan_batch_index].reshape(full_shape)
+        y_forecast_full = y_forecast[~nan_batch_index].reshape(full_shape)
+        assert y_forecast_full.shape[0] + y_forecast_partial.shape[0] == y_forecast.shape[0]
+        assert y_forecast_full[0].shape == y_true_full[0].shape
+        assert bool(torch.all(torch.isnan(y_forecast_full))) is False
+
+        total_full_timesteps = y_forecast_full.shape[0] * y_forecast_full.shape[1]
+        total_partial_timesteps = y_forecast_partial.shape[0] * y_forecast_partial.shape[1]
+        w_full = total_full_timesteps / (total_full_timesteps + total_partial_timesteps)
+        w_partial = total_partial_timesteps / (total_full_timesteps + total_partial_timesteps)
+        loss_full = self.forecaster_loss(y_forecast_full, y_true_full)
+        return (w_full * loss_full) + (w_partial * loss_partial)
+
     def _split_preds_and_get_loss(
         self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
     ) -> Dict:
 
         x, label, is_global = batch
 
-        input_to_encode = x[:, : self.hparams.input_months, :]
-
         loss: Union[float, torch.Tensor] = 0
-        if self.hparams.forecast:
-            # we will predict every timestep except the first one
-            output_to_predict = x[:, 1:, :]
+        output_dict: Dict[str, Union[float, torch.Tensor, Dict]] = {}
+
+        if self.forecast_eval_data or (training and self.forecast_training_data):
+            # -------------------------------------------------------------------------------
+            # Forecast
+            # -------------------------------------------------------------------------------
+            input_to_encode = x[:, : self.available_timesteps, :]
+            assert (
+                torch.isnan(input_to_encode).any().item() is False
+            ), "Forecast input contains nans"
             encoder_output = self.forecaster(input_to_encode)
 
-            # The evaluation dataset may not have ground truth months available
-            # in which case the loss for the forecaster cannot be calculated
-            if training or self.hparams.evaluate_forecast:
-                loss = self.forecaster_loss(encoder_output, output_to_predict)
+            # -------------------------------------------------------------------------------
+            # Compute loss
+            # -------------------------------------------------------------------------------
+            x_has_nans = torch.isnan(x).any().item()
+            if not x_has_nans:
+                loss = self._compute_forecaster_loss(y_true=x[:, 1:, :], y_forecast=encoder_output)
 
+            # -------------------------------------------------------------------------------
+            # Create a full time series by concatenating ground truth with the forecast
+            # [GT for input months, Forecast for output_timesteps]
+            # -------------------------------------------------------------------------------
             final_encoded_input = torch.cat(
                 (
                     (
@@ -380,40 +364,40 @@ class Model(pl.LightningModule):
                         # -1 because the encoder output has no value for the 0th
                         # timestep
                         # fmt: off
-                        encoder_output[:, self.hparams.input_months - 1:, :],
+                        encoder_output[:, self.available_timesteps - 1:],
                         # fmt: on
                     )
                 ),
                 dim=1,
             )
 
-            output_dict = {}
-            if add_preds:
-                output_dict.update(
-                    {
-                        "encoder_prediction": encoder_output,
-                        "encoder_target": output_to_predict,
-                    }
-                )
-            if log_loss:
-                output_dict["log"] = {}
+            # -------------------------------------------------------------------------------
+            # Set the input to the classifier (x) using the forecasted values
+            # -------------------------------------------------------------------------------
+            if training:
+                # Use the original AND forecasted time series to train
+                if x_has_nans:
+                    # Use forecasted time series and the original full time series if available
+                    nan_batch_index = torch.isnan(x).any(dim=1).any(dim=1)
+                    x_full_time_series_w_noise = self.add_noise(
+                        x[~nan_batch_index], training=training
+                    )
+                    assert bool(torch.any(torch.isnan(x_full_time_series_w_noise))) is False
+                    x = torch.cat((x_full_time_series_w_noise, final_encoded_input), dim=0)
+                    label = torch.cat((label[~nan_batch_index], label), dim=0)
+                    is_global = torch.cat((is_global[~nan_batch_index], is_global), dim=0)
+                else:
+                    # Use forecasted time series and original full time series for training
+                    x = torch.cat((x, final_encoded_input), dim=0)
+                    label = torch.cat((label, label), dim=0)
+                    is_global = torch.cat((is_global, is_global), dim=0)
 
-            if training or self.hparams.evaluate_forecast:
-                # We only concatente the full time series with the
-                # encoded/forecasted time series if the full time series
-                # is available for evaluation
-                x = torch.cat((self.add_noise(x, training), final_encoded_input), dim=0)
-                label = torch.cat((label, label), dim=0)
-                is_global = torch.cat((is_global, is_global), dim=0)
             else:
+                # Use only the forecasted time series for evaluation
                 x = final_encoded_input
 
         else:
-            loss = 0
-            output_dict = {}
-            if log_loss:
-                output_dict["log"] = {}
-            x = self.add_noise(input_to_encode, training=training)
+            x = self.add_noise(x, training=training)
 
         org_global_preds, local_preds = self.classifier(x)
         global_preds = org_global_preds[is_global != 0]
@@ -445,7 +429,7 @@ class Model(pl.LightningModule):
 
         output_dict[loss_label] = loss
         if log_loss:
-            output_dict["log"][loss_label] = loss
+            output_dict["log"] = {loss_label: loss}
         if add_preds:
             output_dict.update(
                 {
@@ -472,118 +456,23 @@ class Model(pl.LightningModule):
             batch, add_preds=True, loss_label="test_loss", log_loss=True, training=False
         )
 
-    @staticmethod
-    def _split_tensor(outputs, label) -> Tuple[np.ndarray, np.ndarray]:
-        encoded_all, unencoded_all = [], []
-        for x in outputs:
-            # the first half is unencoded, the second is encoded
-            total = x[label]
-            unencoded_all.append(total[: total.shape[0] // 2])
-            # fmt: off
-            encoded_all.append(total[total.shape[0] // 2:])
-            # fmt: on
-        return (
-            torch.cat(unencoded_all).detach().cpu().numpy(),
-            torch.cat(encoded_all).detach().cpu().numpy(),
-        )
-
-    @staticmethod
-    def _get_output_as_np(outputs, label: str):
-        return torch.cat([x[label] for x in outputs]).detach().cpu().numpy()
-
-    def _interpretable_metrics(self, outputs, input_prefix: str, output_prefix: str) -> Dict:
-
-        output_dict = {}
-
-        if self.hparams.forecast:
-            if self.hparams.evaluate_forecast:
-                u_labels, e_labels = self._split_tensor(outputs, f"{input_prefix}label")
-                u_preds, e_preds = self._split_tensor(outputs, f"{input_prefix}pred")
-            else:
-                e_preds = self._get_output_as_np(outputs, f"{input_prefix}pred")
-                e_labels = self._get_output_as_np(outputs, f"{input_prefix}label")
-
-        else:
-            u_preds = self._get_output_as_np(outputs, f"{input_prefix}pred")
-            u_labels = self._get_output_as_np(outputs, f"{input_prefix}label")
-
-        if self.hparams.forecast:
-            output_dict.update(
-                self._output_metrics(e_preds, e_labels, f"encoded_{output_prefix}{input_prefix}")
-            )
-
-        if not self.hparams.forecast or (self.hparams.forecast and self.hparams.evaluate_forecast):
-            output_dict.update(
-                self._output_metrics(u_preds, u_labels, f"unencoded_{output_prefix}{input_prefix}")
-            )
-
-        return output_dict
+    def _interpretable_metrics(self, outputs, input_prefix: str) -> Dict:
+        preds = torch.cat([x[f"{input_prefix}pred"] for x in outputs]).detach().cpu().numpy()
+        labels = torch.cat([x[f"{input_prefix}label"] for x in outputs]).detach().cpu().numpy()
+        return self._output_metrics(preds, labels)
 
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        logs = {"val_loss": avg_loss}
-        if self.hparams.forecast:
-            encoder_pred = (
-                torch.cat(
-                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
-                    dim=0,
-                )
-                .detach()
-                .cpu()
-                .numpy()
-            )
-            encoder_target = (
-                torch.cat(
-                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs],
-                    dim=0,
-                )
-                .detach()
-                .cpu()
-                .numpy()
-            )
-            if self.hparams.evaluate_forecast:
-                logs["val_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
-
-        if self.hparams.multi_headed:
-            logs.update(self._interpretable_metrics(outputs, "global_", "val_"))
-            logs.update(self._interpretable_metrics(outputs, "local_", "val_"))
-        else:
-            logs.update(self._interpretable_metrics(outputs, "", "val_"))
-        return {"val_loss": avg_loss, "log": logs}
+        logs = {"val_loss": avg_loss, "epoch": self.current_epoch}
+        logs.update(self._interpretable_metrics(outputs, "local_"))
+        if self.current_epoch > 0 and self.f1_scores[-1] == max(self.f1_scores):
+            self.trainer.save_checkpoint(get_dvc_dir("models") / f"{self.hparams.model_name}.ckpt")
+        return {"log": logs}
 
     def test_epoch_end(self, outputs):
-
         avg_loss = torch.stack([x["test_loss"] for x in outputs]).mean().item()
-        output_dict = {"val_loss": avg_loss}
-
-        if self.hparams.forecast:
-            encoder_pred = (
-                torch.cat(
-                    [torch.flatten(x["encoder_prediction"], start_dim=1) for x in outputs],
-                    dim=0,
-                )
-                .detach()
-                .cpu()
-                .numpy()
-            )
-            encoder_target = (
-                torch.cat(
-                    [torch.flatten(x["encoder_target"], start_dim=1) for x in outputs],
-                    dim=0,
-                )
-                .detach()
-                .cpu()
-                .numpy()
-            )
-            if self.hparams.evaluate_forecast:
-                output_dict["test_encoder_mae"] = mean_absolute_error(encoder_target, encoder_pred)
-
-        if self.hparams.multi_headed:
-            output_dict.update(self._interpretable_metrics(outputs, "global_", "test_"))
-            output_dict.update(self._interpretable_metrics(outputs, "local_", "test_"))
-        else:
-            output_dict.update(self._interpretable_metrics(outputs, "", "test_"))
-
+        output_dict = {"test_loss": avg_loss}
+        output_dict.update(self._interpretable_metrics(outputs, "local_"))
         return {"progress_bar": output_dict}
 
     @staticmethod
@@ -593,9 +482,8 @@ class Model(pl.LightningModule):
         parser_args: Dict[str, Tuple[Type, Any]] = {
             # assumes this is being run from "scripts"
             "--learning_rate": (float, 0.001),
-            "--batch_size": (int, 256),
+            "--batch_size": (int, 128),
             "--probability_threshold": (float, 0.5),
-            "--input_months": (int, 12),
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
             "--max_epochs": (int, 1000),
@@ -604,14 +492,6 @@ class Model(pl.LightningModule):
 
         for key, val in parser_args.items():
             parser.add_argument(key, type=val[0], default=val[1])
-
-        parser.add_argument("--remove_b1_b10", dest="remove_b1_b10", action="store_true")
-        parser.add_argument("--keep_b1_b10", dest="remove_b1_b10", action="store_false")
-        parser.set_defaults(remove_b1_b10=True)
-
-        parser.add_argument("--forecast", dest="forecast", action="store_true")
-        parser.add_argument("--do_not_forecast", dest="forecast", action="store_false")
-        parser.set_defaults(forecast=False)
 
         parser.add_argument("--cache", dest="cache", action="store_true")
         parser.add_argument("--do_not_cache", dest="cache", action="store_false")
@@ -626,5 +506,7 @@ class Model(pl.LightningModule):
 
     def save(self):
         sm = torch.jit.script(self)
-        model_path = f"{self.hparams.model_dir}/{self.hparams.target_bbox_key}.pt"
-        sm.save(model_path)
+        model_path = get_dvc_dir("models") / f"{self.hparams.model_name}.pt"
+        if model_path.exists():
+            model_path.unlink()
+        sm.save(str(model_path))
