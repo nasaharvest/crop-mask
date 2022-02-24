@@ -20,7 +20,7 @@ from sklearn.metrics import (
 )
 
 from src.ETL.boundingbox import BoundingBox
-from src.ETL.constants import SUBSET
+from src.ETL.constants import ALREADY_EXISTS, SUBSET
 from src.utils import get_dvc_dir, set_seed, data_dir
 from src.datasets_labeled import labeled_datasets
 from .data import CropDataset
@@ -186,6 +186,7 @@ class Model(pl.LightningModule):
             # If dataset is only used for training, take the whole dataframe
             elif subset == "training" and d.dataset in train_datasets.split(","):
                 df = d.load_labels(allow_processing=False, fail_if_missing_features=False)
+                df = df[df[ALREADY_EXISTS]].copy()
                 dfs.append(df)
 
         return pd.concat(dfs)
