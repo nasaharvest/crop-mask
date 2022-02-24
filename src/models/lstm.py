@@ -46,7 +46,7 @@ class UnrolledLSTM(nn.Module):
             outputs.append(hidden)
 
             if self.training and (i == 0):
-                self.dropout.update_mask(hidden.shape, hidden.is_cuda)  # type: ignore
+                self.dropout.update_mask(hidden.shape, hidden.is_cuda)
 
             hidden = self.dropout(hidden)
 
