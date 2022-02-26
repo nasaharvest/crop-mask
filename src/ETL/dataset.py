@@ -208,8 +208,10 @@ class LabeledDataset:
         for subset, labels_in_subset in train_val_test_counts.items():
             features_in_subset = df[df[SUBSET] == subset][ALREADY_EXISTS].sum()
             if labels_in_subset != features_in_subset:
-                text += (f"\u2716 {subset}: {labels_in_subset} labels, "
-                + "but {features_in_subset} features\n")
+                text += (
+                    f"\u2716 {subset}: {labels_in_subset} labels, "
+                    + f"but {features_in_subset} features\n"
+                )
             else:
                 crop_percentage = (
                     df[df[SUBSET] == subset][CROP_PROB] > 0.5

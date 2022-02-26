@@ -107,7 +107,7 @@ Malawi_CEO_2020 (Timesteps: 22)
 
 Malawi_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 942 labels, but 563 features
+✖ training: 942 labels, but 625 features
 
 
 Malawi_FAO (Timesteps: 22)
