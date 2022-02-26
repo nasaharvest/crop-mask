@@ -20,12 +20,10 @@ from src.ETL.constants import (  # noqa: E402
     FEATURE_PATH,
     START,
     END,
+    SUBSET,
 )
 from src.ETL.data_instance import CropDataInstance  # noqa: E402
-from src.ETL.dataset import (  # noqa: E402
-    do_label_and_feature_amounts_match,
-    load_all_features_as_df,
-)
+from src.ETL.dataset import get_label_timesteps, load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
@@ -38,12 +36,14 @@ class IntegrationTestLabeledData(TestCase):
     """Tests that the features look right"""
 
     @staticmethod
-    def load_labels():
+    def load_labels(is_print=False):
         print("")
         datasets = {}
         for d in labeled_datasets:
             try:
                 datasets[d.dataset] = d.load_labels()
+                if is_print:
+                    print(d.summary(datasets[d.dataset]))
             except FileNotFoundError:
                 continue
         return datasets
@@ -79,11 +79,16 @@ class IntegrationTestLabeledData(TestCase):
 
     def test_label_feature_subset_amounts(self):
         all_subsets_correct_size = True
-        for name, labels in self.load_labels().items():
-            print("------------------------------")
-            print(name)
-            if not do_label_and_feature_amounts_match(labels):
-                all_subsets_correct_size = False
+        for _, labels in self.load_labels(is_print=True).items():
+            if not labels[ALREADY_EXISTS].all():
+                labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(
+                    labels[FEATURE_PATH]
+                )
+            train_val_test_counts = labels[SUBSET].value_counts()
+            for subset, labels_in_subset in train_val_test_counts.items():
+                features_in_subset = labels[labels[SUBSET] == subset][ALREADY_EXISTS].sum()
+                if labels_in_subset != features_in_subset:
+                    all_subsets_correct_size = False
 
         self.assertTrue(
             all_subsets_correct_size, "Check logs for which subsets have different sizes."
@@ -125,14 +130,7 @@ class IntegrationTestLabeledData(TestCase):
             features = labels[FEATURE_PATH].apply(load_feature)
             features_df = pd.DataFrame([feat.__dict__ for feat in features])
             feature_month_amount = features_df["labelled_array"].apply(lambda f: f.shape[0])
-            label_month_amount = (
-                (
-                    (pd.to_datetime(labels[END]) - pd.to_datetime(labels[START]))
-                    / np.timedelta64(1, "M")
-                )
-                .round()
-                .astype(int)
-            ).reset_index(drop=True)
+            label_month_amount = get_label_timesteps(labels).reset_index(drop=True)
             label_ranges = label_month_amount.value_counts().to_dict()
             feature_ranges = feature_month_amount.value_counts().to_dict()
             if (feature_month_amount == label_month_amount).all():
@@ -151,6 +149,22 @@ class IntegrationTestLabeledData(TestCase):
             )
         self.assertTrue(
             all_label_and_feature_ranges_match, "Check logs for which subsets have different sizes."
+        )
+
+    def test_labels_have_start_before_end_date(self):
+        all_labels_have_consistent_dates = True
+        for name, labels in self.load_labels().items():
+            consistent_dates = pd.to_datetime(labels[START]) < pd.to_datetime(labels[END])
+            if consistent_dates.all():
+                mark = "\u2714"
+                last_word = "consistent dates"
+            else:
+                mark = "\u2716"
+                last_word = f"{(~consistent_dates).sum()} inconsistent dates"
+                all_labels_have_consistent_dates = False
+            print(f"{mark} {name} label has {last_word}")
+        self.assertTrue(
+            all_labels_have_consistent_dates, "Check logs for which labels have inconsistent dates."
         )
 
     def test_all_older_features_have_24_months(self):
