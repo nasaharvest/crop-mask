@@ -166,19 +166,9 @@ def create_pickled_labeled_dataset(labels):
             pickle.dump(instance, f)
 
 
-def do_label_and_feature_amounts_match(labels: pd.DataFrame):
-    all_subsets_correct_size = True
-    if not labels[ALREADY_EXISTS].all():
-        labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
-    train_val_test_counts = labels[SUBSET].value_counts()
-    for subset, labels_in_subset in train_val_test_counts.items():
-        features_in_subset = labels[labels[SUBSET] == subset][ALREADY_EXISTS].sum()
-        if labels_in_subset != features_in_subset:
-            print(f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features")
-            all_subsets_correct_size = False
-        else:
-            print(f"\u2714 {subset} amount: {labels_in_subset}")
-    return all_subsets_correct_size
+def get_label_timesteps(labels):
+    diff = pd.to_datetime(labels[END]) - pd.to_datetime(labels[START])
+    return (diff / np.timedelta64(1, "M")).round().astype(int)
 
 
 def load_all_features_as_df() -> pd.DataFrame:
@@ -205,6 +195,27 @@ class LabeledDataset:
     def __post_init__(self):
         self.raw_labels_dir = data_dir / "raw" / self.dataset
         self.labels_path = data_dir / "processed" / (self.dataset + ".csv")
+        self._cached_labels_csv = None
+
+    def summary(self, df=None):
+        if df is None:
+            df = self.load_labels(allow_processing=False, fail_if_missing_features=False)
+        text = f"{self.dataset} "
+        timesteps = get_label_timesteps(df).unique()
+        text += f"(Timesteps: {','.join([str(int(t)) for t in timesteps])})\n"
+        text += "----------------------------------------------------------------------------\n"
+        train_val_test_counts = df[SUBSET].value_counts()
+        for subset, labels_in_subset in train_val_test_counts.items():
+            features_in_subset = df[df[SUBSET] == subset][ALREADY_EXISTS].sum()
+            if labels_in_subset != features_in_subset:
+                text += f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features\n"
+            else:
+                crop_percentage = (
+                    df[df[SUBSET] == subset][CROP_PROB] > 0.5
+                ).sum() / labels_in_subset
+                text += f"\u2714 {subset} amount: {labels_in_subset}, crop: {crop_percentage:.1%}\n"
+
+        return text
 
     def process_labels(self):
         df = pd.DataFrame({})
@@ -261,8 +272,12 @@ class LabeledDataset:
     ) -> pd.DataFrame:
         if allow_processing:
             labels = self.process_labels()
+            self._cached_labels_csv = labels
+        elif self._cached_labels_csv is not None:
+            labels = self._cached_labels_csv
         elif self.labels_path.exists():
             labels = pd.read_csv(self.labels_path)
+            self._cached_labels_csv = labels
         else:
             raise FileNotFoundError(f"{self.labels_path} does not exist")
         labels = labels[labels[CROP_PROB] != 0.5]
@@ -305,8 +320,7 @@ class LabeledDataset:
         # -------------------------------------------------
         labels_with_no_features = labels[~labels[ALREADY_EXISTS]].copy()
         if len(labels_with_no_features) == 0:
-            do_label_and_feature_amounts_match(labels)
-            return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
+            return self.summary(labels)
 
         # -------------------------------------------------
         # STEP 3: Match labels to tif files (X)
@@ -336,7 +350,5 @@ class LabeledDataset:
         # -------------------------------------------------
         if len(labels_with_tifs_but_no_features) > 0:
             create_pickled_labeled_dataset(labels=labels_with_tifs_but_no_features)
-
-        do_label_and_feature_amounts_match(labels)
-
-        return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
+            labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
+        return self.summary(labels)
