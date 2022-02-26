@@ -12,12 +12,12 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 sys.path.append("..")
 
-from src.utils import data_dir
+from src.utils import data_dir  # noqa: E402
 from src.ETL.dataset import load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
-def check_empty_features(features_df: pd.DataFrame, remove: bool = False) -> bool:
+def check_empty_features(features_df: pd.DataFrame, remove: bool = False) -> str:
     """
     Some exported tif data may have nan values
     """
@@ -31,7 +31,7 @@ def check_empty_features(features_df: pd.DataFrame, remove: bool = False) -> boo
         return "\u2714 Found no empty features"
 
 
-def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> bool:
+def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> str:
     """
     Can happen when not all tifs have been downloaded and different labels are matched to same tif
     """
