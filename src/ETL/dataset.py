@@ -208,7 +208,8 @@ class LabeledDataset:
         for subset, labels_in_subset in train_val_test_counts.items():
             features_in_subset = df[df[SUBSET] == subset][ALREADY_EXISTS].sum()
             if labels_in_subset != features_in_subset:
-                text += f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features\n"
+                text += (f"\u2716 {subset}: {labels_in_subset} labels, "
+                + "but {features_in_subset} features\n")
             else:
                 crop_percentage = (
                     df[df[SUBSET] == subset][CROP_PROB] > 0.5
@@ -293,7 +294,7 @@ class LabeledDataset:
             )
         return labels
 
-    def create_features(self, disable_gee_export: bool = False) -> List[str]:
+    def create_features(self, disable_gee_export: bool = False) -> str:
         """
         Features are the (X, y) pairs that are used to train the model.
         In this case,
