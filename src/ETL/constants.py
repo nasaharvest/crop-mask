@@ -13,6 +13,8 @@ ALREADY_EXISTS = "already_exists"
 FEATURE_FILENAME = "filename"
 FEATURE_PATH = "save_path"
 TIF_PATHS = "tif_paths"
+LABELER_NAMES = "email"
+LABEL_DUR = "analysis_duration"
 CROP_TYPE = "crop_type"
 
 MONTHS = [

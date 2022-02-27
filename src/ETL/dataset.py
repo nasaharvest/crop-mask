@@ -33,6 +33,8 @@ from src.ETL.constants import (
     END,
     SOURCE,
     NUM_LABELERS,
+    LABELER_NAMES,
+    LABEL_DUR,
     SUBSET,
     DATASET,
     TIF_PATHS,
@@ -232,6 +234,8 @@ class LabeledDataset:
                 NUM_LABELERS: "sum",
                 SUBSET: "first",
                 CROP_TYPE: "first",
+                LABEL_DUR: lambda dur: ",".join(dur),
+                LABELER_NAMES: lambda name: ",".join(name),
             }
         )
         df[COUNTRY] = self.country
