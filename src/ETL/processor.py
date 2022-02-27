@@ -5,7 +5,18 @@ from pathlib import Path
 from typing import Callable, Tuple, Optional, Union
 from pyproj import Transformer
 from src.utils import set_seed
-from src.ETL.constants import SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE
+from src.ETL.constants import (
+    SOURCE,
+    CROP_PROB,
+    START,
+    END,
+    LON,
+    LAT,
+    SUBSET,
+    CROP_TYPE,
+    LABEL_DUR,
+    LABELER_NAMES,
+)
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -31,6 +42,9 @@ class Processor:
 
     latitude_col: Optional[str] = None
     longitude_col: Optional[str] = None
+
+    label_dur: Optional[str] = None
+    label_names: Optional[str] = None
 
     crop_type_col: Optional[str] = None
 
@@ -103,6 +117,16 @@ class Processor:
         if self.longitude_col:
             df[LON] = df[self.longitude_col]
 
+        if self.label_dur:
+            df[LABEL_DUR] = df[self.label_dur].astype(str)
+        else:
+            df[LABEL_DUR] = ""
+
+        if self.label_names:
+            df[LABELER_NAMES] = df[self.label_names].astype(str)
+        else:
+            df[LABELER_NAMES] = ""
+
         if self.clean_df:
             df = self.clean_df(df)
 
@@ -164,4 +188,6 @@ class Processor:
         df = df.round({LON: 8, LAT: 8})
         df = self.train_val_test_split(df, self.train_val_test)
 
-        return df[[SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE]]
+        return df[
+            [SOURCE, CROP_PROB, START, END, LON, LAT, SUBSET, CROP_TYPE, LABELER_NAMES, LABEL_DUR]
+        ]
