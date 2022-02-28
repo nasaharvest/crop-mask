@@ -43,9 +43,9 @@ Rwanda (Timesteps: 24)
 ✔ training amount: 287, crop: 36.2%
 
 
-Uganda (Timesteps: 24,22,6)
+Uganda (Timesteps: 24,22)
 ----------------------------------------------------------------------------
-✖ training: 2574 labels, but 2306 features
+✖ training: 2573 labels, but 2306 features
 ✔ testing amount: 456, crop: 11.4%
 ✔ validation amount: 454, crop: 13.2%
 
@@ -78,7 +78,8 @@ Ethiopia_Tigray_2020 (Timesteps: 22)
 
 Ethiopia_Tigray_2021 (Timesteps: 10)
 ----------------------------------------------------------------------------
-✔ validation amount: 718, crop: 30.4%
+✔ testing amount: 367, crop: 32.7%
+✔ validation amount: 351, crop: 27.9%
 
 
 Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
@@ -127,7 +128,7 @@ Zambia_CEO_2019 (Timesteps: 24)
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 5428 labels, but 2061 features
+✖ training: 5340 labels, but 2328 features
 
 
 All data:
