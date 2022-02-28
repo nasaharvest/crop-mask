@@ -122,14 +122,14 @@ Malawi_FAO_corrected (Timesteps: 22)
 
 Zambia_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 2105 labels, but 1329 features
+✔ training amount: 2103, crop: 3.7%
 
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 5428 labels, but 0 features
+✖ training: 5428 labels, but 2061 features
 
 
 All data:
 ✔ Found no empty features
-✖ Found 1094 duplicates
+✖ Found 1096 duplicates
