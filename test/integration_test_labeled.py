@@ -222,7 +222,7 @@ class IntegrationTestLabeledData(TestCase):
                 mark = "\u2714"
             print(f"{mark} {name}:\t\tMismatches: {num_mismatched}")
         self.assertTrue(
-            total_num_mismatched == 0, "Found {total_num_mismatched} mismatched labels+tifs."
+            total_num_mismatched == 0, f"Found {total_num_mismatched} mismatched labels+tifs."
         )
 
 
