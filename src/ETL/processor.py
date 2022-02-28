@@ -167,6 +167,9 @@ class Processor:
         if (df[END] >= max_date).any():
             df.loc[df[END] >= max_date, END] = max_date - timedelta(days=1)
         if (df[START] <= min_date).any():
+            # Eliminate rows where the start date is way before the min date
+            df = df[df[START] > min_date.replace(month=1)].copy()
+            # Update the start to the min date in other rows
             df.loc[df[START] <= min_date, START] = min_date
 
         df = df[df[START] < df[END]].copy()
