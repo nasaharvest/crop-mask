@@ -10,10 +10,11 @@ from pathlib import Path
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
+from src.utils import models_dir
 from src.pipeline_funcs import run_evaluation  # noqa: E402
 
 if __name__ == "__main__":
-    model_name = "Ethiopia_Tigray_2020"
-    model_ckpt_path = Path(f"../data/models/{model_name}.ckpt")
+    model_name = "Rwanda_2019"
+    model_ckpt_path = models_dir / f"{model_name}.ckpt"
     _, metrics = run_evaluation(model_ckpt_path)
     print(metrics)

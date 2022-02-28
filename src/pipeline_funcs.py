@@ -74,7 +74,7 @@ def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dic
         model_ckpt_path=get_dvc_dir("models") / f"{hparams.model_name}.ckpt"
     )
 
-    if metrics["f1_score"] > 0.6:
+    if metrics["val_metrics"]["f1_score"] > 0.6:
         model.save()
 
     return model, metrics
@@ -83,7 +83,7 @@ def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dic
 def get_metrics_from_trainer(trainer: pl.LightningModule) -> Dict[str, float]:
     metrics = {}
     for k, v in trainer.callback_metrics.items():
-        if "_global_" in k or "loss" in k or "epoch" in k:
+        if any([text in k for text in ["loss", "epoch", "f1_score_max"]]):
             continue
         metrics[k] = round(float(v), 4)
     return metrics
@@ -107,23 +107,26 @@ def run_evaluation(
     if not model_ckpt_path.exists():
         raise ValueError(f"Model {str(model_ckpt_path)} does not exist")
     model = Model.load_from_checkpoint(model_ckpt_path)
-    metrics = run_evaluation_on_one_model(model)
-    if alternative_threshold:
-        alternative_model = Model.load_from_checkpoint(model_ckpt_path)
-        alternative_model.hparams.probability_threshold = alternative_threshold
-        alternative_metrics = run_evaluation_on_one_model(alternative_model)
-        for k, v in alternative_metrics.items():
-            metrics[f"thresh{alternative_threshold}_{k}"] = v
+    val_metrics = run_evaluation_on_one_model(model, test=False)
+    test_metrics = run_evaluation_on_one_model(model, test=True)
+    # if alternative_threshold:
+    #     alternative_model = Model.load_from_checkpoint(model_ckpt_path)
+    #     alternative_model.hparams.probability_threshold = alternative_threshold
+    #     alternative_metrics = run_evaluation_on_one_model(alternative_model)
+    #     for k, v in alternative_metrics.items():
+    #         metrics[f"thresh{alternative_threshold}_{k}"] = v
 
     with models_file.open() as f:
         models_dict = json.load(f)
 
-    models_dict[model.hparams.model_name] = {
+    all_info = {
         "params": model.hparams.wandb_url,
-        "metrics": metrics,
+        "val_metrics": val_metrics,
+        "test_metrics": test_metrics,
     }
+    models_dict[model.hparams.model_name] = all_info
 
     with models_file.open("w") as f:
         json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-    return model, metrics
+    return model, all_info
