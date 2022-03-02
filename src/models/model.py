@@ -158,8 +158,9 @@ class Model(pl.LightningModule):
         self.global_loss_function: Callable = F.binary_cross_entropy
         self.local_loss_function: Callable = F.binary_cross_entropy
 
-        # Used during training to track max f1_score
+        # Used during training to track max f1_score and lowest val loss
         self.f1_scores: List[float] = []
+        self.val_losses: List[float] = []
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.forecast_eval_data:
@@ -463,9 +464,18 @@ class Model(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        logs = {"val_loss": avg_loss, "epoch": self.current_epoch}
+        self.val_losses.append(avg_loss.item())
+        logs = {
+            "val_loss": avg_loss,
+            "epoch": self.current_epoch,
+            "val_loss_min": min(self.val_losses),
+        }
         logs.update(self._interpretable_metrics(outputs, "local_"))
-        if self.current_epoch > 0 and self.f1_scores[-1] == max(self.f1_scores):
+
+        # if self.current_epoch > 0 and self.f1_scores[-1] == max(self.f1_scores):
+        # Save model with lowest validation loss
+        if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses):
+
             self.trainer.save_checkpoint(get_dvc_dir("models") / f"{self.hparams.model_name}.ckpt")
         return {"log": logs}
 
