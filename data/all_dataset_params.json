@@ -412,6 +412,58 @@
             12
         ]
     },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,digitalearthafrica_eastern,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020_February": {
+        "input_size": 18,
+        "normalizing_dict": {
+            "mean": [
+                -11.027760666317846,
+                -18.025434870706043,
+                1435.4570759609442,
+                1389.1733483694306,
+                1401.1191395513836,
+                1639.162280626997,
+                2423.5194023952163,
+                2803.0222963245465,
+                2683.185489354351,
+                3053.401139991272,
+                831.4342014397885,
+                2366.1272993845632,
+                1537.707733434249,
+                293.40176261437625,
+                0.003828733443156847,
+                889.9218060309137,
+                6.0827658259154305,
+                0.3513404248488073
+            ],
+            "std": [
+                4.20247322205427,
+                5.021600659198174,
+                1122.7915929942437,
+                1062.2673857228056,
+                1249.7361163475334,
+                1200.2388387184983,
+                1124.9843905185794,
+                1170.2817753155537,
+                1118.062841929096,
+                1178.012735866162,
+                698.5435195237285,
+                1014.1923120374049,
+                893.7755862844828,
+                8.88599812045772,
+                0.004285722780548575,
+                711.4045074335603,
+                7.5868222224942405,
+                0.1647400271852899
+            ]
+        },
+        "train_num_timesteps": [
+            12,
+            9
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
     "geowiki_landcover_2017,digitalearthafrica_eastern,Ethiopia,Kenya,Mali,Ethiopia_Tigray_2020_February": {
         "input_size": 18,
         "normalizing_dict": {
