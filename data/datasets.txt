@@ -128,9 +128,9 @@ Zambia_CEO_2019 (Timesteps: 24)
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 5340 labels, but 2328 features
+✔ training amount: 5187, crop: 0.0%
 
 
 All data:
 ✔ Found no empty features
-✖ Found 1096 duplicates
+✖ Found 1101 duplicates
