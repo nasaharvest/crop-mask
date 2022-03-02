@@ -62,7 +62,6 @@ def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dic
     )
 
     trainer = pl.Trainer(
-        default_save_path=str(data_dir),
         max_epochs=hparams.max_epochs,
         early_stop_callback=early_stop_callback,
         logger=wandb_logger,

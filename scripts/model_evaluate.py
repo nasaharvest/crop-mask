@@ -14,7 +14,7 @@ from src.utils import models_dir
 from src.pipeline_funcs import run_evaluation  # noqa: E402
 
 if __name__ == "__main__":
-    model_name = "Rwanda_2019"
+    model_name = "Ethiopia_Tigray_2021"
     model_ckpt_path = models_dir / f"{model_name}.ckpt"
     _, metrics = run_evaluation(model_ckpt_path)
     print(metrics)
