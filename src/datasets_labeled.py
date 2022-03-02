@@ -327,21 +327,21 @@ labeled_datasets = [
             ]
         ),
     ),
-    LabeledDataset(
-        dataset="one_acre_fund",
-        country="Kenya,Rwanda,Tanzania",
-        processors=(
-            Processor(
-                filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
-                crop_prob=1.0,
-                clean_df=clean_one_acre_fund,
-                longitude_col="site_longitude",
-                latitude_col="site_latitude",
-                plant_date_col="planting_date",
-                x_y_from_centroid=False,
-            ),
-        ),
-    ),
+    # LabeledDataset(
+    #     dataset="one_acre_fund",
+    #     country="Kenya,Rwanda,Tanzania",
+    #     processors=(
+    #         Processor(
+    #             filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
+    #             crop_prob=1.0,
+    #             clean_df=clean_one_acre_fund,
+    #             longitude_col="site_longitude",
+    #             latitude_col="site_latitude",
+    #             plant_date_col="planting_date",
+    #             x_y_from_centroid=False,
+    #         ),
+    #     ),
+    # ),
     LabeledDataset(
         dataset="open_buildings",
         country="global",
