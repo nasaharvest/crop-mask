@@ -23,13 +23,16 @@ from src.ETL.constants import (  # noqa: E402
     SUBSET,
 )
 
-from src.utils import data_dir
+from src.utils import data_dir  # noqa: E402
 from src.ETL.data_instance import CropDataInstance  # noqa: E402
 from src.ETL.dataset import get_label_timesteps, load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 unexported_file = data_dir / "unexported.txt"
 unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
+
+duplicates_data_file = data_dir / "duplicates.txt"
+duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
 
 
 def load_feature(p):
@@ -120,13 +123,15 @@ class IntegrationTestLabeledData(TestCase):
 
     def test_features_for_duplicates(self):
         # If this test is failing you can temporarily set remove_duplicates to True and rerun create_features.py
-        remove_duplicates = False
+        add_to_duplicates_file = False
         features_df = load_all_features_as_df()
         cols_to_check = ["instance_lon", "instance_lat", "source_file"]
         duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
         num_dupes = len(duplicates)
-        if remove_duplicates and num_dupes > 0:
-            duplicates.filename.apply(lambda p: Path(p).unlink())
+        if add_to_duplicates_file and num_dupes > 0:
+            feature_filenames = duplicates.filename.apply(lambda p: Path(p).stem).tolist()
+            with duplicates_data_file.open("w") as f:
+                f.write("\n".join(duplicates_data + feature_filenames))
         self.assertTrue(num_dupes == 0, f"Found {num_dupes} duplicates")
 
     def test_features_for_emptiness(self):
