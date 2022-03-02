@@ -45,7 +45,7 @@ Rwanda (Timesteps: 24)
 
 Uganda (Timesteps: 24,22)
 ----------------------------------------------------------------------------
-✖ training: 2573 labels, but 2306 features
+✔ training amount: 2306, crop: 32.5%
 ✔ testing amount: 456, crop: 11.4%
 ✔ validation amount: 454, crop: 13.2%
 
@@ -62,7 +62,7 @@ digitalearthafrica_eastern (Timesteps: 22)
 
 digitalearthafrica_sahel (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 1680 labels, but 1679 features
+✔ training amount: 1679, crop: 41.6%
 
 
 Ethiopia (Timesteps: 24,22,10)
@@ -133,4 +133,4 @@ Tanzania_CEO_2019 (Timesteps: 24)
 
 All data:
 ✔ Found no empty features
-✖ Found 1101 duplicates
+✖ Found 1088 duplicates
