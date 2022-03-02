@@ -9,6 +9,7 @@ class TestGcp(TestCase):
     This is not a real test, these functions simply trigger behavior which can
     then be manually checked on Google Cloud or inside a docker container.
     """
+
     def test_gcp_export(self):
         url = "http://us-central1-bsos-geog-harvest1.cloudfunctions.net/export-region"
         payload = {
