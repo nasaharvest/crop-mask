@@ -628,14 +628,14 @@ labeled_datasets = [
         processors=(
             Processor(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-1)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 x_y_from_centroid=False,
                 clean_df=clean_ceo_data,
             ),
             Processor(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-2)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 x_y_from_centroid=False,
                 clean_df=clean_ceo_data,

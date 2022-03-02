@@ -128,7 +128,7 @@ Zambia_CEO_2019 (Timesteps: 24)
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 5187, crop: 0.0%
+✔ training amount: 4086, crop: 30.9%
 
 
 All data:
