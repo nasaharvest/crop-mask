@@ -7,14 +7,14 @@ geowiki_landcover_2017 (Timesteps: 24)
 
 Kenya (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 6868, crop: 69.1%
-✔ testing amount: 902, crop: 68.0%
-✔ validation amount: 879, crop: 68.9%
+✔ training amount: 6818, crop: 68.9%
+✔ testing amount: 900, crop: 67.9%
+✔ validation amount: 874, crop: 68.8%
 
 
 Mali (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 897, crop: 84.2%
+✔ training amount: 881, crop: 83.9%
 
 
 Mali_lower_CEO_2019 (Timesteps: 24)
@@ -39,20 +39,20 @@ Togo (Timesteps: 24)
 Rwanda (Timesteps: 24)
 ----------------------------------------------------------------------------
 ✔ testing amount: 538, crop: 31.2%
-✔ validation amount: 536, crop: 35.8%
+✔ validation amount: 535, crop: 35.7%
 ✔ training amount: 287, crop: 36.2%
 
 
 Uganda (Timesteps: 24,22)
 ----------------------------------------------------------------------------
-✔ training amount: 2306, crop: 32.5%
+✔ training amount: 2292, crop: 32.1%
 ✔ testing amount: 456, crop: 11.4%
 ✔ validation amount: 454, crop: 13.2%
 
 
 open_buildings (Timesteps: 22)
 ----------------------------------------------------------------------------
-✔ training amount: 8121, crop: 0.0%
+✔ training amount: 8117, crop: 0.0%
 
 
 digitalearthafrica_eastern (Timesteps: 22)
@@ -62,12 +62,12 @@ digitalearthafrica_eastern (Timesteps: 22)
 
 digitalearthafrica_sahel (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 1679, crop: 41.6%
+✔ training amount: 1661, crop: 41.6%
 
 
 Ethiopia (Timesteps: 24,22,10)
 ----------------------------------------------------------------------------
-✔ training amount: 4513, crop: 63.6%
+✔ training amount: 3651, crop: 55.1%
 
 
 Ethiopia_Tigray_2020 (Timesteps: 22)
@@ -96,8 +96,8 @@ Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 
 Argentina_Buenos_Aires (Timesteps: 10)
 ----------------------------------------------------------------------------
-✔ training amount: 529, crop: 49.7%
-✔ validation amount: 129, crop: 45.0%
+✔ training amount: 455, crop: 48.4%
+✔ validation amount: 111, crop: 45.9%
 
 
 Malawi_CEO_2020 (Timesteps: 22)
@@ -113,12 +113,12 @@ Malawi_CEO_2019 (Timesteps: 24)
 
 Malawi_FAO (Timesteps: 22)
 ----------------------------------------------------------------------------
-✔ training amount: 514, crop: 100.0%
+✔ training amount: 499, crop: 100.0%
 
 
 Malawi_FAO_corrected (Timesteps: 22)
 ----------------------------------------------------------------------------
-✔ training amount: 511, crop: 100.0%
+✔ training amount: 507, crop: 100.0%
 
 
 Zambia_CEO_2019 (Timesteps: 24)
@@ -128,9 +128,9 @@ Zambia_CEO_2019 (Timesteps: 24)
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 4086, crop: 30.9%
+✔ training amount: 4081, crop: 30.8%
 
 
 All data:
 ✔ Found no empty features
-✖ Found 1088 duplicates
+✖ Found 50 duplicates

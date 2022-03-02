@@ -47,6 +47,9 @@ unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 missing_data_file = data_dir / "missing_data.txt"
 missing_data = pd.read_csv(missing_data_file, sep="\n", header=None)[0].tolist()
 
+duplicates_data_file = data_dir / "duplicates.txt"
+duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
+
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
@@ -176,11 +179,14 @@ def load_all_features_as_df() -> pd.DataFrame:
     files = list(features_dir.glob("*.pkl"))
     print("------------------------------")
     print("Loading all features...")
+    non_duplicated_files = []
     for p in files:
-        with p.open("rb") as f:
-            features.append(pickle.load(f))
+        if p.stem not in duplicates_data:
+            non_duplicated_files.append(p)
+            with p.open("rb") as f:
+                features.append(pickle.load(f))
     df = pd.DataFrame([feat.__dict__ for feat in features])
-    df["filename"] = files
+    df["filename"] = non_duplicated_files
     return df
 
 
@@ -286,7 +292,8 @@ class LabeledDataset:
         labels = labels[labels[CROP_PROB] != 0.5]
         unexported_labels = labels[FEATURE_FILENAME].isin(unexported)
         missing_data_labels = labels[FEATURE_FILENAME].isin(missing_data)
-        labels = labels[~unexported_labels & ~missing_data_labels].copy()
+        duplicate_labels = labels[FEATURE_FILENAME].isin(duplicates_data)
+        labels = labels[~unexported_labels & ~missing_data_labels & ~duplicate_labels].copy()
         labels["feature_dir"] = str(features_dir)
         labels[FEATURE_PATH] = labels["feature_dir"] + "/" + labels[FEATURE_FILENAME] + ".pkl"
         labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
