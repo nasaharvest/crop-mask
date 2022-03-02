@@ -1,8 +1,6 @@
 """
 Combines the earth observation data with the labels to create (x, y) training data
 """
-from pathlib import Path
-
 import os
 import pandas as pd
 import sys

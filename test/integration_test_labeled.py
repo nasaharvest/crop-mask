@@ -122,7 +122,8 @@ class IntegrationTestLabeledData(TestCase):
         )
 
     def test_features_for_duplicates(self):
-        # If this test is failing you can temporarily set remove_duplicates to True and rerun create_features.py
+        # If this test is failing you can temporarily set remove_duplicates to True
+        # and rerun create_features.py
         add_to_duplicates_file = False
         features_df = load_all_features_as_df()
         cols_to_check = ["instance_lon", "instance_lat", "source_file"]
