@@ -34,20 +34,20 @@
         }
     },
     "Rwanda_2019": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/b87h4tmm",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/j4yadglo",
         "test_metrics": {
-            "accuracy": 0.7063,
-            "f1_score": 0.601,
-            "precision_score": 0.5219,
-            "recall_score": 0.7083,
-            "roc_auc_score": 0.7844
+            "accuracy": 0.7379,
+            "f1_score": 0.6158,
+            "precision_score": 0.5678,
+            "recall_score": 0.6726,
+            "roc_auc_score": 0.8038
         },
         "val_metrics": {
-            "accuracy": 0.7276,
-            "f1_score": 0.6667,
-            "precision_score": 0.5935,
-            "recall_score": 0.7604,
-            "roc_auc_score": 0.7776
+            "accuracy": 0.7407,
+            "f1_score": 0.6568,
+            "precision_score": 0.6244,
+            "recall_score": 0.6927,
+            "roc_auc_score": 0.798
         }
     }
 }
