@@ -20,14 +20,16 @@ These can be used to create annual and in season crop maps.
 ## Contents
 
 -   [1. Setting up a local environment](#1-setting-up-a-local-environment)
--   [1.1. Setting up local environment for running shapefile notebook](#1.1-setting-up-local-environment-for-running-shapefile-notebook)
--   [2. Training a new model](#2-training-a-new-model)
--   [3. Tests](#4-tests)
--   [4. Previously generated crop maps](#5-previously-generated-crop-maps)
--   [5. Acknowledgments](#6-acknowledgments)
--   [6. Reference](#7-reference)
+-   [2. Adding new labeled data](#2-adding-new-labeled-data)
+-   [3. Training a new model](#3-training-a-new-model)
+-   [4. Tests](#4-tests)
+-   [5. Previously generated crop maps](#5-previously-generated-crop-maps)
+-   [6. Acknowledgments](#6-acknowledgments)
+-   [7. Reference](#7-reference)
 
-## 1. Setting up a local environment for development
+## 1. Setting up a local environment
+
+#### 1.1 For development 
 
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
@@ -54,7 +56,7 @@ These can be used to create annual and in season crop maps.
     wandb login
     ```
 
-## 1.1 Setting up local environment for running shapefile notebook
+#### 1.2 For shapefile notebook
 1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
     ```bash
     conda env create -f environment-lite.yml   # Creates environment
