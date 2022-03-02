@@ -22,9 +22,14 @@ from src.ETL.constants import (  # noqa: E402
     END,
     SUBSET,
 )
+
+from src.utils import data_dir
 from src.ETL.data_instance import CropDataInstance  # noqa: E402
 from src.ETL.dataset import get_label_timesteps, load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
+
+unexported_file = data_dir / "unexported.txt"
+unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 
 
 def load_feature(p):
@@ -78,7 +83,14 @@ class IntegrationTestLabeledData(TestCase):
         )
 
     def test_label_feature_subset_amounts(self):
+        # If this test is failing and there are no activate exports,
+        # temporarily set the add_to_unexported_file to True
+        # to update the unexported list
+        add_to_unexported_file = False
+
         all_subsets_correct_size = True
+
+        newly_unexported = []
         for _, labels in self.load_labels(is_print=True).items():
             if not labels[ALREADY_EXISTS].all():
                 labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(
@@ -89,16 +101,32 @@ class IntegrationTestLabeledData(TestCase):
                 features_in_subset = labels[labels[SUBSET] == subset][ALREADY_EXISTS].sum()
                 if labels_in_subset != features_in_subset:
                     all_subsets_correct_size = False
+                    if add_to_unexported_file:
+                        labels_with_no_feature = labels[
+                            (labels[SUBSET] == subset) & ~labels[ALREADY_EXISTS]
+                        ]
+                        assert len(labels_with_no_feature) == (
+                            labels_in_subset - features_in_subset
+                        )
+                        newly_unexported += labels_with_no_feature[FEATURE_FILENAME].tolist()
+
+        if add_to_unexported_file and not all_subsets_correct_size:
+            with unexported_file.open("w") as f:
+                f.write("\n".join(unexported + newly_unexported))
 
         self.assertTrue(
             all_subsets_correct_size, "Check logs for which subsets have different sizes."
         )
 
     def test_features_for_duplicates(self):
+        # If this test is failing you can temporarily set remove_duplicates to True and rerun create_features.py
+        remove_duplicates = False
         features_df = load_all_features_as_df()
         cols_to_check = ["instance_lon", "instance_lat", "source_file"]
         duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
         num_dupes = len(duplicates)
+        if remove_duplicates and num_dupes > 0:
+            duplicates.filename.apply(lambda p: Path(p).unlink())
         self.assertTrue(num_dupes == 0, f"Found {num_dupes} duplicates")
 
     def test_features_for_emptiness(self):
