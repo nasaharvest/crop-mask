@@ -3,7 +3,7 @@ from pathlib import Path
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import json
 import pytorch_lightning as pl
@@ -103,18 +103,18 @@ def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, f
 
 def run_evaluation(
     model_ckpt_path: Path, alternative_threshold: Optional[float] = None
-) -> Tuple[Model, Dict[str, float]]:
+) -> Tuple[Model, Dict[str, Dict[str, Any]]]:
     if not model_ckpt_path.exists():
         raise ValueError(f"Model {str(model_ckpt_path)} does not exist")
     model = Model.load_from_checkpoint(model_ckpt_path)
     val_metrics = run_evaluation_on_one_model(model, test=False)
     test_metrics = run_evaluation_on_one_model(model, test=True)
-    # if alternative_threshold:
-    #     alternative_model = Model.load_from_checkpoint(model_ckpt_path)
-    #     alternative_model.hparams.probability_threshold = alternative_threshold
-    #     alternative_metrics = run_evaluation_on_one_model(alternative_model)
-    #     for k, v in alternative_metrics.items():
-    #         metrics[f"thresh{alternative_threshold}_{k}"] = v
+    if alternative_threshold:
+        alternative_model = Model.load_from_checkpoint(model_ckpt_path)
+        alternative_model.hparams.probability_threshold = alternative_threshold
+        alternative_metrics = run_evaluation_on_one_model(alternative_model, test=False)
+        for k, v in alternative_metrics.items():
+            val_metrics[f"thresh{alternative_threshold}_{k}"] = v
 
     with models_file.open() as f:
         models_dict = json.load(f)
