@@ -17,21 +17,19 @@ from src.ETL.dataset import load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
 
 
-def check_empty_features(features_df: pd.DataFrame, remove: bool = False) -> str:
+def check_empty_features(features_df: pd.DataFrame) -> str:
     """
     Some exported tif data may have nan values
     """
     empties = features_df[features_df["labelled_array"].isnull()]
     num_empty = len(empties)
     if num_empty > 0:
-        if remove:
-            empties.filename.apply(lambda p: Path(p).unlink())
         return f"\u2716 Found {num_empty} empty features"
     else:
         return "\u2714 Found no empty features"
 
 
-def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> str:
+def check_duplicates(features_df: pd.DataFrame) -> str:
     """
     Can happen when not all tifs have been downloaded and different labels are matched to same tif
     """
@@ -39,8 +37,6 @@ def check_duplicates(features_df: pd.DataFrame, remove: bool = False) -> str:
     duplicates = features_df[features_df.duplicated(subset=cols_to_check)]
     num_dupes = len(duplicates)
     if num_dupes > 0:
-        if remove:
-            duplicates.filename.apply(lambda p: Path(p).unlink())
         return f"\u2716 Found {num_dupes} duplicates"
     else:
         return "\u2714 No duplicates found"
