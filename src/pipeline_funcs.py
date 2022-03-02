@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
-from src.utils import get_dvc_dir, data_dir, models_file
+from src.utils import get_dvc_dir, models_file
 
 model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
@@ -63,6 +63,7 @@ def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dic
 
     trainer = pl.Trainer(
         max_epochs=hparams.max_epochs,
+        checkpoint_callback=False,
         early_stop_callback=early_stop_callback,
         logger=wandb_logger,
     )
