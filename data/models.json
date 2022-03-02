@@ -1,4 +1,15 @@
 {
+    "Ethiopia_Bure_Jimma_2020": {
+        "metrics": {
+            "accuracy": 0.9247,
+            "f1_score": 0.8708,
+            "f1_score_max": 0.8708,
+            "precision_score": 0.831,
+            "recall_score": 0.9147,
+            "roc_auc_score": 0.9648
+        },
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3asglgl5"
+    },
     "Ethiopia_Tigray_2020": {
         "metrics": {
             "accuracy": 0.8076,
