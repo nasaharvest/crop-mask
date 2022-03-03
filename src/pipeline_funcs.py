@@ -103,7 +103,7 @@ def run_evaluation_on_one_model(model: Model, test: bool = False) -> Dict[str, f
 
 def run_evaluation(
     model_ckpt_path: Path, alternative_threshold: Optional[float] = None
-) -> Tuple[Model, Dict[str, Dict[str, Any]]]:
+) -> Tuple[Any, Dict[str, Dict[str, Any]]]:
     if not model_ckpt_path.exists():
         raise ValueError(f"Model {str(model_ckpt_path)} does not exist")
     model = Model.load_from_checkpoint(model_ckpt_path)
