@@ -327,21 +327,21 @@ labeled_datasets = [
             ]
         ),
     ),
-    LabeledDataset(
-        dataset="one_acre_fund",
-        country="Kenya,Rwanda,Tanzania",
-        processors=(
-            Processor(
-                filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
-                crop_prob=1.0,
-                clean_df=clean_one_acre_fund,
-                longitude_col="site_longitude",
-                latitude_col="site_latitude",
-                plant_date_col="planting_date",
-                x_y_from_centroid=False,
-            ),
-        ),
-    ),
+    # LabeledDataset(
+    #     dataset="one_acre_fund",
+    #     country="Kenya,Rwanda,Tanzania",
+    #     processors=(
+    #         Processor(
+    #             filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
+    #             crop_prob=1.0,
+    #             clean_df=clean_one_acre_fund,
+    #             longitude_col="site_longitude",
+    #             latitude_col="site_latitude",
+    #             plant_date_col="planting_date",
+    #             x_y_from_centroid=False,
+    #         ),
+    #     ),
+    # ),
     LabeledDataset(
         dataset="open_buildings",
         country="global",
@@ -461,7 +461,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2021,
                 x_y_from_centroid=False,
-                train_val_test=(0.0, 1.0, 0.0),
+                train_val_test=(0.0, 0.5, 0.5),
                 clean_df=clean_ceo_data,
                 label_names="email",
                 label_dur="analysis_duration",
@@ -471,7 +471,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2021,
                 x_y_from_centroid=False,
-                train_val_test=(0.0, 1.0, 0.0),
+                train_val_test=(0.0, 0.5, 0.5),
                 clean_df=clean_ceo_data,
                 label_names="email",
                 label_dur="analysis_duration",
@@ -628,14 +628,14 @@ labeled_datasets = [
         processors=(
             Processor(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-1)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 x_y_from_centroid=False,
                 clean_df=clean_ceo_data,
             ),
             Processor(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-2)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Crop"),
+                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 x_y_from_centroid=False,
                 clean_df=clean_ceo_data,

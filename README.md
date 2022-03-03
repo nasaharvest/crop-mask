@@ -19,72 +19,70 @@ These can be used to create annual and in season crop maps.
 
 ## Contents
 
--   [1. Setting up a local environment](#1-setting-up-a-local-environment)
--   [2. Adding new labeled data](#2-adding-new-labeled-data)
--   [3. Training a new model](#3-training-a-new-model)
--   [4. Tests](#4-tests)
--   [5. Previously generated crop maps](#5-previously-generated-crop-maps)
--   [6. Acknowledgments](#6-acknowledgments)
--   [7. Reference](#7-reference)
+-   [Setting up a local environment](#setting-up-a-local-environment)
+-   [Adding new labeled data](#adding-new-labeled-data)
+-   [Training a new model](#training-a-new-model)
+-   [Tests](#tests)
+-   [Previously generated crop maps](#previously-generated-crop-maps)
+-   [Acknowledgments](#acknowledgments)
+-   [Reference](#reference)
 
-## 1. Setting up a local environment
+## Setting up a local environment
+Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
+#### 1. For development 
+Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) installed.
+```bash
+conda install mamba -n base -c conda-forge  # Install mamba
+mamba env create -f environment-dev.yml     # Create environment with mamba (faster)
+conda activate landcover-mapping            # Activate environment
+gcloud auth application-default login       # Authenticates with Google Cloud
+```
 
-#### 1.1 For development 
+#### 2. For shapefile notebook
+```bash
+conda env create -f environment-lite.yml    # Create environment
+conda activate landcover-lite               # Activate environment
+jupyter notebook
+```
 
-1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
+## Adding new labeled data
+1. Add the csv or shape file for new labels into [data/raw](data/raw)
+2. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
     ```bash
-    conda config --set channel_priority true # Ensures conda will install environment
-    conda env create -f environment-dev.yml   # Creates environment
-    conda activate landcover-mapping      # Activates environment
-    ```
-2. [OPTIONAL] When adding new labeled data, Google Earth Engine is used to export Satellite data. To authenticate Earth Engine run:
-    ```bash
-    earthengine authenticate                # Authenticates Earth Engine
-    python -c "import ee; ee.Initialize()"  # Will raise error if not setup
-    ```
-3. [OPTIONAL] To access existing data (ie. features, models), ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) CLI installed and run:
-
-    ```bash
-    gcloud auth application-default login     # Authenticates gcloud
-    dvc pull                                  # All data (will take long time)
-    dvc pull data/features data/models        # For retraining or inference
-    dvc pull data/processed                   # For labeled data analysis
-    ```
-
-4. [OPTIONAL] Weights and Biases is used for logging model training, to train and view logs run:
-    ```bash
-    wandb login
-    ```
-
-#### 1.2 For shapefile notebook
-1. Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed and run:
-    ```bash
-    conda env create -f environment-lite.yml   # Creates environment
-    conda activate landcover-lite      # Activates environment
-    ```
-2. Start the jupyter server by running:
-    ```bash
-    jupyter notebook
-    ```
-
-## 2. Adding new labeled data
-
-1. Ensure local environment is set up and all existing data is downloaded.
-2. Add the shape file for new labels into [data/raw](data/raw)
-3. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-4. To create ML ready features run:
-
-    ```bash
+    # Activate environment setup in: Setting up a local environment
+    conda activate landcover-mapping 
+    
+    dvc pull                                    # Get latest data from dvc
+    earthengine authenticate                    # Authenticates Earth Engine 
+    python -c "import ee; ee.Initialize()"      # Will raise error if not setup
+    
+    # Pull in latest EarthEngine tifs (you may need to rerun this command)
     gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
-    python scripts/create_features.py
-    ```
 
-5. Run `dvc commit` and `dvc push` to upload the new labeled data to remote storage.
+    # Create features (you may need to rerun this command)
+    python scripts/create_features.py
+    
+    dvc commit                                  # Save new features to repository
+    dvc push                                    # Push features to remote storage
+
+    # Push changes to github
+    git checkout -b'new-Ethiopia-Tigray-data'
+    git add .
+    git commit -m 'Added mew Ethiopia Tigray data for 2020'
+    git push
+    ```
 
 <img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
 
-## 3. Training a new model
+## Training a new model
 ```bash
+# Activate environment setup in: Setting up a local environment
+conda activate landcover-mapping 
+
+dvc pull        # Get the latest training and evaluation data
+wandb login     # Authenticate Wandb for model training logs
+
+# Trains a new model
 python scripts/model_train.py \
     --min_lon 36.45 \
     --max_lon 40.00 \
@@ -92,17 +90,19 @@ python scripts/model_train.py \
     -- max_lat 14.895 \
     --model_name Ethiopia_Tigray_2020 \
     --eval_datasets Ethiopia_Tigray_2020
-```
-After training is complete a new entry will be added to [data/models.json](data/models.json) with metrics and a link to all configuration parameters.
 
-Save the model to the repository by running:
-```bash
-dvc commit data/models.dvc
-dvc push data/models
+dvc commit data/models.dvc      # Saves model to repository
+dvc push data/models            # Uploads model to remote storage 
+
+# Push changes to github
+git checkout -b'new-Ethiopia-Tigray-2020-model'
+git add .
+git commit -m 'Trained new Ethiopia Tigray 2020 model'
+git push
 ```
 The model will be deployed when these files are merged into the main branch.
 
-## 4. Tests
+## Tests
 
 The following tests can be run against the pipeline:
 
@@ -112,12 +112,12 @@ mypy .  # type checking
 python -m unittest # unit tests
 
 # Integration tests
-cd test
-python -m unittest integration_test_labeled.py
-python -m unittest integration_test_predict.py
+python -m unittest test/integration_test_labeled.py
+python -m unittest test/integration_test_model_bbox.py
+python -m unittest test/integration_test_model_evaluation.py
 ```
 
-## 5. Previously generated crop maps
+## Previously generated crop maps
 
 Google Earth Engine:
 
@@ -128,11 +128,11 @@ Zenodo
 
 -   [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
 
-## 6. Acknowledgments
+## Acknowledgments
 
 This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
 
-## 7. Reference
+## Reference
 
 If you find this code useful, please cite the following paper:
 

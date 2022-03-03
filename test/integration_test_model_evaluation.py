@@ -23,7 +23,7 @@ class IntegrationTestModelEvaluation(TestCase):
 
         for model_name, model_dict in tqdm(models_dict.items()):
 
-            recorded_f1 = model_dict["metrics"]["f1_score"]
+            recorded_f1 = model_dict["val_metrics"]["f1_score"]
 
             if not (model_dir / f"{model_name}.ckpt").exists():
                 cls.scores.append((model_name, recorded_f1, None, None, None))
