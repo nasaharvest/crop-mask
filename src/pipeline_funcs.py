@@ -36,7 +36,7 @@ def validate(hparams: Namespace) -> Namespace:
     return hparams
 
 
-def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dict[str, float]]:
+def train_model(hparams, offline: bool = False) -> Tuple[pl.LightningModule, Dict[str, Dict[str, Any]]]:
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
