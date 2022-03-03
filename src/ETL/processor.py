@@ -117,6 +117,15 @@ class Processor:
         if self.longitude_col:
             df[LON] = df[self.longitude_col]
 
+        if self.clean_df:
+            df = self.clean_df(df)
+
+        if self.sample_from_polygon:
+            df = df[df.geometry != None]  # noqa: E711
+            df["samples"] = (df.geometry.area / 0.001).astype(int)
+            list_of_points = np.vectorize(self.get_points)(df.geometry, df.samples)
+            df = gpd.GeoDataFrame(geometry=pd.concat(list_of_points, ignore_index=True))
+
         if self.label_dur:
             df[LABEL_DUR] = df[self.label_dur].astype(str)
         else:
@@ -126,15 +135,6 @@ class Processor:
             df[LABELER_NAMES] = df[self.label_names].astype(str)
         else:
             df[LABELER_NAMES] = ""
-
-        if self.clean_df:
-            df = self.clean_df(df)
-
-        if self.sample_from_polygon:
-            df = df[df.geometry != None]  # noqa: E711
-            df["samples"] = (df.geometry.area / 0.001).astype(int)
-            list_of_points = np.vectorize(self.get_points)(df.geometry, df.samples)
-            df = gpd.GeoDataFrame(geometry=pd.concat(list_of_points, ignore_index=True))
 
         df[SOURCE] = self.filename
 
@@ -167,7 +167,12 @@ class Processor:
         if (df[END] >= max_date).any():
             df.loc[df[END] >= max_date, END] = max_date - timedelta(days=1)
         if (df[START] <= min_date).any():
+            # Eliminate rows where the start date is way before the min date
+            df = df[df[START] > min_date.replace(month=1)].copy()
+            # Update the start to the min date in other rows
             df.loc[df[START] <= min_date, START] = min_date
+
+        df = df[df[START] < df[END]].copy()
 
         df[START] = pd.to_datetime(df[START]).dt.strftime("%Y-%m-%d")
         df[END] = pd.to_datetime(df[END]).dt.strftime("%Y-%m-%d")

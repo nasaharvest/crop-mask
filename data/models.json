@@ -1,35 +1,53 @@
 {
     "Ethiopia_Tigray_2020": {
-        "metrics": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1xws3n3i",
+        "test_metrics": {
+            "accuracy": 0.7936,
+            "f1_score": 0.6305,
+            "precision_score": 0.6549,
+            "recall_score": 0.6078,
+            "roc_auc_score": 0.8073
+        },
+        "val_metrics": {
             "accuracy": 0.8076,
             "f1_score": 0.6757,
-            "f1_score_max": 0.6757,
             "precision_score": 0.6329,
             "recall_score": 0.7246,
             "roc_auc_score": 0.8533
-        },
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1xws3n3i"
+        }
     },
     "Ethiopia_Tigray_2021": {
-        "metrics": {
-            "accuracy": 0.814,
-            "f1_score": 0.7273,
-            "f1_score_max": 0.7273,
-            "precision_score": 0.7317,
-            "recall_score": 0.7229,
-            "roc_auc_score": 0.8613
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ipmbpo4",
+        "test_metrics": {
+            "accuracy": 0.8338,
+            "f1_score": 0.7426,
+            "precision_score": 0.7521,
+            "recall_score": 0.7333,
+            "roc_auc_score": 0.8635
         },
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ipmbpo4"
+        "val_metrics": {
+            "accuracy": 0.8746,
+            "f1_score": 0.78,
+            "precision_score": 0.7647,
+            "recall_score": 0.7959,
+            "roc_auc_score": 0.9142
+        }
     },
     "Rwanda_2019": {
-        "metrics": {
-            "accuracy": 0.7137,
-            "f1_score": 0.6617,
-            "f1_score_max": 0.6617,
-            "precision_score": 0.5783,
-            "recall_score": 0.7733,
-            "roc_auc_score": 0.7826
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1jc6yizd",
+        "test_metrics": {
+            "accuracy": 0.6989,
+            "f1_score": 0.625,
+            "precision_score": 0.5114,
+            "recall_score": 0.8036,
+            "roc_auc_score": 0.7989
         },
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3ipgjbql"
+        "val_metrics": {
+            "accuracy": 0.7196,
+            "f1_score": 0.6862,
+            "precision_score": 0.5714,
+            "recall_score": 0.8586,
+            "roc_auc_score": 0.8124
+        }
     }
 }

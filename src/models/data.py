@@ -47,6 +47,13 @@ class CropDataset(Dataset):
             & (df[LON] <= target_bbox.max_lon)
         )
 
+        if subset != "training":
+            outside_model_bbox = (~df["is_local"]).sum()
+            assert outside_model_bbox == 0, (
+                f"{outside_model_bbox} points outside model bbox: "
+                + f"({df[LAT].min()}, {df[LON].min()}, {df[LAT].max()}, {df[LON].max()})"
+            )
+
         local_crop = len(df[df["is_local"] & df["is_crop"]])
         local_non_crop = len(df[df["is_local"] & ~df["is_crop"]])
         local_difference = np.abs(local_crop - local_non_crop)
