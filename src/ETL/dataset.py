@@ -47,6 +47,9 @@ unexported = pd.read_csv(unexported_file, sep="\n", header=None)[0].tolist()
 missing_data_file = data_dir / "missing_data.txt"
 missing_data = pd.read_csv(missing_data_file, sep="\n", header=None)[0].tolist()
 
+duplicates_data_file = data_dir / "duplicates.txt"
+duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
+
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
@@ -166,19 +169,9 @@ def create_pickled_labeled_dataset(labels):
             pickle.dump(instance, f)
 
 
-def do_label_and_feature_amounts_match(labels: pd.DataFrame):
-    all_subsets_correct_size = True
-    if not labels[ALREADY_EXISTS].all():
-        labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
-    train_val_test_counts = labels[SUBSET].value_counts()
-    for subset, labels_in_subset in train_val_test_counts.items():
-        features_in_subset = labels[labels[SUBSET] == subset][ALREADY_EXISTS].sum()
-        if labels_in_subset != features_in_subset:
-            print(f"\u2716 {subset}: {labels_in_subset} labels, but {features_in_subset} features")
-            all_subsets_correct_size = False
-        else:
-            print(f"\u2714 {subset} amount: {labels_in_subset}")
-    return all_subsets_correct_size
+def get_label_timesteps(labels):
+    diff = pd.to_datetime(labels[END]) - pd.to_datetime(labels[START])
+    return (diff / np.timedelta64(1, "M")).round().astype(int)
 
 
 def load_all_features_as_df() -> pd.DataFrame:
@@ -186,11 +179,14 @@ def load_all_features_as_df() -> pd.DataFrame:
     files = list(features_dir.glob("*.pkl"))
     print("------------------------------")
     print("Loading all features...")
+    non_duplicated_files = []
     for p in files:
-        with p.open("rb") as f:
-            features.append(pickle.load(f))
+        if p.stem not in duplicates_data:
+            non_duplicated_files.append(p)
+            with p.open("rb") as f:
+                features.append(pickle.load(f))
     df = pd.DataFrame([feat.__dict__ for feat in features])
-    df["filename"] = files
+    df["filename"] = non_duplicated_files
     return df
 
 
@@ -205,6 +201,30 @@ class LabeledDataset:
     def __post_init__(self):
         self.raw_labels_dir = data_dir / "raw" / self.dataset
         self.labels_path = data_dir / "processed" / (self.dataset + ".csv")
+        self._cached_labels_csv = None
+
+    def summary(self, df=None):
+        if df is None:
+            df = self.load_labels(allow_processing=False, fail_if_missing_features=False)
+        text = f"{self.dataset} "
+        timesteps = get_label_timesteps(df).unique()
+        text += f"(Timesteps: {','.join([str(int(t)) for t in timesteps])})\n"
+        text += "----------------------------------------------------------------------------\n"
+        train_val_test_counts = df[SUBSET].value_counts()
+        for subset, labels_in_subset in train_val_test_counts.items():
+            features_in_subset = df[df[SUBSET] == subset][ALREADY_EXISTS].sum()
+            if labels_in_subset != features_in_subset:
+                text += (
+                    f"\u2716 {subset}: {labels_in_subset} labels, "
+                    + f"but {features_in_subset} features\n"
+                )
+            else:
+                crop_percentage = (
+                    df[df[SUBSET] == subset][CROP_PROB] > 0.5
+                ).sum() / labels_in_subset
+                text += f"\u2714 {subset} amount: {labels_in_subset}, crop: {crop_percentage:.1%}\n"
+
+        return text
 
     def process_labels(self):
         df = pd.DataFrame({})
@@ -261,14 +281,19 @@ class LabeledDataset:
     ) -> pd.DataFrame:
         if allow_processing:
             labels = self.process_labels()
+            self._cached_labels_csv = labels
+        elif self._cached_labels_csv is not None:
+            labels = self._cached_labels_csv
         elif self.labels_path.exists():
             labels = pd.read_csv(self.labels_path)
+            self._cached_labels_csv = labels
         else:
             raise FileNotFoundError(f"{self.labels_path} does not exist")
         labels = labels[labels[CROP_PROB] != 0.5]
         unexported_labels = labels[FEATURE_FILENAME].isin(unexported)
         missing_data_labels = labels[FEATURE_FILENAME].isin(missing_data)
-        labels = labels[~unexported_labels & ~missing_data_labels].copy()
+        duplicate_labels = labels[FEATURE_FILENAME].isin(duplicates_data)
+        labels = labels[~unexported_labels & ~missing_data_labels & ~duplicate_labels].copy()
         labels["feature_dir"] = str(features_dir)
         labels[FEATURE_PATH] = labels["feature_dir"] + "/" + labels[FEATURE_FILENAME] + ".pkl"
         labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
@@ -278,7 +303,7 @@ class LabeledDataset:
             )
         return labels
 
-    def create_features(self, disable_gee_export: bool = False) -> List[str]:
+    def create_features(self, disable_gee_export: bool = False) -> str:
         """
         Features are the (X, y) pairs that are used to train the model.
         In this case,
@@ -305,8 +330,7 @@ class LabeledDataset:
         # -------------------------------------------------
         labels_with_no_features = labels[~labels[ALREADY_EXISTS]].copy()
         if len(labels_with_no_features) == 0:
-            do_label_and_feature_amounts_match(labels)
-            return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
+            return self.summary(labels)
 
         # -------------------------------------------------
         # STEP 3: Match labels to tif files (X)
@@ -336,7 +360,5 @@ class LabeledDataset:
         # -------------------------------------------------
         if len(labels_with_tifs_but_no_features) > 0:
             create_pickled_labeled_dataset(labels=labels_with_tifs_but_no_features)
-
-        do_label_and_feature_amounts_match(labels)
-
-        return labels[labels[ALREADY_EXISTS]][FEATURE_FILENAME].tolist()
+            labels[ALREADY_EXISTS] = np.vectorize(lambda p: Path(p).exists())(labels[FEATURE_PATH])
+        return self.summary(labels)
