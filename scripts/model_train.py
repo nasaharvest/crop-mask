@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_lat", type=float, default=11)
     parser.add_argument("--min_lon", type=float, default=34)
     parser.add_argument("--max_lon", type=float, default=38)
-    parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets_str))
+    parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets))
     parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Bure_Jimma_2020")
     # parser.add_argument("--up_to_year", type=int, default=2020)
     parser.add_argument("--start_month", type=str, default="February")
