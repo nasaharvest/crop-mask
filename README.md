@@ -7,7 +7,7 @@ This repository contains code and data to generate annual and in-season crop mas
 
 To create a crop-mask using an already trained model click Open In Colab button below: 
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/crop_mask_inference.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
 
 
 
@@ -48,31 +48,29 @@ jupyter notebook
 ## Adding new labeled data
 1. Add the csv or shape file for new labels into [data/raw](data/raw)
 2. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-    ```bash
-    # Activate environment setup in: Setting up a local environment
-    conda activate landcover-mapping 
-    
-    dvc pull                                    # Get latest data from dvc
-    earthengine authenticate                    # Authenticates Earth Engine 
-    python -c "import ee; ee.Initialize()"      # Will raise error if not setup
-    
-    # Pull in latest EarthEngine tifs (you may need to rerun this command)
-    gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
+```bash
+# Activate environment setup in: Setting up a local environment
+conda activate landcover-mapping 
 
-    # Create features (you may need to rerun this command)
-    python scripts/create_features.py
-    
-    dvc commit                                  # Save new features to repository
-    dvc push                                    # Push features to remote storage
+dvc pull                                    # Get latest data from dvc
+earthengine authenticate                    # Authenticates Earth Engine 
+python -c "import ee; ee.Initialize()"      # Will raise error if not setup
 
-    # Push changes to github
-    git checkout -b'new-Ethiopia-Tigray-data'
-    git add .
-    git commit -m 'Added mew Ethiopia Tigray data for 2020'
-    git push
-    ```
+# Pull in latest EarthEngine tifs (you may need to rerun this command)
+gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
 
-<img src="diagrams/data_processing_chart.png" alt="models" height="200px"/>
+# Create features (you may need to rerun this command)
+python scripts/create_features.py
+
+dvc commit                                  # Save new features to repository
+dvc push                                    # Push features to remote storage
+
+# Push changes to github
+git checkout -b'new-Ethiopia-Tigray-data'
+git add .
+git commit -m 'Added mew Ethiopia Tigray data for 2020'
+git push
+```
 
 ## Training a new model
 ```bash
