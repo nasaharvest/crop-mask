@@ -1,4 +1,4 @@
-git+https://git@github.com/nasaharvest/cropharvest.git
+cropharvest==0.3.0
 google-cloud-storage
 netCDF4
 pandas
