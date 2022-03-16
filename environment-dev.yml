@@ -29,4 +29,4 @@ dependencies:
     - pip:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
-          - git+https://git@github.com/nasaharvest/cropharvest.git
+          - cropharvest==0.3.0
