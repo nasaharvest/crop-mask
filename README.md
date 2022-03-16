@@ -2,7 +2,7 @@
 
 [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/main.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions)
 
-This repository contains code and data to generate annual and in-season crop masks. 
+End-to-end workflow for generating high resolution cropland maps.
 
 To create a crop-mask using an already trained model click Open In Colab button below: 
 
@@ -124,10 +124,6 @@ Google Earth Engine:
 Zenodo
 
 -   [Kenya (post season) and Busia (in season)](https://doi.org/10.5281/zenodo.4271143).
-
-## Acknowledgments
-
-This model requires data from [Plant Village](https://plantvillage.psu.edu/) and [One Acre Fund](https://oneacrefund.org/). We thank those organizations for making these datasets available to us - please contact them if you are interested in accessing the data.
 
 ## Reference
 
