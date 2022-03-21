@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
+from src.bboxes import bboxes
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
 
@@ -21,7 +22,6 @@ if __name__ == "__main__":
         "Mali_upper_CEO_2019",
         "Togo",
         "Rwanda",
-        "digitalearthafrica_eastern",
         "Uganda",
         "open_buildings",
         "digitalearthafrica_eastern",
@@ -39,14 +39,19 @@ if __name__ == "__main__":
         "Tanzania_CEO_2019",
     ]
 
+    selected_bbox = bboxes["East_Africa"]
+    print(selected_bbox.url)
+
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="Ethiopia_Bure_Jimma_2020")
-    parser.add_argument("--min_lat", type=float, default=7)
-    parser.add_argument("--max_lat", type=float, default=11)
-    parser.add_argument("--min_lon", type=float, default=34)
-    parser.add_argument("--max_lon", type=float, default=38)
+    parser.add_argument("--model_name", type=str, default="East_Africa")
+    parser.add_argument(
+        "--eval_datasets", type=str, default="Kenya,Rwanda,Uganda,Tanzania_CEO_2019"
+    )
     parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets))
-    parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Bure_Jimma_2020")
+    parser.add_argument("--min_lat", type=float, default=selected_bbox.min_lat)
+    parser.add_argument("--max_lat", type=float, default=selected_bbox.max_lat)
+    parser.add_argument("--min_lon", type=float, default=selected_bbox.min_lon)
+    parser.add_argument("--max_lon", type=float, default=selected_bbox.max_lon)
     # parser.add_argument("--up_to_year", type=int, default=2020)
     parser.add_argument("--start_month", type=str, default="February")
     parser.add_argument("--input_months", type=int, default=12)
