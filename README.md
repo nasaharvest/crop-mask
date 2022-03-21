@@ -8,6 +8,8 @@ To create a crop-mask using an already trained model click Open In Colab button 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
 
+![Cropland gif](assets/cropmask.gif)
+
 
 
 Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
