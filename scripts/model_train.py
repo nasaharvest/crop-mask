@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
 
-from src.bboxes import bboxes
+from src.bboxes import bboxes  # noqa: E402
 from src.pipeline_funcs import train_model  # noqa: E402
 from src.models import Model  # noqa: E402
 
