@@ -1,4 +1,4 @@
-name: Build 
+name: Test on Github
 
 on:
   pull_request:

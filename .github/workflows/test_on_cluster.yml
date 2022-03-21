@@ -1,4 +1,4 @@
-name: Build 
+name: Test on cluster 
 
 on:
   pull_request:
@@ -32,7 +32,6 @@ jobs:
       run: $CONDA_ENV/dvc pull data/models -f      
     - name: Get data for integration test
       run: |
-        $CONDA_ENV/dvc pull data/features -f
         $CONDA_ENV/dvc pull data/processed -f
         $CONDA_ENV/dvc pull data/compressed_features.tar.gz -f
         tar -xvzf data/compressed_features.tar.gz
