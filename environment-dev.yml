@@ -22,7 +22,7 @@ dependencies:
     - geopandas
     - cartopy
     - scikit-learn
-    - dvc-s3=1.11.16
+    - dvc=1.11.16
     - flake8
     - google-cloud-storage
     - python-dotenv

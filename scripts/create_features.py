@@ -4,6 +4,7 @@ Combines the earth observation data with the labels to create (x, y) training da
 import os
 import pandas as pd
 import sys
+import tarfile
 
 # Change the working directory to the directory of this script
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -56,3 +57,8 @@ if __name__ == "__main__":
 
     with (data_dir / "datasets.txt").open("w") as f:
         f.write(report)
+
+    # Compress features for faster CI/CD
+    print("Compressing features...")
+    with tarfile.open(data_dir / "compressed_features.tar.gz", "w:gz") as tar:
+        tar.add(data_dir / "features", arcname="features")

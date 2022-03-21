@@ -128,7 +128,8 @@ Zambia_CEO_2019 (Timesteps: 24)
 
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 4081, crop: 30.8%
+✔ testing amount: 2047, crop: 29.8%
+✔ validation amount: 2034, crop: 31.8%
 
 
 All data:

@@ -259,6 +259,28 @@ class IntegrationTestLabeledData(TestCase):
             total_num_mismatched == 0, f"Found {total_num_mismatched} mismatched labels+tifs."
         )
 
+    def test_label_coordinate_duplication(self):
+        """For now this test is just a status report"""
+        all_dfs = []
+        for name, labels in self.load_labels().items():
+            labels["name"] = name
+            all_dfs.append(labels)
+
+        big_df = pd.concat(all_dfs)
+        duplicates = big_df[big_df.duplicated(subset=[LON, LAT], keep=False)]
+        duplicates["start_year"] = pd.to_datetime(duplicates[START]).dt.year.astype(str)
+        df = duplicates.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                "name": lambda names: ",".join(names.unique()),
+                SUBSET: lambda subs: ",".join(subs.unique()),
+                "start_year": lambda start_years: ",".join(start_years),
+            }
+        )
+        print("------------------------------------------------------")
+        print("Label coordinate spill over")
+        print("------------------------------------------------------")
+        print(df[["name", SUBSET, "start_year"]].value_counts())
+
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(stream=open(os.devnull, "w"), verbosity=2)

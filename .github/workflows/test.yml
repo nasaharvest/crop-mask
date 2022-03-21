@@ -1,0 +1,51 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+    - name: Run type checks
+      run: mypy .
+    - name: Run flake8
+      run: flake8 .
+    - name: Run unit tests
+      run: python -m unittest
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true              
+    - name: dvc pull models
+      run: dvc pull data/models -f
+    - name: dvc pull data
+      run: |
+        dvc pull data/processed -f
+        dvc pull data/compressed_features.tar.gz -f
+        cd data
+        tar -xvzf compressed_features.tar.gz
+        cd ..
+
+    - name: Integration test - Data integrity
+      run: python -m unittest test/integration_test_labeled.py
+    - name: Integration test - Model bboxes match evaluation sets
+      run: python -m unittest test/integration_test_model_bbox.py
+    - name: Integration test - Model results are consistent
+      run: python -m unittest test/integration_test_model_evaluation.py
+
+   
+
+
