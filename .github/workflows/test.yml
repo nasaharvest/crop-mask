@@ -35,7 +35,7 @@ jobs:
         $CONDA_ENV/dvc pull data/features -f
         $CONDA_ENV/dvc pull data/processed -f
         $CONDA_ENV/dvc pull data/compressed_features.tar.gz -f
-        tar -czvf data/compressed_features.tar.gz data/features
+        tar -xvzf data/compressed_features.tar.gz
     - name: Integration test - Data integrity
       run: $CONDA_ENV/python -m unittest test/integration_test_labeled.py
     - name: Integration test - Model bboxes match evaluation sets

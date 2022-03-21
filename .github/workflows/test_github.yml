@@ -35,7 +35,7 @@ jobs:
       run: |
         dvc pull data/processed -f
         dvc pull data/compressed_features.tar.gz -f
-        tar -czvf data/compressed_features.tar.gz data/features
+        tar -xvzf data/compressed_features.tar.gz
 
     - name: Integration test - Data integrity
       run: python -m unittest test/integration_test_labeled.py
