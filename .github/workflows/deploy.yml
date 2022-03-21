@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy: 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true   
+    - uses: iterative/setup-dvc@v1
+      with:
+        version: '1.11.16'
+    - name: Get latest models
+      run: dvc pull data/models -f
+    - name: Deploy Earth Engine Function
+      run: |
+        chmod +x ./deploy_ee_functions.sh
+        ./deploy_ee_functions.sh 
+    - name: Deploy Docker inference image
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
+        chmod +x ./deploy_inference.sh
+        ./deploy_inference.sh
+      
+
+
