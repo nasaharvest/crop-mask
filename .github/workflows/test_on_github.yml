@@ -42,7 +42,7 @@ jobs:
     - name: Integration test - Model bboxes match evaluation sets
       run: python -m unittest test/integration_test_model_bbox.py
     - name: Integration test - Model results are consistent
-      run: /python -m unittest test/integration_test_model_evaluation.py
+      run: python -m unittest test/integration_test_model_evaluation.py
 
    
 
