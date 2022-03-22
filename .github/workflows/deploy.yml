@@ -19,11 +19,11 @@ jobs:
         version: '1.11.16'
     - name: Get latest models
       run: dvc pull data/models -f
-    - name: Deploy Docker inference image
+    - name: Deploy Docker inference image + trigger function
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
-        chmod +x ./deploy_inference.sh
-        ./deploy_inference.sh
+        chmod +x ./deploy.sh
+        ./deploy.sh
       
 
 
