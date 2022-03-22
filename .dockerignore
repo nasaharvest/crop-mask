@@ -2,10 +2,14 @@ mypy.ini
 pyproject.toml
 README.md
 
+.ipynb_checkpoints/
 .mypy_cache/
+assets/
 data/features
 data/processed
 data/raw
 data/test
+notebooks/
+scripts/
 test/
 

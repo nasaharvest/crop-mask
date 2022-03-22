@@ -14,7 +14,7 @@ To create a crop-mask using an already trained model click Open In Colab button 
 
 Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
-<img src="diagrams/models.png" alt="models" height="200px"/>
+<img src="assets/models.png" alt="models" height="200px"/>
 
 These can be used to create annual and in season crop maps.
 

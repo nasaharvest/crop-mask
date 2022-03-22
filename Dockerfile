@@ -4,9 +4,8 @@ FROM pytorch/torchserve:0.4.2-cpu as base
 USER root
 
 FROM base as reqs
-COPY requirements-inference.txt requirements.txt
 RUN pip3 install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install cropharvest==0.3.0 google-cloud-storage netCDF4 pandas rasterio xarray
 RUN pip3 install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 FROM reqs as build-torchserve
