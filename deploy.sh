@@ -14,7 +14,7 @@ export MODELS=$(
         print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
 )
 
-docker build -f Dockerfile.inference . --build-arg MODELS="$MODELS" -t $TAG
+docker build . --build-arg MODELS="$MODELS" -t $TAG
 docker push $TAG
 gcloud run deploy crop-mask --image ${TAG}:latest \
         --memory=8Gi \
@@ -32,7 +32,7 @@ gcloud run deploy crop-mask-management-api --image ${TAG}:latest \
         --port 8081
 
 gcloud functions deploy trigger-inference \
-    --source=gcp/trigger_inference_function \
+    --source=src/trigger_inference_function \
     --trigger-bucket=$BUCKET \
     --allow-unauthenticated \
     --runtime=python39 \
