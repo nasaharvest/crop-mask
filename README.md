@@ -4,29 +4,27 @@
 
 End-to-end workflow for generating high resolution cropland maps.
 
-![Cropland gif](assets/cropmask.gif)
-
 ## Contents
--   [Training a new model](#training-a-new-model)
 -   [Creating a crop map](#creating-a-crop-map)
+-   [Training a new model](#training-a-new-model)
 -   [Setting up a local environment](#setting-up-a-local-environment)
 -   [Adding new labeled data](#adding-new-labeled-data)
 -   [Tests](#tests)
 -   [Previously generated crop maps](#previously-generated-crop-maps)
 -   [Acknowledgments](#acknowledgments)
 -   [Reference](#reference)
+## Creating a crop map
+To create a crop map run the following colab notebook (or use it as a guide): 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
 
+![Cropland gif](assets/cropmask.gif)
 ## Training a new model
 To train a new model run the following colab notebook (or use it as a guide):
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/train.ipynb)
 
 Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
 
 <img src="assets/models.png" alt="models" height="200px"/>
-
-## Creating a crop map
-To create a crop map run the following colab notebook (or use it as a guide): 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
 
 ## Setting up a local environment
 Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
