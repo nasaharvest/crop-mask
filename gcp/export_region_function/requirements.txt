@@ -1,5 +1,0 @@
-cropharvest==0.3.0
-earthengine-api==0.1.264
-google-cloud-secret-manager
-tqdm
-pandas
