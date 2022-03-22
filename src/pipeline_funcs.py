@@ -76,8 +76,7 @@ def train_model(
         model_ckpt_path=get_dvc_dir("models") / f"{hparams.model_name}.ckpt"
     )
 
-    if metrics["val_metrics"]["f1_score"] > 0.6:
-        model.save()
+    model.save()
 
     return model, metrics
 
