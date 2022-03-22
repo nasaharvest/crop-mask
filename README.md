@@ -4,29 +4,27 @@
 
 End-to-end workflow for generating high resolution cropland maps.
 
-To create a crop-mask using an already trained model click Open In Colab button below: 
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
-
-![Cropland gif](assets/cropmask.gif)
-
-
-
-Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
-
-<img src="assets/models.png" alt="models" height="200px"/>
-
-These can be used to create annual and in season crop maps.
-
 ## Contents
-
+-   [Creating a crop map](#creating-a-crop-map)
+-   [Training a new model](#training-a-new-model)
 -   [Setting up a local environment](#setting-up-a-local-environment)
 -   [Adding new labeled data](#adding-new-labeled-data)
--   [Training a new model](#training-a-new-model)
 -   [Tests](#tests)
 -   [Previously generated crop maps](#previously-generated-crop-maps)
 -   [Acknowledgments](#acknowledgments)
 -   [Reference](#reference)
+## Creating a crop map
+To create a crop map run the following colab notebook (or use it as a guide): 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
+
+![Cropland gif](assets/cropmask.gif)
+## Training a new model
+To train a new model run the following colab notebook (or use it as a guide):
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/train.ipynb)
+
+Two models are trained - a multi-headed pixel wise classifier to classify pixels as containing crop or not, and a multi-spectral satellite image forecaster which forecasts a 12 month timeseries given a partial input:
+
+<img src="assets/models.png" alt="models" height="200px"/>
 
 ## Setting up a local environment
 Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
@@ -47,6 +45,7 @@ jupyter notebook
 ```
 
 ## Adding new labeled data
+Ensure the local environment is setup.
 1. Add the csv or shape file for new labels into [data/raw](data/raw)
 2. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
 ```bash
@@ -72,34 +71,6 @@ git add .
 git commit -m 'Added mew Ethiopia Tigray data for 2020'
 git push
 ```
-
-## Training a new model
-```bash
-# Activate environment setup in: Setting up a local environment
-conda activate landcover-mapping 
-
-dvc pull        # Get the latest training and evaluation data
-wandb login     # Authenticate Wandb for model training logs
-
-# Trains a new model
-python scripts/model_train.py \
-    --min_lon 36.45 \
-    --max_lon 40.00 \
-    --min_lat 12.25 \
-    -- max_lat 14.895 \
-    --model_name Ethiopia_Tigray_2020 \
-    --eval_datasets Ethiopia_Tigray_2020
-
-dvc commit data/models.dvc      # Saves model to repository
-dvc push data/models            # Uploads model to remote storage 
-
-# Push changes to github
-git checkout -b'new-Ethiopia-Tigray-2020-model'
-git add .
-git commit -m 'Trained new Ethiopia Tigray 2020 model'
-git push
-```
-The model will be deployed when these files are merged into the main branch.
 
 ## Tests
 
