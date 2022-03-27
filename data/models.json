@@ -151,5 +151,22 @@
             "recall_score": 0.6167,
             "roc_auc_score": 0.8479
         }
+    },
+    "my_first_model": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/5dj9xrqw",
+        "test_metrics": {
+            "accuracy": 0.8384,
+            "f1_score": 0.788,
+            "precision_score": 0.757,
+            "recall_score": 0.8217,
+            "roc_auc_score": 0.9202
+        },
+        "val_metrics": {
+            "accuracy": 0.8327,
+            "f1_score": 0.7879,
+            "precision_score": 0.7684,
+            "recall_score": 0.8084,
+            "roc_auc_score": 0.9167
+        }
     }
 }
