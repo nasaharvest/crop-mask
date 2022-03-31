@@ -151,5 +151,39 @@
             "recall_score": 0.6167,
             "roc_auc_score": 0.8479
         }
+    },
+    "demo_model_mar31": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/x5dvtgv7",
+        "test_metrics": {
+            "accuracy": 0.8219,
+            "f1_score": 0.7781,
+            "precision_score": 0.7145,
+            "recall_score": 0.8543,
+            "roc_auc_score": 0.9121
+        },
+        "val_metrics": {
+            "accuracy": 0.8209,
+            "f1_score": 0.784,
+            "precision_score": 0.7307,
+            "recall_score": 0.8458,
+            "roc_auc_score": 0.9067
+        }
+    },
+    "demo_model_mar31_2": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3axfve0s",
+        "test_metrics": {
+            "accuracy": 0.8219,
+            "f1_score": 0.7781,
+            "precision_score": 0.7145,
+            "recall_score": 0.8543,
+            "roc_auc_score": 0.9121
+        },
+        "val_metrics": {
+            "accuracy": 0.8209,
+            "f1_score": 0.784,
+            "precision_score": 0.7307,
+            "recall_score": 0.8458,
+            "roc_auc_score": 0.9067
+        }
     }
 }
