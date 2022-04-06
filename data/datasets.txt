@@ -100,15 +100,16 @@ Argentina_Buenos_Aires (Timesteps: 10)
 ✔ validation amount: 111, crop: 45.9%
 
 
-Malawi_CEO_2020 (Timesteps: 22)
+Malawi_CEO_2020 (Timesteps: 23)
 ----------------------------------------------------------------------------
-✔ training amount: 480, crop: 13.5%
-✔ validation amount: 467, crop: 10.3%
+✖ validation: 479 labels, but 0 features
+✖ testing: 468 labels, but 0 features
 
 
 Malawi_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 942, crop: 7.1%
+✔ validation amount: 473, crop: 7.8%
+✔ testing amount: 469, crop: 6.4%
 
 
 Malawi_FAO (Timesteps: 22)
@@ -129,6 +130,11 @@ Zambia_CEO_2019 (Timesteps: 24)
 Tanzania_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 ✔ training amount: 4081, crop: 30.8%
+
+
+Malawi_corrected (Timesteps: 23)
+----------------------------------------------------------------------------
+✖ training: 150 labels, but 0 features
 
 
 All data:
