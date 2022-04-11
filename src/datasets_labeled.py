@@ -644,4 +644,25 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Malawi_corrected",
+        country="Malawi",
+        processors=(
+            Processor(
+                filename="Crops.shp",
+                crop_prob=1.0,
+                start_year=2021,
+            ),
+            Processor(
+                filename="Noncrops.shp",
+                crop_prob=0.0,
+                start_year=2021,
+            ),
+            Processor(
+                filename="Major_protected_areas.shp",
+                crop_prob=0.0,
+                start_year=2021,
+            ),
+        )
+    )
 ]

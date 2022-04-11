@@ -132,6 +132,11 @@ Tanzania_CEO_2019 (Timesteps: 24)
 ✔ validation amount: 2034, crop: 31.8%
 
 
+Malawi_corrected (Timesteps: 12)
+----------------------------------------------------------------------------
+✔ training amount: 178, crop: 42.1%
+
+
 All data:
 ✔ Found no empty features
 ✔ No duplicates found
