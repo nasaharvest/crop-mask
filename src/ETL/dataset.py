@@ -53,7 +53,6 @@ missing_data = pd.read_csv(missing_data_file, sep="\n", header=None)[0].tolist()
 duplicates_data_file = data_dir / "duplicates.txt"
 duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
 
-bucket = storage.Client().bucket(TIF_BUCKET)
 temp_dir = tempfile.gettempdir()
 
 
@@ -111,6 +110,7 @@ def find_matching_point(
     So the function finds the closest grid coordinate to the label coordinate.
     Additional value is given to a grid coordinate that is close to the center of the tif.
     """
+    bucket = storage.Client().bucket(TIF_BUCKET)
     start_date = datetime.strptime(start, "%Y-%m-%d")
     tif_slope_tuples = []
     for p in tif_paths:
