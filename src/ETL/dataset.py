@@ -1,18 +1,20 @@
 from cropharvest.eo import EarthEngineExporter
+from cropharvest.eo.eo import get_cloud_tif_list
 from cropharvest.engineer import Engineer
 from datetime import datetime
 from dataclasses import dataclass
+from google.cloud import storage
 from pathlib import Path
 from typing import Dict, List, Tuple
 from tqdm import tqdm
 import pandas as pd
 import pickle
 import numpy as np
+import tempfile
 
 from .processor import Processor
 from src.utils import (
     data_dir,
-    tifs_dir,
     features_dir,
     memoize,
     distance,
@@ -38,6 +40,7 @@ from src.ETL.constants import (
     SUBSET,
     DATASET,
     TIF_PATHS,
+    TIF_BUCKET,
 )
 from src.ETL.data_instance import CropDataInstance
 
@@ -50,12 +53,16 @@ missing_data = pd.read_csv(missing_data_file, sep="\n", header=None)[0].tolist()
 duplicates_data_file = data_dir / "duplicates.txt"
 duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
 
+bucket = storage.Client().bucket(TIF_BUCKET)
+temp_dir = tempfile.gettempdir()
+
 
 @memoize
 def generate_bbox_from_paths() -> Dict[Path, BoundingBox]:
+    cloud_tif_paths = [Path(p) for p in get_cloud_tif_list(TIF_BUCKET)]
     return {
         p: BoundingBox.from_path(p)
-        for p in tqdm(tifs_dir.glob("**/*.tif"), desc="Generating BoundingBoxes from paths")
+        for p in tqdm(cloud_tif_paths, desc="Generating BoundingBoxes from paths")
     }
 
 
@@ -105,9 +112,16 @@ def find_matching_point(
     Additional value is given to a grid coordinate that is close to the center of the tif.
     """
     start_date = datetime.strptime(start, "%Y-%m-%d")
-    tif_slope_tuples = [
-        Engineer.load_tif(p, start_date=start_date, num_timesteps=None) for p in tif_paths
-    ]
+    tif_slope_tuples = []
+    for p in tif_paths:
+        blob = bucket.blob(str(p))
+        local_path = f"{temp_dir}/{p.name}"
+        blob.download_to_filename(local_path)
+        tif_slope_tuples.append(
+            Engineer.load_tif(local_path, start_date=start_date, num_timesteps=None)
+        )
+        Path(local_path).unlink()
+
     if len(tif_slope_tuples) > 1:
         min_distance_from_point = np.inf
         min_distance_from_center = np.inf
@@ -352,7 +366,7 @@ class LabeledDataset:
                 EarthEngineExporter(
                     check_ee=True,
                     check_gcp=True,
-                    dest_bucket="crop-mask-tifs2",
+                    dest_bucket=TIF_BUCKET,
                 ).export_for_labels(labels=labels_with_no_tifs)
 
         # -------------------------------------------------

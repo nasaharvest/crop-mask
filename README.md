@@ -56,9 +56,6 @@ dvc pull                                    # Get latest data from dvc
 earthengine authenticate                    # Authenticates Earth Engine 
 python -c "import ee; ee.Initialize()"      # Will raise error if not setup
 
-# Pull in latest EarthEngine tifs (you may need to rerun this command)
-gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
-
 # Create features (you may need to rerun this command)
 python scripts/create_features.py
 
