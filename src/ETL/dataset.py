@@ -115,12 +115,13 @@ def find_matching_point(
     tif_slope_tuples = []
     for p in tif_paths:
         blob = bucket.blob(str(p))
-        local_path = f"{temp_dir}/{p.name}"
-        blob.download_to_filename(local_path)
+        local_path = Path(f"{temp_dir}/{p.name}")
+        blob.download_to_filename(str(local_path))
         tif_slope_tuples.append(
-            Engineer.load_tif(local_path, start_date=start_date, num_timesteps=None)
+            Engineer.load_tif(str(local_path), start_date=start_date, num_timesteps=None)
         )
-        Path(local_path).unlink()
+        if local_path.exists():
+            local_path.unlink()
 
     if len(tif_slope_tuples) > 1:
         min_distance_from_point = np.inf
