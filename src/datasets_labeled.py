@@ -663,6 +663,28 @@ labeled_datasets = [
                 crop_prob=0.0,
                 start_year=2021,
             ),
-        )
-    )
+        ),
+    ),
+    LabeledDataset(
+        dataset="Namibia_CEO_2020",
+        country="Namibia",
+        processors=(
+            Processor(
+                filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-1)-sample-data-2022-04-20.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.0, 0.5, 0.5),
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+            Processor(
+                filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-2)-sample-data-2022-04-20.csv",
+                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.0, 0.5, 0.5),
+                x_y_from_centroid=False,
+                clean_df=clean_ceo_data,
+            ),
+        ),
+    ),
 ]
