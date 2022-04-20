@@ -686,5 +686,5 @@ labeled_datasets = [
                 clean_df=clean_ceo_data,
             ),
         ),
-    ),
+    )
 ]
