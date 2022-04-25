@@ -139,8 +139,8 @@ Malawi_corrected (Timesteps: 24)
 
 Namibia_CEO_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ validation: 567 labels, but 52 features
-✖ testing: 533 labels, but 60 features
+✔ validation amount: 567, crop: 1.8%
+✔ testing amount: 533, crop: 1.1%
 
 
 All data:
