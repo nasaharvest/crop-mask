@@ -1,5 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
+
+from xarray import combine_nested
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
@@ -11,6 +13,12 @@ import pytorch_lightning as pl
 from src.datasets_labeled import labeled_datasets
 from src.models import Model
 from src.utils import get_dvc_dir, models_file
+
+import geopandas as gpd
+import numpy as np
+import sklearn.metrics
+import rasterio as ras
+from pyproj import Proj, transform
 
 model_dir = get_dvc_dir("models")
 all_dataset_names = [d.dataset for d in labeled_datasets]
@@ -131,3 +139,21 @@ def run_evaluation(
         json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
 
     return model, all_info
+
+def run_comparison(validation: str, cropmap: str):
+    #assume datatypes to be csv and tiff for validation and cropmap respectively
+    report = []
+    pred = ras.open(cropmap, mode='r')
+    truth = gpd.read_file(validation)
+    truth = truth[['lat', 'lon', 'crop_probability']]
+
+    pred_sampled = ras.sample.sample_gen(pred, ((float(x),float(y)) for x,y in zip(truth['lat'], truth['lon'])))
+    #reproject pred?
+
+    target_names = ['non_crop', 'crop']
+    class_report = sklearn.metrics.classification_report(truth['crop_probability'], pred_sampled['cropmask'], target_names = target_names, output_dict=True)
+    accuracy = sklearn.metrics.accuracy_score(truth['crop_probability'], pred_sampled)
+
+    report = [accuracy, class_report['crop']['precision'], class_report['non_crop']['precision'], class_report['non_crop']['recall'], class_report['crop']['recall']]
+
+    return report
