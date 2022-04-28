@@ -149,8 +149,8 @@ class CropDataset(Dataset):
         # initialize
         if "mean" not in norm_dict:
             num_bands = array.shape[1]
-            norm_dict["mean"] = np.zeros(num_bands) 
-            norm_dict["M2"] = np.zeros(num_bands) 
+            norm_dict["mean"] = np.zeros(num_bands)
+            norm_dict["M2"] = np.zeros(num_bands)
 
         for time_idx in range(array.shape[0]):
             norm_dict["n"] += 1
