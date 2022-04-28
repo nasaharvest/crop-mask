@@ -149,8 +149,8 @@ class CropDataset(Dataset):
         # initialize
         if "mean" not in norm_dict:
             num_bands = array.shape[1]
-            norm_dict["mean"] = np.zeros(num_bands)
-            norm_dict["M2"] = np.zeros(num_bands)
+            norm_dict["mean"] = np.zeros(num_bands) # type: ignore[assignment]
+            norm_dict["M2"] = np.zeros(num_bands) # type: ignore[assignment]
 
         for time_idx in range(array.shape[0]):
             norm_dict["n"] += 1
@@ -160,7 +160,7 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, np.ndacondrray]:
+    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, np.ndarray]:
         norm_dict_interim = {"n": 0}
         for p in tqdm(feature_files, desc="Calculating normalizing_dict"):
             with Path(p).open("rb") as f:
