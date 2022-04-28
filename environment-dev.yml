@@ -30,3 +30,5 @@ dependencies:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - cropharvest==0.3.0
+          - types-requests
+          - types-python-dateutil
