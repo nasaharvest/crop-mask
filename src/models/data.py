@@ -137,7 +137,7 @@ class CropDataset(Dataset):
 
     @staticmethod
     def _update_normalizing_values(
-        norm_dict: Dict[str, int], array: np.ndarray
+        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
     ) -> None:
         # given an input array of shape [timesteps, bands]
         # update the normalizing dict
