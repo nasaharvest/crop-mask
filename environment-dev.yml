@@ -3,7 +3,7 @@ channels:
     - conda-forge
     - pytorch
 dependencies:
-    - python=3.7 # earthengine doesn't work with python 3.7
+    - python=3.7
     - dataclasses # only introduced in python 3.7
     - earthengine-api
     - mypy=0.812
