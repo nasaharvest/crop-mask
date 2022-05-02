@@ -23,7 +23,7 @@ from src.ETL.constants import (  # noqa: E402
     SUBSET,
 )
 
-from src.utils import data_dir  # noqa: E402
+from src.utils import data_dir, memoize  # noqa: E402
 from src.ETL.data_instance import CropDataInstance  # noqa: E402
 from src.ETL.dataset import get_label_timesteps, load_all_features_as_df  # noqa: E402
 from src.datasets_labeled import labeled_datasets  # noqa: E402
@@ -35,6 +35,7 @@ duplicates_data_file = data_dir / "duplicates.txt"
 duplicates_data = pd.read_csv(duplicates_data_file, sep="\n", header=None)[0].tolist()
 
 
+@memoize
 def load_feature(p):
     with Path(p).open("rb") as f:
         return pickle.load(f)
@@ -57,15 +58,25 @@ class IntegrationTestLabeledData(TestCase):
         return datasets
 
     def test_features_with_no_labels(self):
-        feature_name_list = []
+        # If this test is failing and all other tests are passing,
+        # temporarily set remove unused features to True
+        # to remove unused features
+        remove_unused_features = False
+
+        features_with_label = []
         for _, labels in self.load_labels().items():
-            feature_name_list += labels[FEATURE_FILENAME].tolist()
+            features_with_label += labels[FEATURE_FILENAME].tolist()
 
         features_df = load_all_features_as_df()
         features_df_stems = features_df.filename.apply(lambda p: p.stem)
-        features_with_no_label = features_df[~features_df_stems.isin(feature_name_list)]
+        features_with_no_label = features_df[~features_df_stems.isin(features_with_label)]
         amount = len(features_with_no_label)
-        self.assertTrue(amount == 0, f'Found {amount} features with no labels')
+
+        if remove_unused_features:
+            print("Removing unused features...")
+            features_with_no_label[FEATURE_FILENAME].apply(lambda p: Path(p).unlink())
+
+        self.assertTrue(amount == 0, f"Found {amount} features with no labels")
 
     def test_each_pickle_file_is_crop_data_instance(self):
         each_pickle_file_is_crop_data_instance = True
@@ -199,6 +210,26 @@ class IntegrationTestLabeledData(TestCase):
             print(f"{mark} {name} label has {last_word}")
         self.assertTrue(
             all_labels_have_consistent_dates, "Check logs for which labels have inconsistent dates."
+        )
+
+    def test_labels_features_have_matching_dates(self):
+        def check_start_end_dates(row):
+            return (row[START] + "_" + row[END]) in row[FEATURE_FILENAME]
+
+        all_labels_have_matching_dates = True
+        for name, labels in self.load_labels().items():
+            start_end_dates_match = labels.apply(check_start_end_dates, axis=1)
+            if start_end_dates_match.all():
+                mark = "\u2714"
+                last_word = "matching feature dates"
+            else:
+                mark = "\u2716"
+                last_word = f"{(~start_end_dates_match).sum()} mismatching feature dates"
+                all_labels_have_matching_dates = False
+            print(f"{mark} {name} labels have {last_word}")
+        self.assertTrue(
+            all_labels_have_matching_dates,
+            "Check logs for which labels have label-feature mismatches.",
         )
 
     def test_all_older_features_have_24_months(self):
