@@ -1,9 +1,11 @@
 from typing import List
-import geopandas as gpd
-import numpy as np
 import sklearn.metrics
+import geopandas as gpd
 import rasterio as ras
-from pyproj import Proj, transform
+from pyproj import Proj
+from pyproj import transform
+import numpy as np
+
 
 import fiona
 fiona.supported_drivers
@@ -16,39 +18,30 @@ def run_comparison(validation: str, cropmap: str, validation_projection = None, 
     cropmap = ras.open(cropmap)
     validation = gpd.read_file(validation)
 
-    if (validation_projection != None):
-        validation.crs = validation_projection
+    validation = validation[validation['subset'] == 'testing']
+    validation.loc[validation['crop_probability'].astype(float) >= 0.5, 'crop_probability'] = 1
+    validation.loc[validation['crop_probability'].astype(float) < 0.5, 'crop_probability'] = 0
+    validation = validation[(validation.crop_probability == 1) | (validation.crop_probability == 0)]
 
-    if (cropmap_projection != None):
-        cropmap.crs = Proj(cropmap_projection)
+    pIn = Proj(init="epsg:4326")
+    out = Proj(init=cropmap.crs.to_dict()['init'])
 
-    validation = gpd.GeoDataFrame(data = validation[['lat', 'lon', 'crop_probability']], crs = validation.crs)
+    validation = gpd.GeoDataFrame(data = validation[['lat', 'lon', 'crop_probability']])
 
-    if (Proj(cropmap.crs) != Proj(validation.crs)):
-        newLat, newLon = reproject(validation['lat'].values, validation['lon'].values, Proj(validation.crs), Proj(cropmap.crs))
+    newLat, newLon = transform(pIn, out, np.array(validation['lon']), np.array(validation['lat']))
 
-    newLat, newLon = reproject(validation['lat'].values, validation['lon'].values, Proj('+init=epsg:4326'), Proj(cropmap.crs))
+    validation['lat'] = newLat
+    validation['lon'] = newLon
 
-    cropmap_sampled = ras.sample.sample_gen(cropmap, ((float(x),float(y)) for x,y in zip(validation['lat'], validation['lon'])))
+    cropmap_sampled = ras.sample.sample_gen(cropmap, zip(validation['lat'], validation['lon']))
+    cropmap_sampled = np.array([x for x in cropmap_sampled])
 
-    target_names = ['non_crop', 'crop']
-    class_report = sklearn.metrics.classification_report(validation['crop_probability'], cropmap_sampled['cropmask'], target_names = target_names, output_dict=True)
+    print(cropmap_sampled)
+
+    class_report = sklearn.metrics.classification_report(validation['crop_probability'], cropmap_sampled, output_dict=True)
     accuracy = sklearn.metrics.accuracy_score(validation['crop_probability'], cropmap_sampled)
 
     report = [accuracy, class_report['crop']['precision'], class_report['non_crop']['precision'], class_report['non_crop']['recall'], class_report['crop']['recall']]
 
     return report
 
-def reproject(latIn, lonIn, ProjIn, ProjOut) -> np.array:
-    if latIn.size != latIn.size:
-        raise Exception("Input arrays are not of equal size.")
-
-    latOut = []
-    lonOut = []
-
-    for coordinate in np.arange(latIn.size):
-        x1,y1 = latIn[coordinate],lonIn[coordinate]
-        newLat, newLon = transform(ProjIn,ProjOut,x1,y1)
-        latOut.append(newLat), lonOut.append(newLon)
-    
-    return np.array(latOut), np.array(lonOut)
