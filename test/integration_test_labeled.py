@@ -65,7 +65,7 @@ class IntegrationTestLabeledData(TestCase):
         features_df_stems = features_df.filename.apply(lambda p: p.stem)
         features_with_no_label = features_df[~features_df_stems.isin(feature_name_list)]
         amount = len(features_with_no_label)
-        self.assertTrue(amount == 0, f"Found {amount} features with no labels")
+        self.assertTrue(amount == 0, f'Found {amount} features with no labels')
 
     def test_each_pickle_file_is_crop_data_instance(self):
         each_pickle_file_is_crop_data_instance = True
@@ -202,8 +202,7 @@ class IntegrationTestLabeledData(TestCase):
         )
 
     def test_all_older_features_have_24_months(self):
-
-        current_cutoff_date = date.today().replace(day=1) + relativedelta(months=-3)
+        current_cutoff_date = date.today().replace(day=1) + relativedelta(months=-4)
         two_years_before_cutoff = pd.Timestamp(current_cutoff_date + relativedelta(months=-24))
 
         all_older_features_have_24_months = True
