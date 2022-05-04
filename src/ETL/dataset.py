@@ -174,6 +174,7 @@ def get_label_timesteps(labels):
     return (diff / np.timedelta64(1, "M")).round().astype(int)
 
 
+@memoize
 def load_all_features_as_df() -> pd.DataFrame:
     features = []
     files = list(features_dir.glob("*.pkl"))

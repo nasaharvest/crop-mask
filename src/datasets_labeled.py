@@ -557,7 +557,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 x_y_from_centroid=False,
-                train_val_test=(0.5, 0.5, 0.0),
+                train_val_test=(0.0, 0.5, 0.5),
                 clean_df=clean_ceo_data,
             ),
             Processor(
@@ -565,7 +565,7 @@ labeled_datasets = [
                 crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 x_y_from_centroid=False,
-                train_val_test=(0.5, 0.5, 0.0),
+                train_val_test=(0.0, 0.5, 0.5),
                 clean_df=clean_ceo_data,
             ),
         ),
@@ -644,4 +644,25 @@ labeled_datasets = [
             ),
         ),
     ),
+    LabeledDataset(
+        dataset="Malawi_corrected",
+        country="Malawi",
+        processors=(
+            Processor(
+                filename="Crops.shp",
+                crop_prob=1.0,
+                start_year=2020,
+            ),
+            Processor(
+                filename="Noncrops.shp",
+                crop_prob=0.0,
+                start_year=2020,
+            ),
+            Processor(
+                filename="Major_protected_areas.shp",
+                crop_prob=0.0,
+                start_year=2020,
+            ),
+        )
+    )
 ]

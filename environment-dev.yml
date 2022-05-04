@@ -3,10 +3,9 @@ channels:
     - conda-forge
     - pytorch
 dependencies:
-    - python=3.6 # earthengine doesn't work with python 3.7
-    - dataclasses # only introduced in python 3.7
+    - python=3.7
     - earthengine-api
-    - mypy=0.812
+    - mypy=0.931
     - black
     - pandas
     - xarray=0.17.0
@@ -30,3 +29,5 @@ dependencies:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - cropharvest==0.3.0
+          - types-requests
+          - types-python-dateutil
