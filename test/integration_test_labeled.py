@@ -233,11 +233,11 @@ class IntegrationTestLabeledData(TestCase):
         )
 
     def test_all_older_features_have_24_months(self):
-        # If this test is failing, datasets with start dates two years before today 
-        # (technically 2 years and 4 months, see relative delta below for cutoff) do not have 
-        # features for the 24 month period following their start date. 
-        # To address this, update the failing datasets by adding current features. 
-        
+        # If this test is failing, datasets with start dates two years before today
+        # (technically 2 years and 4 months, see relative delta below for cutoff) do not have
+        # features for the 24 month period following their start date.
+        # To address this, update the failing datasets by adding current features.
+
         current_cutoff_date = date.today().replace(day=1) + relativedelta(months=-4)
         two_years_before_cutoff = pd.Timestamp(current_cutoff_date + relativedelta(months=-24))
 
