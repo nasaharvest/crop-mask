@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
 
-from typing import cast, Tuple, Optional, List, Dict, Union
+from typing import cast, Any, Tuple, Optional, List, Dict, Union
 from src.ETL.boundingbox import BoundingBox
 
 
@@ -137,7 +137,7 @@ class CropDataset(Dataset):
 
     @staticmethod
     def _update_normalizing_values(
-        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
+        norm_dict: Dict[str, Union[int, Any]], array: np.ndarray
     ) -> None:
         # given an input array of shape [timesteps, bands]
         # update the normalizing dict
@@ -160,7 +160,7 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, np.ndarray]:
+    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, Union[int, np.ndarray]]:
         norm_dict_interim = {"n": 0}
         for p in tqdm(feature_files, desc="Calculating normalizing_dict"):
             with Path(p).open("rb") as f:

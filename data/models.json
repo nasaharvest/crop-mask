@@ -84,21 +84,21 @@
             "roc_auc_score": 0.9142
         }
     },
-    "Malawi-2021": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/lo2gruzv",
+    "Malawi_2020_September": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2dh2xut8",
         "test_metrics": {
-            "accuracy": 0.8568,
-            "f1_score": 0.5732,
-            "precision_score": 0.4592,
-            "recall_score": 0.7627,
-            "roc_auc_score": 0.8918
+            "accuracy": 0.8846,
+            "f1_score": 0.5909,
+            "precision_score": 0.5342,
+            "recall_score": 0.661,
+            "roc_auc_score": 0.8868
         },
         "val_metrics": {
-            "accuracy": 0.8559,
-            "f1_score": 0.5369,
-            "precision_score": 0.4211,
-            "recall_score": 0.7407,
-            "roc_auc_score": 0.883
+            "accuracy": 0.8873,
+            "f1_score": 0.5909,
+            "precision_score": 0.5,
+            "recall_score": 0.7222,
+            "roc_auc_score": 0.8698
         }
     },
     "Mali_lower_2019": {
