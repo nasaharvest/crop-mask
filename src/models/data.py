@@ -133,16 +133,16 @@ class CropDataset(Dataset):
             ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
         timesteps = df["timesteps"].unique().tolist()
-        if any(t < 5 for t in timesteps):
+        if len(timesteps) > 1:
             timesteps_w_dataset = (
                 df[["dataset", "timesteps"]]
                 .groupby("timesteps")
                 .agg({"dataset": lambda ds: ",".join(ds.unique())})
             )
-            raise ValueError(
-                "Some datasets have too few timesteps using the current start month. "
-                + "Please remove them from the training set list or restrict them "
-                + f"using the up_to_year parameter.\n{timesteps_w_dataset}"
+            print(
+                "WARNING: Datasets have different amounts of timesteps available. "
+                + "Forecaster will be used to fill gaps."
+                + f"\n{timesteps_w_dataset}"
             )
 
         return timesteps
