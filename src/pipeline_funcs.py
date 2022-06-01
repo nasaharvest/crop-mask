@@ -60,6 +60,8 @@ def train_model(
             "forecast_timesteps": model.forecast_timesteps,
             "train_num_timesteps": model.train_num_timesteps,
             "eval_num_timesteps": model.eval_num_timesteps,
+            "bands_to_use": model.bands_to_use,
+            "num_bands": len(model.bands_to_use),
         }
     )
 
