@@ -78,8 +78,8 @@ class Model(pl.LightningModule):
             max_lon=hparams.max_lon,
         )
 
-        if hparams.skip_era5:
-            self.bands_to_use = [i for i, v in enumerate(BANDS) if v in ERA5_BANDS]
+        if "skip_era5" in hparams and hparams.skip_era5:
+            self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
         else:
             self.bands_to_use = [i for i, _ in enumerate(BANDS)]
 
