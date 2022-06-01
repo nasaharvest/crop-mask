@@ -18,6 +18,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
 )
+from cropharvest.bands import ERA5_BANDS
+from cropharvest.engineer import BANDS
 
 from src.ETL.boundingbox import BoundingBox
 from src.ETL.constants import ALREADY_EXISTS, SUBSET
@@ -75,6 +77,11 @@ class Model(pl.LightningModule):
             min_lon=hparams.min_lon,
             max_lon=hparams.max_lon,
         )
+
+        if hparams.skip_era5:
+            self.bands_to_use = [i for i, v in enumerate(BANDS) if v in ERA5_BANDS]
+        else:
+            self.bands_to_use = [i for i, _ in enumerate(BANDS)]
 
         # --------------------------------------------------
         # Normalizing dicts
@@ -163,6 +170,7 @@ class Model(pl.LightningModule):
         self.val_losses: List[float] = []
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        x = x[:, :, self.bands_to_use]
         if self.forecast_eval_data:
             x_input = x[:, : self.available_timesteps, :]
             x_forecasted = self.forecaster(x_input)[:, self.available_timesteps - 1 :, :]
