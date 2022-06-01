@@ -233,7 +233,7 @@ class IntegrationTestLabeledData(TestCase):
         )
 
     def test_all_older_features_have_24_months(self):
-        current_cutoff_date = date.today().replace(day=1) + relativedelta(months=-4)
+        current_cutoff_date = date.today().replace(day=1) + relativedelta(months=-5)
         two_years_before_cutoff = pd.Timestamp(current_cutoff_date + relativedelta(months=-24))
 
         all_older_features_have_24_months = True

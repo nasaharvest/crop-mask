@@ -137,6 +137,12 @@ Malawi_corrected (Timesteps: 24)
 ✔ training amount: 178, crop: 42.1%
 
 
+Namibia_CEO_2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+✔ validation amount: 567, crop: 1.8%
+✔ testing amount: 533, crop: 1.1%
+
+
 All data:
 ✔ Found no empty features
 ✔ No duplicates found

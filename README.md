@@ -26,6 +26,12 @@ Two models are trained - a multi-headed pixel wise classifier to classify pixels
 
 <img src="assets/models.png" alt="models" height="200px"/>
 
+## Adding new labeled data
+
+To add new labeled data run the following colab notebook (or use it as a guide): 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/new_data.ipynb)
+
+
 ## Setting up a local environment
 Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
 #### 1. For development 
@@ -42,34 +48,6 @@ gcloud auth application-default login       # Authenticates with Google Cloud
 conda env create -f environment-lite.yml    # Create environment
 conda activate landcover-lite               # Activate environment
 jupyter notebook
-```
-
-## Adding new labeled data
-Ensure the local environment is setup.
-1. Add the csv or shape file for new labels into [data/raw](data/raw)
-2. In [dataset_labeled.py](src/datasets_labeled.py) add a new `LabeledDataset` object into the `labeled_datasets` list and specify the required parameters.
-```bash
-# Activate environment setup in: Setting up a local environment
-conda activate landcover-mapping 
-
-dvc pull                                    # Get latest data from dvc
-earthengine authenticate                    # Authenticates Earth Engine 
-python -c "import ee; ee.Initialize()"      # Will raise error if not setup
-
-# Pull in latest EarthEngine tifs (you may need to rerun this command)
-gsutil -m cp -n -r gs://crop-mask-tifs2/tifs data/
-
-# Create features (you may need to rerun this command)
-python scripts/create_features.py
-
-dvc commit                                  # Save new features to repository
-dvc push                                    # Push features to remote storage
-
-# Push changes to github
-git checkout -b'new-Ethiopia-Tigray-data'
-git add .
-git commit -m 'Added mew Ethiopia Tigray data for 2020'
-git push
 ```
 
 ## Tests

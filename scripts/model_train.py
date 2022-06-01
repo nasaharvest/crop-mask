@@ -4,6 +4,7 @@ Script that uses argument parameters to train an individual model
 import os
 import sys
 from argparse import ArgumentParser
+from cropharvest.countries import BBox
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append("..")
@@ -40,7 +41,6 @@ if __name__ == "__main__":
     ]
 
     selected_bbox = bboxes["East_Africa"]
-    print(selected_bbox.url)
 
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="East_Africa")
@@ -56,5 +56,14 @@ if __name__ == "__main__":
     parser.add_argument("--start_month", type=str, default="February")
     parser.add_argument("--input_months", type=int, default=12)
     hparams = Model.add_model_specific_args(parser).parse_args()
+    print(
+        BBox(
+            min_lat=hparams.min_lat,
+            max_lat=hparams.max_lat,
+            min_lon=hparams.min_lon,
+            max_lon=hparams.max_lon,
+        ).url
+    )
+
     _, metrics = train_model(hparams)
     print(metrics)
