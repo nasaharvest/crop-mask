@@ -121,7 +121,6 @@ class Model(pl.LightningModule):
             all_dataset_params[normalizing_dict_key] = {
                 "train_num_timesteps": train_dataset.num_timesteps,
                 "val_num_timesteps": val_dataset.num_timesteps,
-                "input_size": train_dataset.num_input_features,
                 "normalizing_dict": {
                     k: v.tolist() for k, v in train_dataset.normalizing_dict.items()
                 },
@@ -133,7 +132,6 @@ class Model(pl.LightningModule):
         dataset_params = all_dataset_params[normalizing_dict_key]
         self.train_num_timesteps: List[int] = dataset_params["train_num_timesteps"]
         self.eval_num_timesteps: List[int] = dataset_params["val_num_timesteps"]
-        self.input_size: int = dataset_params["input_size"]
 
         # Normalizing dict that is exposed
         self.normalizing_dict_jit: Dict[str, List[float]] = dataset_params["normalizing_dict"]
@@ -152,7 +150,7 @@ class Model(pl.LightningModule):
         if self.input_months > self.available_timesteps:
             self.forecast_timesteps = self.input_months - self.available_timesteps
             self.forecaster = Forecaster(
-                num_bands=self.input_size,
+                num_bands=len(self.bands_to_use),
                 output_timesteps=self.forecast_timesteps,
                 hparams=hparams,
             )
@@ -161,12 +159,11 @@ class Model(pl.LightningModule):
 
         self.forecaster_loss = F.smooth_l1_loss
 
-        self.classifier = Classifier(input_size=self.input_size, hparams=hparams)
+        self.classifier = Classifier(input_size=len(self.bands_to_use), hparams=hparams)
         self.global_loss_function: Callable = F.binary_cross_entropy
         self.local_loss_function: Callable = F.binary_cross_entropy
 
-        # Used during training to track max f1_score and lowest val loss
-        self.f1_scores: List[float] = []
+        # Used during training to track lowest val loss
         self.val_losses: List[float] = []
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -272,9 +269,6 @@ class Model(pl.LightningModule):
         output_dict["recall_score"] = recall_score(labels, preds, zero_division=0)
         output_dict["f1_score"] = f1_score(labels, preds, zero_division=0)
         output_dict["accuracy"] = accuracy_score(labels, preds)
-
-        self.f1_scores.append(output_dict["f1_score"])
-        output_dict["f1_score_max"] = max(self.f1_scores)
         return output_dict
 
     def add_noise(self, x: torch.Tensor, training: bool) -> torch.Tensor:
@@ -341,6 +335,9 @@ class Model(pl.LightningModule):
     ) -> Dict:
 
         x, label, is_global = batch
+
+        # TODO: Reconcile below with forward()
+        x = x[:, :, self.bands_to_use]
 
         loss: Union[float, torch.Tensor] = 0
         output_dict: Dict[str, Union[float, torch.Tensor, Dict]] = {}
@@ -478,12 +475,13 @@ class Model(pl.LightningModule):
             "epoch": self.current_epoch,
             "val_loss_min": min(self.val_losses),
         }
-        logs.update(self._interpretable_metrics(outputs, "local_"))
+        metrics = self._interpretable_metrics(outputs, "local_")
+        logs.update(metrics)
 
-        # if self.current_epoch > 0 and self.f1_scores[-1] == max(self.f1_scores):
         # Save model with lowest validation loss
         if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses):
-
+            saved_metrics = {f"{k}_saved": v for k, v in metrics.items()}
+            logs.update(saved_metrics)
             self.trainer.save_checkpoint(get_dvc_dir("models") / f"{self.hparams.model_name}.ckpt")
         return {"log": logs}
 
