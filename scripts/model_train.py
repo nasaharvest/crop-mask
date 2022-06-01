@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
     parser.set_defaults(skip_era5=False)
-    
+
     hparams = Model.add_model_specific_args(parser).parse_args()
     print(
         BBox(
