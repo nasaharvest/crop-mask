@@ -59,23 +59,20 @@ class IntegrationTestModelEvaluation(TestCase):
 
             trainer_f1 = round(trainer.callback_metrics["f1_score"], 4)
 
-            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+            if not (model_dir / f"{model_name}.pt").exists():
+                cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
+                continue
 
-            # Can't load model.pt on GEOG cluster so manually skipping
-            # if not (model_dir / f"{model_name}.pt").exists():
-            #     cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
-            #     continue
+            model_pt = torch.jit.load(str(model_dir / f"{model_name}.pt"))
+            model_pt.eval()
 
-            # model_pt = torch.jit.load(str(model_dir / f"{model_name}.pt"))
-            # model_pt.eval()
+            with torch.no_grad():
+                y_pred_pt = model_pt(x)[1].numpy()
 
-            # with torch.no_grad():
-            #     y_pred_pt = model_pt(x)[1].numpy()
+            y_pred_pt_binary = y_pred_pt > 0.5
+            pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
 
-            # y_pred_pt_binary = y_pred_pt > 0.5
-            # pt_f1 = round(f1_score(y_true=y_true, y_pred=y_pred_pt_binary), 4)
-
-            # cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
+            cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, pt_f1))
 
     def test_model_eval(self):
         no_differences = True
