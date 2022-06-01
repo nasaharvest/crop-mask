@@ -9,7 +9,8 @@ import pickle
 from src.models.data import CropDataset
 
 try:
-    import pytorch_lightning
+    import pytorch_lightning  # noqa
+
     TORCH_LIGHTNING_INSTALLED = True
 except ImportError:
     TORCH_LIGHTNING_INSTALLED = False
