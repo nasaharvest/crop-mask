@@ -52,9 +52,13 @@ if __name__ == "__main__":
     parser.add_argument("--max_lat", type=float, default=selected_bbox.max_lat)
     parser.add_argument("--min_lon", type=float, default=selected_bbox.min_lon)
     parser.add_argument("--max_lon", type=float, default=selected_bbox.max_lon)
-    # parser.add_argument("--up_to_year", type=int, default=2020)
+    parser.add_argument("--up_to_year", type=int, default=2022)
     parser.add_argument("--start_month", type=str, default="February")
     parser.add_argument("--input_months", type=int, default=12)
+
+    parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
+    parser.set_defaults(skip_era5=False)
+
     hparams = Model.add_model_specific_args(parser).parse_args()
     print(
         BBox(

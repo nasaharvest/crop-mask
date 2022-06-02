@@ -15,7 +15,7 @@ dependencies:
     - matplotlib
     - pip
     - cpuonly
-    - pytorch=1.6.0
+    - pytorch=1.7.1
     - pyproj
     - tqdm
     - geopandas
