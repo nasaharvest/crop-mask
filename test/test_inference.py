@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from src.inference import Inference, start_date_from_str
+from src.inference import Inference
 from src.utils import data_dir
 
 tif_name = (
@@ -14,7 +14,7 @@ tif_name = (
 
 class TestInference(TestCase):
     def test_start_date_from_str(self):
-        actual_start_date = start_date_from_str(tif_name)
+        actual_start_date = Inference.start_date_from_str(tif_name)
         expected_start_date = datetime(2017, 1, 1, 0, 0)
         self.assertEqual(actual_start_date, expected_start_date)
 

@@ -10,13 +10,6 @@ import torch
 from typing import Dict, List, Optional, Tuple
 
 
-def start_date_from_str(uri: str) -> datetime:
-    dates = re.findall(r"\d{4}-\d{2}-\d{2}", str(uri))
-    if len(dates) < 2:
-        raise ValueError(f"{uri} should have start and end date")
-    return datetime.strptime(dates[0], "%Y-%m-%d")
-
-
 class Inference:
     """
     Class for running inference using either a pytorch checkpoint model or
@@ -30,6 +23,13 @@ class Inference:
             k: np.array(v) for k, v in self.model.normalizing_dict_jit.items()
         }
         self.batch_size: int = self.model.batch_size
+
+    @staticmethod
+    def start_date_from_str(uri: str) -> datetime:
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", str(uri))
+        if len(dates) < 2:
+            raise ValueError(f"{uri} should have start and end date")
+        return datetime.strptime(dates[0], "%Y-%m-%d")
 
     @staticmethod
     def _tif_to_np(
@@ -88,7 +88,7 @@ class Inference:
         dest_path: Optional[Path] = None,
     ) -> xr.Dataset:
         if start_date is None:
-            start_date = start_date_from_str(str(local_path))
+            start_date = self.start_date_from_str(str(local_path))
         x_np, flat_lat, flat_lon = self._tif_to_np(local_path, start_date, self.normalizing_dict)
         batches = [
             x_np[i : i + self.batch_size] for i in range(0, (x_np.shape[0] - 1), self.batch_size)
