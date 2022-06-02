@@ -85,37 +85,37 @@
         }
     },
     "Malawi_2020_September": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/7k813uiy",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/25sk9cmp",
         "test_metrics": {
-            "accuracy": 0.8739,
-            "f1_score": 0.5354,
-            "precision_score": 0.5,
-            "recall_score": 0.5763,
-            "roc_auc_score": 0.8523
+            "accuracy": 0.8782,
+            "f1_score": 0.6014,
+            "precision_score": 0.5119,
+            "recall_score": 0.7288,
+            "roc_auc_score": 0.9069
         },
         "val_metrics": {
-            "accuracy": 0.8643,
-            "f1_score": 0.4628,
-            "precision_score": 0.4179,
-            "recall_score": 0.5185,
-            "roc_auc_score": 0.8519
+            "accuracy": 0.8768,
+            "f1_score": 0.5755,
+            "precision_score": 0.4706,
+            "recall_score": 0.7407,
+            "roc_auc_score": 0.8695
         }
     },
     "Malawi_2020_September_skip_era5": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/18h4iok4",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1o5xqss9",
         "test_metrics": {
-            "accuracy": 0.8675,
-            "f1_score": 0.5974,
-            "precision_score": 0.4842,
-            "recall_score": 0.7797,
-            "roc_auc_score": 0.9162
+            "accuracy": 0.8632,
+            "f1_score": 0.5616,
+            "precision_score": 0.4713,
+            "recall_score": 0.6949,
+            "roc_auc_score": 0.8901
         },
         "val_metrics": {
-            "accuracy": 0.8706,
-            "f1_score": 0.5507,
-            "precision_score": 0.4524,
-            "recall_score": 0.7037,
-            "roc_auc_score": 0.8811
+            "accuracy": 0.8643,
+            "f1_score": 0.5517,
+            "precision_score": 0.4396,
+            "recall_score": 0.7407,
+            "roc_auc_score": 0.8674
         }
     },
     "Mali_lower_2019": {
