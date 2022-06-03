@@ -17,6 +17,8 @@ LABELER_NAMES = "email"
 LABEL_DUR = "analysis_duration"
 CROP_TYPE = "crop_type"
 
+TIF_BUCKET = "crop-mask-tifs2"
+
 MONTHS = [
     "January",
     "February",

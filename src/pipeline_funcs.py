@@ -68,6 +68,8 @@ def train_model(
             "forecast_timesteps": model.forecast_timesteps,
             "train_num_timesteps": model.train_num_timesteps,
             "eval_num_timesteps": model.eval_num_timesteps,
+            "bands_to_use": model.bands_to_use,
+            "num_bands": len(model.bands_to_use),
         }
     )
 
@@ -92,7 +94,7 @@ def train_model(
 def get_metrics_from_trainer(trainer: pl.LightningModule) -> Dict[str, float]:
     metrics = {}
     for k, v in trainer.callback_metrics.items():
-        if any([text in k for text in ["loss", "epoch", "f1_score_max"]]):
+        if any([text in k for text in ["loss", "epoch"]]):
             continue
         metrics[k] = round(float(v), 4)
     return metrics
