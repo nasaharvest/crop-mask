@@ -13,8 +13,9 @@ from src.ETL.dataset import find_matching_point, create_pickled_labeled_dataset
 class TestDataset(TestCase):
     """Tests for dataset"""
 
+    @patch("src.ETL.dataset.storage")
     @patch("src.ETL.dataset.Engineer.load_tif")
-    def test_find_matching_point_from_one(self, mock_load_tif):
+    def test_find_matching_point_from_one(self, mock_load_tif, mock_storage):
         mock_data = xr.DataArray(data=np.ones((24, 19, 17, 17)), dims=("time", "band", "y", "x"))
         mock_load_tif.return_value = mock_data, 0.0
         labelled_np, closest_lon, closest_lat, source_file = find_matching_point(
@@ -28,12 +29,13 @@ class TestDataset(TestCase):
         expected[:, -1] = 0  # NDVI is 0
         self.assertTrue((labelled_np == expected).all())
 
+    @patch("src.ETL.dataset.storage")
     @patch("src.ETL.dataset.Engineer.load_tif")
-    def test_find_matching_point_from_multiple(self, mock_load_tif):
+    def test_find_matching_point_from_multiple(self, mock_load_tif, mock_storage):
         tif_paths = [Path("mock1"), Path("mock2"), Path("mock3")]
 
         def side_effect(path, start_date, num_timesteps):
-            idx = [i for i, p in enumerate(tif_paths) if p == path][0]
+            idx = [i for i, p in enumerate(tif_paths) if p.stem == Path(path).stem][0]
             return (
                 xr.DataArray(
                     dims=("time", "band", "y", "x"),

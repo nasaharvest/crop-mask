@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
 
-from typing import cast, Tuple, Optional, List, Dict, Union
+from typing import cast, Any, Tuple, Optional, List, Dict, Union
 from src.ETL.boundingbox import BoundingBox
 
 
@@ -58,7 +58,7 @@ class CropDataset(Dataset):
         local_non_crop = len(df[df["is_local"] & ~df["is_crop"]])
         local_difference = np.abs(local_crop - local_non_crop)
 
-        self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
+        self.num_timesteps = self._compute_num_timesteps(df=df)
 
         if wandb_logger:
             to_log: Dict[str, Union[float, int]] = {}
@@ -120,24 +120,36 @@ class CropDataset(Dataset):
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
 
-    def _compute_num_timesteps(self, start_col: pd.Series, end_col: pd.Series) -> List[int]:
-        df_start_date = pd.to_datetime(start_col).apply(
+    def _compute_num_timesteps(self, df) -> List[int]:
+        df_start_date = pd.to_datetime(df[START]).apply(
             lambda dt: dt.replace(month=self.start_month_index + 1)
         )
         df_candidate_end_date = df_start_date.apply(
             lambda dt: dt + relativedelta(months=+self.input_months)
         )
-        df_data_end_date = pd.to_datetime(end_col)
+        df_data_end_date = pd.to_datetime(df[END])
         df_end_date = pd.DataFrame({"1": df_data_end_date, "2": df_candidate_end_date}).min(axis=1)
-        # Pick min available end date
-        timesteps = (
-            ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().unique().astype(int)
+        df["timesteps"] = (
+            ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
-        return [int(t) for t in timesteps]
+        timesteps = df["timesteps"].unique().tolist()
+        if len(timesteps) > 1:
+            timesteps_w_dataset = (
+                df[["dataset", "timesteps"]]
+                .groupby("timesteps")
+                .agg({"dataset": lambda ds: ",".join(ds.unique())})
+            )
+            print(
+                "WARNING: Datasets have different amounts of timesteps available. "
+                + "Forecaster will be used to fill gaps."
+                + f"\n{timesteps_w_dataset}"
+            )
+
+        return timesteps
 
     @staticmethod
     def _update_normalizing_values(
-        norm_dict: Dict[str, Union[np.ndarray, int]], array: np.ndarray
+        norm_dict: Dict[str, Union[int, Any]], array: np.ndarray
     ) -> None:
         # given an input array of shape [timesteps, bands]
         # update the normalizing dict
@@ -160,7 +172,7 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, np.ndarray]:
+    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, Union[int, np.ndarray]]:
         norm_dict_interim = {"n": 0}
         for p in tqdm(feature_files, desc="Calculating normalizing_dict"):
             with Path(p).open("rb") as f:
