@@ -1,7 +1,6 @@
 import sys
 import re
 import tempfile
-import time
 import numpy as np
 
 from datetime import datetime
