@@ -46,7 +46,7 @@ class IntegrationTestModelEvaluation(TestCase):
 
             # Feed tensors into both models
             with torch.no_grad():
-                y_pred_ckpt = model_ckpt(x)[1].numpy()
+                y_pred_ckpt = model_ckpt(x).numpy()
 
             y_pred_ckpt_binary = y_pred_ckpt > 0.5
 

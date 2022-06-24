@@ -5,6 +5,6 @@ gcloud:
   project_id: bsos-geog-harvest1
   location: us-central1
   bucket_labeled_tifs: crop-mask-tifs2
-  bucket_inference_tifs: crop-mask-earthengine
-  bucket_preds: crop-mask-preds
+  bucket_inference_tifs: crop-mask-inference-tifs
+  bucket_preds: crop-mask-preds2
   bucket_preds_merged: crop-mask-preds-merged
