@@ -6,12 +6,15 @@ set -e
 dvc pull data/models.dvc
 
 export TAG=us-central1-docker.pkg.dev/bsos-geog-harvest1/crop-mask/crop-mask
-export BUCKET=crop-mask-earthengine
+export BUCKET=crop-mask-inference-tifs
 export URL="https://crop-mask-grxg7bzh2a-uc.a.run.app"
 export MODELS=$(
         python -c \
-        "from pathlib import Path; \
-        print(' '.join([p.stem for p in Path('data/models').glob('*.pt')]))"
+        "from pathlib import Path; import os; import glob; \
+        model_files = glob.glob('data/models/*.pt'); \
+        model_files.sort(key=os.path.getmtime); \
+        latest_models = [Path(m).stem for m in model_files[-3:]]; \
+        print(' '.join(latest_models))"
 )
 
 docker build . --build-arg MODELS="$MODELS" -t $TAG

@@ -40,7 +40,7 @@ def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.Dat
     x = torch.stack([v[0] for v in val])
     with torch.no_grad():
         # model(x) is indexed to get the local predictions (not global at index 0)
-        df["y_pred_decimal"] = model(x)[1].numpy().flatten()
+        df["y_pred_decimal"] = model(x).numpy().flatten()
 
     df["y_pred"] = df["y_pred_decimal"].apply(lambda pred: 1 if pred > default_threshold else 0)
     df["errors"] = df["y_true"] != df["y_pred"]

@@ -10,7 +10,6 @@ RUN pip3 install torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stab
 
 FROM reqs as build-torchserve
 COPY src/torchserve_handler.py /home/model-server/handler.py
-COPY src/inference.py /home/model-server/inference.py
 
 # Ensures that everytime models.dvc is updated 
 # This following docker steps are rerun
@@ -26,7 +25,6 @@ RUN for m in $MODELS; \
     --version 1.0 \
     --serialized-file $m.pt \
     --handler handler.py \
-    --extra-files inference.py \
     --export-path=model-store; \
     done
 
