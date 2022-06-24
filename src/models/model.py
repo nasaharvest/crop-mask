@@ -166,13 +166,14 @@ class Model(pl.LightningModule):
         # Used during training to track lowest val loss
         self.val_losses: List[float] = []
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x[:, :, self.bands_to_use]
         if self.forecast_eval_data:
             x_input = x[:, : self.available_timesteps, :]
             x_forecasted = self.forecaster(x_input)[:, self.available_timesteps - 1 :, :]
             x = torch.cat((x_input, x_forecasted), dim=1)
-        return self.classifier(x)
+        _, local_preds = self.classifier(x)
+        return local_preds
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
