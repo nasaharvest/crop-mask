@@ -1,0 +1,5 @@
+outs:
+- md5: 3caa1cb39a8bff0b6a06859c272d0aaf.dir
+  size: 46962
+  nfiles: 1
+  path: intercomparison

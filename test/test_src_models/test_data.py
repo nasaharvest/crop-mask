@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +8,13 @@ import pickle
 
 from src.models.data import CropDataset
 
+try:
+    import pytorch_lightning  # noqa
+
+    TORCH_LIGHTNING_INSTALLED = True
+except ImportError:
+    TORCH_LIGHTNING_INSTALLED = False
+
 
 @dataclass
 class TempInstance:
@@ -15,6 +22,7 @@ class TempInstance:
 
 
 class TestData(TestCase):
+    @skipIf(not TORCH_LIGHTNING_INSTALLED, reason="No pytorch-lightning installed")
     def test_update_normalizing_values(self):
         norm_dict = {"n": 0}
         array = np.array([[1, 2, 3], [2, 3, 4]])
@@ -29,6 +37,7 @@ class TestData(TestCase):
         self.assertTrue(np.allclose(norm_dict["mean"], np.array([2.5, 3.5, 4.5])))
         self.assertTrue(np.allclose(norm_dict["M2"], np.array([5.0, 5.0, 5.0])))
 
+    @skipIf(not TORCH_LIGHTNING_INSTALLED, reason="No pytorch-lightning installed")
     def test_calculate_normalizing_dict(self):
         tempdir = tempfile.gettempdir()
         file_paths = [Path(tempdir, f"{i}.pkl") for i in range(3)]

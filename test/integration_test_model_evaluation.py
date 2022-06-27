@@ -46,7 +46,7 @@ class IntegrationTestModelEvaluation(TestCase):
 
             # Feed tensors into both models
             with torch.no_grad():
-                y_pred_ckpt = model_ckpt(x)[1].numpy()
+                y_pred_ckpt = model_ckpt(x).numpy()
 
             y_pred_ckpt_binary = y_pred_ckpt > 0.5
 
@@ -61,7 +61,6 @@ class IntegrationTestModelEvaluation(TestCase):
 
             cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
 
-            # Can't load model.pt on GEOG cluster so manually skipping
             # if not (model_dir / f"{model_name}.pt").exists():
             #     cls.scores.append((model_name, recorded_f1, ckpt_f1, trainer_f1, None))
             #     continue

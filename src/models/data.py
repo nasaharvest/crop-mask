@@ -58,7 +58,7 @@ class CropDataset(Dataset):
         local_non_crop = len(df[df["is_local"] & ~df["is_crop"]])
         local_difference = np.abs(local_crop - local_non_crop)
 
-        self.num_timesteps = self._compute_num_timesteps(start_col=df[START], end_col=df[END])
+        self.num_timesteps = self._compute_num_timesteps(df=df)
 
         if wandb_logger:
             to_log: Dict[str, Union[float, int]] = {}
@@ -120,20 +120,32 @@ class CropDataset(Dataset):
             self.x, self.y, self.weights = self.to_array()
             self.cache = cache
 
-    def _compute_num_timesteps(self, start_col: pd.Series, end_col: pd.Series) -> List[int]:
-        df_start_date = pd.to_datetime(start_col).apply(
+    def _compute_num_timesteps(self, df) -> List[int]:
+        df_start_date = pd.to_datetime(df[START]).apply(
             lambda dt: dt.replace(month=self.start_month_index + 1)
         )
         df_candidate_end_date = df_start_date.apply(
             lambda dt: dt + relativedelta(months=+self.input_months)
         )
-        df_data_end_date = pd.to_datetime(end_col)
+        df_data_end_date = pd.to_datetime(df[END])
         df_end_date = pd.DataFrame({"1": df_data_end_date, "2": df_candidate_end_date}).min(axis=1)
-        # Pick min available end date
-        timesteps = (
-            ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().unique().astype(int)
+        df["timesteps"] = (
+            ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
-        return [int(t) for t in timesteps]
+        timesteps = df["timesteps"].unique().tolist()
+        if len(timesteps) > 1:
+            timesteps_w_dataset = (
+                df[["dataset", "timesteps"]]
+                .groupby("timesteps")
+                .agg({"dataset": lambda ds: ",".join(ds.unique())})
+            )
+            print(
+                "WARNING: Datasets have different amounts of timesteps available. "
+                + "Forecaster will be used to fill gaps."
+                + f"\n{timesteps_w_dataset}"
+            )
+
+        return timesteps
 
     @staticmethod
     def _update_normalizing_values(
