@@ -3,10 +3,9 @@ FROM pytorch/torchserve:0.4.2-cpu as base
 
 USER root
 
-FROM base as reqs
 RUN pip3 install --disable-pip-version-check --no-compile pip -U torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html && pip install --disable-pip-version-check --no-compile cropharvest==0.3.0 google-cloud-storage netCDF4 pandas rasterio xarray
 
-FROM reqs as build-torchserve
+FROM base as build-torchserve
 COPY src/torchserve_handler.py /home/model-server/handler.py
 
 # Ensures that everytime models.dvc is updated 
