@@ -23,12 +23,14 @@ jobs:
       run: flake8 .
     - name: Run unit tests
       run: python -m unittest
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
+
+    - uses: 'google-github-actions/auth@v0'
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true              
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v0'
+    - name: 'Use gcloud CLI'
+      run: 'gcloud info'
     - name: dvc pull models
       run: dvc pull data/models -f
     - name: dvc pull data
