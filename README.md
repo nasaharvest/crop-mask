@@ -67,21 +67,21 @@ python -m unittest test/integration_test_model_evaluation.py
 
 ##Steps to resolve module related issues on a Windows environment
 Steps to resolve the issue related with 'fiona' and 'geopandas' module
-1)pip uninstall geopandas  //if the package is already installed in the environment
-2)pip install pipwin
-3)pipwin install gdal
-4)pipwin install fiona
-5)pip install geopandas
+pip uninstall geopandas  //if the package is already installed in the environment
+pip install pipwin
+pipwin install gdal
+pipwin install fiona
+pip install geopandas
 
 
 Steps to resolve the issue related with 'netcdf' module
-1)pip uninstall netcdf4
-2)pip install netcdf4
+pip uninstall netcdf4
+pip install netcdf4
 
 
 Steps to resolve the warning encountered with the 'pyproj' module
-1)mamba remove pyproj or pip uninstall pyproj
-2)pip install pyproj
+mamba remove pyproj or pip uninstall pyproj
+pip install pyproj
 
 ## Previously generated crop maps
 
