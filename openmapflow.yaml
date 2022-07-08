@@ -8,3 +8,9 @@ gcloud:
   bucket_inference_tifs: crop-mask-inference-tifs
   bucket_preds: crop-mask-preds2
   bucket_preds_merged: crop-mask-preds-merged
+data_paths:
+  raw_labels: raw
+  processed_labels: processed
+  duplicates: duplicates.txt
+  missing: missing_data.txt
+  unexported: unexported.txt
