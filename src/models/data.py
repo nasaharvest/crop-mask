@@ -9,10 +9,10 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from src.ETL.constants import CROP_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
+from openmapflow.constants import CLASS_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
+from cropharvest.countries import BBox
 
 from typing import cast, Any, Tuple, Optional, List, Dict, Union
-from src.ETL.boundingbox import BoundingBox
 
 
 class CropDataset(Dataset):
@@ -22,7 +22,7 @@ class CropDataset(Dataset):
         subset: str,
         cache: bool,
         upsample: bool,
-        target_bbox: BoundingBox,
+        target_bbox: BBox,
         wandb_logger,
         start_month: str = "April",
         probability_threshold: float = 0.5,
@@ -39,7 +39,7 @@ class CropDataset(Dataset):
         self.start_month_index = MONTHS.index(start_month)
         self.input_months = input_months
 
-        df["is_crop"] = df[CROP_PROB] >= probability_threshold
+        df["is_crop"] = df[CLASS_PROB] >= probability_threshold
         df["is_local"] = (
             (df[LAT] >= target_bbox.min_lat)
             & (df[LAT] <= target_bbox.max_lat)

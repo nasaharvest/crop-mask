@@ -3,8 +3,7 @@ from datetime import timedelta
 
 from openmapflow.labeled_dataset import LabeledDataset
 from openmapflow.raw_labels import RawLabels
-
-from src.ETL.constants import LON, LAT
+from openmapflow.constants import LON, LAT
 
 
 def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:

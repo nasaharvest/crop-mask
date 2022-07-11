@@ -20,11 +20,11 @@ from sklearn.metrics import (
 )
 from cropharvest.bands import ERA5_BANDS
 from cropharvest.engineer import BANDS
+from cropharvest.countries import BBox
 
-from src.ETL.boundingbox import BoundingBox
-from src.ETL.constants import ALREADY_EXISTS, SUBSET
+from openmapflow.constants import ALREADY_EXISTS, SUBSET
 from src.utils import get_dvc_dir, set_seed, data_dir
-from src.datasets_labeled import labeled_datasets
+from datasets import datasets
 from .data import CropDataset
 from .forecaster import Forecaster
 from .classifier import Classifier
@@ -71,7 +71,7 @@ class Model(pl.LightningModule):
 
         self.batch_size = hparams.batch_size
 
-        self.target_bbox = BoundingBox(
+        self.target_bbox = BBox(
             min_lat=hparams.min_lat,
             max_lat=hparams.max_lat,
             min_lon=hparams.min_lon,
@@ -184,7 +184,7 @@ class Model(pl.LightningModule):
         Loads the datasets specified in the input_dataset_names list.
         """
         dfs = []
-        for d in labeled_datasets:
+        for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
             if d.dataset in eval_datasets.split(","):
                 df = d.load_labels(allow_processing=False, fail_if_missing_features=True)
