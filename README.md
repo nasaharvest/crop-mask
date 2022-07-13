@@ -69,7 +69,8 @@ python -m unittest test/integration_test_model_evaluation.py
 ## Steps to resolve module related issues on a Windows environment
 
 ```bash
-Steps to resolve the issue related with 'fiona' and 'geopandas' module
+I]Steps to resolve the issue related with 'fiona' and 'geopandas' module
+
 pip uninstall geopandas  //if the package is already installed in the environment
 pip install pipwin
 pipwin install gdal
@@ -77,12 +78,13 @@ pipwin install fiona
 pip install geopandas
 
 
-Steps to resolve the issue related with 'netcdf' module
+II]Steps to resolve the issue related with 'netcdf' module
+
 pip uninstall netcdf4
 pip install netcdf4
 
 
-Steps to resolve the warning encountered with the 'pyproj' module
+III]Steps to resolve the warning encountered with the 'pyproj' module
 mamba remove pyproj or pip uninstall pyproj
 pip install pyproj
 ```
