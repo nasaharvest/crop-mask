@@ -14,3 +14,4 @@ data_paths:
   duplicates: duplicates.txt
   missing: missing_data.txt
   unexported: unexported.txt
+  metrics: models.json
