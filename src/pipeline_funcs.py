@@ -8,12 +8,12 @@ from typing import Any, Dict, Optional, Tuple
 import json
 import pytorch_lightning as pl
 
-from src.datasets_labeled import labeled_datasets
-from src.models import Model
-from src.utils import get_dvc_dir, models_file
+from openmapflow.config import PROJECT_ROOT, DataPaths
 
-model_dir = get_dvc_dir("models")
-all_dataset_names = [d.dataset for d in labeled_datasets]
+from datasets import datasets
+from src.models import Model
+
+all_dataset_names = [d.dataset for d in datasets]
 
 
 def validate(hparams: Namespace) -> Namespace:
@@ -75,7 +75,7 @@ def train_model(
     trainer.fit(model)
 
     model, metrics = run_evaluation(
-        model_ckpt_path=get_dvc_dir("models") / f"{hparams.model_name}.ckpt"
+        model_ckpt_path=PROJECT_ROOT / DataPaths.MODELS / f"{hparams.model_name}.ckpt"
     )
 
     model.save()
@@ -119,7 +119,7 @@ def run_evaluation(
         for k, v in alternative_metrics.items():
             val_metrics[f"thresh{alternative_threshold}_{k}"] = v
 
-    with models_file.open() as f:
+    with (PROJECT_ROOT / DataPaths.METRICS).open() as f:
         models_dict = json.load(f)
 
     all_info = {
@@ -129,7 +129,7 @@ def run_evaluation(
     }
     models_dict[model.hparams.model_name] = all_info
 
-    with models_file.open("w") as f:
+    with (PROJECT_ROOT / DataPaths.METRICS).open("w") as f:
         json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
 
     return model, all_info
