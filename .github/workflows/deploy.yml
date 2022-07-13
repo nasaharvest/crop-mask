@@ -21,10 +21,7 @@ jobs:
     - name: Get latest models
       run: dvc pull data/models -f
     - name: Deploy Docker inference image + trigger function
-      run: |
-        gcloud auth configure-docker us-central1-docker.pkg.dev
-        chmod +x ./deploy.sh
-        ./deploy.sh
+      run: openmapflow deploy
       
 
 
