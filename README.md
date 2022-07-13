@@ -14,8 +14,8 @@ End-to-end workflow for generating high resolution cropland maps.
 -   [Acknowledgments](#acknowledgments)
 -   [Reference](#reference)
 ## Creating a crop map
-To create a crop map run the following colab notebook (or use it as a guide): 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/inference.ipynb)
+To create a crop map run the following colab notebook: 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/create_map.ipynb)
 
 ![Cropland gif](assets/cropmask.gif)
 ## Training a new model
