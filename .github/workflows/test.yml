@@ -28,18 +28,15 @@ jobs:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
-    - name: dvc pull models
-      run: dvc pull data/models -f
     - name: dvc pull data
       run: |
-        dvc pull data/processed -f
-        dvc pull data/compressed_features.tar.gz -f
-        cd data
-        tar -xvzf compressed_features.tar.gz
-        cd ..
-
+        dvc pull $(openmapflow datapath PROCESSED_LABELS) -f
+        dvc pull $(openmapflow datapath COMPRESSED_FEATURES) -f
+        tar -xvzf $(openmapflow datapath COMPRESSED_FEATURES) -C data/
     - name: Integration test - Data integrity
-      run: python -m unittest test/integration_test_labeled.py
+      run: |
+        openmapflow cp templates/integration_test_datasets.py .
+        python -m unittest integration_test_datasets.py
     - name: Integration test - Model bboxes match evaluation sets
       run: python -m unittest test/integration_test_model_bbox.py
     - name: Integration test - Model results are consistent
