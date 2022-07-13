@@ -1,5 +1,5 @@
 from sklearn.metrics import classification_report, accuracy_score, f1_score
-from src.ETL.constants import CROP_PROB, SUBSET
+from src.ETL.constants import CROP_PROB, SUBSET, LAT, LON
 import geopandas as gpd
 import pandas as pd
 import rasterio as rio
@@ -42,8 +42,8 @@ def run_comparison(validation_path: str, cropmap_path: str, validation_projectio
   out = Proj(init=cropmap.crs.to_dict()['init'])
 
   # Reproject csv to tif projection
-  validation = gpd.GeoDataFrame(data = validation[['lat', 'lon', CROP_PROB]])
-  newLat, newLon = transform(pIn, out, np.array(validation['lon']), np.array(validation['lat']))
+  validation = gpd.GeoDataFrame(data = validation[[LAT, LON, CROP_PROB]])
+  newLat, newLon = transform(pIn, out, np.array(validation[LON]), np.array(validation[LAT]))
 
   # Sample points from tif files
   cropmap_sampled = rio.sample.sample_gen(cropmap, zip(newLat, newLon))
@@ -64,9 +64,9 @@ def run_comparison(validation_path: str, cropmap_path: str, validation_projectio
   f1 = f1_score(combined_maps['validation'], combined_maps['cropmap'])
 
   report = {
-      'dataset' : cropmap_path
-    .split('/')[-1],
-      'f1' : f1,
+      'dataset' : cropmap_path.split('/')[-1],
+      'accuracy' : accuracy,
+      'f1' : class_report['f1_score'],
       'crop precision' : class_report['crop']['precision'], 
       'crop recall' : class_report['crop']['recall'],
       'non-crop precision' : class_report['non_crop']['precision'], 
