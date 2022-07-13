@@ -57,7 +57,7 @@ open_buildings (Timesteps: 24)
 
 digitalearthafrica_eastern (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 4447 labels, but 4421 features
+✔ training amount: 4447, positive class: 49.4%
 
 
 digitalearthafrica_sahel (Timesteps: 24)
@@ -67,7 +67,7 @@ digitalearthafrica_sahel (Timesteps: 24)
 
 Ethiopia (Timesteps: 24,15)
 ----------------------------------------------------------------------------
-✖ training: 3651 labels, but 2270 features
+✖ training: 3651 labels, but 2381 features
 
 
 Ethiopia_Tigray_2020 (Timesteps: 24)
