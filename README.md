@@ -71,7 +71,7 @@ python -m unittest test/integration_test_model_evaluation.py
 ```bash
 I]Steps to resolve the issue related with 'fiona' and 'geopandas' module
 
-pip uninstall geopandas  //if the package is already installed in the environment
+pip uninstall geopandas  #if the package is already installed in the environment
 pip install pipwin
 pipwin install gdal
 pipwin install fiona
@@ -87,6 +87,7 @@ pip install netcdf4
 III]Steps to resolve the warning encountered with the 'pyproj' module
 mamba remove pyproj or pip uninstall pyproj
 pip install pyproj
+
 ```
 
 ## Previously generated crop maps
