@@ -67,19 +67,19 @@ digitalearthafrica_sahel (Timesteps: 24)
 
 Ethiopia (Timesteps: 24,15)
 ----------------------------------------------------------------------------
-✖ training: 3651 labels, but 2381 features
+✔ training amount: 3651, positive class: 55.1%
 
 
 Ethiopia_Tigray_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ validation: 521 labels, but 0 features
-✖ testing: 506 labels, but 0 features
+✔ validation amount: 521, positive class: 26.3%
+✔ testing amount: 506, positive class: 30.4%
 
 
 Ethiopia_Tigray_2021 (Timesteps: 15)
 ----------------------------------------------------------------------------
-✖ testing: 370 labels, but 0 features
-✖ validation: 348 labels, but 0 features
+✖ testing: 370 labels, but 273 features
+✖ validation: 348 labels, but 271 features
 
 
 Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
