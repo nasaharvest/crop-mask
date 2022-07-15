@@ -31,4 +31,4 @@ dependencies:
           - cropharvest==0.4.1
           - types-requests
           - types-python-dateutil
-          - openmapflow
+          - openmapflow==0.0.2
