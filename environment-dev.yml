@@ -21,7 +21,6 @@ dependencies:
     - geopandas
     - cartopy
     - scikit-learn
-    - dvc=1.11.16
     - flake8
     - google-cloud-storage
     - python-dotenv
@@ -32,3 +31,4 @@ dependencies:
           - types-requests
           - types-python-dateutil
           - openmapflow==0.0.2
+          - dvc[gs]
