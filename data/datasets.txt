@@ -78,8 +78,8 @@ Ethiopia_Tigray_2020 (Timesteps: 24)
 
 Ethiopia_Tigray_2021 (Timesteps: 15)
 ----------------------------------------------------------------------------
-✖ testing: 370 labels, but 273 features
-✖ validation: 348 labels, but 271 features
+✔ testing amount: 370, positive class: 34.6%
+✔ validation amount: 348, positive class: 25.9%
 
 
 Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
@@ -96,8 +96,8 @@ Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 
 Argentina_Buenos_Aires (Timesteps: 15)
 ----------------------------------------------------------------------------
-✖ training: 532 labels, but 0 features
-✖ validation: 126 labels, but 0 features
+✔ training amount: 468, positive class: 48.1%
+✔ validation amount: 113, positive class: 45.1%
 
 
 Malawi_CEO_2020 (Timesteps: 24)
@@ -118,7 +118,7 @@ Malawi_FAO (Timesteps: 24)
 
 Malawi_FAO_corrected (Timesteps: 24)
 ----------------------------------------------------------------------------
-✖ training: 506 labels, but 468 features
+✔ training amount: 506, positive class: 100.0%
 
 
 Zambia_CEO_2019 (Timesteps: 24)
