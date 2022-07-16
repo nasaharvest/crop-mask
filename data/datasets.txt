@@ -45,7 +45,7 @@ Rwanda (Timesteps: 24)
 
 Uganda (Timesteps: 24)
 ----------------------------------------------------------------------------
-✔ training amount: 837, positive class: 87.9%
+✔ training amount: 2292, positive class: 32.1%
 ✔ testing amount: 456, positive class: 11.4%
 ✔ validation amount: 454, positive class: 13.2%
 
@@ -96,8 +96,8 @@ Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 
 Argentina_Buenos_Aires (Timesteps: 15)
 ----------------------------------------------------------------------------
-✔ training amount: 468, positive class: 48.1%
-✔ validation amount: 113, positive class: 45.1%
+✔ training amount: 457, positive class: 48.1%
+✔ validation amount: 109, positive class: 45.0%
 
 
 Malawi_CEO_2020 (Timesteps: 24)
