@@ -6,8 +6,6 @@ import rasterio as rio
 from pyproj import Proj
 from pyproj import transform
 import numpy as np
-import json
-import os
 
 def run_comparison(validation_path: str, cropmap_path: str, validation_projection: str = None, cropmap_projection: str = None, subset: str = None) -> dict:
   """ 
@@ -35,8 +33,8 @@ def run_comparison(validation_path: str, cropmap_path: str, validation_projectio
 
   # Map values to binary values
   if np.unique(validation[CROP_PROB]).size != 2:
-    validation.loc[validation[CROP_PROB].astype(int) >= 0.5, CROP_PROB] = 1
-    validation.loc[validation[CROP_PROB].astype(int) < 0.5, CROP_PROB] = 0
+    validation.loc[validation[CROP_PROB] >= 0.5, CROP_PROB] = 1
+    validation.loc[validation[CROP_PROB] < 0.5, CROP_PROB] = 0
   
   pIn = Proj(init='epsg:4326')
   out = Proj(init=cropmap.crs.to_dict()['init'])
@@ -55,18 +53,18 @@ def run_comparison(validation_path: str, cropmap_path: str, validation_projectio
   combined_maps['cropmap'] = cropmap_sampled
 
   if np.unique(combined_maps['cropmap']).size != 2:
-    combined_maps = combined_maps[(combined_maps.cropmap == 1) | (combined_maps.cropmap == 0)]
+    combined_maps.loc[combined_maps['cropmap'] >= 0.5, 'cropmap'] = 1
+    combined_maps.loc[combined_maps['cropmap'] < 0.5, 'cropmap'] = 0
 
   # Calculate metrics
   target_names = ['non_crop', 'crop']
   class_report = classification_report(combined_maps['validation'], combined_maps['cropmap'], target_names=target_names, output_dict=True)
   accuracy = accuracy_score(combined_maps['validation'], combined_maps['cropmap'])
-  f1 = f1_score(combined_maps['validation'], combined_maps['cropmap'])
 
   report = {
       'dataset' : cropmap_path.split('/')[-1],
       'accuracy' : accuracy,
-      'f1' : class_report['f1_score'],
+      'f1' : class_report['crop']['f1-score'],
       'crop precision' : class_report['crop']['precision'], 
       'crop recall' : class_report['crop']['recall'],
       'non-crop precision' : class_report['non_crop']['precision'], 
