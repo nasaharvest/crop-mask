@@ -146,3 +146,4 @@ Namibia_CEO_2020 (Timesteps: 24)
 All data:
 ✔ Found no empty features
 ✔ No duplicates found
+✔ No features with no label found
