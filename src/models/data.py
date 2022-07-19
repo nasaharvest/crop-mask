@@ -1,7 +1,5 @@
-from pathlib import Path
 import numpy as np
 import pandas as pd
-import pickle
 
 from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
@@ -9,7 +7,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
-from openmapflow.constants import CLASS_PROB, FEATURE_PATH, LAT, LON, START, END, MONTHS
+from openmapflow.constants import CLASS_PROB, LAT, LON, START, END, MONTHS, EO_DATA
 from cropharvest.countries import BBox
 
 from typing import cast, Any, Tuple, Optional, List, Dict, Union
@@ -102,7 +100,7 @@ class CropDataset(Dataset):
         self.normalizing_dict: Dict = (
             normalizing_dict
             if normalizing_dict
-            else self._calculate_normalizing_dict(df[FEATURE_PATH].to_list())
+            else self._calculate_normalizing_dict(df[EO_DATA].to_list())
         )
 
         self.df = df
@@ -172,12 +170,12 @@ class CropDataset(Dataset):
             norm_dict["M2"] += delta * (x - norm_dict["mean"])
 
     @staticmethod
-    def _calculate_normalizing_dict(feature_files: List[str]) -> Dict[str, Union[int, np.ndarray]]:
+    def _calculate_normalizing_dict(
+        eo_data_list: List[np.ndarray],
+    ) -> Dict[str, Union[int, np.ndarray]]:
         norm_dict_interim = {"n": 0}
-        for p in tqdm(feature_files, desc="Calculating normalizing_dict"):
-            with Path(p).open("rb") as f:
-                labelled_array = pickle.load(f).labelled_array
-            CropDataset._update_normalizing_values(norm_dict_interim, labelled_array)
+        for eo_data in tqdm(eo_data_list, desc="Calculating normalizing_dict"):
+            CropDataset._update_normalizing_values(norm_dict_interim, eo_data)
 
         variance = norm_dict_interim["M2"] / (norm_dict_interim["n"] - 1)
         std = np.sqrt(variance)
@@ -238,14 +236,7 @@ class CropDataset(Dataset):
 
         row = self.df.iloc[index]
 
-        target_file = Path(row[FEATURE_PATH])
-
-        # first, we load up the target file
-        with target_file.open("rb") as f:
-            target_datainstance = pickle.load(f)
-
-        x = target_datainstance.labelled_array
-        x = x[self.start_month_index : self.start_month_index + self.input_months]
+        x = row[EO_DATA][self.start_month_index : self.start_month_index + self.input_months]
         x = self._normalize(x)
 
         # If x is a partial time series, pad it to full length

@@ -23,7 +23,7 @@ from cropharvest.bands import ERA5_BANDS
 from cropharvest.engineer import BANDS
 from cropharvest.countries import BBox
 
-from openmapflow.constants import ALREADY_EXISTS, SUBSET
+from openmapflow.constants import SUBSET
 from openmapflow.config import DataPaths, PROJECT_ROOT, DATA_DIR
 from datasets import datasets
 from .data import CropDataset
@@ -194,13 +194,12 @@ class Model(pl.LightningModule):
         for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
             if d.dataset in eval_datasets.split(","):
-                df = d.load_labels(allow_processing=False, fail_if_missing_features=True)
+                df = d.load_df(allow_processing=False, fail_if_missing=True)
                 dfs.append(df[df[SUBSET] == subset])
 
             # If dataset is only used for training, take the whole dataframe
             elif subset == "training" and d.dataset in train_datasets.split(","):
-                df = d.load_labels(allow_processing=False, fail_if_missing_features=False)
-                df = df[df[ALREADY_EXISTS]].copy()
+                df = d.load_df(allow_processing=False, fail_if_missing=False)
                 dfs.append(df)
 
         return pd.concat(dfs)
