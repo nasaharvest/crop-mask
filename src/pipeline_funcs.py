@@ -47,29 +47,33 @@ def train_model(
         verbose=True,
         mode="min",
     )
+    if hparams.wandb:
+        wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
+        hparams.wandb_url = wandb_logger.experiment.get_url()
+    else:
+        hparams.wandb_url = ""
 
-    wandb_logger = WandbLogger(project="crop-mask", entity="nasa-harvest", offline=offline)
-    hparams.wandb_url = wandb_logger.experiment.get_url()
     model = Model(hparams)
 
-    wandb_logger.experiment.config.update(
-        {
-            "available_timesteps": model.available_timesteps,
-            "forecast_eval_data": model.forecast_eval_data,
-            "forecast_training_data": model.forecast_training_data,
-            "forecast_timesteps": model.forecast_timesteps,
-            "train_num_timesteps": model.train_num_timesteps,
-            "eval_num_timesteps": model.eval_num_timesteps,
-            "bands_to_use": model.bands_to_use,
-            "num_bands": len(model.bands_to_use),
-        }
-    )
+    if hparams.wandb:
+        wandb_logger.experiment.config.update(
+            {
+                "available_timesteps": model.available_timesteps,
+                "forecast_eval_data": model.forecast_eval_data,
+                "forecast_training_data": model.forecast_training_data,
+                "forecast_timesteps": model.forecast_timesteps,
+                "train_num_timesteps": model.train_num_timesteps,
+                "eval_num_timesteps": model.eval_num_timesteps,
+                "bands_to_use": model.bands_to_use,
+                "num_bands": len(model.bands_to_use),
+            }
+        )
 
     trainer = pl.Trainer(
         max_epochs=hparams.epochs,
         checkpoint_callback=False,
         early_stop_callback=early_stop_callback,
-        logger=wandb_logger,
+        logger=wandb_logger if hparams.wandb else False,
     )
 
     trainer.fit(model)
