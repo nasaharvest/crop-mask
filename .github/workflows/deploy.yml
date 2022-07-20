@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches: [ master ]
-    paths: 'data/models.dvc'
+    #paths: 'data/models.dvc'
 
 jobs:
   deploy: 
