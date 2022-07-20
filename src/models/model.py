@@ -511,7 +511,7 @@ class Model(pl.LightningModule):
             "--probability_threshold": (float, 0.5),
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
-            "--max_epochs": (int, 1000),
+            "--epochs": (int, 1000),
             "--patience": (int, 10),
         }
 

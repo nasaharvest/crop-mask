@@ -30,15 +30,27 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
     - name: dvc pull data
       run: |
-        dvc pull $(openmapflow datapath PROCESSED_LABELS) -f
-        dvc pull $(openmapflow datapath COMPRESSED_FEATURES) -f
-        tar -xvzf $(openmapflow datapath COMPRESSED_FEATURES) -C data/
+        dvc pull $(openmapflow datapath DATASETS) -f
+        dvc pull $(openmapflow datapath MODELS) -f
+
+    - name: Integration test - Project
+      run: |
+        openmapflow cp templates/integration_test_project.py .
+        python -m unittest integration_test_project.py
+
     - name: Integration test - Data integrity
       run: |
         openmapflow cp templates/integration_test_datasets.py .
         python -m unittest integration_test_datasets.py
+
+    - name: Integration test - Train and evaluate
+      run: |
+        openmapflow cp templates/integration_test_train_evaluate.py .
+        python -m unittest integration_test_train_evaluate.py
+
     - name: Integration test - Model bboxes match evaluation sets
       run: python -m unittest test/integration_test_model_bbox.py
+      
     - name: Integration test - Model results are consistent
       run: python -m unittest test/integration_test_model_evaluation.py
 

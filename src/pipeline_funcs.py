@@ -66,7 +66,7 @@ def train_model(
     )
 
     trainer = pl.Trainer(
-        max_epochs=hparams.max_epochs,
+        max_epochs=hparams.epochs,
         checkpoint_callback=False,
         early_stop_callback=early_stop_callback,
         logger=wandb_logger,
