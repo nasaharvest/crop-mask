@@ -12,11 +12,11 @@ eo_data_skipped             376
 
 Kenya (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete          8593
-eo_data_duplicate           56
+eo_data_complete          8591
+eo_data_duplicate           58
 eo_data_missing_values      10
-✔ training amount: 6857, positive class: 68.5%
-✔ validation amount: 914, positive class: 70.6%
+✔ training amount: 6856, positive class: 68.5%
+✔ validation amount: 913, positive class: 70.5%
 ✔ testing amount: 822, positive class: 68.9%
 
 
