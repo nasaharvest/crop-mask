@@ -15,7 +15,7 @@ End-to-end workflow for generating high resolution cropland maps.
 -   [Reference](#reference)
 ## Creating a crop map
 To create a crop map run the following colab notebook: 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/create_map.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/create_map.ipynb)
 
 ![Cropland gif](assets/cropmask.gif)
 ## Training a new model
@@ -27,9 +27,9 @@ Two models are trained - a multi-headed pixel wise classifier to classify pixels
 <img src="assets/models.png" alt="models" height="200px"/>
 
 ## Adding new labeled data
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/new_data.ipynb)
+To add new labeled data follow the [OpenMapFlow documentation](https://github.com/nasaharvest/openmapflow#adding-data-) OR run the linked colab notebook. 
 
-To add new labeled data run the following colab notebook (or use it as a guide): 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/crop-mask/blob/master/notebooks/new_data.ipynb)
 
 
 ## Setting up a local environment
@@ -60,7 +60,6 @@ mypy .  # type checking
 python -m unittest # unit tests
 
 # Integration tests
-python -m unittest test/integration_test_labeled.py
 python -m unittest test/integration_test_model_bbox.py
 python -m unittest test/integration_test_model_evaluation.py
 ```

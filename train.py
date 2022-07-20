@@ -33,18 +33,18 @@ train_datasets = [
     "Tanzania_CEO_2019",
 ]
 
-selected_bbox = bboxes["Namibia_North"]
+selected_bbox = bboxes["Ethiopia_Bure_Jimma"]
 
 parser = ArgumentParser()
-parser.add_argument("--model_name", type=str, default="Namibia_North_2020")
-parser.add_argument("--eval_datasets", type=str, default="Namibia_CEO_2020")
+parser.add_argument("--model_name", type=str, default="Ethiopia_Bure_Jimma_2020")
+parser.add_argument("--eval_datasets", type=str, default="Ethiopia_Bure_Jimma_2020")
 parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets))
 parser.add_argument("--min_lat", type=float, default=selected_bbox.min_lat)
 parser.add_argument("--max_lat", type=float, default=selected_bbox.max_lat)
 parser.add_argument("--min_lon", type=float, default=selected_bbox.min_lon)
 parser.add_argument("--max_lon", type=float, default=selected_bbox.max_lon)
 parser.add_argument("--up_to_year", type=int, default=2022)
-parser.add_argument("--start_month", type=str, default="September")
+parser.add_argument("--start_month", type=str, default="February")
 parser.add_argument("--input_months", type=int, default=12)
 
 parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
