@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches: [ master ]
-    #paths: 'data/models.dvc'
+    paths: 'data/models.dvc'
 
 jobs:
   deploy: 
@@ -24,7 +24,7 @@ jobs:
     - uses: iterative/setup-dvc@v1
     - name: Get latest models
       run: dvc pull data/models -f
-    - name: Deploy Docker inference image + trigger function
+    - name: Deploy Google Cloud Architecture
       run: openmapflow deploy
       
 
