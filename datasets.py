@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import timedelta
 
-from openmapflow.labeled_dataset import LabeledDataset, create_datasets
+from openmapflow.labeled_dataset import CustomLabeledDataset, create_datasets
 from openmapflow.raw_labels import RawLabels
 from openmapflow.constants import LON, LAT
 
@@ -41,7 +41,7 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
 
 
 datasets = [
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
         raw_labels=(
@@ -54,7 +54,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Kenya",
         country="Kenya",
         raw_labels=(
@@ -122,7 +122,7 @@ datasets = [
             ]
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali",
         country="Mali",
         raw_labels=(
@@ -132,7 +132,7 @@ datasets = [
             RawLabels(filename="sikasso_clean_fields", class_prob=1.0, start_year=2019),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali_lower_CEO_2019",
         country="Mali",
         raw_labels=(
@@ -158,7 +158,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali_upper_CEO_2019",
         country="Mali",
         raw_labels=(
@@ -184,7 +184,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Togo",
         country="Togo",
         raw_labels=(
@@ -227,7 +227,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Rwanda",
         country="Rwanda",
         raw_labels=tuple(
@@ -258,7 +258,7 @@ datasets = [
             ]
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Uganda",
         country="Uganda",
         raw_labels=tuple(
@@ -319,7 +319,7 @@ datasets = [
             ]
         ),
     ),
-    # LabeledDataset(
+    # CustomLabeledDataset(
     #     dataset="one_acre_fund",
     #     country="Kenya,Rwanda,Tanzania",
     #     raw_labels=(
@@ -333,7 +333,7 @@ datasets = [
     #         ),
     #     ),
     # ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="open_buildings",
         country="global",
         raw_labels=(
@@ -346,7 +346,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="digitalearthafrica_eastern",
         country="global",
         raw_labels=(
@@ -357,7 +357,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
         raw_labels=(
@@ -378,7 +378,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
         raw_labels=(
@@ -416,7 +416,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
         raw_labels=(
@@ -444,7 +444,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
         raw_labels=(
@@ -472,7 +472,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2019",
         country="Ethiopia",
         raw_labels=(
@@ -496,7 +496,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2020",
         country="Ethiopia",
         raw_labels=(
@@ -520,7 +520,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Argentina_Buenos_Aires",
         country="Argentina",
         raw_labels=(
@@ -544,7 +544,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_CEO_2020",
         country="Malawi",
         raw_labels=(
@@ -568,7 +568,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_CEO_2019",
         country="Malawi",
         raw_labels=(
@@ -590,19 +590,19 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_FAO",
         country="Malawi",
         raw_labels=(RawLabels(filename="malawi_fao.geojson", class_prob=1.0, start_year=2020),),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_FAO_corrected",
         country="Malawi",
         raw_labels=(
             RawLabels(filename="MWI_MWI_LC_FO_202106.shp", class_prob=1.0, start_year=2020),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Zambia_CEO_2019",
         country="Zambia",
         raw_labels=(
@@ -624,7 +624,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Tanzania_CEO_2019",
         country="Tanzania",
         raw_labels=(
@@ -648,7 +648,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_corrected",
         country="Malawi",
         raw_labels=(
@@ -669,7 +669,7 @@ datasets = [
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Namibia_CEO_2020",
         country="Namibia",
         raw_labels=(
@@ -684,6 +684,30 @@ datasets = [
             ),
             RawLabels(
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-2)-sample-data-2022-04-20.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.0, 0.5, 0.5),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Hawaii_CEO_2020",
+        country="Hawaii",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-1)-sample-data-2022-08-10.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.0, 0.5, 0.5),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-2)-sample-data-2022-08-10.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 train_val_test=(0.0, 0.5, 0.5),

@@ -30,5 +30,5 @@ dependencies:
           - cropharvest==0.4.1
           - types-requests
           - types-python-dateutil
-          - openmapflow==0.1.0
+          - openmapflow==0.1.2
           - dvc[gs]
