@@ -16,6 +16,23 @@
             "roc_auc_score": 0.965
         }
     },
+    "Hawaii_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1j4fyd4g",
+        "test_metrics": {
+            "accuracy": 0.6464,
+            "f1_score": 0.0578,
+            "precision_score": 0.0303,
+            "recall_score": 0.625,
+            "roc_auc_score": 0.6896
+        },
+        "val_metrics": {
+            "accuracy": 0.6694,
+            "f1_score": 0.1189,
+            "precision_score": 0.0655,
+            "recall_score": 0.6471,
+            "roc_auc_score": 0.6455
+        }
+    },
     "Namibia_North_2020": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/38qba2db",
         "test_metrics": {
