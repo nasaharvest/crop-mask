@@ -1,9 +1,9 @@
 import pandas as pd
 from datetime import timedelta
 
-from src.ETL.dataset import LabeledDataset
-from src.ETL.processor import Processor
-from src.ETL.constants import LON, LAT
+from openmapflow.labeled_dataset import CustomLabeledDataset, create_datasets
+from openmapflow.raw_labels import RawLabels
+from openmapflow.constants import LON, LAT
 
 
 def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
@@ -23,16 +23,6 @@ def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def clean_geowiki(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.groupby("location_id").mean()
-    df = df.rename(
-        {"sumcrop": "mean_sumcrop"},
-        axis="columns",
-        errors="raise",
-    )
-    return df.reset_index()
-
-
 def clean_one_acre_fund(df: pd.DataFrame) -> pd.DataFrame:
     df = df[
         df[LON].notnull()
@@ -50,84 +40,81 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-labeled_datasets = [
-    LabeledDataset(
+datasets = [
+    CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="loc_all_2.txt",
-                clean_df=clean_geowiki,
                 longitude_col="loc_cent_X",
                 latitude_col="loc_cent_Y",
-                crop_prob=lambda df: df.mean_sumcrop / 100,
+                class_prob=lambda df: df.sumcrop / 100,
                 start_year=2017,
-                x_y_from_centroid=False,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Kenya",
         country="Kenya",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="noncrop_labels_v2",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2019,
                 train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
-            Processor(
+            RawLabels(
                 filename="noncrop_labels_set2",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2019,
                 train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
-            Processor(
+            RawLabels(
                 filename="2019_gepro_noncrop",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2019,
                 train_val_test=(0.8, 0.1, 0.1),
             ),
-            Processor(
+            RawLabels(
                 filename="noncrop_water_kenya_gt",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2019,
                 train_val_test=(0.8, 0.1, 0.1),
             ),
-            Processor(
+            RawLabels(
                 filename="noncrop_kenya_gt",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2019,
                 train_val_test=(0.8, 0.1, 0.1),
             ),
-            Processor(
+            RawLabels(
                 filename="one_acre_fund_kenya",
-                crop_prob=1.0,
+                class_prob=1.0,
                 start_year=2019,
                 longitude_col="Lon",
                 latitude_col="Lat",
                 train_val_test=(0.8, 0.1, 0.1),
-                x_y_from_centroid=False,
             ),
-            Processor(
+            RawLabels(
                 filename="plant_village_kenya",
-                clean_df=clean_pv_kenya,
-                crop_prob=1.0,
-                plant_date_col="planting_d",
+                filter_df=clean_pv_kenya,
+                class_prob=1.0,
+                start_date_col="planting_d",
                 train_val_test=(0.8, 0.1, 0.1),
                 transform_crs_from=32636,
             ),
         )
         + tuple(
             [
-                Processor(
+                RawLabels(
                     filename=f"ref_african_crops_kenya_01_labels_0{i}/labels.geojson",
                     longitude_col="Longitude",
                     latitude_col="Latitude",
-                    crop_prob=1.0,
-                    plant_date_col="Planting Date",
+                    class_prob=1.0,
+                    start_date_col="Planting Date",
                     train_val_test=(0.8, 0.1, 0.1),
                     transform_crs_from=32636,
                 )
@@ -135,116 +122,121 @@ labeled_datasets = [
             ]
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali",
         country="Mali",
-        processors=(
-            Processor(filename="mali_noncrop_2019", crop_prob=0.0, start_year=2019),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, start_year=2018),
-            Processor(filename="segou_bounds_07212020", crop_prob=1.0, start_year=2019),
-            Processor(filename="sikasso_clean_fields", crop_prob=1.0, start_year=2019),
+        raw_labels=(
+            RawLabels(filename="mali_noncrop_2019", class_prob=0.0, start_year=2019),
+            RawLabels(filename="segou_bounds_07212020", class_prob=1.0, start_year=2018),
+            RawLabels(filename="segou_bounds_07212020", class_prob=1.0, start_year=2019),
+            RawLabels(filename="sikasso_clean_fields", class_prob=1.0, start_year=2019),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali_lower_CEO_2019",
         country="Mali",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Mali-USAID-ZOIS-lower-(Set-1)--sample-data-2021-11-29.csv",
-                crop_prob=lambda df: (
+                class_prob=lambda df: (
                     df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
                 ),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Mali-USAID-ZOIS-lower-(Set-2)--sample-data-2021-11-29.csv",
-                crop_prob=lambda df: (
+                class_prob=lambda df: (
                     df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
                 ),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Mali_upper_CEO_2019",
         country="Mali",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Mali-USAID-ZOIS-upper-(Set-1)-sample-data-2021-11-25.csv",
-                crop_prob=lambda df: (
+                class_prob=lambda df: (
                     df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
                 ),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Mali-USAID-ZOIS-upper-(Set-2)-sample-data-2021-11-25.csv",
-                crop_prob=lambda df: (
+                class_prob=lambda df: (
                     df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
                 ),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Togo",
         country="Togo",
-        processors=(
-            Processor(
-                filename="crop_merged_v2",
-                crop_prob=1.0,
+        raw_labels=(
+            RawLabels(
+                filename="crop_merged_v2.zip",
+                class_prob=1.0,
                 train_val_test=(0.8, 0.2, 0.0),
                 start_year=2019,
             ),
-            Processor(
-                filename="noncrop_merged_v2",
-                crop_prob=0.0,
+            RawLabels(
+                filename="noncrop_merged_v2.zip",
+                class_prob=0.0,
                 train_val_test=(0.8, 0.2, 0.0),
                 start_year=2019,
             ),
-            Processor(
-                filename="random_sample_hrk",
-                crop_prob=lambda df: df["hrk-label"],
+            RawLabels(
+                filename="random_sample_hrk.zip",
+                class_prob=lambda df: df["hrk-label"],
                 transform_crs_from=32631,
                 train_val_test=(0.0, 0.0, 1.0),
                 start_year=2019,
             ),
-            Processor(
-                filename="random_sample_cn",
-                crop_prob=lambda df: df["cn_labels"],
+            RawLabels(
+                filename="random_sample_cn.zip",
+                class_prob=lambda df: df["cn_labels"],
                 train_val_test=(0.0, 0.0, 1.0),
                 start_year=2019,
             ),
-            Processor(
-                filename="BB_random_sample_1k",
-                crop_prob=lambda df: df["bb_label"],
+            RawLabels(
+                filename="BB_random_sample_1k.zip",
+                class_prob=lambda df: df["bb_label"],
                 train_val_test=(0.0, 0.0, 1.0),
                 start_year=2019,
             ),
-            Processor(
-                filename="random_sample_bm",
-                crop_prob=lambda df: df["bm_labels"],
+            RawLabels(
+                filename="random_sample_bm.zip",
+                class_prob=lambda df: df["bm_labels"],
                 train_val_test=(0.0, 0.0, 1.0),
                 start_year=2019,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Rwanda",
         country="Rwanda",
-        processors=tuple(
+        raw_labels=tuple(
             [
-                Processor(
+                RawLabels(
                     filename=filename,
-                    crop_prob=lambda df: df["Crop/ or not"] == "Cropland",
-                    x_y_from_centroid=False,
+                    class_prob=lambda df: df["Crop/ or not"] == "Cropland",
+                    latitude_col="lat",
+                    longitude_col="lon",
                     train_val_test=(
                         0.1,
                         0.45,
@@ -259,20 +251,23 @@ labeled_datasets = [
                 ]
             ]
             + [
-                Processor(filename="Rwanda-non-crop-corrective-v1", crop_prob=0.0, start_year=2019),
-                Processor(filename="Rwanda-crop-corrective-v1", crop_prob=1.0, start_year=2019),
+                RawLabels(
+                    filename="Rwanda-non-crop-corrective-v1", class_prob=0.0, start_year=2019
+                ),
+                RawLabels(filename="Rwanda-crop-corrective-v1", class_prob=1.0, start_year=2019),
             ]
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Uganda",
         country="Uganda",
-        processors=tuple(
+        raw_labels=tuple(
             [
-                Processor(
+                RawLabels(
                     filename=filename,
-                    crop_prob=lambda df: df["Crop/non-crop"] == "Cropland",
-                    x_y_from_centroid=False,
+                    class_prob=lambda df: df["Crop/non-crop"] == "Cropland",
+                    latitude_col="lat",
+                    longitude_col="lon",
                     train_val_test=(
                         0.10,
                         0.45,
@@ -286,9 +281,9 @@ labeled_datasets = [
                 ]
             ]
             + [
-                Processor(
+                RawLabels(
                     filename=filename,
-                    crop_prob=0.0,
+                    class_prob=0.0,
                     sample_from_polygon=True,
                     x_y_from_centroid=True,
                     start_year=2020,
@@ -300,235 +295,238 @@ labeled_datasets = [
                 ]
             ]
             + [
-                Processor(
+                RawLabels(
                     filename="ug_in_season_monitoring_2021_08_11_17_50_46_428737.csv",
-                    crop_prob=1.0,
+                    class_prob=1.0,
                     longitude_col="location/_gps_longitude",
                     latitude_col="location/_gps_latitude",
-                    plant_date_col="start",
-                    x_y_from_centroid=False,
+                    start_date_col="start",
                 ),
-                Processor(
+                RawLabels(
                     filename="ug_end_of_season_assessment_2021_08_11_17_47_53_813908.csv",
-                    crop_prob=1.0,
+                    class_prob=1.0,
                     longitude_col="district_selection/_gps_location_longitude",
                     latitude_col="district_selection/_gps_location_latitude",
-                    plant_date_col="start",
-                    x_y_from_centroid=False,
+                    start_date_col="start",
                 ),
-                Processor(
+                RawLabels(
                     filename="ug_pre_season_assessment_2021_08_11_18_15_27_323695.csv",
-                    crop_prob=1.0,
+                    class_prob=1.0,
                     longitude_col="location/_gps_location_longitude",
                     latitude_col="location/_gps_location_latitude",
-                    plant_date_col="start",
-                    x_y_from_centroid=False,
+                    start_date_col="start",
                 ),
             ]
         ),
     ),
-    # LabeledDataset(
+    # CustomLabeledDataset(
     #     dataset="one_acre_fund",
     #     country="Kenya,Rwanda,Tanzania",
-    #     processors=(
-    #         Processor(
+    #     raw_labels=(
+    #         RawLabels(
     #             filename="One_Acre_Fund_KE_RW_TZ_2016_17_18_19_MEL_agronomic_survey_data.csv",
-    #             crop_prob=1.0,
-    #             clean_df=clean_one_acre_fund,
+    #             class_prob=1.0,
+    #             filter_df=clean_one_acre_fund,
     #             longitude_col="site_longitude",
     #             latitude_col="site_latitude",
-    #             plant_date_col="planting_date",
-    #             x_y_from_centroid=False,
+    #             start_date_col="planting_date",
     #         ),
     #     ),
     # ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="open_buildings",
         country="global",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="177_buildings_confidence_0.9.csv",
                 latitude_col="latitude",
                 longitude_col="longitude",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2020,
-                x_y_from_centroid=False,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="digitalearthafrica_eastern",
         country="global",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="Eastern_training_data_20210427.geojson",
-                crop_prob=lambda df: df["Class"].astype(float),
+                class_prob=lambda df: df["Class"].astype(float),
                 start_year=2020,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo_td_polys.geojson",
-                crop_prob=lambda df: df["Class"].astype(float),
+                class_prob=lambda df: df["Class"].astype(float),
                 start_year=2019,
             ),
-            Processor(
+            RawLabels(
                 filename="validation_samples.shp",
-                crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                class_prob=lambda df: (df["Class"] == "crop").astype(float),
                 start_year=2019,
             ),
-            Processor(
+            RawLabels(
                 filename="Sahel_region_RE_sample.geojson",
-                crop_prob=lambda df: (df["Class"] == "crop").astype(float),
+                class_prob=lambda df: (df["Class"] == "crop").astype(float),
                 start_year=2019,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
-        processors=(
-            Processor(filename="tigray/tigrayWW_crop.shp", crop_prob=1.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_crop2.shp", crop_prob=1.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_forest.shp", crop_prob=0.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_forest2.shp", crop_prob=0.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_shrub.shp", crop_prob=0.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_shrub2.shp", crop_prob=0.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_sparse.shp", crop_prob=0.0, start_year=2019),
-            Processor(filename="tigray/tigrayWW_sparse2.shp", crop_prob=0.0, start_year=2019),
-            Processor(
+        raw_labels=(
+            RawLabels(filename="tigray/tigrayWW_crop.shp", class_prob=1.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_crop2.shp", class_prob=1.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_forest.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_forest2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_shrub.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_shrub2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_sparse.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_sparse2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(
                 filename="tigray_non_fallow_crop/nonFallowCrop2019.shp",
-                crop_prob=1.0,
+                class_prob=1.0,
                 start_year=2019,
             ),
-            Processor(
+            RawLabels(
                 filename="tigray_non_fallow_crop/nonFallowCrop2020.shp",
-                crop_prob=1.0,
+                class_prob=1.0,
                 start_year=2020,
             ),
-            Processor(
-                filename="tigray_corrective_2020/non_crop.shp", crop_prob=0.0, start_year=2020
+            RawLabels(
+                filename="tigray_corrective_2020/non_crop.shp", class_prob=0.0, start_year=2020
             ),
-            Processor(filename="tigray_corrective_2020/crop.shp", crop_prob=1.0, start_year=2020),
-            Processor(
+            RawLabels(filename="tigray_corrective_2020/crop.shp", class_prob=1.0, start_year=2020),
+            RawLabels(
                 filename="tigray_corrective_2021/non_crop.shp",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2021,
             ),
-            Processor(
+            RawLabels(
                 filename="tigray_corrective_2021/crop.shp",
-                crop_prob=1.0,
+                class_prob=1.0,
                 start_year=2021,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2020-Ethiopia-Tigray-(Set-1)-sample-data-2021-10-04.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
-                label_names="email",
-                label_dur="analysis_duration",
+                filter_df=clean_ceo_data,
+                labeler_name="email",
+                label_duration="analysis_duration",
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2020-Ethiopia-Tigray-(Set-2)-sample-data-2021-10-04.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
-                label_names="email",
-                label_dur="analysis_duration",
+                filter_df=clean_ceo_data,
+                labeler_name="email",
+                label_duration="analysis_duration",
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2021-Ethiopia-Tigray-(Set-1-Fixed)-sample-data-2022-02-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2021,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
-                label_names="email",
-                label_dur="analysis_duration",
+                filter_df=clean_ceo_data,
+                labeler_name="email",
+                label_duration="analysis_duration",
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2021-Ethiopia-Tigray-(Set-2-Fixed)-sample-data-2022-02-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2021,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
-                label_names="email",
-                label_dur="analysis_duration",
+                filter_df=clean_ceo_data,
+                labeler_name="email",
+                label_duration="analysis_duration",
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2019",
         country="Ethiopia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2020",
         country="Ethiopia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-1)-sample-data-2021-11-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2020-Ethiopia---Bure-Jimma-(Set-2)-sample-data-2021-11-24.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Argentina_Buenos_Aires",
         country="Argentina",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="bc_mapeo_del_cultivo_0.csv",
-                clean_df=lambda df: df[
+                filter_df=lambda df: df[
                     (
                         df["Seleccione el cultivo principal en el lote:"].notnull()
                         & ~df["Seleccione el cultivo principal en el lote:"].isin(
@@ -538,153 +536,164 @@ labeled_datasets = [
                 ].copy(),
                 longitude_col="longitud",
                 latitude_col="latitud",
-                crop_type_col="Seleccione el cultivo principal en el lote:",
-                crop_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
+                class_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
                     ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
                 ),
-                x_y_from_centroid=False,
                 train_val_test=(0.8, 0.2, 0.0),
                 start_year=2021,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_CEO_2020",
         country="Malawi",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-1)-sample-data-2021-12-09.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-Sep-2020-Sep-2021-Malawi-(Set-2)-sample-data-2021-12-09.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                x_y_from_centroid=False,
+                latitude_col="lat",
+                longitude_col="lon",
                 train_val_test=(0.0, 0.5, 0.5),
-                clean_df=clean_ceo_data,
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_CEO_2019",
         country="Malawi",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Malawi-Cropland-(RCMRD-Set-1)-sample-data-2021-12-10.csv",
-                crop_prob=lambda df: (df["Crop/non"] == "Crop"),
+                class_prob=lambda df: (df["Crop/non"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Malawi-Cropland-(RCMRD-Set-2)-sample-data-2021-12-10.csv",
-                crop_prob=lambda df: (df["Crop/non"] == "Crop"),
+                class_prob=lambda df: (df["Crop/non"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_FAO",
         country="Malawi",
-        processors=(Processor(filename="malawi_fao.geojson", crop_prob=1.0, start_year=2020),),
+        raw_labels=(RawLabels(filename="malawi_fao.geojson", class_prob=1.0, start_year=2020),),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_FAO_corrected",
         country="Malawi",
-        processors=(
-            Processor(filename="MWI_MWI_LC_FO_202106.shp", crop_prob=1.0, start_year=2020),
+        raw_labels=(
+            RawLabels(filename="MWI_MWI_LC_FO_202106.shp", class_prob=1.0, start_year=2020),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Zambia_CEO_2019",
         country="Zambia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
-                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
-                crop_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
+                class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Tanzania_CEO_2019",
         country="Tanzania",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-1)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
+                class_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 train_val_test=(0.0, 0.5, 0.5),
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-2019-Tanzania-Cropland-(RCMRD-Set-2)-sample-data-2021-12-13.csv",
-                crop_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
+                class_prob=lambda df: (df["Crop/non-Crop"] == "Cropland"),
                 start_year=2019,
                 train_val_test=(0.0, 0.5, 0.5),
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Malawi_corrected",
         country="Malawi",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="Crops.shp",
-                crop_prob=1.0,
+                class_prob=1.0,
                 start_year=2020,
             ),
-            Processor(
+            RawLabels(
                 filename="Noncrops.shp",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2020,
             ),
-            Processor(
+            RawLabels(
                 filename="Major_protected_areas.shp",
-                crop_prob=0.0,
+                class_prob=0.0,
                 start_year=2020,
             ),
         ),
     ),
-    LabeledDataset(
+    CustomLabeledDataset(
         dataset="Namibia_CEO_2020",
         country="Namibia",
-        processors=(
-            Processor(
+        raw_labels=(
+            RawLabels(
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-1)-sample-data-2022-04-20.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 train_val_test=(0.0, 0.5, 0.5),
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
-            Processor(
+            RawLabels(
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-2)-sample-data-2022-04-20.csv",
-                crop_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 train_val_test=(0.0, 0.5, 0.5),
-                x_y_from_centroid=False,
-                clean_df=clean_ceo_data,
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
             ),
         ),
-    )
+    ),
 ]
+
+if __name__ == "__main__":
+    create_datasets(datasets)

@@ -3,21 +3,23 @@ from unittest import TestCase
 import json
 from src.models.model import Model
 
-from src.utils import models_file, models_dir
-from src.ETL.constants import LAT, LON
+from openmapflow.constants import LAT, LON
+from openmapflow.config import PROJECT_ROOT, DataPaths
 
 
 class ModelBboxTest(TestCase):
     def test_model_bbox(self):
         # Read in models.json
-        with models_file.open("rb") as f:
+        with (PROJECT_ROOT / DataPaths.METRICS).open("rb") as f:
             models_dict = json.load(f)
 
         non_local_examples_in_eval = False
         for model_name, _ in models_dict.items():
             print("--------------------------------------------------")
             print(model_name)
-            model = Model.load_from_checkpoint(models_dir / f"{model_name}.ckpt")
+            model = Model.load_from_checkpoint(
+                PROJECT_ROOT / DataPaths.MODELS / f"{model_name}.ckpt"
+            )
             for subset in ["validation", "testing"]:
                 try:
                     df = Model.load_df(

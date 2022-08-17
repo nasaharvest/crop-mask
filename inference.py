@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 
-from src.inference import Inference
+from cropharvest.inference import Inference
+from openmapflow.config import PROJECT_ROOT, DataPaths
 from src.models.model import Model
-from src.utils import models_dir
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -11,5 +11,5 @@ if __name__ == "__main__":
     parser.add_argument("--dest_path", type=str)
 
     args = parser.parse_args()
-    model = Model.load_from_checkpoint(models_dir / f"{args.model_name}.ckpt")
+    model = Model.load_from_checkpoint(PROJECT_ROOT / DataPaths.MODELS / f"{args.model_name}.ckpt")
     Inference(model).run(local_path=args.tif_path, dest_path=args.dest_path)

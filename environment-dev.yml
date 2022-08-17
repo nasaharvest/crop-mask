@@ -21,13 +21,14 @@ dependencies:
     - geopandas
     - cartopy
     - scikit-learn
-    - dvc=1.11.16
     - flake8
     - google-cloud-storage
     - python-dotenv
     - pip:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
-          - cropharvest==0.3.0
+          - cropharvest==0.4.1
           - types-requests
           - types-python-dateutil
+          - openmapflow==0.1.2
+          - dvc[gs]
