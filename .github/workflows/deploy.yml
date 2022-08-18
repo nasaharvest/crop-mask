@@ -3,27 +3,29 @@ name: Deploy
 on:
   push:
     branches: [ master ]
+    paths: 'data/models.dvc'
 
 jobs:
   deploy: 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: google-github-actions/setup-gcloud@v0
+    - name: Set up python
+      uses: actions/setup-python@v2
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true   
+        python-version: 3.8
+    - name: Install dependencies
+      run: pip install openmapflow 'dvc[gs]'
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
     - uses: iterative/setup-dvc@v1
-      with:
-        version: '1.11.16'
     - name: Get latest models
       run: dvc pull data/models -f
-    - name: Deploy Docker inference image + trigger function
-      run: |
-        gcloud auth configure-docker us-central1-docker.pkg.dev
-        chmod +x ./deploy.sh
-        ./deploy.sh
+    - name: Deploy Google Cloud Architecture
+      run: openmapflow deploy
       
 
 
