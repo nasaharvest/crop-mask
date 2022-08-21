@@ -83,5 +83,22 @@
             "recall_score": 0.6714,
             "roc_auc_score": 0.8989
         }
+    },
+    "Tanzania_2019_skip_era5": {
+        "params": "",
+        "test_metrics": {
+            "accuracy": 0.8616,
+            "f1_score": 0.7504,
+            "precision_score": 0.8413,
+            "recall_score": 0.6773,
+            "roc_auc_score": 0.9277
+        },
+        "val_metrics": {
+            "accuracy": 0.864,
+            "f1_score": 0.7535,
+            "precision_score": 0.8534,
+            "recall_score": 0.6746,
+            "roc_auc_score": 0.9222
+        }
     }
 }
