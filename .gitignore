@@ -114,12 +114,7 @@ files
 # mypy
 .mypy_cache/
 
-# the data folder
-data/**/
-data/compressed_features.tar.gz
-!data/shapefiles
 lightning_logs
-tb_logs
 wandb
 
 .env

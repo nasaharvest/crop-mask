@@ -1,10 +1,13 @@
-version: 0.0.1
+version: 0.1.2
 project: crop-mask
 description: NASA Harvest's crop mapping tool
 gcloud:
   project_id: bsos-geog-harvest1
   location: us-central1
-  bucket_labeled_tifs: crop-mask-tifs2
-  bucket_inference_tifs: crop-mask-inference-tifs
+  bucket_labeled_eo: crop-mask-tifs2
+  bucket_inference_eo: crop-mask-inference-tifs
   bucket_preds: crop-mask-preds2
   bucket_preds_merged: crop-mask-preds-merged
+data_paths:
+  raw_labels: raw
+  metrics: models.json

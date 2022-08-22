@@ -206,6 +206,56 @@
             12
         ]
     },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019_February_2022": {
+        "normalizing_dict": {
+            "mean": [
+                -11.017129715242838,
+                -18.002215148328943,
+                1428.4871730428106,
+                1380.404530517115,
+                1393.69111444784,
+                1630.5193840726201,
+                2406.922512717642,
+                2784.289203627495,
+                2666.7390643953786,
+                3036.701161591403,
+                827.8312951796078,
+                2372.276012555543,
+                1543.4266393188896,
+                293.42369921106854,
+                0.0036945071128482126,
+                882.4440826511208,
+                6.028329418585984,
+                0.35100514444977715
+            ],
+            "std": [
+                4.151266116670902,
+                4.924072249747573,
+                1107.1855050214901,
+                1048.3779125264846,
+                1232.9265606616414,
+                1184.3383388574357,
+                1113.116997721289,
+                1159.6247282267802,
+                1106.6589624589842,
+                1166.7597455835228,
+                690.5312859571234,
+                1007.74331519556,
+                889.3837374644775,
+                8.76214865742325,
+                0.004232520110750195,
+                702.7362572313806,
+                7.539992486427731,
+                0.16244035755422162
+            ]
+        },
+        "train_num_timesteps": [
+            12
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
     "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019_September": {
         "normalizing_dict": {
             "mean": [

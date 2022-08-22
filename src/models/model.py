@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 import numpy as np
 import json
 import pandas as pd
+import random
 from typing import Callable, Tuple, Dict, Any, Type, Optional, List, Union
 
 import torch
@@ -20,14 +21,20 @@ from sklearn.metrics import (
 )
 from cropharvest.bands import ERA5_BANDS
 from cropharvest.engineer import BANDS
+from cropharvest.countries import BBox
 
-from src.ETL.boundingbox import BoundingBox
-from src.ETL.constants import ALREADY_EXISTS, SUBSET
-from src.utils import get_dvc_dir, set_seed, data_dir
-from src.datasets_labeled import labeled_datasets
+from openmapflow.constants import SUBSET
+from openmapflow.config import DataPaths, PROJECT_ROOT, DATA_DIR
+from datasets import datasets
 from .data import CropDataset
 from .forecaster import Forecaster
 from .classifier import Classifier
+
+
+def set_seed(seed: int = 42):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    random.seed(seed)
 
 
 class Model(pl.LightningModule):
@@ -71,7 +78,7 @@ class Model(pl.LightningModule):
 
         self.batch_size = hparams.batch_size
 
-        self.target_bbox = BoundingBox(
+        self.target_bbox = BBox(
             min_lat=hparams.min_lat,
             max_lat=hparams.max_lat,
             min_lon=hparams.min_lon,
@@ -87,7 +94,7 @@ class Model(pl.LightningModule):
         # Normalizing dicts
         # --------------------------------------------------
         all_dataset_params: Dict[str, Any] = {}
-        all_dataset_params_path = data_dir / "all_dataset_params.json"
+        all_dataset_params_path = PROJECT_ROOT / DATA_DIR / "all_dataset_params.json"
         if all_dataset_params_path.exists():
             with all_dataset_params_path.open() as f:
                 all_dataset_params = json.load(f)
@@ -184,16 +191,15 @@ class Model(pl.LightningModule):
         Loads the datasets specified in the input_dataset_names list.
         """
         dfs = []
-        for d in labeled_datasets:
+        for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
             if d.dataset in eval_datasets.split(","):
-                df = d.load_labels(allow_processing=False, fail_if_missing_features=True)
+                df = d.load_df()
                 dfs.append(df[df[SUBSET] == subset])
 
             # If dataset is only used for training, take the whole dataframe
             elif subset == "training" and d.dataset in train_datasets.split(","):
-                df = d.load_labels(allow_processing=False, fail_if_missing_features=False)
-                df = df[df[ALREADY_EXISTS]].copy()
+                df = d.load_df()
                 dfs.append(df)
 
         return pd.concat(dfs)
@@ -483,7 +489,9 @@ class Model(pl.LightningModule):
         if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses):
             saved_metrics = {f"{k}_saved": v for k, v in metrics.items()}
             logs.update(saved_metrics)
-            self.trainer.save_checkpoint(get_dvc_dir("models") / f"{self.hparams.model_name}.ckpt")
+            self.trainer.save_checkpoint(
+                PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.ckpt"
+            )
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
@@ -503,7 +511,7 @@ class Model(pl.LightningModule):
             "--probability_threshold": (float, 0.5),
             "--alpha": (float, 10),
             "--noise_factor": (float, 0.1),
-            "--max_epochs": (int, 1000),
+            "--epochs": (int, 1000),
             "--patience": (int, 10),
         }
 
@@ -523,7 +531,7 @@ class Model(pl.LightningModule):
 
     def save(self):
         sm = torch.jit.script(self)
-        model_path = get_dvc_dir("models") / f"{self.hparams.model_name}.pt"
+        model_path = PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.pt"
         if model_path.exists():
             model_path.unlink()
         sm.save(str(model_path))

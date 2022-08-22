@@ -8,9 +8,9 @@ import pickle
 import sys
 import torch
 from pathlib import Path
+from openmapflow.constants import FEATURE_PATH
 
 sys.path.append("..")
-from src.ETL.constants import FEATURE_PATH  # noqa: E402s
 from src.models import Model  # noqa: E402s
 
 

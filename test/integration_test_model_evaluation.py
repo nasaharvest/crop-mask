@@ -6,8 +6,9 @@ import json
 import torch
 import pytorch_lightning as pl
 
+from openmapflow.config import PROJECT_ROOT, DataPaths
+
 from src.models.model import Model
-from src.utils import get_dvc_dir, models_file
 
 
 class IntegrationTestModelEvaluation(TestCase):
@@ -17,8 +18,8 @@ class IntegrationTestModelEvaluation(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
 
-        model_dir = get_dvc_dir("models")
-        with models_file.open("rb") as f:
+        model_dir = PROJECT_ROOT / DataPaths.MODELS
+        with (PROJECT_ROOT / DataPaths.METRICS).open("rb") as f:
             models_dict: Dict[str, Any] = json.load(f)
 
         for model_name, model_dict in tqdm(models_dict.items()):
