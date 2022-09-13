@@ -222,7 +222,7 @@ def get_prj_src():
     return rio.open(prj_raster)
 
 
-def sample_df(binary_map, n_crop, n_noncrop):
+def generate_ref_samples(binary_map, n_crop, n_noncrop):
     """ """
     df_noncrop = pd.DataFrame([], columns=["px", "py", "pred_class"])
     df_noncrop["px"], df_noncrop["py"] = random_inds(binary_map, 0, int(n_noncrop))
@@ -299,11 +299,6 @@ def reference_sample_agree(binary_map, ceo_ref1, ceo_ref2):
         ceo_agree, geometry=gpd.points_from_xy(ceo_agree.lon, ceo_agree.lat), crs="EPSG:4326"
     )
     ceo_agree_geom = ceo_agree_geom.to_crs(src.crs)
-    # ceo_agree_geom.plot()
-
-    # clip the agree samples to the map bbox TODO: remove this step later
-    bbx = return_map_bounds_as_df()
-    ceo_agree_geom = ceo_agree_geom[ceo_agree_geom.within(bbx.geometry[0])]
 
     label_responses = ceo_agree_geom[label_question].unique()
     assert len(label_responses) == 2
