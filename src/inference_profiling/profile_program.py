@@ -43,7 +43,7 @@ peak_proc_mem = 0
 # while the process is running calculate resource utilization.
 print("Process is in the running state.")
 
-while(process.is_running()):
+while (process.is_running()):
     # set the sleep time to monitor at an interval of every second.
     time.sleep(1)
     # print(process.is_running())
