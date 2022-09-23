@@ -3,7 +3,7 @@
 ## Creating cropland maps
 **Prerequisites**
 - [ ] Create small map ~1000m^2 with an already deployed model crop-mask model
-- [ ] Train a new machine learning model for Tanzania 2019 and create Pull Request (PR) with [Ivan Zvonkov](https://github.com/ivanzvonkov) as a reviewer
+- [ ] Train a new machine learning model for Tanzania 2019 (or another evaluation set) and create Pull Request (PR) with [Ivan Zvonkov](https://github.com/ivanzvonkov) as a reviewer
 - [ ] Once PR is approved, merge and confirm model is deployed to the Cloud
 - [ ] Create a small map ~1000m^2 with your newly deployed model
 
