@@ -1,5 +1,6 @@
-# Import libraries
+import json
 import os
+from typing import List, Optional, Tuple
 import pandas as pd
 import numpy as np
 import geopandas as gpd
@@ -8,21 +9,10 @@ from rasterio.mask import mask
 import cartopy.io.shapereader as shpreader
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 
-def return_map_bounds_as_df():
-    "Read the bounding coordinates of the crop mask"
-    root_dir = os.getcwd()
-    prj_raster = [f for f in os.listdir(root_dir) if f.startswith("prj")][0]
-
-    with rio.open(prj_raster) as src:
-        bbx = src.bounds
-    geom = box(*bbx)
-    bbx_gdf = gpd.GeoDataFrame(geometry=[geom], crs=src.crs)
-    return bbx_gdf
-
-
-def load_ne(country_code, regions_of_interest):
+def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
     """
     Load the Natural Earth country and region shapefiles.
     country_code: ISO 3166-1 alpha-3 country code
@@ -35,13 +25,11 @@ def load_ne(country_code, regions_of_interest):
     ne_gdf = gpd.read_file(ne_shapefile)
 
     if len(regions_of_interest) == 0:
-        # region_of_interest & country_code will be collected using dropdown
         condition = ne_gdf["adm1_code"].str.startswith(country_code)
         boundary = ne_gdf[condition].copy()
         print("Entire country found!")
 
     else:
-        # Check regions
         available_regions = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)][
             "name"
         ].tolist()
@@ -57,42 +45,36 @@ def load_ne(country_code, regions_of_interest):
                 regions only seen in below plot."
             )
             ne_gdf[condition].plot(
-                column="name", legend=True, legend_kwds={"loc": "lower right"}, figsize=(10, 10)
+                column="name",
+                legend=True,
+                legend_kwds={"loc": "lower right"},
+                figsize=(10, 10),
             )
         else:
-            condition = ne_gdf["name"].isin(regions_of_interest)
-            boundary = ne_gdf[condition].copy()
-            print("All regions found!")
-    return boundary
+            available_ = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)]
+            condition = available_["name"].isin(regions_of_interest)
+            boundary = available_[condition].copy()
+        return boundary
 
 
-def getFeatures(gdf):
-    """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
-    import json
-
-    return [json.loads(gdf.to_json())["features"][0]["geometry"]]
-
-
-def clip_raster(in_raster, boundary=None):
+def clip_raster(
+    in_raster: str, boundary: Optional[gpd.GeoDataFrame] = None
+) -> Tuple[Optional[np.ma.core.MaskedArray], dict]:
     """Clip the raster to the boundary
     in_raster: path to the input raster
     boundary: GeoDataFrame of the boundary
     """
-
     with rio.open(in_raster) as src:
         if boundary is None:
             print("No boundary provided. Clipping to map bounds.")
-            bbx = src.bounds
-            geom = box(*bbx)
-            boundary = gpd.GeoDataFrame(geometry=[geom], crs=src.crs)
+            boundary = gpd.GeoDataFrame(geometry=[box(*src.bounds)], crs=src.crs)
 
         else:
             print("Clipping to boundary.")
         boundary = boundary.to_crs(src.crs)
-        boundary = getFeatures(boundary)
+        boundary = [json.loads(boundary.to_json())["features"][0]["geometry"]]
         raster, out_transform = mask(src, shapes=boundary, crop=True)
         raster = raster[0]
-        # Update the metadata
         out_meta = src.meta.copy()
         out_meta.update(
             {
@@ -104,11 +86,12 @@ def clip_raster(in_raster, boundary=None):
             }
         )
         print("The pixel size is {:.3f} meters".format(out_meta["transform"][0]))
-
         return np.ma.masked_equal(raster, src.meta["nodata"]), out_meta
 
 
-def load_raster(in_raster, boundary=None):
+def load_raster(
+    in_raster: str, boundary: Optional[gpd.GeoDataFrame] = None
+) -> Tuple[Optional[np.ma.core.MaskedArray], dict]:
     """
     Chcked if the raster is projected in the correct CRS.
     If not, reproject it.
@@ -127,7 +110,6 @@ def load_raster(in_raster, boundary=None):
                 (EPSG:XXXXX)."""
             )
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            # Project the raster to the local UTM Zone
             cmd = f"gdalwarp -t_srs EPSG:{t_srs} {in_raster} -overwrite \
                 prj_{in_raster_basename} -dstnodata 255"
             print(cmd)
@@ -140,32 +122,32 @@ def load_raster(in_raster, boundary=None):
             return clip_raster(in_raster, boundary)
 
 
-def binarize(raster, threshold=0.5):
-    nodata = get_prj_src().nodata
+def binarize(raster: np.ma.core.MaskedArray, meta: dict, threshold: float = 0.5) -> np.ndarray:
     raster[raster < threshold] = 0
-    raster[((raster >= threshold) & (raster != nodata))] = 1
+    raster[((raster >= threshold) & (raster != meta["nodata"]))] = 1
     return raster.data.astype(np.uint8)
 
 
-def cal_map_area_class(map_array, unit="pixels", px_size=10):
+def cal_map_area_class(
+    binary_map: np.ndarray, unit: str = "pixels", px_size: float = 10
+) -> Tuple[Optional[float], Optional[float]]:
     """
     Calculate the area of each class in the map.
     Print the area when the unit is specified to be in pixel and ha.
     In case of fraction, the area printed and returned to be assigned to a variable.
-    map_array: numpy array of the map
+    binary_map: numpy array of the map
     """
-    crop_px = np.where(map_array.flatten() == 1)
-    noncrop_px = np.where(map_array.flatten() == 0)
+    crop_px = np.where(binary_map.flatten() == 1)
+    noncrop_px = np.where(binary_map.flatten() == 0)
     total = crop_px[0].shape[0] + noncrop_px[0].shape[0]
     if unit == "ha":
-        # Multiply pixels by area per pixel and convert m to hectares
         crop_area = crop_px[0].shape[0] * (px_size * px_size) / 100000
         noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 100000
         print(
             f"Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
         )
-        return crop_area, noncrop_area
+
     elif unit == "pixels":
         crop_area = int(crop_px[0].shape[0])
         noncrop_area = int(noncrop_px[0].shape[0])
@@ -173,20 +155,25 @@ def cal_map_area_class(map_array, unit="pixels", px_size=10):
             f"Crop area: {crop_area} pixels, Non-crop area: {noncrop_area} pixels \n \
             Total area: {crop_area + noncrop_area} pixels"
         )
-        return crop_area, noncrop_area
+
     elif unit == "fraction":
         crop_area = int(crop_px[0].shape[0]) / total
         noncrop_area = int(noncrop_px[0].shape[0]) / total
         print(f"Crop area: {crop_area:.2f} fraction, Non-crop area: {noncrop_area:.2f} fraction")
         assert crop_area + noncrop_area == 1
-        return crop_area, noncrop_area
+
     else:
         print("Please specify the unit as either 'pixels', 'ha', or 'fraction'")
+    return crop_area, noncrop_area
 
 
 def estimate_num_sample_per_class(
-    f_croparea, f_noncroparea, u_crop, u_noncrop, equal_alloc=True, stderr=0.02
-):
+    f_croparea: float,
+    f_noncroparea: float,
+    u_crop: float,
+    u_noncrop: float,
+    stderr: float = 0.02,
+) -> Tuple[float, float]:
 
     s_crop = np.sqrt(u_crop * (1 - u_crop))
     s_noncrop = np.sqrt(u_noncrop * (1 - u_crop))
@@ -194,52 +181,42 @@ def estimate_num_sample_per_class(
     n = np.round(((f_croparea * s_crop + f_noncroparea * s_noncrop) / stderr) ** 2)
     print(f"Num of sample size: {n}")
 
-    if equal_alloc:
-        # equal allocation
-        n_crop = int(n / 2)
-        n_noncrop = int(n - n_crop)
-    else:
-        # strata proportion allocation
-        n_crop = np.round(n * f_croparea)
-        n_noncrop = np.round(n * f_noncroparea)
+    n_crop = int(n / 2)
+    n_noncrop = int(n - n_crop)
+
     print(f"Num sample size for crop: {n_crop}")
     print(f"Num sample size for non-crop: {n_noncrop}")
     return n_crop, n_noncrop
 
 
-def random_inds(binary_map, strata, sample_size):
+def random_inds(
+    binary_map: np.ndarray, strata: int, sample_size: int
+) -> Tuple[np.ndarray, np.ndarray]:
+    # """ Generate random indices for sampling from a binary map."""
     inds = np.where(binary_map == strata)
-    rand_inds = np.random.choice(np.arange(inds[0].shape[0]), size=sample_size, replace=False)
+    rand_inds = np.random.permutation(np.arange(inds[0].shape[0]))[:sample_size]
     rand_px = inds[0][rand_inds]
     rand_py = inds[1][rand_inds]
-    del inds
+    # del inds
     return rand_px, rand_py
 
 
-def get_prj_src():
-    root_dir = os.getcwd()
-    prj_raster = [f for f in os.listdir(root_dir) if f.startswith("prj")][0]
-    return rio.open(prj_raster)
-
-
-def generate_ref_samples(binary_map, n_crop, n_noncrop):
+def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_noncrop: int) -> None:
     """ """
     df_noncrop = pd.DataFrame([], columns=["px", "py", "pred_class"])
     df_noncrop["px"], df_noncrop["py"] = random_inds(binary_map, 0, int(n_noncrop))
     df_noncrop["pred_class"] = 0
 
     df_crop = pd.DataFrame([], columns=["px", "py", "pred_class"])
-    df_crop["px"], df_crop["py"] = random_inds(
-        binary_map, 1, int(n_crop)
-    )  # binary_map, n_crop, n_noncrop TODO
+    df_crop["px"], df_crop["py"] = random_inds(binary_map, 1, int(n_crop))
     df_crop["pred_class"] = 1
 
     df_combined = pd.concat([df_crop, df_noncrop]).reset_index(drop=True)
 
-    # get src
-    src = get_prj_src()
+    aff_transformer = rio.transform.AffineTransformer(meta["transform"])
+    # https://rasterio.readthedocs.io/en/latest/topics/transforms.html
     for r, row in df_combined.iterrows():
-        lx, ly = src.xy(row["px"], row["py"])
+        lx, ly = aff_transformer.xy(row["px"], row["py"])
         df_combined.loc[r, "lx"] = lx
         df_combined.loc[r, "ly"] = ly
 
@@ -247,26 +224,26 @@ def generate_ref_samples(binary_map, n_crop, n_noncrop):
 
     gdf = gpd.GeoDataFrame(df_combined, geometry=gpd.points_from_xy(df_combined.lx, df_combined.ly))
 
-    gdf.crs = src.crs
+    gdf.crs = meta["crs"]
     gdf_ceo = gdf.to_crs("EPSG:4326")
     gdf_ceo["PLOTID"] = gdf_ceo.index
     gdf_ceo["SAMPLEID"] = gdf_ceo.index
 
-    # save to file
     gdf_ceo[["geometry", "PLOTID", "SAMPLEID"]].to_file("ceo_reference_sample.shp", index=False)
 
 
-# reference sample
-def reference_sample_agree(binary_map, ceo_ref1, ceo_ref2):
+def reference_sample_agree(
+    binary_map: np.ndarray, meta: dict, ceo_ref1: str, ceo_ref2: str
+) -> gpd.GeoDataFrame:
     """ """
-    src = get_prj_src()
+
     ceo_set1 = pd.read_csv(ceo_ref1)
     ceo_set2 = pd.read_csv(ceo_ref2)
 
     assert ceo_set1.columns[-1] == ceo_set2.columns[-1]
 
     label_question = ceo_set1.columns[-1]
-    # check for any NANs/ missing answers
+
     print(f"Number of NANs/ missing answers in set 1: {ceo_set1[label_question].isna().sum()}")
     print(f"Number of NANs/ missing answers in set 2: {ceo_set2[label_question].isna().sum()}")
 
@@ -282,7 +259,6 @@ def reference_sample_agree(binary_map, ceo_ref1, ceo_ref2):
         print("Removing duplicates and keeping the first...")
         ceo_set1 = ceo_set1.drop_duplicates(subset="plotid", keep="first")
         ceo_set2 = ceo_set2.drop_duplicates(subset="plotid", keep="first")
-        # print("Number of duplicates removed:")
 
         ceo_set1.set_index("plotid", inplace=True)
         ceo_set2.set_index("plotid", inplace=True)
@@ -293,19 +269,28 @@ def reference_sample_agree(binary_map, ceo_ref1, ceo_ref2):
 
     print(
         "Number of samples that are in agreement: %d out of %d (%.2f%%)"
-        % (ceo_agree.shape[0], ceo_set1.shape[0], ceo_agree.shape[0] / ceo_set1.shape[0] * 100)
+        % (
+            ceo_agree.shape[0],
+            ceo_set1.shape[0],
+            ceo_agree.shape[0] / ceo_set1.shape[0] * 100,
+        )
     )
     ceo_agree_geom = gpd.GeoDataFrame(
-        ceo_agree, geometry=gpd.points_from_xy(ceo_agree.lon, ceo_agree.lat), crs="EPSG:4326"
+        ceo_agree,
+        geometry=gpd.points_from_xy(ceo_agree.lon, ceo_agree.lat),
+        crs="EPSG:4326",
     )
-    ceo_agree_geom = ceo_agree_geom.to_crs(src.crs)
+
+    ceo_agree_geom = ceo_agree_geom.to_crs(meta["crs"])
 
     label_responses = ceo_agree_geom[label_question].unique()
     assert len(label_responses) == 2
 
+    aff_transformer = rio.transform.AffineTransformer(meta["transform"])
     for r, row in ceo_agree_geom.iterrows():
         lon, lat = row["geometry"].y, row["geometry"].x
-        px, py = src.index(lat, lon)  # TODO self.src read from the projected raster
+        px, py = aff_transformer.rowcol(lat, lon)
+
         ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
 
         if label_responses[1].startswith("C") or label_responses[1].startswith("c"):
@@ -321,7 +306,8 @@ def reference_sample_agree(binary_map, ceo_ref1, ceo_ref2):
     return ceo_agree_geom
 
 
-def compute_confusion_matrix(ceo_agree_geom, crop_area_px, noncrop_area_px):
+def compute_confusion_matrix(ceo_agree_geom: gpd.GeoDataFrame) -> np.ndarray:
+    """ """
     y_true = np.array(ceo_agree_geom["Reference label"]).astype(np.uint8)
     y_pred = np.array(ceo_agree_geom["Mapped class"]).astype(np.uint8)
     cm = confusion_matrix(y_true, y_pred).ravel()
@@ -333,21 +319,20 @@ def compute_confusion_matrix(ceo_agree_geom, crop_area_px, noncrop_area_px):
     return cm
 
 
-def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
+def compute_area_estimate(
+    crop_area_px: float, noncrop_area_px: float, cm: np.ndarray, meta: dict
+) -> pd.DataFrame:
 
     tn, fp, fn, tp = cm
 
     tot_area_px = crop_area_px + noncrop_area_px
 
-    # Wh  is the proportion of mapped area for each class
     wh_crop = crop_area_px / tot_area_px
     wh_noncrop = noncrop_area_px / tot_area_px
     print("Proportion of mapped area for each class")
     print("Crop: %.2f" % wh_crop)
     print("Non-crop: %.2f \n" % wh_noncrop)
 
-    # fraction of the proportional area of each class
-    # that was mapped as each category in the confusion matrix
     tp_area = tp / (tp + fp) * wh_crop
     fp_area = fp / (tp + fp) * wh_crop
     fn_area = fn / (fn + tn) * wh_noncrop
@@ -358,7 +343,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
         % (tp_area, fp_area, fn_area, tn_area)
     )
 
-    # User's accuracy
     u_crop = tp_area / (tp_area + fp_area)
     print("User's accuracy")
     print("U_crop = %f" % u_crop)
@@ -366,7 +350,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     u_noncrop = tn_area / (tn_area + fn_area)
     print("U_noncrop = %f \n" % u_noncrop)
 
-    #  estimated variance of user accuracy for each mapped class
     v_u_crop = u_crop * (1 - u_crop) / (tp + fp)
     print("Estimated variance of user accuracy for each mapped class")
     print("V(U)_crop = %f" % v_u_crop)
@@ -374,7 +357,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     v_u_noncrop = u_noncrop * (1 - u_noncrop) / (fn + tn)
     print("V(U)_noncrop = %f \n" % v_u_noncrop)
 
-    # estimated standard error of user accuracy for each mapped class.
     s_u_crop = np.sqrt(v_u_crop)
     print("Estimated standard error of user accuracy for each mapped class")
     print("S(U)_crop = %f" % s_u_crop)
@@ -382,7 +364,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     s_u_noncrop = np.sqrt(v_u_noncrop)
     print("S(U)_noncrop = %f \n" % s_u_noncrop)
 
-    # Get the 95% confidence interval for User's accuracy
     u_crop_err = s_u_crop * 1.96
     print("95% confidence interval for User's accuracy")
     print("95%% CI of User accuracy for crop = %f" % u_crop_err)
@@ -390,8 +371,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     u_noncrop_err = s_u_noncrop * 1.96
     print("95%% CI of User accuracy for noncrop = %f \n" % u_noncrop_err)
 
-    # From 4.2 Producer's accuracy
-    #  producer's accuracy (i.e., recall). We calculate it here in terms of proportion of area.
     p_crop = tp_area / (tp_area + fn_area)
     print("Producer's accuracy")
     print("P_crop = %f" % p_crop)
@@ -399,7 +378,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     p_noncrop = tn_area / (tn_area + fp_area)
     print("P_noncrop = %f \n" % p_noncrop)
 
-    # Nj  is the estimated marginal total number of pixels of each reference class j
     n_j_crop = (crop_area_px * tp) / (tp + fp) + (noncrop_area_px * fn) / (fn + tn)
     print("Estimated marginal total number of pixels of each reference class")
     print("N_j_crop = %f" % n_j_crop)
@@ -415,7 +393,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     )
     print("expr1 noncrop = %f \n" % expr1_noncrop)
 
-    # TODO: long_scalars error
     expr2_crop = p_crop**2 * (
         noncrop_area_px**2 * fn / (fn + tn) * (1 - fn / (fn + tn)) / (fn + tn - 1)
     )
@@ -426,7 +403,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     )
     print("expr2 noncrop = %f \n" % expr2_noncrop)
 
-    # variance of producer's accuracy for each mapped class.
     v_p_crop = (1 / n_j_crop**2) * (expr1_crop + expr2_crop)
     print("Variance of producer's accuracy for each mapped class")
     print("V(P) crop = %f" % v_p_crop)
@@ -434,7 +410,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     v_p_noncrop = (1 / n_j_noncrop**2) * (expr1_noncrop + expr2_noncrop)
     print("V(P) noncrop = %f \n" % v_p_noncrop)
 
-    # stimated standard error of producer accuracy for each mapped class.
     s_p_crop = np.sqrt(v_p_crop)
     print("Estimated standard error of producer accuracy for each mapped class")
     print("S(P) crop = %f" % s_p_crop)
@@ -442,7 +417,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     s_p_noncrop = np.sqrt(v_p_noncrop)
     print("S(P) noncrop = %f \n" % s_p_noncrop)
 
-    # Get the 95% confidence interval for Producer's accuracy
     p_crop_err = s_p_crop * 1.96
     print("95% confidence interval for Producer's accuracy")
     print("95%% CI of Producer accuracy for crop = %f" % p_crop_err)
@@ -450,50 +424,45 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     p_noncrop_err = s_p_noncrop * 1.96
     print("95%% CI of Producer accuracy for noncrop = %f \n" % p_noncrop_err)
 
-    # O is the overall accuracy. We calculate it here in terms of proportion of area.
     acc = tp_area + tn_area
     print("Overall accuracy")
     print("Overall accuracy = %f \n" % acc)
 
-    # V(O)  is the estimated variance of the overall accuracy
     v_acc = wh_crop**2 * u_crop * (1 - u_crop) / (tp + fp - 1) + wh_noncrop**2 * u_noncrop * (
         1 - u_noncrop
     ) / (fn + tn - 1)
     print("Estimated variance of the overall accuracy")
     print("V(O) = %f \n" % v_acc)
 
-    # S(O)  is the estimated standard error of the overall accuracy
     s_acc = np.sqrt(v_acc)
     print("Estimated standard error of the overall accuracy")
     print("S(O) = %f \n" % s_acc)
 
-    # Get the 95% confidence interval for overall accuracy
     acc_err = s_acc * 1.96
     print("95% confidence interval for overall accuracy")
     print("95%% CI of overall accuracy = %f \n" % acc_err)
 
-    # Apixels  is the adjusted map area in units of pixels
     a_pixels_crop = tot_area_px * (tp_area + fn_area)
-    print("Adjusted map area in units of pixels")
-    print("A^[pixels] crop = %f" % a_pixels_crop)
+    print(
+        "Adjusted map area in units of pixels \
+            A^[pixels] crop = %f"
+        % a_pixels_crop
+    )
 
     a_pixels_noncrop = tot_area_px * (tn_area + fp_area)
     print("A^[pixels] noncrop = %f \n" % a_pixels_noncrop)
 
-    # Get pixel size
-    src = get_prj_src()
-    pixel_size = src.transform[0]
+    pixel_size = meta["transform"][0]
 
-    # Aha  is the adjusted map area in units of hectares
     a_ha_crop = a_pixels_crop * (pixel_size * pixel_size) / (100 * 100)
-    print("Adjusted map area in units of hectares")
-    print("A^[ha] crop = %f" % a_ha_crop)
+    print(
+        "Adjusted map area in units of hectares \
+        A^[ha] crop = %f"
+        % a_ha_crop
+    )
 
     a_ha_noncrop = a_pixels_noncrop * (pixel_size * pixel_size) / (100 * 100)
     print("A^[ha] noncrop = %f \n" % a_ha_noncrop)
-
-    # The following equations are used to estimate the standard error for the area.
-    # They are based on the calculations in Olofsson et al., 2014
 
     S_pk_crop = (
         np.sqrt(
@@ -514,7 +483,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     )
     print("S_pk_noncrop = %f \n" % S_pk_noncrop)
 
-    # Multiply  S(pk)  by 1.96 to get the margin of error for the 95% confidence interval
     a_pixels_crop_err = S_pk_crop * 1.96
     print("Margin of error for the 95% confidence interval")
     print("Crop area standard error 95%% confidence interval [pixels] = %f" % a_pixels_crop_err)
@@ -532,8 +500,6 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
     a_ha_noncrop_err = a_pixels_noncrop_err * (pixel_size**2) / (100**2)
     print("Non-crop area standard error 95%% confidence interval [ha] = %f" % a_ha_noncrop_err)
 
-    # Summary of the final estimates of accuracy and area with
-    # standard error at 95% confidence intervals:
     summary = pd.DataFrame(
         [
             [a_ha_crop, a_ha_noncrop],
@@ -562,3 +528,30 @@ def compute_area_estimate(crop_area_px, noncrop_area_px, cm):
 
     summary.round(2)
     return summary
+
+
+def plot_area(summary: pd.DataFrame) -> None:
+    """ """
+    area_class = summary.columns
+    x_pos = np.arange(len(area_class))
+    est_area = summary.loc["Estimated area [ha]"]
+    ci_area = summary.loc["95% CI of area [ha]"]
+
+    fig, ax = plt.subplots()
+    ax.bar(
+        x_pos,
+        est_area,
+        yerr=ci_area,
+        align="center",
+        alpha=0.5,
+        ecolor="black",
+        capsize=10,
+    )
+    ax.set_ylabel("Estimated Area [ha]")
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(area_class)
+    ax.set_title("Area estimation with standard error at 95% confidence interval")
+    ax.yaxis.grid(True)
+
+    plt.tight_layout()
+    plt.show()
