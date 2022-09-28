@@ -100,5 +100,22 @@
             "recall_score": 0.6746,
             "roc_auc_score": 0.9222
         }
+    },
+    "Tanzania_south_2019": {
+        "params": "",
+        "test_metrics": {
+            "accuracy": 0.8689,
+            "f1_score": 0.7896,
+            "precision_score": 0.7792,
+            "recall_score": 0.8003,
+            "roc_auc_score": 0.9287
+        },
+        "val_metrics": {
+            "accuracy": 0.8586,
+            "f1_score": 0.7675,
+            "precision_score": 0.7781,
+            "recall_score": 0.7571,
+            "roc_auc_score": 0.9097
+        }
     }
 }
