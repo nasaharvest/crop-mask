@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import timedelta
 
 from openmapflow.labeled_dataset import LabeledDataset, create_datasets
-from openmapflow.raw_labels import RawLabels
 from openmapflow.constants import LON, LAT
 
 
@@ -44,29 +43,22 @@ datasets = [
     LabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
-        
     ),
-    
     LabeledDataset(
         dataset="open_buildings",
         country="global",
-        
     ),
     LabeledDataset(
         dataset="digitalearthafrica_eastern",
         country="global",
-        
-        
     ),
     LabeledDataset(
         dataset="digitalearthafrica_sahel",
         country="global",
-        
     ),
     LabeledDataset(
         dataset="Ethiopia",
         country="Ethiopia",
-        
     ),
     LabeledDataset(
         dataset="Ethiopia_Tigray_2020",
@@ -75,57 +67,46 @@ datasets = [
     LabeledDataset(
         dataset="Ethiopia_Tigray_2021",
         country="Ethiopia",
-        
     ),
     LabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2019",
         country="Ethiopia",
-        
     ),
     LabeledDataset(
         dataset="Ethiopia_Bure_Jimma_2020",
         country="Ethiopia",
-        
     ),
     LabeledDataset(
         dataset="Argentina_Buenos_Aires",
         country="Argentina",
-        
     ),
     LabeledDataset(
         dataset="Malawi_CEO_2020",
         country="Malawi",
-       
     ),
     LabeledDataset(
         dataset="Malawi_CEO_2019",
         country="Malawi",
-        
     ),
     LabeledDataset(
         dataset="Malawi_FAO",
         country="Malawi",
     ),
-    
     LabeledDataset(
         dataset="Malawi_FAO_corrected",
         country="Malawi",
-        
     ),
     LabeledDataset(
         dataset="Zambia_CEO_2019",
         country="Zambia",
-
     ),
     LabeledDataset(
         dataset="Tanzania_CEO_2019",
         country="Tanzania",
-        
     ),
     LabeledDataset(
         dataset="Malawi_corrected",
         country="Malawi",
-        
     ),
     LabeledDataset(
         dataset="Namibia_CEO_2020",
