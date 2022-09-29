@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import geopandas as gpd
 import rasterio as rio
+from rasterio import transform
 from rasterio.mask import mask
 import cartopy.io.shapereader as shpreader
 from shapely.geometry import box
@@ -168,8 +169,8 @@ def cal_map_area_class(
 
 
 def estimate_num_sample_per_class(
-    f_croparea: float,
-    f_noncroparea: float,
+    crop_area_fraction: float,
+    non_crop_area_fraction: float,
     u_crop: float,
     u_noncrop: float,
     stderr: float = 0.02,
@@ -178,7 +179,7 @@ def estimate_num_sample_per_class(
     s_crop = np.sqrt(u_crop * (1 - u_crop))
     s_noncrop = np.sqrt(u_noncrop * (1 - u_crop))
 
-    n = np.round(((f_croparea * s_crop + f_noncroparea * s_noncrop) / stderr) ** 2)
+    n = np.round(((crop_area_fraction * s_crop + non_crop_area_fraction * s_noncrop) / stderr) ** 2)
     print(f"Num of sample size: {n}")
 
     n_crop = int(n / 2)
@@ -202,7 +203,7 @@ def random_inds(
 
 
 def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_noncrop: int) -> None:
-    """ """
+
     df_noncrop = pd.DataFrame([], columns=["px", "py", "pred_class"])
     df_noncrop["px"], df_noncrop["py"] = random_inds(binary_map, 0, int(n_noncrop))
     df_noncrop["pred_class"] = 0
@@ -213,10 +214,8 @@ def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_nonc
 
     df_combined = pd.concat([df_crop, df_noncrop]).reset_index(drop=True)
 
-    aff_transformer = rio.transform.AffineTransformer(meta["transform"])
-    # https://rasterio.readthedocs.io/en/latest/topics/transforms.html
     for r, row in df_combined.iterrows():
-        lx, ly = aff_transformer.xy(row["px"], row["py"])
+        lx, ly = transform.xy(meta["transform"], row["px"], row["py"])
         df_combined.loc[r, "lx"] = lx
         df_combined.loc[r, "ly"] = ly
 
@@ -235,7 +234,6 @@ def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_nonc
 def reference_sample_agree(
     binary_map: np.ndarray, meta: dict, ceo_ref1: str, ceo_ref2: str
 ) -> gpd.GeoDataFrame:
-    """ """
 
     ceo_set1 = pd.read_csv(ceo_ref1)
     ceo_set2 = pd.read_csv(ceo_ref2)
@@ -286,10 +284,9 @@ def reference_sample_agree(
     label_responses = ceo_agree_geom[label_question].unique()
     assert len(label_responses) == 2
 
-    aff_transformer = rio.transform.AffineTransformer(meta["transform"])
     for r, row in ceo_agree_geom.iterrows():
         lon, lat = row["geometry"].y, row["geometry"].x
-        px, py = aff_transformer.rowcol(lat, lon)
+        px, py = transform.rowcol(meta["transform"], lat, lon)
 
         ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
 
@@ -320,15 +317,15 @@ def compute_confusion_matrix(ceo_agree_geom: gpd.GeoDataFrame) -> np.ndarray:
 
 
 def compute_area_estimate(
-    crop_area_px: float, noncrop_area_px: float, cm: np.ndarray, meta: dict
+    crop_area_px: int, noncrop_area_px: int, cm: np.ndarray, meta: dict
 ) -> pd.DataFrame:
 
     tn, fp, fn, tp = cm
 
-    tot_area_px = crop_area_px + noncrop_area_px
+    total_area_px = crop_area_px + noncrop_area_px
 
-    wh_crop = crop_area_px / tot_area_px
-    wh_noncrop = noncrop_area_px / tot_area_px
+    wh_crop = crop_area_px / total_area_px
+    wh_noncrop = noncrop_area_px / total_area_px
     print("Proportion of mapped area for each class")
     print("Crop: %.2f" % wh_crop)
     print("Non-crop: %.2f \n" % wh_noncrop)
@@ -442,14 +439,14 @@ def compute_area_estimate(
     print("95% confidence interval for overall accuracy")
     print("95%% CI of overall accuracy = %f \n" % acc_err)
 
-    a_pixels_crop = tot_area_px * (tp_area + fn_area)
+    a_pixels_crop = total_area_px * (tp_area + fn_area)
     print(
         "Adjusted map area in units of pixels \
             A^[pixels] crop = %f"
         % a_pixels_crop
     )
 
-    a_pixels_noncrop = tot_area_px * (tn_area + fp_area)
+    a_pixels_noncrop = total_area_px * (tn_area + fp_area)
     print("A^[pixels] noncrop = %f \n" % a_pixels_noncrop)
 
     pixel_size = meta["transform"][0]
@@ -469,7 +466,7 @@ def compute_area_estimate(
             (wh_crop * tp_area - tp_area**2) / (tp + fp - 1)
             + (wh_noncrop * fn_area - fn_area**2) / (fn + tn - 1)
         )
-        * tot_area_px
+        * total_area_px
     )
     print("Standard error for the area")
     print("S_pk_crop = %f" % S_pk_crop)
@@ -479,7 +476,7 @@ def compute_area_estimate(
             (wh_crop * fp_area - fp_area**2) / (tp + fp - 1)
             + (wh_noncrop * tn_area - tn_area**2) / (fn + tn - 1)
         )
-        * tot_area_px
+        * total_area_px
     )
     print("S_pk_noncrop = %f \n" % S_pk_noncrop)
 
@@ -531,7 +528,7 @@ def compute_area_estimate(
 
 
 def plot_area(summary: pd.DataFrame) -> None:
-    """ """
+
     area_class = summary.columns
     x_pos = np.arange(len(area_class))
     est_area = summary.loc["Estimated area [ha]"]
