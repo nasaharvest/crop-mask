@@ -44,7 +44,7 @@ class IntegrationTestArea(TestCase):
         self.assertTrue(ceo_path_2.exists())
 
         roi = load_ne(self.sample_input["country_iso3"], self.sample_input["regions_in_country"])
-        self.assertEqual(roi.shape, (2, 121))
+        self.assertEqual(roi.shape, (2, 122))
 
         map_array, map_meta = load_raster(map_path, roi)
         self.assertEqual(map_array.shape, (6513, 9232))
