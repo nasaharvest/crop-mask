@@ -1,7 +1,8 @@
 import pandas as pd
 from datetime import timedelta
 
-from openmapflow.labeled_dataset import CustomLabeledDataset, create_datasets
+from openmapflow.labeled_dataset import create_datasets
+from openmapflow.labeled_dataset_custom import CustomLabeledDataset
 from openmapflow.raw_labels import RawLabels
 from openmapflow.constants import LON, LAT
 

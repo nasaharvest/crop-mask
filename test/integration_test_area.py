@@ -15,18 +15,20 @@ from src.area_utils import (
 
 home_dir = Path(__file__).parent.parent
 
-map_path = home_dir / "data/test_map.tif"
+map_path = home_dir / "data/test_area/test_map.tif"
 
 ceo_path_1 = (
-    home_dir / "data/ceo-2019-Rwanda-Cropland-(RCMRD-Set-1)-sample-data-2022-08-29_subset.csv"
+    home_dir
+    / "data/test_area/ceo-2019-Rwanda-Cropland-(RCMRD-Set-1)-sample-data-2022-08-29_subset.csv"
 )
 
 ceo_path_2 = (
-    home_dir / "data/ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2022-08-29_subset.csv"
+    home_dir
+    / "data/test_area/ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2022-08-29_subset.csv"
 )
 
 
-class TestAreaUtils(TestCase):
+class IntegrationTestArea(TestCase):
 
     sample_input = {
         "country_iso3": "RWA",
@@ -37,8 +39,12 @@ class TestAreaUtils(TestCase):
     }
 
     def test_area_utils(self):
+        self.assertTrue(map_path.exists())
+        self.assertTrue(ceo_path_1.exists())
+        self.assertTrue(ceo_path_2.exists())
+
         roi = load_ne(self.sample_input["country_iso3"], self.sample_input["regions_in_country"])
-        self.assertEqual(roi.shape, (2, 122))
+        self.assertEqual(roi.shape, (2, 121))
 
         map_array, map_meta = load_raster(map_path, roi)
         self.assertEqual(map_array.shape, (6513, 9232))
@@ -76,3 +82,5 @@ class TestAreaUtils(TestCase):
         self.assertEqual(summary.shape, (8, 2))
         self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 331112.02102444763)
         self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 267357.48621850886)
+
+        # TODO delete files after test

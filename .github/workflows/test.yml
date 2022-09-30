@@ -29,9 +29,7 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
     - name: dvc pull data
-      run: |
-        dvc pull $(openmapflow datapath DATASETS) -f
-        dvc pull $(openmapflow datapath MODELS) -f
+      run: dvc pull -f
 
     - name: Integration test - Project
       run: |
@@ -53,6 +51,9 @@ jobs:
       
     - name: Integration test - Model results are consistent
       run: python -m unittest test/integration_test_model_evaluation.py
+
+    - name: Integration test - Area
+      run: python -m unittest test/integration_test_area.py
 
    
 
