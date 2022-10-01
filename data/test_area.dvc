@@ -1,0 +1,5 @@
+outs:
+- md5: d33c98ccef7f8028d8406394b60a922b.dir
+  size: 240582167
+  nfiles: 3
+  path: test_area
