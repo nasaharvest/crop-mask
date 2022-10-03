@@ -83,5 +83,56 @@
             "recall_score": 0.6628,
             "roc_auc_score": 0.8006
         }
+    },
+    "Tanzania-2019": {
+        "params": "",
+        "test_metrics": {
+            "accuracy": 0.8513,
+            "f1_score": 0.7354,
+            "precision_score": 0.8112,
+            "recall_score": 0.6725,
+            "roc_auc_score": 0.9195
+        },
+        "val_metrics": {
+            "accuracy": 0.843,
+            "f1_score": 0.7249,
+            "precision_score": 0.7877,
+            "recall_score": 0.6714,
+            "roc_auc_score": 0.8989
+        }
+    },
+    "Tanzania_2019_skip_era5": {
+        "params": "",
+        "test_metrics": {
+            "accuracy": 0.8616,
+            "f1_score": 0.7504,
+            "precision_score": 0.8413,
+            "recall_score": 0.6773,
+            "roc_auc_score": 0.9277
+        },
+        "val_metrics": {
+            "accuracy": 0.864,
+            "f1_score": 0.7535,
+            "precision_score": 0.8534,
+            "recall_score": 0.6746,
+            "roc_auc_score": 0.9222
+        }
+    },
+    "Tanzania_south_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/wki76kzz",
+        "test_metrics": {
+            "accuracy": 0.8743,
+            "f1_score": 0.7816,
+            "precision_score": 0.8388,
+            "recall_score": 0.7316,
+            "roc_auc_score": 0.9339
+        },
+        "val_metrics": {
+            "accuracy": 0.8478,
+            "f1_score": 0.7312,
+            "precision_score": 0.8027,
+            "recall_score": 0.6714,
+            "roc_auc_score": 0.911
+        }
     }
 }

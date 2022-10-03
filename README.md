@@ -1,3 +1,4 @@
+
 # Crop Map Generation
 
 [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/test.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions/workflows/test.yml) [![Status](https://github.com/nasaharvest/crop-mask/actions/workflows/deploy.yml/badge.svg)](https://github.com/nasaharvest/crop-mask/actions/workflows/deploy.yml)
@@ -62,6 +63,30 @@ python -m unittest # unit tests
 # Integration tests
 python -m unittest test/integration_test_model_bbox.py
 python -m unittest test/integration_test_model_evaluation.py
+```
+
+## Steps to resolve module related issues on a Windows environment
+
+```bash
+I]Steps to resolve the issue related with 'fiona' and 'geopandas' module
+
+pip uninstall geopandas  #if the package is already installed in the environment
+pip install pipwin
+pipwin install gdal
+pipwin install fiona
+pip install geopandas
+
+
+II]Steps to resolve the issue related with 'netcdf' module
+
+pip uninstall netcdf4
+pip install netcdf4
+
+
+III]Steps to resolve the warning encountered with the 'pyproj' module
+mamba remove pyproj or pip uninstall pyproj
+pip install pyproj
+
 ```
 
 ## Previously generated crop maps
