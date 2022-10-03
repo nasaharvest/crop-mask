@@ -49,11 +49,10 @@ eo_data_skipped      48
 
 Togo (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete          1581
+eo_data_complete          1582
 eo_data_skipped             45
 eo_data_missing_values       4
-eo_data_duplicate            1
-✔ training amount: 1003, positive class: 54.5%
+✔ training amount: 1004, positive class: 54.5%
 ✔ validation amount: 268, positive class: 51.1%
 ✔ testing amount: 310, positive class: 34.5%
 
@@ -73,12 +72,12 @@ eo_data_duplicate            1
 
 Uganda (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete          3200
+eo_data_complete          3202
 eo_data_export_failed      274
 eo_data_skipped            175
-eo_data_duplicate           16
+eo_data_duplicate           14
 eo_data_missing_values       5
-✔ training amount: 2290, positive class: 32.1%
+✔ training amount: 2292, positive class: 32.1%
 ✔ validation amount: 454, positive class: 13.2%
 ✔ testing amount: 456, positive class: 11.4%
 
@@ -234,10 +233,10 @@ eo_data_skipped      100
 
 Hawaii_CEO_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete          954
+eo_data_complete          967
 eo_data_missing_values    151
-eo_data_waiting            83
-eo_data_duplicate          12
-✔ validation amount: 493, positive class: 3.4%
-✔ testing amount: 461, positive class: 1.7%
+eo_data_waiting            82
+✔ training amount: 392, positive class: 3.8%
+✔ validation amount: 267, positive class: 2.6%
+✔ testing amount: 308, positive class: 1.3%
 
