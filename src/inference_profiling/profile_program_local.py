@@ -8,15 +8,21 @@ import time
 from subprocess import PIPE
 import os
 import csv
-import sys
+from argparse import ArgumentParser
 
+# Create a parser
+parser = ArgumentParser()
 
-# img_list=list(map(str,sys.argv[1:]))
+parser.add_argument('--batch', required=True)
+parser.add_argument('--model_name', required=True)
 
-n = sys.argv[1]
-model_name = sys.argv[2]
+args = parser.parse_args()
+
 # define the command for the subprocess
-cmd = ["python", "test_models.py"]+[n, model_name]
+model_name = args.model_name
+batch = args.batch
+
+cmd = ["python", "test_models.py"]+[batch, model_name]
 print(cmd)
 
 # Start the timer
@@ -53,14 +59,17 @@ while (process.is_running()):
         peak_sys_cpu = sys_cpu
     if proc_cpu > peak_proc_cpu:
         peak_proc_cpu = proc_cpu
+    if proc_mem > peak_proc_mem:
+        peak_proc_mem = proc_mem
     if proc_mem == 0.0:
         break
 
     # Print the results to the monitor for each subprocess run.
 end_time = time.time()
+execution_time = end_time-start_time
 
 # Printing the results
-print("For batch size of {} the results are \n".format(n))
+print("For batch size of {} the results are \n".format(batch))
 print(process.stdout.read())
 print("\n Peak process cpu usage is {} %".format(peak_proc_cpu))
 print("Peak process memory usage is {} %".format(peak_proc_mem))
@@ -69,11 +78,12 @@ print("\n Peak system memory usage is {} %".format(peak_sys_mem))
 print("Peak system CPU utilization is {} %".format(peak_sys_cpu))
 
 # Logging the results into a csv file
+
 with open('local_model_tests.csv', 'a') as file:
     writer = csv.writer(file)
-    if os.stat('windows_logs.csv').st_size == 0:
+    if os.stat('local_model_tests.csv').st_size == 0:
         writer.writerow(['Model_name', 'Batch_size', 'total_execution_time', 'Peak_cpu_percent',
                          'Peak_memory_percent', 'peak_proc_cpu', 'peak_proc_mem'])
-    data = [model_name, n, end_time-start_time, peak_sys_cpu, peak_sys_mem, peak_proc_cpu,
+    data = [model_name, batch, execution_time, peak_sys_cpu, peak_sys_mem, peak_proc_cpu,
             peak_proc_mem]
     writer.writerow(data)

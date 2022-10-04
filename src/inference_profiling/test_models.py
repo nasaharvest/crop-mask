@@ -9,19 +9,19 @@
 import torch
 import sys
 
-# batch=int(input("Enter the batch size"))
+# Defining the timesteps and the bands
 timesteps = 3
 bands = 18
 
+# Obtaining batch size and model name from input
 batch_size = int(sys.argv[1])
 model_name = sys.argv[2]
 
 try:
+    # Loading the model from the .pt file
     model = torch.jit.load(model_name + ".pt").eval()
 
     dummy_data = torch.randn((batch_size, timesteps, bands))
-    # print(dummy_data)
-    # print(dummy_data.shape)
     print("\n For batch size of " + str(batch_size))
 
     # Making predictions on the data
