@@ -65,15 +65,6 @@ No_of_requests	total_execution_time	Peak_cpu_percent	Peak_memory_percent
 ==========================================================================
 Multiple models deployed on Google cloud run environment
 =========================================================================
-Memory utilization was almost always ~50%
-
-CPU performance 53% for 10 requests and around 80% for 1000 requests
-
-Container count 30 for 10 requests and around 139 for 1000 requests
-
-Container startup latency 2s for 10 requests and 4-5s for 1000 requests
-
-
 -===========================================
 for 1 request:
 
