@@ -1,7 +1,8 @@
 import pandas as pd
 from datetime import timedelta
 
-from openmapflow.labeled_dataset import CustomLabeledDataset, create_datasets
+from openmapflow.labeled_dataset import create_datasets
+from openmapflow.labeled_dataset_custom import CustomLabeledDataset
 from openmapflow.raw_labels import RawLabels
 from openmapflow.constants import LON, LAT
 
@@ -610,6 +611,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -618,6 +620,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,

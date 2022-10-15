@@ -100,5 +100,39 @@
             "recall_score": 0.6746,
             "roc_auc_score": 0.9222
         }
+    },
+    "Tanzania_south_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/wki76kzz",
+        "test_metrics": {
+            "accuracy": 0.8743,
+            "f1_score": 0.7816,
+            "precision_score": 0.8388,
+            "recall_score": 0.7316,
+            "roc_auc_score": 0.9339
+        },
+        "val_metrics": {
+            "accuracy": 0.8478,
+            "f1_score": 0.7312,
+            "precision_score": 0.8027,
+            "recall_score": 0.6714,
+            "roc_auc_score": 0.911
+        }
+    },
+    "Zambia_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/89sy43tj",
+        "test_metrics": {
+            "accuracy": 0.9537,
+            "f1_score": 0.5556,
+            "precision_score": 0.4348,
+            "recall_score": 0.7692,
+            "roc_auc_score": 0.9724
+        },
+        "val_metrics": {
+            "accuracy": 0.9531,
+            "f1_score": 0.5283,
+            "precision_score": 0.4118,
+            "recall_score": 0.7368,
+            "roc_auc_score": 0.9431
+        }
     }
 }
