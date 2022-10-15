@@ -15,7 +15,11 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
-      run: pip install openmapflow 'dvc[gs]'
+      run: |
+        pip install openmapflow 'dvc[gs]'
+        export OPENMAPFLOW_MODELS="Tanzania_south_2019 Zambia_2019"
+        openmapflow deploy
+        
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
