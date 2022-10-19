@@ -1,8 +1,9 @@
 black
 flake8
 mypy==0.931
-openmapflow[data]==0.2.1rc2
 dvc[gs]
+openmapflow[data]==0.2.1rc2
 pytorch-lightning==0.7.1
+scikit-learn
 types-python-dateutil
 types-requests
