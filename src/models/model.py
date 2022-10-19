@@ -19,10 +19,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
 )
-from cropharvest.bands import ERA5_BANDS
-from cropharvest.engineer import BANDS
-from cropharvest.countries import BBox
-
+from openmapflow.bands import ERA5_BANDS, BANDS
+from openmapflow.bbox import BBox
 from openmapflow.constants import SUBSET
 from openmapflow.config import DataPaths, PROJECT_ROOT, DATA_DIR
 from datasets import datasets

@@ -2,7 +2,7 @@
 Script that uses argument parameters to train an individual model
 """
 from argparse import ArgumentParser
-from cropharvest.countries import BBox
+from openmapflow.bbox import BBox
 
 from src.bboxes import bboxes
 from src.pipeline_funcs import train_model
