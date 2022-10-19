@@ -1,4 +1,4 @@
-from cropharvest.countries import BBox
+from openmapflow.bbox import BBox
 
 bboxes = {
     "East_Africa": BBox(min_lat=-11.829, max_lat=6.003, min_lon=28.430, max_lon=42.284),
