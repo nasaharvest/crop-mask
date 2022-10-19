@@ -28,8 +28,20 @@ jobs:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
-    - name: dvc pull data
-      run: dvc pull -f
+    - name: Run data pipeline
+      run: | 
+        dvc pull -f
+        openmapflow create-datasets --non-interactive
+        dvc commit -f
+        dvc push
+    - name: Push automated dataset updates
+      run: | 
+        git config --global user.name 'Dataset bot'
+        git config --global user.email 'dataset-bot@users.noreply.github.com'
+        git pull
+        git add data
+        git commit -m "Automated dataset updates" || echo "No updates to commit"
+        git push
 
     - name: Integration test - Project
       run: |
