@@ -1,21 +1,5 @@
-earthengine-api
-mypy==0.931
 black
-pandas
-xarray==0.17.0
-netcdf4
-rasterio
-matplotlib
-pyproj
-tqdm
-geopandas
-scikit-learn
 flake8
-google-cloud-storage
-python-dotenv
-pytorch-lightning==0.7.1 # lots of API changes
-wandb
-types-requests
-types-python-dateutil
+mypy==0.931
 openmapflow[data]==0.2.1rc2
 dvc[gs]
