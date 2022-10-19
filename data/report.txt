@@ -198,9 +198,10 @@ eo_data_duplicate      5
 Zambia_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete          2103
-eo_data_skipped            293
+eo_data_waiting            293
 eo_data_missing_values       3
-✔ training amount: 2103, positive class: 3.7%
+✔ validation amount: 1066, positive class: 3.6%
+✔ testing amount: 1037, positive class: 3.8%
 
 
 
