@@ -11,12 +11,14 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v2
-    - name: install mamba
-      uses: mamba-org/provision-with-micromamba@main
+    - name: Clone repo
+      uses: actions/checkout@v2
+    - name: Set up python
+      uses: actions/setup-python@v2
       with:
-        environment-file: environment-dev.yml
-        environment-name: landcover-mapping
+        python-version: 3.7
+    - name: Install dependencies
+      run: pip install -r requirements.txt
     - name: Run type checks
       run: mypy .
     - name: Run flake8
