@@ -7,3 +7,4 @@ pytorch-lightning==0.7.1
 scikit-learn
 types-python-dateutil
 types-requests
+wandb
