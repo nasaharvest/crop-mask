@@ -19,6 +19,24 @@ label_col = "is_crop"
 raw_dir = PROJECT_ROOT / DataPaths.RAW_LABELS
 
 
+def join_unique(values):
+    return ",".join([str(i) for i in values.unique()])
+
+
+def ceo_merge(df: pd.DataFrame):
+    df["num_labelers"] = 1
+    df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+        {
+            label_col: "mean",
+            "num_labelers": "sum",
+            "plotid": join_unique,
+            "sampleid": join_unique,
+            "email": join_unique,
+        }
+    )
+    return df
+
+
 class GeowikiLandcover2017(LabeledDataset):
     def load_labels(self):
         df = pd.read_csv(raw_dir / "geowiki_landcover_2017" / "local_all_2.txt", sep="\t")
@@ -131,7 +149,37 @@ class Mali(LabeledDataset):
         return df
 
 
-datasets: List[LabeledDataset] = [Kenya(), Mali()]
+class MaliLowerCEO2019(LabeledDataset):
+    def load_labels(self):
+        folder = raw_dir / "Mali_lower_CEO_2019"
+        ceo_files = [
+            f"ceo-2019-Mali-USAID-ZOIS-lower-(Set-{i})--sample-data-2021-11-29.csv" for i in [1, 2]
+        ]
+        df = pd.concat([pd.read_csv(folder / file) for file in ceo_files], ignore_index=True)
+        df[label_col] = df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+        df[label_col] = df[label_col].astype(int)
+        df = ceo_merge(df)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+class MaliUpperCEO2019(LabeledDataset):
+    def load_labels(self):
+        folder = raw_dir / "Mali_upper_CEO_2019"
+        ceo_files = [
+            f"ceo-2019-Mali-USAID-ZOIS-upper-(Set-{i})-sample-data-2021-11-25.csv" for i in [1, 2]
+        ]
+        df = pd.concat([pd.read_csv(folder / file) for file in ceo_files], ignore_index=True)
+        df[label_col] = df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
+        df[label_col] = df[label_col].astype(int)
+        df = ceo_merge(df)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+datasets: List[LabeledDataset] = [Kenya(), Mali(), MaliLowerCEO2019(), MaliUpperCEO2019()]
 
 if __name__ == "__main__":
     create_datasets(datasets)
