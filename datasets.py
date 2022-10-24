@@ -94,7 +94,44 @@ class Kenya(LabeledDataset):
         return df
 
 
-datasets: List[LabeledDataset] = [Kenya()]
+class Mali(LabeledDataset):
+    def load_labels(self):
+        df1 = read_zip(raw_dir / "Mali" / "mali_noncrop_2019.zip")
+        df2 = read_zip(raw_dir / "Mali" / "sikasso_clean_fields")
+        df3 = read_zip(raw_dir / "Mali" / "segou_bounds_07212020.zip")
+
+        # Skip nans
+        df2 = df2[df2.geometry.notna()].copy()
+
+        # Set coordinates
+        for df in [df1, df2, df3]:
+            print(df.geometry.notna().all())
+            df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
+            df = df.round({LON: 8, LAT: 8})
+
+        # Set dates
+        for df in [df1, df2, df3]:
+            df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+
+        # Bounds in Segou cover 2 years
+        df4 = df3.copy()
+        df4[START], df4[END] = date(2018, 1, 1), date(2019, 12, 31)
+
+        # Set label
+        df1[label_col] = 0.0
+        for df in [df2, df3, df4]:
+            df[label_col] = 1.0
+
+        # Drop duplicates
+        df2 = df2.drop_duplicates(subset=[LAT, LON, START, END])
+        df = pd.concat([df1, df2, df3, df4], ignore_index=True)
+        df = df.round({LON: 8, LAT: 8})
+        df = df.drop_duplicates(subset=[LAT, LON, START, END])
+        df[SUBSET] = "training"
+        return df
+
+
+datasets: List[LabeledDataset] = [Kenya(), Mali()]
 
 if __name__ == "__main__":
     create_datasets(datasets)
