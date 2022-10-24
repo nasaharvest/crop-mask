@@ -33,6 +33,8 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
     - name: Run data pipeline
+      env:  
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       run: | 
         dvc pull -f
         openmapflow create-datasets --non-interactive
