@@ -23,7 +23,7 @@ def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
 
-def ceo_merge(df: pd.DataFrame):
+def ceo_agreement(df: pd.DataFrame):
     df["num_labelers"] = 1
     df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
         {
@@ -158,7 +158,7 @@ class MaliLowerCEO2019(LabeledDataset):
         df = pd.concat([pd.read_csv(folder / file) for file in ceo_files], ignore_index=True)
         df[label_col] = df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
         df[label_col] = df[label_col].astype(int)
-        df = ceo_merge(df)
+        df = ceo_agreement(df)
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
@@ -173,10 +173,46 @@ class MaliUpperCEO2019(LabeledDataset):
         df = pd.concat([pd.read_csv(folder / file) for file in ceo_files], ignore_index=True)
         df[label_col] = df["Does this point lie on a crop or non-crop pixel?"] == "Crop"
         df[label_col] = df[label_col].astype(int)
-        df = ceo_merge(df)
+        df = ceo_agreement(df)
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
+
+
+class Togo2019(LabeledDataset):
+    def load_labels(self):
+        df1 = read_zip(raw_dir / "Togo" / "crop_merged_v2.zip")
+        df2 = read_zip(raw_dir / "Togo" / "noncrop_merged_v2.zip")
+        df3 = read_zip(raw_dir / "Togo" / "random_sample_hrk.zip")
+        df4 = read_zip(raw_dir / "Togo" / "random_sample_cn.zip")
+        df5 = read_zip(raw_dir / "Togo" / "BB_random_sample_1k.zip")
+        df6 = read_zip(raw_dir / "Togo" / "random_sample_bm.zip")
+
+        # Set coordinates
+        df3[LAT], df3[LON] = get_lat_lon_from_centroid(df3.geometry, src_crs=32631)
+        for df in [df1, df2, df4, df5, df6]:
+            df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
+
+        # Skip nans
+        df3 = df3[df3["hrk-label"].notna()].copy()
+
+        # Set class
+        df1[label_col] = 1.0
+        df2[label_col] = 0.0
+        df3[label_col] = df3["hrk-label"].astype(int)
+        df4[label_col] = df4["cn_labels"].astype(int)
+        df5[label_col] = df5["bb_label"].astype(int)
+        df6[label_col] = df6["bm_labels"].astype(int)
+
+        # Set subsets
+        df1[SUBSET] = train_val_test_split(df1.index, 0.2, 0.0)
+        df2[SUBSET] = train_val_test_split(df2.index, 0.2, 0.0)
+        test_df = pd.concat([df3, df4, df5, df6], ignore_index=True)
+        test_df["num_labelers"] = 1
+        test_df = test_df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {label_col: "mean", "num_labelers": "sum", "id": join_unique}
+        )
+        test_df[SUBSET] = "testing"
 
 
 datasets: List[LabeledDataset] = [Kenya(), Mali(), MaliLowerCEO2019(), MaliUpperCEO2019()]
