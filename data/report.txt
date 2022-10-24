@@ -20,10 +20,9 @@ eo_data_duplicate     16
 
 MaliLowerCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     546
+eo_data_complete     547
 eo_data_duplicate     74
-eo_data_exporting      1
-✖ validation: 281 labels, but 280 features
+✔ validation amount: 281
 ✔ testing amount: 266
 
 
