@@ -8,3 +8,11 @@ eo_data_duplicate      49
 ✔ validation amount: 844
 ✔ testing amount: 869
 
+
+
+Mali (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete     881
+eo_data_duplicate     16
+✔ training amount: 881
+
