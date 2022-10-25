@@ -1,0 +1,10 @@
+black
+flake8
+mypy==0.931
+dvc[gs]
+openmapflow[data]
+pytorch-lightning==0.7.1
+scikit-learn
+types-python-dateutil
+types-requests
+wandb
