@@ -1,4 +1,5 @@
 black
+cartopy
 flake8
 mypy==0.931
 dvc[gs]
