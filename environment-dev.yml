@@ -8,6 +8,7 @@ dependencies:
     - black
     - scikit-learn
     - flake8
+    - cartopy
     - pip:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
