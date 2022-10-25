@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import Dataset
 
 from openmapflow.constants import CLASS_PROB, LAT, LON, START, END, MONTHS, EO_DATA
-from cropharvest.countries import BBox
+from openmapflow.bbox import BBox
 
 from typing import cast, Any, Tuple, Optional, List, Dict, Union
 

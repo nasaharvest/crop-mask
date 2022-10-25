@@ -226,7 +226,15 @@ eo_data_complete    178
 Namibia_CEO_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1100
-eo_data_skipped      100
-✔ validation amount: 567, positive class: 1.8%
-✔ testing amount: 533, positive class: 1.1%
+eo_data_waiting      100
+✔ training amount: 231, positive class: 1.7%
+✔ validation amount: 425, positive class: 1.6%
+✔ testing amount: 444, positive class: 1.1%
+
+
+
+Namibia_WFP (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    184
+✔ training amount: 184, positive class: 100.0%
 
