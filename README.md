@@ -38,16 +38,15 @@ Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
 #### 1. For development 
 Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) installed.
 ```bash
-conda install mamba -n base -c conda-forge  # Install mamba
-mamba env create -f environment-dev.yml     # Create environment with mamba (faster)
-conda activate landcover-mapping            # Activate environment
+python -m venv venv                         # Create environment  
+source venv/bin/activate                    # Activate environment
+pip install -r requirements.txt             # Install dependencies
 gcloud auth application-default login       # Authenticates with Google Cloud
 ```
 
 #### 2. For shapefile notebook
 ```bash
-conda env create -f environment-lite.yml    # Create environment
-conda activate landcover-lite               # Activate environment
+pip install cartopy jupyter geopandas
 jupyter notebook
 ```
 
