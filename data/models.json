@@ -17,20 +17,20 @@
         }
     },
     "Namibia_North_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/38qba2db",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/5s4lx1yd",
         "test_metrics": {
-            "accuracy": 0.9812,
-            "f1_score": 0.0,
-            "precision_score": 0.0,
-            "recall_score": 0.0,
-            "roc_auc_score": 0.6388
+            "accuracy": 0.9685,
+            "f1_score": 0.125,
+            "precision_score": 0.0909,
+            "recall_score": 0.2,
+            "roc_auc_score": 0.8155
         },
         "val_metrics": {
-            "accuracy": 0.963,
-            "f1_score": 0.0,
-            "precision_score": 0.0,
-            "recall_score": 0.0,
-            "roc_auc_score": 0.6223
+            "accuracy": 0.9365,
+            "f1_score": 0.129,
+            "precision_score": 0.0833,
+            "recall_score": 0.2857,
+            "roc_auc_score": 0.8609
         }
     },
     "Rwanda_2019": {
