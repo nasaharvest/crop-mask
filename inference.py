@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from cropharvest.inference import Inference
+from openmapflow.inference import Inference
 from openmapflow.config import PROJECT_ROOT, DataPaths
 from src.models.model import Model
 
