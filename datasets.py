@@ -708,6 +708,30 @@ datasets = [
             ),
         ),
     ),
+    CustomLabeledDataset(
+        dataset="Sudan_Blue_Nile_CEO_2019",
+        country="Sudan",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
 ]
 
 if __name__ == "__main__":
