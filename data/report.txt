@@ -29,9 +29,8 @@ eo_data_duplicate     74
 
 MaliUpperCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     654
+eo_data_complete     655
 eo_data_duplicate     47
-eo_data_exporting      1
 ✔ validation amount: 330
-✖ testing: 325 labels, but 324 features
+✔ testing amount: 325
 
