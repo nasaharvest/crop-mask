@@ -40,6 +40,8 @@ def train_model(
     hparams, offline: bool = False
 ) -> Tuple[pl.LightningModule, Dict[str, Dict[str, Any]]]:
 
+    hparams = validate(hparams)
+
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
         min_delta=0.00,
