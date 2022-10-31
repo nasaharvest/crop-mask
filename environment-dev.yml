@@ -14,5 +14,5 @@ dependencies:
           - wandb
           - types-requests
           - types-python-dateutil
-          - openmapflow==0.2.1rc2
+          - openmapflow[data]==0.2.1
           - dvc[gs]
