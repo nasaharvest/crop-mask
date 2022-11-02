@@ -29,6 +29,7 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
         condition = ne_gdf["adm1_code"].str.startswith(country_code)
         boundary = ne_gdf[condition].copy()
         print("Entire country found!")
+        return boundary
 
     else:
         available_regions = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)][
