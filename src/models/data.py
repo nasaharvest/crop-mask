@@ -5,8 +5,7 @@ import pandas as pd
 import torch
 from dateutil.relativedelta import relativedelta
 from openmapflow.bbox import BBox
-from openmapflow.constants import (CLASS_PROB, END, EO_DATA, LAT, LON, MONTHS,
-                                   START)
+from openmapflow.constants import CLASS_PROB, END, EO_DATA, LAT, LON, MONTHS, START
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
