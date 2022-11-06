@@ -17,6 +17,11 @@ jobs:
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
+    - name: debug
+      run: |
+        which python
+        python --version
+        python train.py --epochs 2 --model_name test_model_81
     - name: isort
       run: isort src test --check --diff
     - name: black
