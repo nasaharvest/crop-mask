@@ -41,4 +41,6 @@ print(
 )
 
 _, metrics = train_model(hparams)
+print("Returned metrics:")
 print(metrics)
+print("Done")

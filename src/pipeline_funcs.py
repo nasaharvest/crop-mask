@@ -79,15 +79,12 @@ def train_model(
 
     trainer.fit(model)
 
-    print("Running evaluation on best model")
     model, metrics = run_evaluation(
         model_ckpt_path=PROJECT_ROOT / DataPaths.MODELS / f"{hparams.model_name}.ckpt"
     )
 
-    print("Saving model")
     model.save()
 
-    print("Returning model and metrics")
     return model, metrics
 
 
