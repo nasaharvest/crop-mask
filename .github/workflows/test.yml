@@ -34,12 +34,6 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
     - name: dvc pull data
       run: dvc pull -f
-
-    - name: debug
-      run: |
-        which python
-        python --version
-        python train.py --epochs 2 --model_name test_model_81
     - name: Integration test - Project
       run: |
         openmapflow cp templates/integration_test_project.py .
