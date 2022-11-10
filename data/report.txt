@@ -57,12 +57,12 @@ eo_data_missing_values       4
 
 Rwanda (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete          1361
-eo_data_missing_values       3
+eo_data_complete          1362
+eo_data_missing_values       2
 eo_data_duplicate            1
 ✔ training amount: 286, positive class: 35.0%
 ✔ validation amount: 521, positive class: 33.0%
-✔ testing amount: 554, positive class: 34.5%
+✔ testing amount: 555, positive class: 34.4%
 
 
 

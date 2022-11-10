@@ -12,6 +12,8 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
     - name: install mamba
       uses: mamba-org/provision-with-micromamba@main
       with:
