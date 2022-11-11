@@ -170,7 +170,6 @@ def _set_label_metadata(
 
 def _set_eo_columns(df) -> pd.DataFrame:
     df[EO_STATUS] = EO_STATUS_WAITING
-    df.loc[df[CLASS_PROB] == 0.5, EO_STATUS] = EO_STATUS_SKIPPED
     for col in [EO_DATA, EO_LAT, EO_LON, EO_FILE]:
         df[col] = None
     return df

@@ -15,6 +15,7 @@ from openmapflow.constants import (
     EO_LAT,
     EO_LON,
     EO_STATUS,
+    EO_STATUS_SKIPPED,
     LABEL_DUR,
     LABELER_NAMES,
     LAT,
@@ -92,6 +93,7 @@ class CustomLabeledDataset(LabeledDataset):
         )
         df[COUNTRY] = self.country
         df[DATASET] = self.dataset
+        df.loc[df[CLASS_PROB] == 0.5, EO_STATUS] = EO_STATUS_SKIPPED
 
         df = df.reset_index(drop=True)
         df.to_csv(self.df_path, index=False)
