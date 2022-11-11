@@ -16,7 +16,6 @@ from openmapflow.constants import (
     EO_LAT,
     EO_LON,
     EO_STATUS,
-    EO_STATUS_SKIPPED,
     EO_STATUS_WAITING,
     LABEL_DUR,
     LABELER_NAMES,
