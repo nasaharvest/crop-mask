@@ -1,9 +1,8 @@
 import math
+from typing import List, Optional, Tuple
 
 import torch
 from torch import nn
-
-from typing import List, Tuple, Optional
 
 
 class UnrolledLSTM(nn.Module):
