@@ -6,7 +6,7 @@ eo_data_complete          34637
 eo_data_export_failed       842
 eo_data_missing_values      379
 eo_data_duplicate             8
-✔ training amount: 34637, positive class: 21.0%
+✔ training amount: 34637, positive class: 21.0%, disagreement: 1.1%
 
 
 
@@ -15,9 +15,9 @@ Kenya (Timesteps: 24)
 eo_data_complete          8591
 eo_data_duplicate           58
 eo_data_missing_values      10
-✔ training amount: 6856, positive class: 68.5%
-✔ validation amount: 913, positive class: 70.5%
-✔ testing amount: 822, positive class: 68.9%
+✔ training amount: 6856, positive class: 68.5%, disagreement: 0.0%
+✔ validation amount: 913, positive class: 70.5%, disagreement: 0.0%
+✔ testing amount: 822, positive class: 68.9%, disagreement: 0.0%
 
 
 
@@ -25,23 +25,23 @@ Mali (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     881
 eo_data_duplicate     16
-✔ training amount: 881, positive class: 83.9%
+✔ training amount: 881, positive class: 83.9%, disagreement: 0.0%
 
 
 
 Mali_lower_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    621
-✔ validation amount: 309, positive class: 35.3%
-✔ testing amount: 312, positive class: 30.1%
+✔ validation amount: 309, positive class: 35.3%, disagreement: 11.0%
+✔ testing amount: 312, positive class: 30.1%, disagreement: 13.1%
 
 
 
 Mali_upper_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    702
-✔ validation amount: 363, positive class: 3.6%
-✔ testing amount: 339, positive class: 5.0%
+✔ validation amount: 363, positive class: 3.6%, disagreement: 8.8%
+✔ testing amount: 339, positive class: 5.0%, disagreement: 4.7%
 
 
 
@@ -49,9 +49,9 @@ Togo (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete          1627
 eo_data_missing_values       4
-✔ training amount: 1004, positive class: 54.5%
-✔ validation amount: 268, positive class: 51.1%
-✔ testing amount: 355, positive class: 30.1%
+✔ training amount: 1004, positive class: 54.5%, disagreement: 0.0%
+✔ validation amount: 268, positive class: 51.1%, disagreement: 0.0%
+✔ testing amount: 355, positive class: 30.1%, disagreement: 12.7%
 
 
 
@@ -60,9 +60,9 @@ Rwanda (Timesteps: 24)
 eo_data_complete          1362
 eo_data_missing_values       2
 eo_data_duplicate            1
-✔ training amount: 286, positive class: 35.0%
-✔ validation amount: 521, positive class: 33.0%
-✔ testing amount: 555, positive class: 34.4%
+✔ training amount: 286, positive class: 35.0%, disagreement: 0.0%
+✔ validation amount: 521, positive class: 33.0%, disagreement: 0.2%
+✔ testing amount: 555, positive class: 34.4%, disagreement: 0.0%
 
 
 
@@ -72,9 +72,9 @@ eo_data_complete          3206
 eo_data_export_failed      274
 eo_data_duplicate          185
 eo_data_missing_values       5
-✔ training amount: 2292, positive class: 32.1%
-✔ validation amount: 457, positive class: 13.1%
-✔ testing amount: 457, positive class: 11.4%
+✔ training amount: 2292, positive class: 32.1%, disagreement: 0.0%
+✔ validation amount: 457, positive class: 13.1%, disagreement: 0.7%
+✔ testing amount: 457, positive class: 11.4%, disagreement: 0.2%
 
 
 
@@ -82,7 +82,7 @@ open_buildings (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     8117
 eo_data_duplicate       4
-✔ training amount: 8117, positive class: 0.0%
+✔ training amount: 8117, positive class: 0.0%, disagreement: 0.0%
 
 
 
@@ -90,7 +90,7 @@ digitalearthafrica_eastern (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete          4447
 eo_data_missing_values       5
-✔ training amount: 4447, positive class: 49.4%
+✔ training amount: 4447, positive class: 49.4%, disagreement: 0.0%
 
 
 
@@ -100,7 +100,7 @@ eo_data_complete          1661
 eo_data_duplicate           18
 eo_data_missing_values       3
 eo_data_export_failed        1
-✔ training amount: 1661, positive class: 41.6%
+✔ training amount: 1661, positive class: 41.6%, disagreement: 0.0%
 
 
 
@@ -108,7 +108,7 @@ Ethiopia (Timesteps: 24,15)
 ----------------------------------------------------------------------------
 eo_data_complete     3651
 eo_data_duplicate     862
-✔ training amount: 3651, positive class: 55.1%
+✔ training amount: 3651, positive class: 55.1%, disagreement: 0.0%
 
 
 
@@ -117,8 +117,8 @@ Ethiopia_Tigray_2020 (Timesteps: 24)
 eo_data_complete         1030
 eo_data_duplicate         169
 eo_data_export_failed       1
-✔ validation amount: 523, positive class: 26.2%
-✔ testing amount: 507, positive class: 30.4%
+✔ validation amount: 523, positive class: 26.2%, disagreement: 0.4%
+✔ testing amount: 507, positive class: 30.4%, disagreement: 0.2%
 
 
 
@@ -127,8 +127,8 @@ Ethiopia_Tigray_2021 (Timesteps: 15)
 eo_data_complete         718
 eo_data_duplicate        167
 eo_data_export_failed      1
-✔ validation amount: 348, positive class: 25.9%
-✔ testing amount: 370, positive class: 34.6%
+✔ validation amount: 348, positive class: 25.9%, disagreement: 0.0%
+✔ testing amount: 370, positive class: 34.6%, disagreement: 0.0%
 
 
 
@@ -137,8 +137,8 @@ Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
 eo_data_complete         987
 eo_data_duplicate        212
 eo_data_export_failed      1
-✔ validation amount: 489, positive class: 38.7%
-✔ testing amount: 498, positive class: 32.3%
+✔ validation amount: 489, positive class: 38.7%, disagreement: 0.2%
+✔ testing amount: 498, positive class: 32.3%, disagreement: 0.0%
 
 
 
@@ -147,8 +147,8 @@ Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 eo_data_complete         939
 eo_data_duplicate        260
 eo_data_export_failed      1
-✔ validation amount: 484, positive class: 25.6%
-✔ testing amount: 455, positive class: 28.4%
+✔ validation amount: 484, positive class: 25.6%, disagreement: 0.2%
+✔ testing amount: 455, positive class: 28.4%, disagreement: 0.0%
 
 
 
@@ -156,8 +156,8 @@ Argentina_Buenos_Aires (Timesteps: 15)
 ----------------------------------------------------------------------------
 eo_data_complete     566
 eo_data_duplicate     92
-✔ training amount: 457, positive class: 48.1%
-✔ validation amount: 109, positive class: 45.0%
+✔ training amount: 457, positive class: 48.1%, disagreement: 0.0%
+✔ validation amount: 109, positive class: 45.0%, disagreement: 0.0%
 
 
 
@@ -166,8 +166,8 @@ Malawi_CEO_2020 (Timesteps: 24)
 eo_data_complete         949
 eo_data_duplicate        250
 eo_data_export_failed      1
-✔ validation amount: 492, positive class: 9.3%
-✔ testing amount: 457, positive class: 14.7%
+✔ validation amount: 492, positive class: 9.3%, disagreement: 0.4%
+✔ testing amount: 457, positive class: 14.7%, disagreement: 0.0%
 
 
 
@@ -176,7 +176,7 @@ Malawi_CEO_2019 (Timesteps: 24)
 eo_data_complete         944
 eo_data_duplicate        255
 eo_data_export_failed      1
-✔ training amount: 944, positive class: 7.1%
+✔ training amount: 944, positive class: 7.1%, disagreement: 0.2%
 
 
 
@@ -184,7 +184,7 @@ Malawi_FAO (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     500
 eo_data_duplicate     14
-✔ training amount: 500, positive class: 100.0%
+✔ training amount: 500, positive class: 100.0%, disagreement: 0.0%
 
 
 
@@ -192,7 +192,7 @@ Malawi_FAO_corrected (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     506
 eo_data_duplicate      5
-✔ training amount: 506, positive class: 100.0%
+✔ training amount: 506, positive class: 100.0%, disagreement: 0.0%
 
 
 
@@ -202,8 +202,8 @@ eo_data_complete          2106
 eo_data_duplicate          289
 eo_data_missing_values       3
 eo_data_export_failed        1
-✔ validation amount: 1067, positive class: 3.6%
-✔ testing amount: 1039, positive class: 3.8%
+✔ validation amount: 1067, positive class: 3.6%, disagreement: 0.1%
+✔ testing amount: 1039, positive class: 3.8%, disagreement: 0.2%
 
 
 
@@ -212,15 +212,15 @@ Tanzania_CEO_2019 (Timesteps: 24)
 eo_data_complete          5183
 eo_data_missing_values     238
 eo_data_duplicate            7
-✔ validation amount: 2602, positive class: 24.2%
-✔ testing amount: 2581, positive class: 24.3%
+✔ validation amount: 2602, positive class: 24.2%, disagreement: 21.4%
+✔ testing amount: 2581, positive class: 24.3%, disagreement: 21.1%
 
 
 
 Malawi_corrected (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    178
-✔ training amount: 178, positive class: 42.1%
+✔ training amount: 178, positive class: 42.1%, disagreement: 0.0%
 
 
 
@@ -229,23 +229,23 @@ Namibia_CEO_2020 (Timesteps: 24)
 eo_data_complete         1100
 eo_data_duplicate          99
 eo_data_export_failed       1
-✔ training amount: 231, positive class: 1.7%
-✔ validation amount: 425, positive class: 1.6%
-✔ testing amount: 444, positive class: 1.1%
+✔ training amount: 231, positive class: 1.7%, disagreement: 0.0%
+✔ validation amount: 425, positive class: 1.6%, disagreement: 0.0%
+✔ testing amount: 444, positive class: 1.1%, disagreement: 0.0%
 
 
 
 Namibia_WFP (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    184
-✔ training amount: 184, positive class: 100.0%
+✔ training amount: 184, positive class: 100.0%, disagreement: 0.0%
 
 
 
 Sudan_Blue_Nile_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1500
-✔ training amount: 311, positive class: 31.5%
-✔ validation amount: 581, positive class: 37.9%
-✔ testing amount: 608, positive class: 37.5%
+✔ training amount: 311, positive class: 31.5%, disagreement: 0.0%
+✔ validation amount: 581, positive class: 37.9%, disagreement: 0.0%
+✔ testing amount: 608, positive class: 37.5%, disagreement: 0.0%
 
