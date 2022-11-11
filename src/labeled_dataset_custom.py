@@ -26,43 +26,13 @@ from openmapflow.constants import (
 )
 from openmapflow.labeled_dataset import (
     LabeledDataset,
-    clean_df_condition,
+    _label_eo_counts,
     get_label_timesteps,
 )
 
 from src.raw_labels import RawLabels
 
 temp_dir = tempfile.gettempdir()
-
-
-def _label_eo_counts(df: pd.DataFrame) -> str:
-    df = df[clean_df_condition(df)]
-    label_counts = df[SUBSET].value_counts()
-    eo_counts = df[df[EO_DATA].notnull()][SUBSET].value_counts()
-    text = ""
-    for subset in ["training", "validation", "testing"]:
-        if subset not in label_counts:
-            continue
-        labels_in_subset = label_counts.get(subset, 0)
-        features_in_subset = eo_counts.get(subset, 0)
-        if labels_in_subset != features_in_subset:
-            text += (
-                f"\u2716 {subset}: {labels_in_subset} labels, "
-                + f"but {features_in_subset} features\n"
-            )
-        else:
-            text += f"\u2714 {subset} amount: {labels_in_subset}"
-            positive_class_percentage = (
-                df[df[SUBSET] == subset][CLASS_PROB] > 0.5
-            ).sum() / labels_in_subset
-            disagreement_percentage = (
-                df[df[SUBSET] == subset][CLASS_PROB] == 0.5
-            ).sum() / labels_in_subset
-            text += f", positive class: {positive_class_percentage:.1%}, "
-            text += f"disagreement: {disagreement_percentage:.1%}"
-            text += "\n"
-
-    return text
 
 
 @dataclass
@@ -133,6 +103,7 @@ class CustomLabeledDataset(LabeledDataset):
         return (
             f"{self.name} (Timesteps: {','.join([str(int(t)) for t in timesteps])})\n"
             + "----------------------------------------------------------------------------\n"
+            + f"disagreement: {len(df[df[CLASS_PROB] == 0.5]) / len(df):.1%}\n"
             + eo_status_str
             + "\n"
             + _label_eo_counts(df)
