@@ -24,7 +24,11 @@ from openmapflow.constants import (
     START,
     SUBSET,
 )
-from openmapflow.labeled_dataset import LabeledDataset, clean_df_condition, get_label_timesteps
+from openmapflow.labeled_dataset import (
+    LabeledDataset,
+    clean_df_condition,
+    get_label_timesteps,
+)
 
 from src.raw_labels import RawLabels
 
