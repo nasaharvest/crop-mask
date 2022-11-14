@@ -4,31 +4,19 @@ channels:
     - pytorch
 dependencies:
     - python=3.7
-    - earthengine-api
+    - pip
     - mypy=0.931
     - black
-    - pandas
-    - xarray=0.17.0
-    - netcdf4
-    - rasterio
-    - jupyter
-    - matplotlib
-    - pip
-    - cpuonly
-    - pytorch=1.7.1
-    - pyproj
-    - tqdm
-    - geopandas
-    - cartopy
     - scikit-learn
     - flake8
-    - google-cloud-storage
-    - python-dotenv
+    - cartopy
+    - pytorch=1.7.1
     - pip:
+          - black
+          - isort
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
-          - cropharvest==0.4.1
           - types-requests
           - types-python-dateutil
-          - openmapflow==0.1.5
+          - openmapflow[data]==0.2.2rc1
           - dvc[gs]

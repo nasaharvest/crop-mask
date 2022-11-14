@@ -1,10 +1,11 @@
-import pandas as pd
 from datetime import timedelta
 
+import pandas as pd
+from openmapflow.constants import LAT, LON
 from openmapflow.labeled_dataset import create_datasets
-from openmapflow.labeled_dataset_custom import CustomLabeledDataset
-from openmapflow.raw_labels import RawLabels
-from openmapflow.constants import LON, LAT
+
+from src.labeled_dataset_custom import CustomLabeledDataset
+from src.raw_labels import RawLabels
 
 
 def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
@@ -611,6 +612,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -619,6 +621,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -678,7 +681,7 @@ datasets = [
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-1)-sample-data-2022-04-20.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.2, 0.4, 0.4),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -687,7 +690,47 @@ datasets = [
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-2)-sample-data-2022-04-20.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Namibia_WFP",
+        country="Namibia",
+        raw_labels=(
+            RawLabels(
+                filename="NAM_052021.zip",
+                class_prob=1.0,
+                start_year=2020,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Sudan_Blue_Nile_CEO_2019",
+        country="Sudan",
+        raw_labels=(
+            RawLabels(
+                filename=(
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv"
+                ),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename=(
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv"
+                ),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,

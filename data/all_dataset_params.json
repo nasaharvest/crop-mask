@@ -102,6 +102,107 @@
             12
         ]
     },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_CEO_2019,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019,Malawi_corrected,Namibia_CEO_2020,Namibia_WFP,Sudan_Blue_Nile_CEO_2019_February_2022": {
+        "normalizing_dict": {
+            "mean": [
+                -11.055958660801943,
+                -18.018611256772946,
+                1398.2398470143114,
+                1350.6927287986578,
+                1355.9190800368913,
+                1595.3401267635786,
+                2373.148999241875,
+                2750.1920460001747,
+                2636.0828600649015,
+                3006.0933128330853,
+                806.673240304248,
+                2367.4884979900326,
+                1533.551510920442,
+                293.6721054573144,
+                0.003732479249395261,
+                913.7693260111573,
+                5.9178426210390915,
+                0.35129361638172935
+            ],
+            "std": [
+                4.147136132494645,
+                4.959712155002001,
+                1056.0787041375977,
+                1001.9240858140914,
+                1181.7631171116573,
+                1133.93414053483,
+                1075.6175382633342,
+                1128.546916044173,
+                1077.5640462019674,
+                1141.1531024506219,
+                661.6490984223552,
+                1005.1925502309741,
+                884.7299931330202,
+                8.516360357676419,
+                0.004241014199346866,
+                681.6362733239453,
+                7.424319670540247,
+                0.16729387106329627
+            ]
+        },
+        "train_num_timesteps": [
+            12
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_CEO_2019,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019,Malawi_corrected,Namibia_CEO_2020,Namibia_WFP_September_2021": {
+        "normalizing_dict": {
+            "mean": [
+                -11.01568758376452,
+                -17.980275794861516,
+                1399.4604730044528,
+                1350.9789632697525,
+                1353.280021185467,
+                1592.8544228930868,
+                2375.5928714925344,
+                2753.717986455617,
+                2638.337979852477,
+                3008.132619224171,
+                807.0987453256944,
+                2351.4639012901685,
+                1521.1390229748793,
+                293.61156906832804,
+                0.0037761189306714377,
+                912.8800875160439,
+                6.017335637476561,
+                0.351845309014596
+            ],
+            "std": [
+                4.169460055242621,
+                4.978399280519049,
+                1063.8474475681664,
+                1009.2313374688504,
+                1189.7285734877821,
+                1141.7767535890312,
+                1082.9092370506257,
+                1135.8235357197107,
+                1084.8335691860868,
+                1148.5071628256449,
+                666.3606473090408,
+                1001.1687325571585,
+                881.5592251847564,
+                8.33399436602062,
+                0.004263748109675731,
+                688.6788105572119,
+                7.508725041990942,
+                0.16840279299696406
+            ]
+        },
+        "train_num_timesteps": [
+            12,
+            7
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
     "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019_February": {
         "input_size": 18,
         "normalizing_dict": {
@@ -251,6 +352,57 @@
         },
         "train_num_timesteps": [
             12
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019_November_2022": {
+        "normalizing_dict": {
+            "mean": [
+                -11.008922096150153,
+                -17.97846732098236,
+                1410.0748920043727,
+                1362.5304613378844,
+                1366.9587868623562,
+                1606.1488558045214,
+                2392.704781255259,
+                2772.213852285628,
+                2654.801187789595,
+                3025.2315725697676,
+                813.8098441125182,
+                2355.6211117186635,
+                1524.9524961897516,
+                293.51505450924594,
+                0.0038097717125822614,
+                910.6036678901708,
+                6.085013281072285,
+                0.3522250432933249
+            ],
+            "std": [
+                4.188284524961954,
+                4.9898329932017464,
+                1080.3604540256558,
+                1023.8272167404127,
+                1205.934616475171,
+                1157.4040946865498,
+                1093.0570800304574,
+                1143.561996881846,
+                1092.646288939746,
+                1154.9629161209243,
+                675.145265036813,
+                1001.4854427276833,
+                881.0031439448377,
+                8.476541310577371,
+                0.00426655572872501,
+                699.6032326760295,
+                7.574850888894996,
+                0.16744204817812577
+            ]
+        },
+        "train_num_timesteps": [
+            12,
+            5
         ],
         "val_num_timesteps": [
             12

@@ -1,14 +1,13 @@
+import json
 from argparse import Namespace
 from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+import pytorch_lightning as pl
+from openmapflow.config import PROJECT_ROOT, DataPaths
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
-from typing import Any, Dict, Optional, Tuple
-
-import json
-import pytorch_lightning as pl
-
-from openmapflow.config import PROJECT_ROOT, DataPaths
 
 from datasets import datasets
 from src.models import Model
@@ -39,6 +38,8 @@ def validate(hparams: Namespace) -> Namespace:
 def train_model(
     hparams, offline: bool = False
 ) -> Tuple[pl.LightningModule, Dict[str, Dict[str, Any]]]:
+
+    hparams = validate(hparams)
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",

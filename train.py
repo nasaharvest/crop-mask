@@ -2,42 +2,20 @@
 Script that uses argument parameters to train an individual model
 """
 from argparse import ArgumentParser
-from cropharvest.countries import BBox
 
+from openmapflow.bbox import BBox
+
+from datasets import datasets
 from src.bboxes import bboxes
-from src.pipeline_funcs import train_model
 from src.models import Model
+from src.pipeline_funcs import train_model
 
-train_datasets = [
-    "geowiki_landcover_2017",
-    "Kenya",
-    "Mali",
-    "Mali_lower_CEO_2019",
-    "Mali_upper_CEO_2019",
-    "Togo",
-    "Rwanda",
-    "Uganda",
-    "open_buildings",
-    "digitalearthafrica_eastern",
-    "digitalearthafrica_sahel",
-    "Ethiopia",
-    "Ethiopia_Tigray_2020",
-    "Ethiopia_Tigray_2021",
-    "Ethiopia_Bure_Jimma_2019",
-    "Ethiopia_Bure_Jimma_2020",
-    "Argentina_Buenos_Aires",
-    "Malawi_CEO_2020",
-    "Malawi_FAO",
-    "Malawi_FAO_corrected",
-    "Zambia_CEO_2019",
-    "Tanzania_CEO_2019",
-]
-
-selected_bbox = bboxes["Hawaii"]
+selected_bbox = bboxes["Sudan_Blue_Nile"]
+train_datasets = [datasets[1].dataset]  # [d.dataset for d in datasets]
 
 parser = ArgumentParser()
-parser.add_argument("--model_name", type=str, default="Hawaii_2020")
-parser.add_argument("--eval_datasets", type=str, default="Hawaii_CEO_2020")
+parser.add_argument("--model_name", type=str, default="Sudan_Blue_Nile_2019")
+parser.add_argument("--eval_datasets", type=str, default="Sudan_Blue_Nile_CEO_2019")
 parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets))
 parser.add_argument("--min_lat", type=float, default=selected_bbox.min_lat)
 parser.add_argument("--max_lat", type=float, default=selected_bbox.max_lat)

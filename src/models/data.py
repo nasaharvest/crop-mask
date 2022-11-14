@@ -1,16 +1,13 @@
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
+
 import numpy as np
 import pandas as pd
-
-from dateutil.relativedelta import relativedelta
-from tqdm import tqdm
-
 import torch
+from dateutil.relativedelta import relativedelta
+from openmapflow.bbox import BBox
+from openmapflow.constants import CLASS_PROB, END, EO_DATA, LAT, LON, MONTHS, START
 from torch.utils.data import Dataset
-
-from openmapflow.constants import CLASS_PROB, LAT, LON, START, END, MONTHS, EO_DATA
-from cropharvest.countries import BBox
-
-from typing import cast, Any, Tuple, Optional, List, Dict, Union
+from tqdm import tqdm
 
 
 class CropDataset(Dataset):

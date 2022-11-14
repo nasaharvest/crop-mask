@@ -1,12 +1,12 @@
-from sklearn.metrics import f1_score
-from tqdm import tqdm
+import json
 from typing import Any, Dict, List, Tuple
 from unittest import TestCase
-import json
-import torch
-import pytorch_lightning as pl
 
+import pytorch_lightning as pl
+import torch
 from openmapflow.config import PROJECT_ROOT, DataPaths
+from sklearn.metrics import f1_score
+from tqdm import tqdm
 
 from src.models.model import Model
 
