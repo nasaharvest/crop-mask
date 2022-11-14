@@ -5,26 +5,28 @@
 
 # Import the required utilities
 
-import psutil as ps
-import time
-from subprocess import PIPE
-import os
 import csv
+import os
+import time
 from argparse import ArgumentParser
+from subprocess import PIPE
+
+import psutil as ps
+
 # import numpy as np
 from utils import img_list
 
 # Creating a parser
 parser = ArgumentParser()
 
-parser.add_argument('--n', required=True, type=int, default=3)
+parser.add_argument("--n", required=True, type=int, default=3)
 
 args = parser.parse_args()
 
 # img_list = np.loadtxt('cloud_img_files.txt', dtype='str')
 
 # define the command for the subprocess
-img_fin = img_list[:args.n].tolist()
+img_fin = img_list[: args.n].tolist()
 cmd = ["python3", "concurrent_inference.py"] + img_fin
 
 # Start the timer
@@ -43,7 +45,7 @@ peak_proc_mem = 0
 # while the process is running calculate resource utilization.
 print("Process is in the running state.")
 
-while (process.is_running()):
+while process.is_running():
     # set the sleep time to monitor at an interval of every second.
     time.sleep(1)
 
@@ -71,13 +73,28 @@ print(process.stdout.read())
 print("\n Peak system memory usage is {} %".format(peak_sys_mem))
 print("Peak system CPU utilization is {} %".format(peak_sys_cpu))
 
-total_run_time = end_time-start_time
+total_run_time = end_time - start_time
 
 # Logging the results into a csv file
-with open('single_model_logs.csv', 'a') as file:
+with open("single_model_logs.csv", "a") as file:
     writer = csv.writer(file)
-    if os.stat('single_model_logs.csv').st_size == 0:
-        writer.writerow(['No_of_requests', 'total_execution_time', 'Peak_cpu_percent',
-                         'Peak_memory_percent', 'execution_time', 'Peak_process_memory'])
-    data = [args.n, end_time-start_time, peak_sys_cpu, peak_sys_mem, total_run_time, peak_proc_mem]
+    if os.stat("single_model_logs.csv").st_size == 0:
+        writer.writerow(
+            [
+                "No_of_requests",
+                "total_execution_time",
+                "Peak_cpu_percent",
+                "Peak_memory_percent",
+                "execution_time",
+                "Peak_process_memory",
+            ]
+        )
+    data = [
+        args.n,
+        end_time - start_time,
+        peak_sys_cpu,
+        peak_sys_mem,
+        total_run_time,
+        peak_proc_mem,
+    ]
     writer.writerow(data)
