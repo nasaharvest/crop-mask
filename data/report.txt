@@ -239,6 +239,14 @@ eo_data_duplicate            5
 
 
 
+Namibia_corrective_labels_2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 0.0%
+eo_data_complete    747
+✔ training amount: 747, positive class: 33.1%
+
+
+
 Malawi_corrected (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 0.0%
