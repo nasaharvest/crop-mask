@@ -657,10 +657,10 @@ datasets = [
         country="Namibia",
         raw_labels=(
             RawLabels(
-                filename="Namibia_corrected_labels",
+                filename="Namibia_corrected_labels.csv",
                 class_prob=lambda df: (df["Landcover"] == "crop"),
                 start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(1.0, 0.0, 0.0),
                 latitude_col="latitude",
                 longitude_col="longitude",
                 # filter_df=clean_ceo_data,
