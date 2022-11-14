@@ -279,10 +279,10 @@ eo_data_complete    1500
 Hawaii_CEO_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 6.9%
-eo_data_complete          955
+eo_data_complete          954
 eo_data_missing_values    151
-eo_data_duplicate          93
-eo_data_exporting           1
+eo_data_skipped            83
+eo_data_duplicate          12
 ✔ validation amount: 493, positive class: 3.4%
-✖ testing: 463 labels, but 462 features
+✔ testing amount: 461, positive class: 1.7%
 
