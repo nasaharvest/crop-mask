@@ -1,19 +1,23 @@
-# name: landcover-mapping
+name: landcover-mapping
 channels:
     - conda-forge
     - pytorch
 dependencies:
     - python=3.7
+    - pip
     - mypy=0.931
     - black
     - scikit-learn
     - flake8
     - cartopy
+    - pytorch=1.7.1
     - pip:
+          - black
+          - isort
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - types-requests
           - types-python-dateutil
-          - openmapflow[data]==0.2.1
+          - openmapflow[data]==0.2.2rc1
           - dvc[gs]
           
