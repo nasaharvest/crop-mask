@@ -1,34 +1,32 @@
+import json
+import random
 from argparse import ArgumentParser, Namespace
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
-import json
 import pandas as pd
-import random
-from typing import Callable, Tuple, Dict, Any, Type, Optional, List, Union
-
+import pytorch_lightning as pl
 import torch
+from openmapflow.bands import ERA5_BANDS
+from openmapflow.bbox import BBox
+from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
+from openmapflow.constants import CLASS_PROB, SUBSET
+from openmapflow.engineer import BANDS
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
-import pytorch_lightning as pl
-
-from sklearn.metrics import (
-    roc_auc_score,
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-)
-from openmapflow.bands import ERA5_BANDS
-from openmapflow.engineer import BANDS
-from openmapflow.bbox import BBox
-
-from openmapflow.constants import SUBSET
-from openmapflow.config import DataPaths, PROJECT_ROOT, DATA_DIR
 from datasets import datasets
+
+from .classifier import Classifier
 from .data import CropDataset
 from .forecaster import Forecaster
-from .classifier import Classifier
 
 
 def set_seed(seed: int = 42):
@@ -194,13 +192,13 @@ class Model(pl.LightningModule):
         for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
             if d.dataset in eval_datasets.split(","):
-                df = d.load_df()
-                dfs.append(df[df[SUBSET] == subset])
+                df = d.load_df(to_np=True)
+                dfs.append(df[(df[SUBSET] == subset) & (df[CLASS_PROB] != 0.5)])
 
             # If dataset is only used for training, take the whole dataframe
             elif subset == "training" and d.dataset in train_datasets.split(","):
-                df = d.load_df()
-                dfs.append(df)
+                df = d.load_df(to_np=True)
+                dfs.append(df[df[CLASS_PROB] != 0.5])
 
         return pd.concat(dfs)
 

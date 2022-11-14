@@ -1,14 +1,13 @@
+import json
 from argparse import Namespace
 from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+import pytorch_lightning as pl
+from openmapflow.config import PROJECT_ROOT, DataPaths
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from tqdm import tqdm
-from typing import Any, Dict, Optional, Tuple
-
-import json
-import pytorch_lightning as pl
-
-from openmapflow.config import PROJECT_ROOT, DataPaths
 
 from datasets import datasets
 from src.models import Model

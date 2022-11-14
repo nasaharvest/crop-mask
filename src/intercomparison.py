@@ -1,11 +1,11 @@
-from sklearn.metrics import classification_report, accuracy_score
-from src.ETL.constants import CROP_PROB, SUBSET, LAT, LON
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import rasterio as rio
-from pyproj import Proj
-from pyproj import transform
-import numpy as np
+from pyproj import Proj, transform
+from sklearn.metrics import accuracy_score, classification_report
+
+from src.ETL.constants import CROP_PROB, LAT, LON, SUBSET
 
 
 def run_comparison(
