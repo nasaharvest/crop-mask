@@ -653,21 +653,6 @@ datasets = [
         ),
     ),
     CustomLabeledDataset(
-        dataset="Namibia_corrective_labels_2020",
-        country="Namibia",
-        raw_labels=(
-            RawLabels(
-                filename="Namibia_corrected_labels",
-                class_prob=lambda df: (df["Landcover"] == "crop"),
-                start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
-                latitude_col="latitude",
-                longitude_col="longitude",
-                # filter_df=clean_ceo_data,
-            ),
-        ),
-    ),
-    CustomLabeledDataset(
         dataset="Malawi_corrected",
         country="Malawi",
         raw_labels=(
