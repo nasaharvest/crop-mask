@@ -28,7 +28,7 @@ parser.add_argument("--input_months", type=int, default=12)
 parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
 parser.set_defaults(skip_era5=False)
 parser.add_argument("--wandb", dest="wandb", action="store_true")
-parser.set_defaults(wandb=True)
+parser.set_defaults(wandb=False)
 
 hparams = Model.add_model_specific_args(parser).parse_args()
 print(
