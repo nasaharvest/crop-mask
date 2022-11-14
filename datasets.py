@@ -742,7 +742,7 @@ datasets = [
         country="Hawaii",
         raw_labels=(
             RawLabels(
-                filename="ceo-Hawaii-Jan-Dec-2020-(Set-1)-sample-data-2022-10-03.csv",
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-1)-sample-data-2022-11-14.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 train_val_test=(0.4, 0.3, 0.3),
@@ -751,7 +751,7 @@ datasets = [
                 filter_df=clean_ceo_data,
             ),
             RawLabels(
-                filename="ceo-Hawaii-Jan-Dec-2020-(Set-2)-sample-data-2022-10-03.csv",
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-2)-sample-data-2022-11-14.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
                 train_val_test=(0.4, 0.3, 0.3),
