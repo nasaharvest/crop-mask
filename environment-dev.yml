@@ -20,4 +20,3 @@ dependencies:
           - types-python-dateutil
           - openmapflow[data]==0.2.2rc1
           - dvc[gs]
-          
