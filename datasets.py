@@ -726,7 +726,7 @@ datasets = [
             ),
             RawLabels(
                 filename=(
-                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv"
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-2)-sample-data-2022-10-31.csv"
                 ),
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
