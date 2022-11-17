@@ -1,17 +1,17 @@
 import os
-from unittest import TestCase
 from pathlib import Path
+from unittest import TestCase
 
 from src.area_utils import (
-    load_ne,
-    load_raster,
     binarize,
     cal_map_area_class,
+    compute_area_estimate,
+    compute_confusion_matrix,
     estimate_num_sample_per_class,
     generate_ref_samples,
+    load_ne,
+    load_raster,
     reference_sample_agree,
-    compute_confusion_matrix,
-    compute_area_estimate,
 )
 
 home_dir = Path(__file__).parent.parent

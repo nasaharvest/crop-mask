@@ -2,19 +2,20 @@
 # parameters for predictions made on pytorch models on a local environment. For more details check
 # check out the script "test_models.py "
 
+import csv
+import os
+import time
+from argparse import ArgumentParser
+from subprocess import PIPE
+
 # Import the required utilities
 import psutil as ps
-import time
-from subprocess import PIPE
-import os
-import csv
-from argparse import ArgumentParser
 
 # Create a parser
 parser = ArgumentParser()
 
-parser.add_argument('--batch', required=True)
-parser.add_argument('--model_name', required=True)
+parser.add_argument("--batch", required=True)
+parser.add_argument("--model_name", required=True)
 
 args = parser.parse_args()
 
@@ -22,7 +23,7 @@ args = parser.parse_args()
 model_name = args.model_name
 batch = args.batch
 
-cmd = ["python", "test_models.py"]+[batch, model_name]
+cmd = ["python", "test_models.py"] + [batch, model_name]
 print(cmd)
 
 # Start the timer
@@ -42,7 +43,7 @@ peak_proc_cpu = 0
 # while the process is running calculate resource utilization.
 print("Process is in the running state.")
 
-while (process.is_running()):
+while process.is_running():
     # set the sleep time to monitor at an interval of every second.
     time.sleep(0.5)
 
@@ -66,24 +67,40 @@ while (process.is_running()):
 
     # Print the results to the monitor for each subprocess run.
 end_time = time.time()
-execution_time = end_time-start_time
+execution_time = end_time - start_time
 
 # Printing the results
 print("For batch size of {} the results are \n".format(batch))
 print(process.stdout.read())
 print("\n Peak process cpu usage is {} %".format(peak_proc_cpu))
 print("Peak process memory usage is {} %".format(peak_proc_mem))
-print("The total time required for execution is", end_time-start_time)
+print("The total time required for execution is", end_time - start_time)
 print("\n Peak system memory usage is {} %".format(peak_sys_mem))
 print("Peak system CPU utilization is {} %".format(peak_sys_cpu))
 
 # Logging the results into a csv file
 
-with open('local_model_tests.csv', 'a') as file:
+with open("local_model_tests.csv", "a") as file:
     writer = csv.writer(file)
-    if os.stat('local_model_tests.csv').st_size == 0:
-        writer.writerow(['Model_name', 'Batch_size', 'total_execution_time', 'Peak_cpu_percent',
-                         'Peak_memory_percent', 'peak_proc_cpu', 'peak_proc_mem'])
-    data = [model_name, batch, execution_time, peak_sys_cpu, peak_sys_mem, peak_proc_cpu,
-            peak_proc_mem]
+    if os.stat("local_model_tests.csv").st_size == 0:
+        writer.writerow(
+            [
+                "Model_name",
+                "Batch_size",
+                "total_execution_time",
+                "Peak_cpu_percent",
+                "Peak_memory_percent",
+                "peak_proc_cpu",
+                "peak_proc_mem",
+            ]
+        )
+    data = [
+        model_name,
+        batch,
+        execution_time,
+        peak_sys_cpu,
+        peak_sys_mem,
+        peak_proc_cpu,
+        peak_proc_mem,
+    ]
     writer.writerow(data)

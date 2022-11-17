@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
+from typing import Any, Dict, List, Tuple, Type
 
 import pytorch_lightning as pl
 import torch
 from torch import nn
 
-from typing import Any, Dict, List, Tuple, Type
 from .lstm import UnrolledLSTM
 
 

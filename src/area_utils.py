@@ -1,16 +1,17 @@
 import json
 import os
 from typing import List, Optional, Tuple
-import pandas as pd
-import numpy as np
+
+import cartopy.io.shapereader as shpreader
 import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import rasterio as rio
 from rasterio import transform
 from rasterio.mask import mask
-import cartopy.io.shapereader as shpreader
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
 
 
 def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
