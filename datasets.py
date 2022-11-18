@@ -318,7 +318,29 @@ datasets = [
                     latitude_col="location/_gps_location_latitude",
                     start_date_col="start",
                 ),
+                RawLabels(
+                    filename="ug_in_season_monitoring_2020_05_21_03_36_19_049899.csv",
+                    class_prob=1.0,
+                    longitude_col="location/_gps_location_longitude",
+                    latitude_col="location/_gps_location_latitude",
+                    start_year="start",
+                ),
+                RawLabels(
+                    filename="uganda_field_specs_assessment_2020_11_16_08_03_32_331346.csv",
+                    class_prob=1.0,
+                    longitude_col="location/_gps_location_longitude",
+                    latitude_col="location/_gps_location_latitude",
+                    start_year="start",
+                ),
+                RawLabels(
+                    filename="jecam_crop_type_mapping_2022_11_16_12_10_20_328965.csv",
+                    class_prob=1.0,
+                    longitude_col="location/_gps_location_longitude",
+                    latitude_col="location/_gps_location_latitude",
+                    start_year="start",
+                ),
             ]
+            
         ),
     ),
     # CustomLabeledDataset(
