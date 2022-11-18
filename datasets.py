@@ -323,24 +323,23 @@ datasets = [
                     class_prob=1.0,
                     longitude_col="location/_gps_location_longitude",
                     latitude_col="location/_gps_location_latitude",
-                    start_year="start",
+                    start_date_col="start",
                 ),
                 RawLabels(
                     filename="uganda_field_specs_assessment_2020_11_16_08_03_32_331346.csv",
                     class_prob=1.0,
                     longitude_col="location/_gps_location_longitude",
                     latitude_col="location/_gps_location_latitude",
-                    start_year="start",
+                    start_date_col="start",
                 ),
                 RawLabels(
                     filename="jecam_crop_type_mapping_2022_11_16_12_10_20_328965.csv",
                     class_prob=1.0,
                     longitude_col="location/_gps_location_longitude",
                     latitude_col="location/_gps_location_latitude",
-                    start_year="start",
+                    start_date_col="start",
                 ),
             ]
-            
         ),
     ),
     # CustomLabeledDataset(
