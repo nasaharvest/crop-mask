@@ -12,6 +12,7 @@ from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 
 def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
@@ -75,7 +76,7 @@ def clip_raster(
             print("Clipping to boundary.")
         boundary = boundary.to_crs(src.crs)
         boundary = [json.loads(boundary.to_json())["features"][0]["geometry"]]
-        raster, out_transform = mask(src, shapes=boundary, crop=True)
+        raster, out_transform = mask(src, shapes=boundary, crop=True, all_touched=True, nodata=src.nodata)
         raster = raster[0]
         out_meta = src.meta.copy()
         out_meta.update(
@@ -169,6 +170,94 @@ def cal_map_area_class(
     return crop_area, noncrop_area
 
 
+def cal_map_area_change_class(
+    change_map: np.ndarray, unit: str = "pixels", px_size: float = 10
+) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+    """
+    Calculate the area of each class in the map.
+    Print the area of each class and total area.
+    change_map: numpy array of the map
+    """
+    stable_np = np.where(change_map.flatten() == 0)[0]
+    p_gain = np.where(change_map.flatten() == 1)[0]
+    p_loss = np.where(change_map.flatten() == 2)[0]
+    stable_p = np.where(change_map.flatten() == 3)[0]
+    total = change_map.flatten().shape[0]
+    # Make sure nodata values are not being counted
+    assert total == np.sum([stable_np.shape[0], p_gain.shape[0], p_loss.shape[0], stable_p.shape[0]])
+
+    if unit == "ha":
+        stable_np_area = stable_np.shape[0] * (px_size*px_size) / 100000
+        p_gain_area = p_gain.shape[0] * (px_size*px_size) / 100000
+        p_loss_area = p_loss.shape[0] * (px_size*px_size) / 100000
+        stable_p_area = stable_p.shape[0] * (px_size*px_size) / 100000
+
+    elif unit == "pixels":
+        stable_np_area = int(stable_np.shape[0])
+        p_gain_area = int(p_gain.shape[0])
+        p_loss_area = int(p_loss.shape[0])
+        stable_p_area = int(stable_p.shape[0])
+
+    elif unit == "fraction":
+        stable_np_area = int(stable_np.shape[0]) / total
+        p_gain_area = int(p_gain.shape[0]) / total
+        p_loss_area = int(p_loss.shape[0]) / total
+        stable_p_area = int(stable_p.shape[0]) / total
+        assert sum([stable_np_area, p_gain_area, p_loss_area, stable_p_area]) == 1
+
+    else:
+        print("Please specify the unit as either 'pixels', 'ha', or 'fraction'")
+
+    print(
+            f'Stable NP area: {stable_np_area} {unit} \n'
+            f'P gain area: {p_gain_area} {unit} \n'
+            f'P loss area: {p_loss_area} {unit} \n'
+            f'Stable P area: {stable_p_area} {unit} \n'
+            f'Total area: '
+            f'{stable_np_area + p_gain_area + p_loss_area + stable_p_area:.2f}'
+            f' {unit} \n'
+    )
+
+    return stable_np_area, p_gain_area, p_loss_area, stable_p_area
+
+
+def estimate_num_sample_per_change_class(
+    stable_np_fraction: float,
+    p_gain_fraction: float,
+    p_loss_fraction: float,
+    stable_p_fraction: float,
+    u_stable_np: float,
+    u_p_gain: float,
+    u_p_loss: float,
+    u_stable_p: float,
+    stderr: float = 0.02,
+) -> Tuple[int, int, int, int]:
+
+    s_stable_np = np.sqrt(u_stable_np * (1 - u_stable_np))
+    s_p_gain = np.sqrt(u_p_gain * (1 - u_p_gain))
+    s_p_loss = np.sqrt(u_p_loss * (1 - u_p_loss))
+    s_stable_p = np.sqrt(u_stable_p * (1 - u_stable_p))
+
+    n = np.round(((
+                    stable_np_fraction * s_stable_np +
+                    p_gain_fraction * s_p_gain +
+                    p_loss_fraction * s_p_loss +
+                    stable_p_fraction * s_stable_p
+                  ) / stderr) ** 2)
+    print(f"Num total sample size: {int(n)}")
+
+    n_stable_np = int(n / 4)
+    n_p_gain = int(n / 4)
+    n_p_loss = int((n / 4) + (n % 4))
+    n_stable_p = int(n / 4)
+
+    print(f"Num sample size for stable NP: {n_stable_np}")
+    print(f"Num sample size for P gain: {n_p_gain}")
+    print(f"Num sample size for P loss: {n_p_loss}")
+    print(f"Num sample size for stable P: {n_stable_p}")
+    return n_stable_np, n_p_gain, n_p_loss, n_stable_p
+
+
 def estimate_num_sample_per_class(
     crop_area_fraction: float,
     non_crop_area_fraction: float,
@@ -201,6 +290,54 @@ def random_inds(
     rand_py = inds[1][rand_inds]
     # del inds
     return rand_px, rand_py
+
+
+def generate_change_ref_samples(
+    change_map: np.ndarray,
+    meta: dict,
+    n_stablenp: int,
+    n_pgain: int,
+    n_ploss: int,
+    n_stablep: int
+) -> None:
+
+    df_stablenp = pd.DataFrame([], columns=["px", "py", "pred_class"])
+    df_stablenp["px"], df_stablenp["py"] = random_inds(change_map, 0, int(n_stablenp))
+    df_stablenp["pred_class"] = 0
+
+    df_pgain = pd.DataFrame([], columns=["px", "py", "pred_class"])
+    df_pgain["px"], df_pgain["py"] = random_inds(change_map, 1, int(n_pgain))
+    df_pgain["pred_class"] = 0
+
+    df_ploss = pd.DataFrame([], columns=["px", "py", "pred_class"])
+    df_ploss["px"], df_ploss["py"] = random_inds(change_map, 2, int(n_ploss))
+    df_ploss["pred_class"] = 0
+
+    df_stablep = pd.DataFrame([], columns=["px", "py", "pred_class"])
+    df_stablep["px"], df_stablep["py"] = random_inds(change_map, 0, int(n_stablep))
+    df_stablep["pred_class"] = 3
+
+    df_combined = pd.concat([df_stablenp,
+                             df_pgain,
+                             df_ploss,
+                             df_stablep]).reset_index(drop=True)
+
+    for r, row in df_combined.iterrows():
+        lx, ly = transform.xy(meta["transform"], row["px"], row["py"])
+        df_combined.loc[r, "lx"] = lx
+        df_combined.loc[r, "ly"] = ly
+
+    # Shuffle the samples so they don't appear in order of class
+    df_combined = df_combined.sample(frac=1).reset_index(drop=True)
+
+    gdf = gpd.GeoDataFrame(df_combined, geometry=gpd.points_from_xy(df_combined.lx, df_combined.ly))
+
+    gdf.crs = meta["crs"]
+    gdf_ceo = gdf.to_crs("EPSG:4326")
+    gdf_ceo["PLOTID"] = gdf_ceo.index
+    gdf_ceo["SAMPLEID"] = gdf_ceo.index
+
+    gdf_ceo[["geometry", "PLOTID", "SAMPLEID"]].to_file("ceo_change_reference_sample.shp", index=False)
 
 
 def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_noncrop: int) -> None:
@@ -304,16 +441,131 @@ def reference_sample_agree(
     return ceo_agree_geom
 
 
+def change_reference_sample_agree(
+    change_map: np.ndarray, meta: dict, ceo_ref1: str, ceo_ref2: str
+) -> gpd.GeoDataFrame:
+
+    ceo_set1 = pd.read_csv(ceo_ref1)
+    ceo_set2 = pd.read_csv(ceo_ref2)
+
+    assert ceo_set1.columns[-1] == ceo_set2.columns[-1]
+
+    label_question_y1 = ceo_set1.columns[-2]
+    label_question_y2 = ceo_set1.columns[-1]
+
+    print(f"Number of NaNs/missing answers in set 1 q1: {ceo_set1[label_question_y1].isna().sum()}")
+    print(f"Number of NaNs/missing answers in set 2 q1: {ceo_set2[label_question_y1].isna().sum()}")
+
+    print(f"Number of NaNs/missing answers in set 1 q2: {ceo_set1[label_question_y2].isna().sum()}")
+    print(f"Number of NaNs/missing answers in set 2 q2: {ceo_set2[label_question_y2].isna().sum()}")
+
+    if ceo_set1.shape[0] != ceo_set2.shape[0]:
+        print("The number of rows in the reference sets are not equal.")
+        print("Checking for duplictes on 'plotid'..")
+        print(
+            " Number of duplicated in set 1: %s" % ceo_set1[ceo_set1.plotid.duplicated()].shape[0]
+        )
+        print(
+            " Number of duplicated in set 2: %s" % ceo_set2[ceo_set2.plotid.duplicated()].shape[0]
+        )
+        print("Removing duplicates and keeping the first...")
+        ceo_set1 = ceo_set1.drop_duplicates(subset="plotid", keep="first")
+        ceo_set2 = ceo_set2.drop_duplicates(subset="plotid", keep="first")
+
+        ceo_set1.set_index("plotid", inplace=True)
+        ceo_set2.set_index("plotid", inplace=True)
+    else:
+        print("The number of rows in the reference sets are equal.")
+
+    # Convert the individual year classifications to the change classes
+    ceo_set1['Reference label'] = None
+    ceo_set2['Reference label'] = None
+
+    for r, row in ceo_set1.iterrows():
+        label_y1 = row[label_question_y1]
+        label_y2 = row[label_question_y2]
+        if label_y1 == 'Not planted' and label_y2 == 'Not planted':
+            ceo_set1.loc[r,'Reference label'] = 0
+        elif label_y1 == 'Not planted' and label_y2 == 'Planted':
+            ceo_set1.loc[r,'Reference label'] = 1
+        elif label_y1 == 'Planted' and label_y2 == 'Not planted':
+            ceo_set1.loc[r,'Reference label'] = 2
+        elif label_y1 == 'Planted' and label_y2 == 'Planted':
+            ceo_set1.loc[r,'Reference label'] = 3
+
+    for r, row in ceo_set2.iterrows():
+        label_y1 = row[label_question_y1]
+        label_y2 = row[label_question_y2]
+        if label_y1 == 'Not planted' and label_y2 == 'Not planted':
+            ceo_set2.loc[r,'Reference label'] = 0
+        elif label_y1 == 'Not planted' and label_y2 == 'Planted':
+            ceo_set2.loc[r,'Reference label'] = 1
+        elif label_y1 == 'Planted' and label_y2 == 'Not planted':
+            ceo_set2.loc[r,'Reference label'] = 2
+        elif label_y1 == 'Planted' and label_y2 == 'Planted':
+            ceo_set2.loc[r,'Reference label'] = 3
+
+    ceo_agree = ceo_set1[ceo_set1['Reference label'] == ceo_set2['Reference label']]
+    ceo_disagree = ceo_set1[ceo_set1['Reference label'] != ceo_set2['Reference label']]
+
+    print(
+        "Number of samples that are in agreement: %d out of %d (%.2f%%)"
+        % (
+            ceo_agree.shape[0],
+            ceo_set1.shape[0],
+            ceo_agree.shape[0] / ceo_set1.shape[0] * 100,
+        )
+    )
+    ceo_agree_geom = gpd.GeoDataFrame(
+        ceo_agree,
+        geometry=gpd.points_from_xy(ceo_agree.lon, ceo_agree.lat),
+        crs="EPSG:4326",
+    )
+
+    ceo_agree_geom = ceo_agree_geom.to_crs(meta["crs"])
+
+    ceo_disagree_geom = gpd.GeoDataFrame(
+        ceo_disagree,
+        geometry=gpd.points_from_xy(ceo_disagree.lon, ceo_disagree.lat),
+        crs="EPSG:4326",
+    )
+
+    ceo_disagree_geom = ceo_disagree_geom.to_crs(meta["crs"])
+
+    for r, row in ceo_agree_geom.iterrows():
+        lon, lat = row["geometry"].y, row["geometry"].x
+        px, py = transform.rowcol(meta["transform"], lat, lon)
+
+        ceo_agree_geom.loc[r, "Mapped class"] = int(change_map[px, py])
+
+        ceo_agree_geom["Reference label"] = ceo_agree_geom["Reference label"].astype(np.uint8)
+
+    for r, row in ceo_disagree_geom.iterrows():
+        lon, lat = row["geometry"].y, row["geometry"].x
+        px, py = transform.rowcol(meta["transform"], lat, lon)
+
+        ceo_disagree_geom.loc[r, "Mapped class"] = int(change_map[px, py])
+
+        ceo_disagree_geom["Reference label"] = ceo_disagree_geom["Reference label"].astype(np.uint8)
+
+    return ceo_agree_geom, ceo_disagree_geom
+
+
 def compute_confusion_matrix(ceo_agree_geom: gpd.GeoDataFrame) -> np.ndarray:
     """ """
     y_true = np.array(ceo_agree_geom["Reference label"]).astype(np.uint8)
     y_pred = np.array(ceo_agree_geom["Mapped class"]).astype(np.uint8)
     cm = confusion_matrix(y_true, y_pred).ravel()
-    print("Error matrix \n")
-    print("True negatives: %d" % cm[0])
-    print("False positives: %d" % cm[1])
-    print("False negatives: %d" % cm[2])
-    print("True positives: %d" % cm[3])
+    if np.max(y_true) == 1:
+        print("Error matrix \n")
+        print("True negatives: %d" % cm[0])
+        print("False positives: %d" % cm[1])
+        print("False negatives: %d" % cm[2])
+        print("True positives: %d" % cm[3])
+    else:
+        print(confusion_matrix(y_true, y_pred))
+    print('Classification report:')
+    print(classification_report(y_true, y_pred))
     return cm
 
 
