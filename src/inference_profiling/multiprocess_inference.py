@@ -11,6 +11,7 @@
 # Importing packages
 import multiprocessing
 import sys
+
 import requests
 
 # Defining the model url
@@ -21,8 +22,8 @@ img_list = sys.argv[1:]
 
 # Inference function to send a request to the source url.
 def inference_service(img_file):
-    img_url = '''gs://crop-mask-example-inference-tifs/'''+img_file
-    response = requests.post(url, data={"uri" : img_url})
+    img_url = """gs://crop-mask-example-inference-tifs/""" + img_file
+    response = requests.post(url, data={"uri": img_url})
     return response.json()
 
 

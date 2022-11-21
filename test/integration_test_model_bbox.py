@@ -1,10 +1,10 @@
+import json
 from unittest import TestCase
 
-import json
-from src.models.model import Model
-
-from openmapflow.constants import LAT, LON
 from openmapflow.config import PROJECT_ROOT, DataPaths
+from openmapflow.constants import LAT, LON
+
+from src.models.model import Model
 
 
 class ModelBboxTest(TestCase):
