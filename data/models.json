@@ -135,6 +135,23 @@
             "roc_auc_score": 0.911
         }
     },
+    "Tanzania_south_2019_skip_era5": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/1mx991cz",
+        "test_metrics": {
+            "accuracy": 0.8611,
+            "f1_score": 0.7648,
+            "precision_score": 0.7972,
+            "recall_score": 0.7348,
+            "roc_auc_score": 0.929
+        },
+        "val_metrics": {
+            "accuracy": 0.8567,
+            "f1_score": 0.756,
+            "precision_score": 0.7951,
+            "recall_score": 0.7206,
+            "roc_auc_score": 0.9228
+        }
+    },
     "Zambia_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/89sy43tj",
         "test_metrics": {
