@@ -1,8 +1,10 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pandas as pd
-from openmapflow.constants import LAT, LON
-from openmapflow.labeled_dataset import create_datasets
+from openmapflow.config import PROJECT_ROOT, DataPaths
+from openmapflow.constants import CLASS_PROB, END, LAT, LON, START, SUBSET
+from openmapflow.label_utils import get_lat_lon_from_centroid, read_zip
+from openmapflow.labeled_dataset import LabeledDataset, create_datasets
 
 from src.labeled_dataset_custom import CustomLabeledDataset
 from src.raw_labels import RawLabels
@@ -40,6 +42,19 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
     # CEO data may have duplicate samples labeled by the same person
     df = df[~df[[LAT, LON, "email"]].duplicated(keep="first")]
     return df
+
+
+class HawaiiAgriculturalLandUse2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = read_zip(
+            PROJECT_ROOT / DataPaths.RAW_LABELS / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip"
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
+        df[SUBSET] = "training"
+        df[CLASS_PROB] = 1.0
+        df = df.drop_duplicates(subset=[LAT, LON])
+        return df
 
 
 datasets = [
@@ -776,6 +791,7 @@ datasets = [
             ),
         ),
     ),
+    HawaiiAgriculturalLandUse2020(),
 ]
 
 if __name__ == "__main__":
