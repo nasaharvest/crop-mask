@@ -59,6 +59,9 @@ class CustomLabeledDataset(LabeledDataset):
             already_processed = df[SOURCE].unique()
 
         new_labels: List[pd.DataFrame] = []
+        raw_year_files = [(p.filename, p.start_year) for p in self.raw_labels]
+        if len(raw_year_files) != len(set(raw_year_files)):
+            raise ValueError(f"Duplicate raw files found in: {raw_year_files}")
         for p in self.raw_labels:
             if p.filename not in str(already_processed):
                 new_labels.append(p.process(self.raw_dir))
