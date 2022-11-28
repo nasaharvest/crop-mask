@@ -239,6 +239,14 @@ eo_data_duplicate            5
 
 
 
+Namibia_corrective_labels_2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 0.0%
+eo_data_complete    747
+✔ training amount: 747, positive class: 33.1%
+
+
+
 Malawi_corrected (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 0.0%
@@ -268,11 +276,12 @@ eo_data_complete    184
 
 Sudan_Blue_Nile_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-disagreement: 0.0%
-eo_data_complete    1500
-✔ training amount: 311, positive class: 31.5%
-✔ validation amount: 581, positive class: 37.9%
-✔ testing amount: 608, positive class: 37.5%
+disagreement: 13.2%
+eo_data_complete    1302
+eo_data_skipped      198
+✔ training amount: 270, positive class: 29.3%
+✔ validation amount: 506, positive class: 34.4%
+✔ testing amount: 526, positive class: 32.9%
 
 
 
