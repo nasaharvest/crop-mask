@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from typing import List
 
 import pandas as pd
 from openmapflow.config import PROJECT_ROOT, DataPaths
@@ -57,7 +58,7 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         return df
 
 
-datasets = [
+datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",

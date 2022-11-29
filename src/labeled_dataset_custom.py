@@ -46,7 +46,7 @@ class CustomLabeledDataset(LabeledDataset):
     def __post_init__(self):
         self.name = self.dataset
         self.df_path = PROJECT_ROOT / dp.DATASETS / (self.name + ".csv")
-        self.raw_dir = PROJECT_ROOT / dp.RAW_LABELS / self.dataset
+        self.raw_dir = PROJECT_ROOT / dp.RAW_LABELS / self.name
 
     def load_labels(self):
         """

@@ -191,7 +191,7 @@ class Model(pl.LightningModule):
         dfs = []
         for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
-            if d.dataset in eval_datasets.split(","):
+            if d.name in eval_datasets.split(","):
                 df = d.load_df(to_np=True)
                 dfs.append(df[(df[SUBSET] == subset) & (df[CLASS_PROB] != 0.5)])
 
