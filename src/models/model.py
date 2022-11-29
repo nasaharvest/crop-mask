@@ -484,7 +484,7 @@ class Model(pl.LightningModule):
         logs.update(metrics)
 
         # Save model with lowest validation loss
-        if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses):
+        if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses[1:]):
             saved_metrics = {f"{k}_saved": v for k, v in metrics.items()}
             logs.update(saved_metrics)
             self.trainer.save_checkpoint(
