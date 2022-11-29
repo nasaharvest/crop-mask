@@ -15,6 +15,7 @@ drawingTools1.layers().add(layer1);
 
 var rightMap = ui.Map();
 rightMap.setOptions('satellite');
+
 var layer2 = ui.Map.Layer(ee.FeatureCollection([]), {'color': 'red'}, 'Points');
 
 drawingTools1.onDraw(function(geometry, layer) {
@@ -117,6 +118,9 @@ var info2 = ui.Label({value: "Malawi Sentinel 2 Image", style: infoStyle});
 infoPanel1.add(info1);
 infoPanel2.add(info2);
 
+leftMap.add(infoPanel1);
+rightMap.add(infoPanel2);
+
 var title = ui.Panel({
   widgets: [
     ui.Label("", {
@@ -156,6 +160,8 @@ var makeRow = function(color, name) {
   legend.add(makeRow('197228', 'Crop'))
   legend.add(makeRow('FFFDCE', 'Non Crop'))
 
+leftMap.add(legend);
+
 var description =ui.Label({
   value: 'This app allows users to add points to where the crop map is wrongly classified. Users can compare the cropland map on the left against the high resolution Sentinel 2 data on the right. The "Add a Marker" icon on the left panel can be selected to start creating the points. To delete a point, click the hand icon to select the specific point and hit the delete button. After picking all the points, users can click the "Get link for downloading points" button to generate a link that can be downloaded as a CSV file. A detailed instruction manual of the App can be found in the link below:' ,
   style: {
@@ -186,10 +192,6 @@ var mainPanel = ui.Panel({
   style: {width: '100%', height: '100%',
   }
 });
-
-rightMap.add(infoPanel2);
-leftMap.add(infoPanel1);
-leftMap.add(legend);
 
 ui.root.widgets().reset([mainPanel]);
 linker.get(0).setCenter(33.78, -12.27, 11);
