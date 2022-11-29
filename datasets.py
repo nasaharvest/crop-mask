@@ -653,6 +653,21 @@ datasets = [
         ),
     ),
     CustomLabeledDataset(
+        dataset="Namibia_corrective_labels_2020",
+        country="Namibia",
+        raw_labels=(
+            RawLabels(
+                filename="Namibia_corrected_labels.csv",
+                class_prob=lambda df: (df["Landcover"] == "crop"),
+                start_year=2020,
+                train_val_test=(1.0, 0.0, 0.0),
+                latitude_col="latitude",
+                longitude_col="longitude",
+                # filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
         dataset="Malawi_corrected",
         country="Malawi",
         raw_labels=(
@@ -726,11 +741,35 @@ datasets = [
             ),
             RawLabels(
                 filename=(
-                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv"
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-2)-sample-data-2022-10-31.csv"
                 ),
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2019,
                 train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Hawaii_CEO_2020",
+        country="Hawaii",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-1)-sample-data-2022-11-14.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.4, 0.3, 0.3),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-2)-sample-data-2022-11-14.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.4, 0.3, 0.3),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
