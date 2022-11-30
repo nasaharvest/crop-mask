@@ -298,7 +298,8 @@ eo_data_skipped       82
 
 HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    4176
-eo_data_complete      659
-✖ training: 4835 labels, but 659 features
+eo_data_exporting    3963
+eo_data_complete      871
+eo_data_duplicate       1
+✖ training: 4834 labels, but 871 features
 
