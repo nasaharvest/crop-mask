@@ -91,9 +91,8 @@ class CropDataset(Dataset):
                     ),
                     ignore_index=True,
                 )
-            # print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
-            # if local_crop != local_non_crop:
-            #         print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+            print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+            # TODO: condition for both datasets are equal
 
         self.normalizing_dict: Dict = (
             normalizing_dict
