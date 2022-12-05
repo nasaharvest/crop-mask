@@ -62,7 +62,7 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         return df
 
 
-class KenyaCEO2020(LabeledDataset):
+class KenyaCEO2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df1 = pd.read_csv(
             raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-12-05.csv"
@@ -824,7 +824,7 @@ datasets: List[LabeledDataset] = [
         ),
     ),
     HawaiiAgriculturalLandUse2020(),
-    KenyaCEO2020(),
+    KenyaCEO2019(),
 ]
 
 if __name__ == "__main__":
