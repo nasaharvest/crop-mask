@@ -95,7 +95,7 @@ class CustomLabeledDataset(LabeledDataset):
             }
         )
         df[COUNTRY] = self.country
-        df[DATASET] = self.dataset
+        df[DATASET] = self.name
         df.loc[df[CLASS_PROB] == 0.5, EO_STATUS] = EO_STATUS_SKIPPED
 
         df = df.reset_index(drop=True)

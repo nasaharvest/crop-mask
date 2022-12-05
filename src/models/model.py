@@ -196,7 +196,7 @@ class Model(pl.LightningModule):
                 dfs.append(df[(df[SUBSET] == subset) & (df[CLASS_PROB] != 0.5)])
 
             # If dataset is only used for training, take the whole dataframe
-            elif subset == "training" and d.dataset in train_datasets.split(","):
+            elif subset == "training" and d.name in train_datasets.split(","):
                 df = d.load_df(to_np=True)
                 dfs.append(df[df[CLASS_PROB] != 0.5])
 
