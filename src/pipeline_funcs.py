@@ -12,7 +12,7 @@ from tqdm import tqdm
 from datasets import datasets
 from src.models import Model
 
-all_dataset_names = [d.dataset for d in datasets]
+all_dataset_names = [d.name for d in datasets]
 
 
 def validate(hparams: Namespace) -> Namespace:
