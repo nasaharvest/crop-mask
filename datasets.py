@@ -4,11 +4,13 @@ from typing import List
 import pandas as pd
 from openmapflow.config import PROJECT_ROOT, DataPaths
 from openmapflow.constants import CLASS_PROB, END, LAT, LON, START, SUBSET
-from openmapflow.label_utils import get_lat_lon_from_centroid, read_zip
+from openmapflow.label_utils import get_lat_lon_from_centroid, read_zip, train_val_test_split
 from openmapflow.labeled_dataset import LabeledDataset, create_datasets
 
 from src.labeled_dataset_custom import CustomLabeledDataset
 from src.raw_labels import RawLabels
+
+raw_dir = PROJECT_ROOT / DataPaths.RAW_LABELS
 
 
 def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
@@ -45,16 +47,45 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def join_unique(values):
+    return ",".join([str(i) for i in values.unique()])
+
+
 class HawaiiAgriculturalLandUse2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
-        df = read_zip(
-            PROJECT_ROOT / DataPaths.RAW_LABELS / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip"
-        )
+        df = read_zip(raw_dir / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip")
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
         df[SUBSET] = "training"
         df[CLASS_PROB] = 1.0
         df = df.drop_duplicates(subset=[LAT, LON])
+        return df
+
+
+class KenyaCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df1 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-12-05.csv"
+        )
+        df2 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-2)-sample-data-2022-12-05.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
 
@@ -793,6 +824,7 @@ datasets: List[LabeledDataset] = [
         ),
     ),
     HawaiiAgriculturalLandUse2020(),
+    KenyaCEO2020(),
 ]
 
 if __name__ == "__main__":
