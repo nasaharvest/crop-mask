@@ -302,3 +302,11 @@ eo_data_complete     4834
 eo_data_duplicate       1
 ✔ training amount: 4834, positive class: 100.0%
 
+
+
+KenyaCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    600
+✖ validation: 312 labels, but 0 features
+✖ testing: 288 labels, but 0 features
+
