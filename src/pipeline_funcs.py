@@ -27,10 +27,6 @@ def validate(hparams: Namespace) -> Namespace:
         if len(missing_datasets) > 0:
             raise ValueError(f"{hparams.model_name} missing datasets: {missing_datasets}")
 
-    # Check bounding box
-    if not (hparams.min_lat and hparams.max_lat and hparams.min_lon and hparams.max_lon):
-        raise ValueError(f"{hparams.model_name} missing lat lon bbox")
-
     # All checks passed, no issues
     return hparams
 
