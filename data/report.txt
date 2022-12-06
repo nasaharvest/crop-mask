@@ -306,8 +306,7 @@ eo_data_duplicate       1
 
 KenyaCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    409
-eo_data_complete     191
-✖ validation: 312 labels, but 92 features
-✖ testing: 288 labels, but 99 features
+eo_data_complete    600
+✔ validation amount: 312, positive class: 4.2%
+✔ testing amount: 288, positive class: 8.0%
 
