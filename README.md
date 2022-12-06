@@ -29,7 +29,7 @@ Two models are trained - a multi-headed pixel wise classifier to classify pixels
 
 ## Adding new labeled data
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/new_data.ipynb)
-To add new labeled data follow the [OpenMapFlow documentation](https://github.com/nasaharvest/openmapflow#adding-data-) OR run the linked colab notebook. 
+To add new labeled data follow the [OpenMapFlow documentation](https://github.com/nasaharvest/openmapflow#adding-data) OR run the linked colab notebook. 
 
 
 
