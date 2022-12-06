@@ -15,7 +15,7 @@ selected_bbox = bboxes["Sudan_Blue_Nile"]
 parser = ArgumentParser()
 parser.add_argument("--model_name", type=str, default="Sudan_Blue_Nile_2019")
 parser.add_argument("--eval_datasets", type=str, default="Sudan_Blue_Nile_CEO_2019")
-parser.add_argument("--train_datasets", type=str, default=",".join([d.dataset for d in datasets]))
+parser.add_argument("--train_datasets", type=str, default=",".join([d.name for d in datasets]))
 parser.add_argument("--min_lat", type=float, default=selected_bbox.min_lat)
 parser.add_argument("--max_lat", type=float, default=selected_bbox.max_lat)
 parser.add_argument("--min_lon", type=float, default=selected_bbox.min_lon)
