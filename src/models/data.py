@@ -75,7 +75,9 @@ class CropDataset(Dataset):
             wandb_logger.experiment.config.update(to_log)
 
         if upsample:
-            if local_crop > local_non_crop:
+            if local_crop == local_non_crop:
+                print(f"No upsampling: {local_crop} == {local_non_crop}")
+            elif local_crop > local_non_crop:
                 arrow = "<-"
                 df = df.append(
                     df[df["is_local"] & ~df["is_crop"]].sample(
@@ -92,7 +94,6 @@ class CropDataset(Dataset):
                     ignore_index=True,
                 )
             print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
-            # TODO: condition for both datasets are equal
 
         self.normalizing_dict: Dict = (
             normalizing_dict

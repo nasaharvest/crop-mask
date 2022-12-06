@@ -11,7 +11,6 @@ from src.models import Model
 from src.pipeline_funcs import train_model
 
 selected_bbox = bboxes["Sudan_Blue_Nile"]
-# train_datasets = [datasets[1].dataset]  # [d.dataset for d in datasets]
 
 parser = ArgumentParser()
 parser.add_argument("--model_name", type=str, default="Sudan_Blue_Nile_2019")
