@@ -310,3 +310,19 @@ eo_data_complete    600
 ✔ validation amount: 312, positive class: 4.2%
 ✔ testing amount: 288, positive class: 8.0%
 
+
+
+HawaiiCorrective2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    319
+eo_data_complete      10
+✖ training: 329 labels, but 10 features
+
+
+
+HawaiiCorrectiveGuided2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    345
+eo_data_complete       6
+✖ training: 351 labels, but 6 features
+
