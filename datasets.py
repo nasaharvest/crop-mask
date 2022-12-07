@@ -89,6 +89,39 @@ class KenyaCEO2019(LabeledDataset):
         return df
 
 
+class HawaiiCorrective2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        hawaii_dir = raw_dir / "Hawaii_corrective_2020"
+        df1 = pd.read_csv(hawaii_dir / "corrective_Nakalembe.csv")
+        df2 = pd.read_csv(hawaii_dir / "corrective-Asare-Ansah.csv")
+        df3 = pd.read_csv(hawaii_dir / "corrective-devereux.csv")
+        df4 = pd.read_csv(hawaii_dir / "corrective-kerner.csv")
+        df5 = pd.read_csv(hawaii_dir / "corrective-zvonkov.csv")
+        df = pd.concat([df1, df2, df3, df4, df5])
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+class HawaiiCorrectiveGuided2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        hawaii_dir = raw_dir / "Hawaii_corrective_2020"
+        df1 = pd.read_csv(hawaii_dir / "corrective_guided_Nakalembe.csv")
+        df2 = pd.read_csv(hawaii_dir / "corrective-guided-Asare-Ansah.csv")
+        df3 = pd.read_csv(hawaii_dir / "corrective-guided-devereux.csv")
+        df4 = pd.read_csv(hawaii_dir / "corrective-guided-kerner.csv")
+        df5 = pd.read_csv(hawaii_dir / "corrective-guided-zvonkov.csv")
+        df6 = pd.read_csv(hawaii_dir / "corrective-guided-Satish.csv")
+        df = pd.concat([df1, df2, df3, df4, df5, df6])
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -825,6 +858,8 @@ datasets: List[LabeledDataset] = [
     ),
     HawaiiAgriculturalLandUse2020(),
     KenyaCEO2019(),
+    HawaiiCorrective2020(),
+    HawaiiCorrectiveGuided2020(),
 ]
 
 if __name__ == "__main__":
