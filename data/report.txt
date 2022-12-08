@@ -321,7 +321,6 @@ eo_data_complete    329
 
 HawaiiCorrectiveGuided2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    192
-eo_data_complete     159
-✖ training: 351 labels, but 159 features
+eo_data_complete    351
+✔ training amount: 351, positive class: 62.1%
 
