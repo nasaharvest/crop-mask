@@ -71,7 +71,7 @@ class Model(pl.LightningModule):
 
     def __init__(self, hparams: Namespace) -> None:
         super().__init__()
-        set_seed()
+        set_seed(hparams.seed)
 
         self.hparams = hparams
 

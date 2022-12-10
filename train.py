@@ -3,8 +3,6 @@ Script that uses argument parameters to train an individual model
 """
 from argparse import ArgumentParser
 
-from openmapflow.bbox import BBox
-
 from datasets import datasets
 from src.bboxes import bboxes
 from src.models import Model
@@ -20,6 +18,7 @@ parser.add_argument("--bbox", type=str, default="Sudan_Blue_Nile")
 parser.add_argument("--up_to_year", type=int, default=2022)
 parser.add_argument("--start_month", type=str, default="February")
 parser.add_argument("--input_months", type=int, default=12)
+parser.add_argument("--seed", type=int, default=42)
 
 parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
 parser.set_defaults(skip_era5=False)
