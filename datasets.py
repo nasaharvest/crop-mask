@@ -119,11 +119,24 @@ class HawaiiCorrectiveGuided2020(LabeledDataset):
         # All points in this dataset are non-crop
         df6 = pd.read_csv(hawaii_dir / "corrective-guided-devereux.csv")
         df6[CLASS_PROB] = 0
+
+        # Match length of HawaiiCorrective2020 (329) by dropping points
+        # from non-corrective set (351 - 329 = 22)
+        df6.drop(df6.tail(22).index, inplace=True)
+
         df = pd.concat([df, df6])
 
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = "training"
+        return df
+
+class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = HawaiiAgriculturalLandUse2020().load_labels()
+        
+        # Match length of HawaiiCorrective2020 by dropping points
+        df = df.sample(n=329, random_state=0)
         return df
 
 
@@ -865,6 +878,7 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
+    HawaiiAgriculturalLandUse2020Subset(),
 ]
 
 if __name__ == "__main__":
