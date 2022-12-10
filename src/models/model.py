@@ -19,6 +19,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+from src.bboxes import bboxes
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
@@ -76,12 +77,7 @@ class Model(pl.LightningModule):
 
         self.batch_size = hparams.batch_size
 
-        self.target_bbox = BBox(
-            min_lat=hparams.min_lat,
-            max_lat=hparams.max_lat,
-            min_lon=hparams.min_lon,
-            max_lon=hparams.max_lon,
-        )
+        self.target_bbox = bboxes[hparams.bbox]
 
         if "skip_era5" in hparams and hparams.skip_era5:
             self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
