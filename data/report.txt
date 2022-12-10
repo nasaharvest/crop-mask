@@ -324,10 +324,3 @@ HawaiiCorrectiveGuided2020 (Timesteps: 24)
 eo_data_complete    329
 ✔ training amount: 329, positive class: 21.0%
 
-
-
-HawaiiAgriculturalLandUse2020Subset (Timesteps: 24)
-----------------------------------------------------------------------------
-eo_data_complete    329
-✔ training amount: 329, positive class: 100.0%
-
