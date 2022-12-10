@@ -8,7 +8,6 @@ import pandas as pd
 import pytorch_lightning as pl
 import torch
 from openmapflow.bands import ERA5_BANDS
-from openmapflow.bbox import BBox
 from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
 from openmapflow.constants import CLASS_PROB, SUBSET
 from openmapflow.engineer import BANDS
@@ -19,11 +18,11 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from src.bboxes import bboxes
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
 from datasets import datasets
+from src.bboxes import bboxes
 
 from .classifier import Classifier
 from .data import CropDataset

@@ -4,7 +4,11 @@ from typing import List
 import pandas as pd
 from openmapflow.config import PROJECT_ROOT, DataPaths
 from openmapflow.constants import CLASS_PROB, END, LAT, LON, START, SUBSET
-from openmapflow.label_utils import get_lat_lon_from_centroid, read_zip, train_val_test_split
+from openmapflow.label_utils import (
+    get_lat_lon_from_centroid,
+    read_zip,
+    train_val_test_split,
+)
 from openmapflow.labeled_dataset import LabeledDataset, create_datasets
 
 from src.labeled_dataset_custom import CustomLabeledDataset
@@ -131,10 +135,11 @@ class HawaiiCorrectiveGuided2020(LabeledDataset):
         df[SUBSET] = "training"
         return df
 
+
 class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df = HawaiiAgriculturalLandUse2020().load_labels()
-        
+
         # Match length of HawaiiCorrective2020 by dropping points
         df = df.sample(n=329, random_state=0)
         return df
