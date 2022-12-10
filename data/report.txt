@@ -310,3 +310,17 @@ eo_data_complete    600
 ✔ validation amount: 312, positive class: 4.2%
 ✔ testing amount: 288, positive class: 8.0%
 
+
+
+HawaiiCorrective2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    329
+✔ training amount: 329, positive class: 25.5%
+
+
+
+HawaiiCorrectiveGuided2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    351
+✔ training amount: 351, positive class: 19.7%
+
