@@ -883,7 +883,6 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
-    HawaiiAgriculturalLandUse2020Subset(),
 ]
 
 if __name__ == "__main__":
