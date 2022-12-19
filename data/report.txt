@@ -142,11 +142,10 @@ eo_data_skipped      173
 Ethiopia_Tigray_2021 (Timesteps: 20)
 ----------------------------------------------------------------------------
 disagreement: 19.0%
-eo_data_complete     511
-eo_data_exporting    207
-eo_data_skipped      168
-✖ validation: 354 labels, but 247 features
-✖ testing: 364 labels, but 264 features
+eo_data_complete    718
+eo_data_skipped     168
+✔ validation amount: 354, positive class: 30.8%
+✔ testing amount: 364, positive class: 29.9%
 
 
 
