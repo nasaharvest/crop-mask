@@ -134,18 +134,18 @@ Ethiopia_Tigray_2020 (Timesteps: 24)
 disagreement: 14.4%
 eo_data_complete    1027
 eo_data_skipped      173
-✔ validation amount: 520, positive class: 29.2%
-✔ testing amount: 507, positive class: 27.4%
+✔ validation amount: 521, positive class: 26.3%
+✔ testing amount: 506, positive class: 30.4%
 
 
 
-Ethiopia_Tigray_2021 (Timesteps: 20)
+Ethiopia_Tigray_2021 (Timesteps: 15)
 ----------------------------------------------------------------------------
 disagreement: 19.0%
 eo_data_complete    718
 eo_data_skipped     168
-✔ validation amount: 354, positive class: 30.8%
-✔ testing amount: 364, positive class: 29.9%
+✔ validation amount: 348, positive class: 25.9%
+✔ testing amount: 370, positive class: 34.6%
 
 
 
