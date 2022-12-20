@@ -92,7 +92,7 @@ class CropDataset(Dataset):
                     ignore_index=True,
                 )
 
-            print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+            # print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
 
         self.normalizing_dict: Dict = (
             normalizing_dict
