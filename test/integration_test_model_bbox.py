@@ -4,6 +4,7 @@ from unittest import TestCase
 from openmapflow.config import PROJECT_ROOT, DataPaths
 from openmapflow.constants import LAT, LON
 
+from src.bboxes import bboxes
 from src.models.model import Model
 
 
@@ -26,7 +27,7 @@ class ModelBboxTest(TestCase):
                         subset, model.hparams.train_datasets, model.hparams.eval_datasets
                     )
                     if "bbox" in model.hparams:
-                        bbox = model.hparams.bbox
+                        bbox = bboxes[model.hparams.bbox]
                     else:
                         bbox = model.hparams
 
