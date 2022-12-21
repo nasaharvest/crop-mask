@@ -8,6 +8,7 @@ import pandas as pd
 import pytorch_lightning as pl
 import torch
 from openmapflow.bands import ERA5_BANDS
+from openmapflow.bbox import BBox
 from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
 from openmapflow.constants import CLASS_PROB, SUBSET
 from openmapflow.engineer import BANDS
@@ -70,13 +71,24 @@ class Model(pl.LightningModule):
 
     def __init__(self, hparams: Namespace) -> None:
         super().__init__()
-        set_seed(hparams.seed)
+        if "seed" in hparams:
+            set_seed(hparams.seed)
+        else:
+            set_seed()
 
         self.hparams = hparams
 
         self.batch_size = hparams.batch_size
 
-        self.target_bbox = bboxes[hparams.bbox]
+        if "bbox" in hparams:
+            self.target_bbox = bboxes[hparams.bbox]
+        else:
+            self.target_bbox = BBox(
+                min_lat=hparams.min_lat,
+                max_lat=hparams.max_lat,
+                min_lon=hparams.min_lon,
+                max_lon=hparams.max_lon,
+            )
 
         if "skip_era5" in hparams and hparams.skip_era5:
             self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
