@@ -25,11 +25,16 @@ class ModelBboxTest(TestCase):
                     df = Model.load_df(
                         subset, model.hparams.train_datasets, model.hparams.eval_datasets
                     )
+                    if "bbox" in model.hparams:
+                        bbox = model.hparams.bbox
+                    else:
+                        bbox = model.hparams
+
                     is_local = (
-                        (df[LAT] >= model.hparams.min_lat)
-                        & (df[LAT] <= model.hparams.max_lat)
-                        & (df[LON] >= model.hparams.min_lon)
-                        & (df[LON] <= model.hparams.max_lon)
+                        (df[LAT] >= bbox.min_lat)
+                        & (df[LAT] <= bbox.max_lat)
+                        & (df[LON] >= bbox.min_lon)
+                        & (df[LON] <= bbox.max_lon)
                     )
                     if is_local.all():
                         print(f"\u2714 {subset}: all {len(df)} examples are local")
