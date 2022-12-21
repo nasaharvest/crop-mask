@@ -19,18 +19,18 @@
     "Ethiopia_Tigray_2020": {
         "params": "",
         "test_metrics": {
-            "accuracy": 0.498,
-            "f1_score": 0.3894,
-            "precision_score": 0.3092,
-            "recall_score": 0.526,
-            "roc_auc_score": 0.5166
+            "accuracy": 0.7846,
+            "f1_score": 0.6093,
+            "precision_score": 0.68,
+            "recall_score": 0.5519,
+            "roc_auc_score": 0.8044
         },
         "val_metrics": {
-            "accuracy": 0.4741,
-            "f1_score": 0.3218,
-            "precision_score": 0.2434,
-            "recall_score": 0.4745,
-            "roc_auc_score": 0.4988
+            "accuracy": 0.8138,
+            "f1_score": 0.6041,
+            "precision_score": 0.6852,
+            "recall_score": 0.5401,
+            "roc_auc_score": 0.8295
         }
     },
     "Hawaii_2020": {
