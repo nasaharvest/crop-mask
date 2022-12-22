@@ -491,15 +491,14 @@ class Model(pl.LightningModule):
         logs.update(metrics)
 
         # Save model with lowest validation loss
-        is_lowest_val_loss = self.current_epoch > 0 and self.val_losses[-1] == min(
-            self.val_losses[1:]
+        model_ckpt_path = PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.ckpt"
+        save_model_condition = self.current_epoch > 0 and (
+            not model_ckpt_path.exists() or (self.val_losses[-1] == min(self.val_losses[1:]))
         )
-        if self.current_epoch == 1 or is_lowest_val_loss:
+        if save_model_condition:
             saved_metrics = {f"{k}_saved": v for k, v in metrics.items()}
             logs.update(saved_metrics)
-            self.trainer.save_checkpoint(
-                PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.ckpt"
-            )
+            self.trainer.save_checkpoint(model_ckpt_path)
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
