@@ -1,7 +1,7 @@
 ---
-name: 'Crop area Estimation: <REGION> <YEAR>'
+name: 'Crop Area: <REGION> <YEAR>'
 about: Estimating crop area for a region
-title: 'Crop area estimation: <COUNTRY> <YEAR>'
+title: 'Crop Area: <REGION> <YEAR>'
 labels: crop area
 assignees: ''
 
