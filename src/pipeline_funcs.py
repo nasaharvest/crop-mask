@@ -27,10 +27,6 @@ def validate(hparams: Namespace) -> Namespace:
         if len(missing_datasets) > 0:
             raise ValueError(f"{hparams.model_name} missing datasets: {missing_datasets}")
 
-    # Check bounding box
-    if not (hparams.min_lat and hparams.max_lat and hparams.min_lon and hparams.max_lon):
-        raise ValueError(f"{hparams.model_name} missing lat lon bbox")
-
     # All checks passed, no issues
     return hparams
 
@@ -79,9 +75,11 @@ def train_model(
 
     trainer.fit(model)
 
-    model, metrics = run_evaluation(
-        model_ckpt_path=PROJECT_ROOT / DataPaths.MODELS / f"{hparams.model_name}.ckpt"
-    )
+    model_ckpt_path = PROJECT_ROOT / DataPaths.MODELS / f"{hparams.model_name}.ckpt"
+    if not model_ckpt_path.exists():
+        raise ValueError(f"Model checkpoint not found: {model_ckpt_path}")
+
+    model, metrics = run_evaluation(model_ckpt_path=model_ckpt_path)
 
     model.save()
 
