@@ -6,14 +6,14 @@ dependencies:
     - python=3.7
     - pip
     - mypy=0.931
-    - black
     - scikit-learn
-    - flake8
     - cartopy
     - pytorch=1.7.1
     - pip:
-          - black
-          - isort
+          - black==22.10.0
+          - isort==5.10.1
+          - flake8==5.0.4
+          - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - types-requests

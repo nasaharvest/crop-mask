@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Start year:** 
+**Start year:**
 **Start month:**
 
 - [ ] Labeling project created

@@ -24,7 +24,7 @@ var s2 = ee.ImageCollection('COPERNICUS/S2_SR')
                   .map(maskS2clouds);
 
 var Sentinel2 = s2.median().clip(country);
-    
+
 var upd_name = cropland_binary.select('b1').rename('Wrong value');
 
 var leftMap = ui.Map();
@@ -76,14 +76,14 @@ var button = ui.Button('Get link for downloading points',function() {
   var firstLayer = drawingTools1.layers().get(0);
   var fc = firstLayer.getEeObject();
   var sampled = upd_name.sample({region: fc, geometries: true});
-  
+
   sampled = sampled.map(function(feature) {
     var point = feature.geometry().coordinates();
     return feature.set({
-        longitude: point.get(0), 
+        longitude: point.get(0),
         latitude: point.get(1)});
   });
-  
+
   downloadUrl.setValue('');
   button.setDisabled(true);
   sampled.getDownloadURL({
@@ -130,7 +130,7 @@ var description =ui.Label({
   style: {stretch: 'horizontal', position: 'top-center', fontSize: '14px', textAlign: 'center', margin: '0 0 3px 0', padding: '0', color: '#3f3f3f'}});
 
 var manual_link = ui.Label({
-  value: 'Detailed Instructions', 
+  value: 'Detailed Instructions',
   style: {stretch: 'horizontal', position: 'top-center', fontSize: '15px', textAlign: 'center', color: 'blue'}});
   manual_link.setUrl('https://bit.ly/3EPT57D');
 

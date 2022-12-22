@@ -5,11 +5,11 @@ on:
     inputs:
       MODELS:
         description: 'Models to deploy (space separated)'
-        required: true 
+        required: true
         type: string
 
 jobs:
-  deploy: 
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -28,9 +28,6 @@ jobs:
     - name: Get latest models
       run: dvc pull data/models -f
     - name: Deploy Google Cloud Architecture
-      env:  
+      env:
           OPENMAPFLOW_MODELS: ${{ inputs.MODELS }}
       run: openmapflow deploy
-      
-
-
