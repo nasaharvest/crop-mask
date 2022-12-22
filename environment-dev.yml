@@ -10,9 +10,6 @@ dependencies:
     - cartopy
     - pytorch=1.7.1
     - pip:
-          - black==22.10.0
-          - isort==5.10.1
-          - flake8==5.0.4
           - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb

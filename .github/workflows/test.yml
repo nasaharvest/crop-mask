@@ -19,14 +19,6 @@ jobs:
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
-    - name: isort
-      run: isort src test --check --diff
-    - name: black
-      run: black --check --diff .
-    - name: Run type checks
-      run: mypy .
-    - name: Run flake8
-      run: flake8 .
     - name: Run unit tests
       run: python -m unittest
     - uses: google-github-actions/auth@v0
