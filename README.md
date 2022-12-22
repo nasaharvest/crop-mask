@@ -42,6 +42,8 @@ conda install mamba -n base -c conda-forge  # Install mamba
 mamba env create -f environment-dev.yml     # Create environment with mamba (faster)
 conda activate landcover-mapping            # Activate environment
 gcloud auth application-default login       # Authenticates with Google Cloud
+pre-commit install                          # Setup automatic linting on every commit
+pre-commit run --all-files                  # Run linting on all files
 ```
 
 #### 2. For shapefile notebook
