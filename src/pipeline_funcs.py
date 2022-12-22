@@ -76,10 +76,10 @@ def train_model(
     trainer.fit(model)
 
     model_ckpt_path = PROJECT_ROOT / DataPaths.MODELS / f"{hparams.model_name}.ckpt"
-    if model_ckpt_path.exists():
-        model, metrics = run_evaluation(model_ckpt_path=model_ckpt_path)
-    else:
-        metrics = {}
+    if not model_ckpt_path.exists():
+        raise ValueError(f"Model checkpoint not found: {model_ckpt_path}")
+        
+    model, metrics = run_evaluation(model_ckpt_path=model_ckpt_path)
 
     model.save()
 
