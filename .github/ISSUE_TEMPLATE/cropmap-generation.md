@@ -1,7 +1,7 @@
 ---
-name: 'Cropland: <COUNTRY> <YEAR>'
+name: 'Cropland: <REGION> <YEAR>'
 about: Generating a new cropland mask
-title: ''
+title: 'Cropland: <REGION> <YEAR>'
 labels: crop map
 assignees: ''
 
