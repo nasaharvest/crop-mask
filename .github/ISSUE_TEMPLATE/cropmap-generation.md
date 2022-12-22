@@ -1,14 +1,11 @@
 ---
-name: 'Cropland: <COUNTRY> <YEAR>'
+name: 'Cropland: <REGION> <START MONTH YEAR>'
 about: Generating a new cropland mask
-title: ''
+title: 'Cropland: <REGION> <START MONTH YEAR>'
 labels: crop map
 assignees: ''
 
 ---
-
-**Start year:**
-**Start month:**
 
 - [ ] Labeling project created
 - [ ] Labeling completed
