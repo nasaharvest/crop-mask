@@ -118,4 +118,4 @@ lightning_logs
 wandb
 
 .env
-
+slurm
