@@ -76,23 +76,21 @@ class CropDataset(Dataset):
 
         if upsample:
             if local_crop > local_non_crop:
-                arrow = "<-"
                 df = df.append(
                     df[df["is_local"] & ~df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
                     ),
                     ignore_index=True,
                 )
+                print(f"Upsamplng local non-crop to match crop {local_non_crop} -> {local_crop}")
             elif local_crop < local_non_crop:
-                arrow = "->"
                 df = df.append(
                     df[df["is_local"] & df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
                     ),
                     ignore_index=True,
                 )
-
-            print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+                print(f"Upsamplng local crop to match non-crop {local_crop} -> {local_non_crop}")
 
         self.normalizing_dict: Dict = (
             normalizing_dict
