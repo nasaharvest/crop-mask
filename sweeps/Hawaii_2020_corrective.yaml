@@ -10,9 +10,9 @@ metric:
   goal: minimize
   name: val_loss
 parameters:
-  model_name: 
+  model_name:
     value: Hawaii_2020
-  bbox: 
+  bbox:
     value: Hawaii
   train_datasets:
     values: [

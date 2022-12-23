@@ -15,7 +15,7 @@ End-to-end workflow for generating high resolution cropland maps.
 -   [Acknowledgments](#acknowledgments)
 -   [Reference](#reference)
 ## Creating a crop map
-To create a crop map run the following colab notebook: 
+To create a crop map run the following colab notebook:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/create_map.ipynb)
 
 ![Cropland gif](assets/cropmask.gif)
@@ -29,19 +29,21 @@ Two models are trained - a multi-headed pixel wise classifier to classify pixels
 
 ## Adding new labeled data
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nasaharvest/openmapflow/blob/main/openmapflow/notebooks/new_data.ipynb)
-To add new labeled data follow the [OpenMapFlow documentation](https://github.com/nasaharvest/openmapflow#adding-data) OR run the linked colab notebook. 
+To add new labeled data follow the [OpenMapFlow documentation](https://github.com/nasaharvest/openmapflow#adding-data) OR run the linked colab notebook.
 
 
 
 ## Setting up a local environment
 Ensure you have [anaconda](https://www.anaconda.com/download/#macos) installed.
-#### 1. For development 
+#### 1. For development
 Ensure you have [gcloud](https://cloud.google.com/sdk/docs/install) installed.
 ```bash
 conda install mamba -n base -c conda-forge  # Install mamba
 mamba env create -f environment-dev.yml     # Create environment with mamba (faster)
 conda activate landcover-mapping            # Activate environment
 gcloud auth application-default login       # Authenticates with Google Cloud
+pre-commit install                          # Setup automatic linting on every commit
+pre-commit run --all-files                  # Run linting on all files
 ```
 
 #### 2. For shapefile notebook
