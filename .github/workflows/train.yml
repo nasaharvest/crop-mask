@@ -1,0 +1,83 @@
+name: Train
+
+on:
+  workflow_dispatch:
+    inputs:
+      MODEL_NAME:
+        description: 'Model name (suggested format: <country>-<region>-<year>'
+        required: true
+        type: string
+      EVAL_DATASETS:
+        decsription: 'Evaluation dataset(s)'
+        required: true
+        type: string
+      TRAIN_DATASETS:
+        description: 'Train dataset(s)'
+        required: false
+        default: ''
+        type: string
+      BBOX:
+        description: 'Bounding box name'
+        required: true
+        type: string
+      UP_TO_YEAR:
+        description: 'Up to year'
+        required: false
+        default: 2022
+        type: int
+      START_MONTH:
+        description: 'Start month'
+        required: false
+        default: 'February'
+        type: string
+      INPUT_MONTHS:
+        description: 'Input months'
+        required: false
+        default: 12
+        type: int
+      SEED:
+        description: 'Random seed'
+        required: false
+        default: 42
+        type: int
+      WANDB:
+        description: 'Wandb'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+  train:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Pull latest data
+      run: |
+        dvc pull data/models
+        dvc pull data/datasets
+
+    - name: Train model
+      run: |
+
+    - name: Push model to repository
+      run: |
+        dvc commit data/models.dvc
+        dvc push data/models
+    - name: Push changes to github
+      run: |
+        git config --global user.name "Model bot"
+        git config --global user.email ""
+        git checkout -b"${{ inputs.MODEL_NAME }}"
+        git add .
+        git commit -m
+        git push --set-upstream origin ${{ inputs.MODEL_NAME }}
