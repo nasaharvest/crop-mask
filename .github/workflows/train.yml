@@ -4,17 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       MODEL_NAME:
-        description: 'Model name (suggested format: <country>-<region>-<year>'
+        description: 'Model name (suggested format: <country>-<region>-<year>)'
         required: true
         type: string
       EVAL_DATASETS:
-        decsription: 'Evaluation dataset(s)'
+        decsription: 'Evaluation dataset(s): (single spaced comma separated)'
         required: true
         type: string
       TRAIN_DATASETS:
-        description: 'Train dataset(s)'
+        description: 'Training dataset(s): (single spaced comma separated)'
         required: false
-        default: ''
         type: string
       BBOX:
         description: 'Bounding box name'
@@ -47,37 +46,86 @@ on:
         type: boolean
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-
   train:
-    needs: build
     runs-on: ubuntu-latest
+    # Set environment variables
+    env:
+      # Keys
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY  }}
+      # Script inputs
+      MODEL_NAME: ${{ inputs.MODEL_NAME }}
+      EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
+      TRAIN_DATASETS: ${{ inputs.TRAIN_DATASETS }}
+      BBOX: ${{ inputs.BBOX }}
+      UP_TO_YEAR: ${{ inputs.UP_TO_YEAR }}
+      START_MONTH:  ${{ inputs.START_MONTH }}
+      INPUTS_MONTH: ${{ inputs.INPUT_MONTHS }}
+      SEED: ${{ inputs.SEED }}
+      WANDB:  ${{ inputs.WANDB }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up python
-      uses: actions/setup-python@v2
+    # Enable job access to repository code
+    - uses: actions/checkout@v3
+    # Setup Python
+    - name: Setup python
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
-
+    # Install requirements
+    - name: Install dependencies
+      run: |
+        pip install dvc[gs] \
+        pip install pytorch-lightning==0.7.1 \
+        pip install wandb \
+        pip install openmapflow==0.2.2
+    # Login to Weights and Biases
+    - name: Login to Weights and Biases
+      run: wandb login $WANDB_API_KEY
+    # Authenticate to Google Cloud
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: $GCP_SA_KEY
+    # Setup Google Cloud SDK
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+    # Setup DVC
+    - name: Setup DVC
+      uses: iterative/setup-dvc@v1
+    # Pull in data
     - name: Pull latest data
       run: |
         dvc pull data/models
         dvc pull data/datasets
-
+    # Train model
     - name: Train model
       run: |
-
-    - name: Push model to repository
+        python train.py \
+          --model_name "$MODEL_NAME" \
+          --eval_datasets "$EVAL_DATASETS" \
+          --train_datasets "$TRAIN_DATASETS" \
+          --bbox "$BBOX" \
+          --up_to_year $UP_TO_YEAR \
+          --start_month "$START_MONTH" \
+          --inputs_months $INPUT_MONTHS \
+          --seed $SEED \
+          --wandb $WANDB
+    # Push model changes
+    - name: Push model to DVC repository
       run: |
         dvc commit data/models.dvc
         dvc push data/models
-    - name: Push changes to github
+    # Remote branch
+    - name: Push changes to Github repository
       run: |
-        git config --global user.name "Model bot"
-        git config --global user.email ""
-        git checkout -b"${{ inputs.MODEL_NAME }}"
+        git config --global user.name "Train bot"
+        git config --global user.email "train-bot@users.noreply.github.com"
+        git checkout -b"$MODEL_NAME"
         git add .
-        git commit -m
-        git push --set-upstream origin ${{ inputs.MODEL_NAME }}
+        git commit -m "Trained new: $MODEL_NAME"
+        git push -u origin $MODEL_NAME
+    # Create pull-request
+    - name: Create pull-request
+      run: |
+        gh pr create -B master -H $MODEL_NAME -t "Trained new: $MODEL_NAME"
