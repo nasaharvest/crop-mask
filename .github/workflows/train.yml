@@ -11,10 +11,11 @@ on:
         decsription: 'Evaluation dataset(s): (single spaced comma separated)'
         required: true
         type: string
-      TRAIN_DATASETS:
-        description: 'Training dataset(s): (single spaced comma separated)'
+      EPOCHS:
+        description: 'Number of training epochs'
         required: false
-        type: string
+        default: 5
+        type: int
       BBOX:
         description: 'Bounding box name'
         required: true
@@ -34,16 +35,10 @@ on:
         required: false
         default: 12
         type: int
-      SEED:
-        description: 'Random seed'
-        required: false
-        default: 42
-        type: int
 
 jobs:
   train:
     runs-on: ubuntu-latest
-    # Set environment variables
     env:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
@@ -51,66 +46,64 @@ jobs:
       # Script inputs
       MODEL_NAME: ${{ inputs.MODEL_NAME }}
       EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
-      TRAIN_DATASETS: ${{ inputs.TRAIN_DATASETS }}
+      EPOCHS: ${{ inputs.EPOCHS }}
       BBOX: ${{ inputs.BBOX }}
       UP_TO_YEAR: ${{ inputs.UP_TO_YEAR }}
       START_MONTH:  ${{ inputs.START_MONTH }}
       INPUTS_MONTH: ${{ inputs.INPUT_MONTHS }}
       SEED: ${{ inputs.SEED }}
-      WANDB:  ${{ inputs.WANDB }}
+
     steps:
-    # Enable job access to repository code
     - uses: actions/checkout@v3
-    # Setup Python
+
     - name: Setup python
       uses: actions/setup-python@v4
       with:
         python-version: 3.8
-    # Install requirements
+
     - name: Install dependencies
       run: |
         pip install dvc[gs] \
         pip install pytorch-lightning==0.7.1 \
         pip install wandb \
         pip install openmapflow==0.2.2
-    # Login to Weights and Biases
+
     - name: Login to Weights and Biases
       run: wandb login $WANDB_API_KEY
-    # Authenticate to Google Cloud
+
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
         credentials_json: $GCP_SA_KEY
-    # Setup Google Cloud SDK
+
     - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
-    # Setup DVC
+
     - name: Setup DVC
       uses: iterative/setup-dvc@v1
-    # Pull in data
+
     - name: Pull latest data
       run: |
         dvc pull data/models
         dvc pull data/datasets
-    # Train model
+
     - name: Train model
       run: |
         python train.py \
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
-          --train_datasets "$TRAIN_DATASETS" \
+          --epochs $EPOCHS \
           --bbox "$BBOX" \
           --up_to_year $UP_TO_YEAR \
           --start_month "$START_MONTH" \
           --inputs_months $INPUT_MONTHS \
-          --seed $SEED \
           --wandb
-    # Push model changes
-    - name: Push model to DVC repository
+
+    - name: Push model to DVC
       run: |
         dvc commit data/models.dvc
         dvc push data/models
-    # Checkout remote branch
+
     - name: Push changes to Github repository
       run: |
         git config --global user.name github-actions
@@ -119,8 +112,9 @@ jobs:
         git add .
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
-    # Pull request
+
     - name: Remote branch
-      run: gh pr create --base master --head $MODEL_NAME --title "Generated new - $MODEL_NAME" --fill
+      run: |
+        gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
