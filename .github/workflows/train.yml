@@ -39,11 +39,6 @@ on:
         required: false
         default: 42
         type: int
-      WANDB:
-        description: 'Wandb'
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   train:
@@ -51,7 +46,6 @@ jobs:
     # Set environment variables
     env:
       # Keys
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY  }}
       # Script inputs
@@ -110,22 +104,23 @@ jobs:
           --start_month "$START_MONTH" \
           --inputs_months $INPUT_MONTHS \
           --seed $SEED \
-          --wandb $WANDB
+          --wandb
     # Push model changes
     - name: Push model to DVC repository
       run: |
         dvc commit data/models.dvc
         dvc push data/models
-    # Remote branch
+    # Checkout remote branch
     - name: Push changes to Github repository
       run: |
-        git config --global user.name "Train bot"
-        git config --global user.email "train-bot@users.noreply.github.com"
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
         git checkout -b"$MODEL_NAME"
         git add .
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
-    # Create pull-request
-    - name: Create pull-request
-      run: |
-        gh pr create -B master -H $MODEL_NAME -t "Trained new: $MODEL_NAME"
+    # Pull request
+    - name: Remote branch
+      run: gh pr create --base master --head $MODEL_NAME --title "Generated new - $MODEL_NAME" --fill
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
