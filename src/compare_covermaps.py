@@ -25,6 +25,7 @@ NE_GDF = gpd.read_file(
         name='admin_1_states_provinces')
 )
 
+# Takes dictionary with keys corresponding to earth engine image link and corresponding testing columns for maps
 def extract_harvest(images: dict):
     harvest = []
     for map in images.keys():
@@ -45,8 +46,9 @@ def extract_harvest(images: dict):
 
         harvest.append(sampled)
 
-    harvest = pd.concat(harvest)
+    return pd.concat(harvest)
 
+# Extracts data from non-harvest cropmaps using an earth engine feature collection 
 def extract_other(copernicus, esa, glad, test_coll):
     cop_clipped = copernicus.select("discrete_classification").filterDate("2019-01-01", "2019-12-31").map(lambda x: raster_extraction(x, 100, test_coll)).flatten()
     cop_sampled = geemap.ee_to_gdf(cop_clipped)
@@ -59,8 +61,7 @@ def extract_other(copernicus, esa, glad, test_coll):
     glad_clipped = glad.filterBounds(test_coll).map(lambda x: raster_extraction(x, 30, test_coll)).flatten()
     glad_sampled = geemap.ee_to_gdf(glad_clipped)
 
-    
-
+    return cop_sampled, esa_sampled, glad_sampled
 
 # --- SUPPORTING FUNCTIONS ---
 
