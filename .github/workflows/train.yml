@@ -43,7 +43,6 @@ jobs:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY  }}
-      BRANCH: ${GITHUB_REF##*/}
       # Script inputs
       MODEL_NAME: ${{ inputs.MODEL_NAME }}
       EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
