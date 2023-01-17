@@ -43,6 +43,7 @@ jobs:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY  }}
+      BRANCH: ${GITHUB_REF##*/}
       # Script inputs
       MODEL_NAME: ${{ inputs.MODEL_NAME }}
       EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
@@ -104,7 +105,8 @@ jobs:
         dvc commit data/models.dvc
         dvc push data/models
 
-    - name: Push changes to Github repository
+    - name: Push changes to remote and PR
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
@@ -112,9 +114,15 @@ jobs:
         git add .
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
-
-    - name: Remote branch
-      run: |
         gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push changes to branch
+      if: ${{ github.ref != 'refs/heads/master' }}
+      run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+        git add .
+        git commit -m "Trained new: $MODEL_NAME"
+        git push
