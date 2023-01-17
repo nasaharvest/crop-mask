@@ -32,56 +32,44 @@ def extract_harvest(images: dict):
         name = map.split('/')[-1]
         print(name)
 
-        #sample from earth engine
-        sampled = ee.Image(map).reduceRegions(
-            collection=images[map],
-            reducer=ee.Reducer.first()
-        )
-        
-        #convert to dataframe
+        # Convert image to image collection
+        sampled = ee.ImageCollection([ee.Image(map)])
+        sampled = sampled.map(lambda x: raster_extraction(x, 10, images[map])).flatten()
+
+        # Convert to gdf
         sampled = geemap.ee_to_gdf(sampled)
-        
-        #binarize 
-        sampled['first'] = sampled['first'].apply(lambda x: 1 if x>=0.5 else 0) 
+
+        # Binarize 
+        sampled['first'] = sampled['mode'].apply(lambda x: 1 if x>=0.5 else 0) 
 
         harvest.append(sampled)
 
-    return pd.concat(harvest)
+    harvest = pd.concat(harvest)
 
-# Extracts data from non-harvest cropmaps using an earth engine feature collection 
-def extract_other(copernicus, esa, glad, test_coll):
-    cop_clipped = copernicus.select("discrete_classification").filterDate("2019-01-01", "2019-12-31").map(lambda x: raster_extraction(x, 100, test_coll)).flatten()
-    cop_sampled = geemap.ee_to_gdf(cop_clipped)
-    cop_sampled["cop_class"] = cop_sampled["discrete_classification"].apply(lambda x: 1 if x==40 else 0)
-
-    esa_clipped = esa.filterBounds(test_coll).map(lambda x: raster_extraction(x, 10, test_coll)).flatten()
-    esa_sampled = geemap.ee_to_gdf(esa_clipped)
-    esa_sampled["esa_class"] = esa_sampled["Map"].apply(lambda x: 1 if x==40 else 0)
-
-    glad_clipped = glad.filterBounds(test_coll).map(lambda x: raster_extraction(x, 30, test_coll)).flatten()
-    glad_sampled = geemap.ee_to_gdf(glad_clipped)
-
-    return cop_sampled, esa_sampled, glad_sampled
+    return harvest 
 
 # --- SUPPORTING FUNCTIONS ---
 
-# Retrieve country boundaries (for test set clipping)
-
-
-# Remaps classes to crop/noncrop 
-def map_values(val, value_for_crop):
-    if val == value_for_crop:
-        return 1
-    else:
-        return 0
-
 # Function used in map function to extract from feature collection
-def raster_extraction(image, resolution, f_collection):
-    feature = image.sampleRegions(
-        collection = f_collection,
-        scale = resolution
+def raster_extraction(image, resolution, fc, projection="EPSG:4326"):
+    
+    # Filter feature collection to only points within image
+    fc_sub = fc.filterBounds(image.geometry())
+
+    feature = image.reduceRegions(
+        collection=fc_sub,
+        reducer=ee.Reducer.mode(),
+        scale=resolution,
+        crs=projection
     )
     return feature
+
+# Creates buffer for earth engine points
+def bufferPoints(radius, bounds):
+    def function(pt):
+        pt = ee.Feature(pt)
+        return pt.buffer(radius).bounds() if bounds else pt.buffer(radius)
+    return function
 
 # Convert sklearn classification report dict to 
 def generate_report(dataset, report):
@@ -131,18 +119,7 @@ def generate_test_data(target_paths: str):
         print(key)
 
         # Read in data and extract test values and points 
-        gdf = gpd.read_file(p)
-        gdf["geometry"] = gpd.points_from_xy(gdf.lon, gdf.lat)
-
-        if gdf.crs == None:
-            gdf.set_crs("epsg:4326")
-        elif gdf.crs != "epsg:4326":
-            gdf.to_crs("epsg:4326")
-
-        gdf = gdf.loc[gdf["subset"]=="testing"]
-        gdf = gdf.astype({"lat":"float", "lon": "float", "class_probability": "float"})
-        gdf = gdf[["lat", "lon", "class_probability", "country", "geometry"]]
-        gdf["binary"] = gdf["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
+        gdf = read_test(p)
         
         print(len(gdf))
         gdf = filter_by_bounds(TEST_CODE[key], gdf)
@@ -153,4 +130,12 @@ def generate_test_data(target_paths: str):
     test = gpd.GeoDataFrame(pd.concat(test_set))
     test.reset_index(inplace=True, drop=True)
     
+    return test
+
+def read_test(path: str):
+    test = pd.read_csv(path)
+    test = gpd.GeoDataFrame(test, geometry=gpd.points_from_xy(test.lon, test.lat), crs='epsg:4326')
+    test = test.loc[test['subset']=='testing']
+    test['binary'] = test['class_probability'].apply(lambda x: 1 if x >= 0.5 else 0)
+
     return test
