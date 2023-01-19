@@ -47,56 +47,97 @@ def extract_harvest(images: dict):
 
 
 # --- SUPPORTING FUNCTIONS ---
-
-# Function used in map function to extract from feature collection
-def raster_extraction(image, resolution, fc, projection="EPSG:4326"):
-
-    # Filter feature collection to only points within image
+def raster_extraction(
+    image, 
+    fc, 
+    resolution, 
+    reducer=ee.Reducer.first(), 
+    crs="EPSG:4326"
+) -> ee.FeatureCollection:
+    """
+    Mapping function used to extract values, given a feature collection, from an earth engine image.
+    """
     fc_sub = fc.filterBounds(image.geometry())
 
     feature = image.reduceRegions(
-        collection=fc_sub, reducer=ee.Reducer.mode(), scale=resolution, crs=projection
+        collection=fc_sub,
+        reducer=reducer,
+        scale=resolution,
+        crs=crs
     )
+    
     return feature
 
-
-# Creates buffer for earth engine points
-def bufferPoints(radius, bounds):
+def bufferPoints(
+    radius: int, 
+    bounds: bool
+) -> function:
+    """
+    Generates function to add buffering radius to point. "bound" (bool) snap boundaries of radii to square pixel
+    """
     def function(pt):
         pt = ee.Feature(pt)
         return pt.buffer(radius).bounds() if bounds else pt.buffer(radius)
 
     return function
 
+# Extract raster values from earth engine image collection. 
+def extract_points(
+    ic: ee.ImageCollection, 
+    fc: ee.FeatureCollection, 
+    resolution=10, 
+    projection='EPSG:4326'
+) -> gpd.GeoDataFrame:
+    """
+    Creates geodataframe of extracted values from image collection. Assumes ic parameters are set (date, region, band, etc.). 
+    """
 
-# Convert sklearn classification report dict to
-def generate_report(dataset, report):
-    return pd.DataFrame(
-        data={
-            "dataset": dataset,
-            "accuracy": report["accuracy"],
-            "crop_f1": report["1"]["f1-score"],
-            "crop_support": report["1"]["support"],
-            "noncrop_support": report["0"]["support"],
-            "crop_precision": report["1"]["precision"],
-            "crop_recall": report["1"]["recall"],
-            "noncrop_precision": report["0"]["precision"],
-            "noncrop_recall": report["0"]["recall"],
-        },
-        index=[0],
-    )
+    extracted = ic.map(lambda x: raster_extraction(x, resolution, fc, projection=projection)).flatten()
+    extracted = geemap.ee_to_gdf(extracted)
 
+    return extracted
 
-# Creates ee.Feature from longitude and latitude coordinates from a dataframe
-def create_point(row):
+def generate_report(
+    dataset_name: str, 
+    true, 
+    pred
+    ) -> pd.DataFrame:
+    """
+    Creates classification report on crop coverage binary values. Assumes 1 indicates cropland.
+    """
+
+    report = classification_report(true, pred, output_dict=True)
+    return pd.DataFrame(data = {
+        "dataset": dataset_name, 
+        "crop_f1": report["1"]["f1-score"], 
+        "accuracy": report["accuracy"], 
+        "crop_support": report["1"]["support"], 
+        "noncrop_support": report["0"]["support"], 
+        "crop_recall": report["1"]["recall"], 
+        "noncrop_recall": report["0"]["recall"],
+        "crop_precision": report["1"]["precision"],
+        "noncrop_precision": report["0"]["precision"] 
+        }, index=[0])
+
+def create_point(row) -> ee.Feature:
+    """
+    Creates ee.Feature from longitude and latitude coordinates from a dataframe
+    """
+
     geom = ee.Geometry.Point(row.lon, row.lat)
     prop = dict(row[["lon", "lat", "binary"]])
 
     return ee.Feature(geom, prop)
 
 
-# Filters out data in gdf that is not within country bounds
-def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame):
+def filter_by_bounds(
+    country: str, 
+    gdf: gpd.GeoDataFrame
+) -> gpd.GeoDataFrame:
+
+    """
+    Filters out data in gdf that is not within country bounds
+    """
     boundary = NE_GDF.loc[NE_GDF["adm1_code"].str.startswith(country), :].copy()
 
     if boundary.crs == None:
@@ -112,14 +153,16 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame):
     return filtered
 
 
-# Create a testing GDF
-def generate_test_data(target_paths: str):
+def generate_test_data(target_paths: str) -> gpd.GeoDataFrame:
+    """
+    Creates geodataframe containing all test points from labeled maps.
+    """
+
     test_set = []
 
     for p in target_paths:
         # Set dict key name
         key = p.stem
-
         print(key)
 
         # Read in data and extract test values and points
@@ -136,8 +179,10 @@ def generate_test_data(target_paths: str):
 
     return test
 
-
-def read_test(path: str):
+def read_test(path: str) -> gpd.GeoDataFrame:
+    """
+    Opens and binarizes dataframe used for test set.
+    """
     test = pd.read_csv(path)
     test = gpd.GeoDataFrame(test, geometry=gpd.points_from_xy(test.lon, test.lat), crs="epsg:4326")
     test = test.loc[test["subset"] == "testing"]
