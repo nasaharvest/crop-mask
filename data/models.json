@@ -67,6 +67,23 @@
             "roc_auc_score": 0.8609
         }
     },
+    "Namibia_North_2020_v2": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/edc9lpmr",
+        "test_metrics": {
+            "accuracy": 0.9324,
+            "f1_score": 0.0625,
+            "precision_score": 0.037,
+            "recall_score": 0.2,
+            "roc_auc_score": 0.8661
+        },
+        "val_metrics": {
+            "accuracy": 0.9271,
+            "f1_score": 0.1622,
+            "precision_score": 0.1,
+            "recall_score": 0.4286,
+            "roc_auc_score": 0.8377
+        }
+    },
     "Rwanda_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3p6t96kh",
         "test_metrics": {
