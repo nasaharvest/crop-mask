@@ -147,7 +147,7 @@ class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
 
 class MalawiCorrectiveLabels2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
-        df = pd.read_csv (raw_dir / "Malawi_corrective_labels_2020.csv")
+        df = pd.read_csv(raw_dir / "Malawi_corrective_labels_2020.csv")
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df[CLASS_PROB] = (df["True value"] == 1).astype(int)
         df[START], df[END] = date(2020, 9, 1), date(2021, 9, 1)
