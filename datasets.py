@@ -894,6 +894,7 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
+    MalawiCorrectiveLabels2020(),
 ]
 
 if __name__ == "__main__":
