@@ -11,11 +11,6 @@ on:
         description: 'Evaluation dataset(s): (single spaced comma separated)'
         required: true
         type: string
-      EPOCHS:
-        description: 'Number of training epochs'
-        required: false
-        default: 5
-        type: int
       BBOX:
         description: 'Bounding box name'
         required: true
@@ -92,11 +87,10 @@ jobs:
         python train.py \
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
-          --epochs $EPOCHS \
           --bbox "$BBOX" \
           --up_to_year $UP_TO_YEAR \
           --start_month "$START_MONTH" \
-          --inputs_months $INPUT_MONTHS \
+          --input_months $INPUT_MONTHS \
           --wandb
 
     - name: Push model to DVC
