@@ -17,3 +17,4 @@ dependencies:
           - types-python-dateutil
           - openmapflow[data]==0.2.3rc1
           - dvc[gs]
+          - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34
