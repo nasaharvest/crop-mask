@@ -44,7 +44,7 @@ jobs:
       BBOX: ${{ inputs.BBOX }}
       UP_TO_YEAR: ${{ inputs.UP_TO_YEAR }}
       START_MONTH:  ${{ inputs.START_MONTH }}
-      INPUTS_MONTH: ${{ inputs.INPUT_MONTHS }}
+      INPUT_MONTHS: ${{ inputs.INPUT_MONTHS }}
       SEED: ${{ inputs.SEED }}
 
     steps:
