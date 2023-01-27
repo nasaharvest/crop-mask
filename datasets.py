@@ -148,10 +148,20 @@ class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
 class MalawiCorrectiveLabels2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         Malawi_dir = raw_dir / "Malawi_corrective_labels_2020"
-        df = pd.read_csv(Malawi_dir / "Malawi_corrective_labels_2020.csv")
+        df1 = pd.read_csv(Malawi_dir / "Malawi_new points _Chiwalo.csv")
+        df2 = pd.read_csv(Malawi_dir / "Malawi_new points _Stephen C.csv")
+        df3 = pd.read_csv(Malawi_dir / "Malawi_new points _Stephen Chiwalo_1.csv")
+        df4 = pd.read_csv(Malawi_dir / "Malawi_new points _Stephen Chiwalo.csv")
+        df5 = pd.read_csv(Malawi_dir / "Malawi_new points _Stephen.csv")
+        df6 = pd.read_csv(Malawi_dir / "Malawi_new points charles_1.csv")
+        df7 = pd.read_csv(Malawi_dir / "Malawi_new points charles_2.csv")
+        df8 = pd.read_csv(Malawi_dir / "Malawi_new points_Blake.csv")
+        df9 = pd.read_csv(Malawi_dir / "Malawi_new points_segula_1.csv")
+        df10 = pd.read_csv(Malawi_dir / "Malawi_new points_segula.csv") 
+        df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8, df9, df10])
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df[CLASS_PROB] = (df["True value"] == 1).astype(int)
-        df[START], df[END] = date(2021, 1, 1), date(2021, 12, 31)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = "training"
         return df
 
