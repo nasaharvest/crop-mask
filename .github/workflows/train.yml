@@ -95,7 +95,7 @@ jobs:
 
     - name: Push model to DVC
       run: |
-        dvc commit data/models.dvc
+        dvc commit data/models.dvc -f
         dvc push data/models
 
     - name: Push changes to remote and PR
