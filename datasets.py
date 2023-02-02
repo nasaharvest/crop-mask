@@ -169,9 +169,16 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df19 = pd.read_csv(Malawi_dir / "Malawi_new points_Powel_Mbilima.csv")
         df20 = pd.read_csv(Malawi_dir / "Malawi_new points_Sungeni Mnensa_3.csv")
         df21 = pd.read_csv(Malawi_dir / "Malawi_new points_Sungeni Mnensa_4.csv")
+        df22 = pd.read_csv(Malawi_dir / "Malawi_new points- Richard Kalulu- Ntcheu District.csv")
+        df23 = pd.read_csv(Malawi_dir / "Malawi_new points-Benson Chirwa - Lilongwe East (1).csv")
+        df24 = pd.read_csv(Malawi_dir / "Malawi_new points-Benson Chirwa - Lilongwe East (2).csv")
+        df25 = pd.read_csv(Malawi_dir / "Malawi_new points-Benson Chirwa - Lilongwe East.csv")
+        df26 = pd.read_csv(Malawi_dir / "Malawi_new points-Mbewe-Lilongwe West.csv")
+        df27 = pd.read_csv(Malawi_dir / "Malawi_new points-Mbewe-Lilongwe West1.csv")
+        df28 = pd.read_csv(Malawi_dir / "Malawi_New Points_ Peter Josamu_Dz.csv")
 
 
-        df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12, df13, df14, df15, df16, df17, df18, df19, df20, df21])
+        df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12, df13, df14, df15, df16, df17, df18, df19, df20, df21, df22, df23, df24, df25, df26, df27, df28])
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df[CLASS_PROB] = (df["True value"] == 1).astype(int)
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
