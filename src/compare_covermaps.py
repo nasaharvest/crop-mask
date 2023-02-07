@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+
+import cartopy.io.shapereader as shpreader
 import ee
 import geemap
 import cartopy.io.shapereader as shpreader
@@ -31,22 +35,25 @@ GLAD = "users/potapovpeter/Global_cropland_2019"
 REDUCER = ee.Reducer.mode()
 REDUCER_STR = "mode"
 
+
 def extract_harvest(test):
     """
-    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same format as one generated using the 
-    generate_test_set function. 
+    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same format as one generated using the
+    generate_test_set function.
     """
     test = test.copy()
     # Create feature collection for each country
-    tgo_coll = ee.FeatureCollection(test.loc[test["country"]=="Togo"].apply(create_point, axis=1).to_list())
-    ken_coll = ee.FeatureCollection(test.loc[test["country"]=="Kenya"].apply(create_point, axis=1).to_list())
-    tza_coll = ee.FeatureCollection(test.loc[test["country"]=="Tanzania"].apply(create_point, axis=1).to_list())
+    tgo_coll = ee.FeatureCollection(
+        test.loc[test["country"] == "Togo"].apply(create_point, axis=1).to_list()
+    )
+    ken_coll = ee.FeatureCollection(
+        test.loc[test["country"] == "Kenya"].apply(create_point, axis=1).to_list()
+    )
+    tza_coll = ee.FeatureCollection(
+        test.loc[test["country"] == "Tanzania"].apply(create_point, axis=1).to_list()
+    )
 
-    images = {
-        HARVEST_TGO : tgo_coll, 
-        HARVEST_KEN : ken_coll,
-        HARVEST_TZA: tza_coll
-    }
+    images = {HARVEST_TGO: tgo_coll, HARVEST_KEN: ken_coll, HARVEST_TZA: tza_coll}
 
     harvest = []
     for map in images.keys():
@@ -55,9 +62,8 @@ def extract_harvest(test):
 
         # Convert image to image collection
         sampled = extract_points(
-            ic=ee.ImageCollection(ee.Image(map)), 
-            fc=images[map], 
-            resolution=10)    
+            ic=ee.ImageCollection(ee.Image(map)), fc=images[map], resolution=10
+        )
 
         # Binarize
         sampled["sampled"] = sampled[REDUCER_STR].apply(lambda x: 1 if x >= 0.5 else 0)
@@ -68,16 +74,21 @@ def extract_harvest(test):
 
     return test
 
+
 def extract_covermaps(test):
     """
-    Generates and extracts test points from Copernicus, ESA, and GLAD covermaps. Test set is assumed to follow same format as one generated using the 
-    generate_test_set function. 
+    Generates and extracts test points from Copernicus, ESA, and GLAD covermaps. Test set is assumed to follow same format as one generated using the
+    generate_test_set function.
     """
     test = test.copy()
     # Create feature collection from test set
     test_coll = ee.FeatureCollection(test.apply(create_point, axis=1).to_list())
 
-    copernicus = ee.ImageCollection(COP).select("discrete_classification").filterDate("2019-01-01", "2019-12-31")
+    copernicus = (
+        ee.ImageCollection(COP)
+        .select("discrete_classification")
+        .filterDate("2019-01-01", "2019-12-31")
+    )
     esa = ee.ImageCollection(ESA)
     glad = ee.ImageCollection(GLAD)
 
@@ -88,11 +99,16 @@ def extract_covermaps(test):
     print("sampling glad")
     glad_sampled = extract_points(glad, test_coll, 30)
 
-    test["cop"] = pd.merge(test, cop_sampled, on=["lat", "lon"], how="left")["mode"].apply(lambda x: 1 if x==40 else 0)
-    test["esa"] = pd.merge(test, esa_sampled, on=["lat", "lon"], how="left")["mode"].apply(lambda x: 1 if x==40 else 0)
-    test['glad'] = pd.merge(test, glad_sampled, on=["lat", "lon"], how="left")["mode"]
+    test["cop"] = pd.merge(test, cop_sampled, on=["lat", "lon"], how="left")["mode"].apply(
+        lambda x: 1 if x == 40 else 0
+    )
+    test["esa"] = pd.merge(test, esa_sampled, on=["lat", "lon"], how="left")["mode"].apply(
+        lambda x: 1 if x == 40 else 0
+    )
+    test["glad"] = pd.merge(test, glad_sampled, on=["lat", "lon"], how="left")["mode"]
 
     return test
+
 
 # --- SUPPORTING FUNCTIONS ---
 def create_point(row) -> ee.Feature:
@@ -105,48 +121,37 @@ def create_point(row) -> ee.Feature:
 
     return ee.Feature(geom, prop)
 
-def bufferPoints(
-    radius: int, 
-    bounds: bool
-):
+
+def bufferPoints(radius: int, bounds: bool):
     """
     Generates function to add buffering radius to point. "bound" (bool) snap boundaries of radii to square pixel
     """
+
     def function(pt):
         pt = ee.Feature(pt)
         return pt.buffer(radius).bounds() if bounds else pt.buffer(radius)
 
     return function
 
+
 def raster_extraction(
-    image, 
-    fc, 
-    resolution, 
-    reducer=REDUCER, 
-    crs="EPSG:4326"
+    image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
     """
     Mapping function used to extract values, given a feature collection, from an earth engine image.
     """
     fc_sub = fc.filterBounds(image.geometry())
 
-    feature = image.reduceRegions(
-        collection=fc_sub,
-        reducer=reducer,
-        scale=resolution,
-        crs=crs
-    )
-    
+    feature = image.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
+
     return feature
 
+
 def extract_points(
-    ic: ee.ImageCollection, 
-    fc: ee.FeatureCollection, 
-    resolution=10, 
-    projection='EPSG:4326'
+    ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
 ) -> gpd.GeoDataFrame:
     """
-    Creates geodataframe of extracted values from image collection. Assumes ic parameters are set (date, region, band, etc.). 
+    Creates geodataframe of extracted values from image collection. Assumes ic parameters are set (date, region, band, etc.).
     """
 
     extracted = ic.map(lambda x: raster_extraction(x, fc, resolution, crs=projection)).flatten()
@@ -154,10 +159,8 @@ def extract_points(
 
     return extracted
 
-def filter_by_bounds(
-    country: str, 
-    gdf: gpd.GeoDataFrame
-) -> gpd.GeoDataFrame:
+
+def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     """
     Filters out data in gdf that is not within country bounds
@@ -176,6 +179,7 @@ def filter_by_bounds(
 
     return filtered
 
+
 def read_test(path: str) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -186,6 +190,7 @@ def read_test(path: str) -> gpd.GeoDataFrame:
     test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
     return test
+
 
 def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
     """
@@ -213,26 +218,25 @@ def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
 
     return test
 
-def generate_report(
-    dataset_name: str, 
-    country: str,
-    true, 
-    pred
-    ) -> pd.DataFrame:
+
+def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values. Assumes 1 indicates cropland.
     """
 
     report = classification_report(true, pred, output_dict=True)
-    return pd.DataFrame(data = {
-        "dataset": dataset_name, 
-        "country": country,
-        "crop_f1": report["1"]["f1-score"], 
-        "accuracy": report["accuracy"], 
-        "crop_support": report["1"]["support"], 
-        "noncrop_support": report["0"]["support"], 
-        "crop_recall": report["1"]["recall"], 
-        "noncrop_recall": report["0"]["recall"],
-        "crop_precision": report["1"]["precision"],
-        "noncrop_precision": report["0"]["precision"] 
-        }, index=[0])
+    return pd.DataFrame(
+        data={
+            "dataset": dataset_name,
+            "country": country,
+            "crop_f1": report["1"]["f1-score"],
+            "accuracy": report["accuracy"],
+            "crop_support": report["1"]["support"],
+            "noncrop_support": report["0"]["support"],
+            "crop_recall": report["1"]["recall"],
+            "noncrop_recall": report["0"]["recall"],
+            "crop_precision": report["1"]["precision"],
+            "noncrop_precision": report["0"]["precision"],
+        },
+        index=[0],
+    )
