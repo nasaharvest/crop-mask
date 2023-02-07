@@ -1,16 +1,11 @@
 import ee
 import geemap
-import os
 import cartopy.io.shapereader as shpreader
 import geopandas as gpd
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import rasterio as rio
 
 from pathlib import Path
-from shapely import wkt
-from shapely.geometry import GeometryCollection, MultiPolygon, Point
+from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
 # ee.Authenticate()
