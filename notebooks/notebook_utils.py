@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 from matplotlib import pyplot as plt
-from openmapflow.constants import FEATURE_PATH
+from openmapflow.constants import SOURCE
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 sys.path.append("..")
