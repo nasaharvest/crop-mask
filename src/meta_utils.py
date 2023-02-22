@@ -10,7 +10,7 @@ import pandas as pd
 #     -> NOTE: Additionally; area estimation may also be for either single year (map) or 
 #              multi-year (area change).
 
-# (3) Area estimation there are additionally two types:
+# (3) With area estimation there are additionally two types:
 #     -> Single-year crop map area estimation
 #     -> Multi-year crop map change area estimation 
 
@@ -23,6 +23,46 @@ import pandas as pd
 #        or **area estimation** 
 #     -> Don't require additional script file; instead maybe have two separate notebooks for mapping
 #        and area estimation but all util functions in one .py
+
+def check_dataframes(df1 : pd.DataFrame, df2 : pd.DataFrame, df3 : pd.DataFrame = None) -> tuple:
+    """ Checks dataframes. """
+
+    if df3 is not None:
+        raise NotImplementedError
+    
+    else:
+        label = "Does this pixel contain active cropland?"
+
+        # Check for equal shape
+        print(f"Native dataframe shapes   : {df1.shape} , {df2.shape}")
+        if df1.shape != df2.shape:
+            # Attempt to force symmetry by dropping potential duplicate values
+            #   -> NOTE: Both dataframes can contain duplicate values -> TODO: Add handling...
+            print("Asymmetry found, attempting to make symmetry...")
+            max(df1, df2, key = len).drop_duplicates(subset = ["plotid", "sampleid"], inplace = True, ignore_index = True)
+            print(f"Adjusted dataframe shapes : {df1.shape} , {df2.shape}")
+            
+            # If shapes are still not equal; raise a ValueError
+            if df1.shape != df2.shape:
+                raise AssertionError("Unable to create symmetry between dataframes")
+
+        # Check for NaNs
+        if df1[label].isna().any() or df2[label].isna().any():
+            print("NaN values found, dropping rows containing NaNs...")
+            for df in [df1, df2]:
+                df.dropna(axis = 0, subset = [label], inplace = True)
+
+            print(f"Adjusted dataframe shapes : {df1.shape} , {df2.shape}")
+            # Take the intersection of indices b/twn two dataframes after dropping NaNs and subset
+            indices = df1.index.intersection(df2.index)
+            df1 = df1.loc[indices, :]
+            df2 = df2.loc[indices, :]
+
+        # Check that ids are corresponding
+        if (df1.plotid != df2.plotid).all():
+            raise AssertionError("IDs are not corresponding.")
+        
+        return df1, df2
 
 def load_dataframes(
         path_fn, 
@@ -37,17 +77,22 @@ def load_dataframes(
 
     """
 
+    print("{:^53}\n{}".format("Loading dataframes from file...", "-" * 51))
     if (completed_date and final_date):
-        completed_dataframe_set_1 = pd.read_csv(path_fn("set-1", completed_date))
-        completed_dataframe_set_2 = pd.read_csv(path_fn("set-2", completed_date))
-        final_dataframe = pd.read_csv(path_fn("set-1", final_date))
+        # Dataframes @ completed date for set 1 and 2
+        cdf1 = pd.read_csv(path_fn("set-1", completed_date))
+        cdf2 = pd.read_csv(path_fn("set-2", completed_date))
+        # Dataframe @ final date 
+        #   -> Arbitrarily choose "set-1", both sets are in agreement by this point. 
+        fdf = pd.read_csv(path_fn("set-1", final_date))
 
-        return completed_dataframe_set_1, completed_dataframe_set_2, final_dataframe    
+        return check_dataframes(cdf1, cdf2, fdf)
     else:
-        completed_dataframe_set_1 = pd.read_csv(path_fn("set-1"))
-        completed_dataframe_set_2 = pd.read_csv(path_fn("set-2"))
+        # Dataframes @ completed date for set 1 and 2
+        cdf1 = pd.read_csv(path_fn("set-1"))
+        cdf2 = pd.read_csv(path_fn("set-2"))
 
-        return completed_dataframe_set_1, completed_dataframe_set_2
+        return check_dataframes(cdf1, cdf2)
 
 def compute_area_change(year_1_label : str, year_2_label : str) -> str :
     """ Computes planting change. """
@@ -65,11 +110,13 @@ def compute_area_change(year_1_label : str, year_2_label : str) -> str :
 def compute_disagreements(df1 : pd.DataFrame, df2 : pd.DataFrame, area_change = False) -> pd.Series :
     """ Computes disagreements between labeler sets. """
     
+    print("{:^55}\n{}".format("Computing disagreements...", "-"*51))
     if area_change:
         disagreements = (df1["area_change"] != df2["area_change"])
     else:
         disagreements = (df1["crop_noncrop"] != df2["crop_noncrop"])
     
+    print(f"Disagreements between labeler sets 1 and 2 : {disagreements.sum()}")
     return disagreements
 
 
@@ -132,7 +179,7 @@ def create_meta_dataframe_aux(
     #   -> There could be conflict if merging includes `lon` and `lat` due to slight 
     #      variation between saved CSV files - but otherwise plotid/sampleid/lon/lat
     #      refer to the same locations 
-    lon, lat = cdf1.loc[disagreements, "lon"], cdf1.loc[disagreements, "lat"]
+    lon, lat = cdf1.loc[disagreements, "lon"].values, cdf1.loc[disagreements, "lat"].values
 
     # Extract columns to subset and eventually merge dataframes on 
     columns = ["plotid", "sampleid", "email", "analysis_duration"]
@@ -250,8 +297,9 @@ def create_meta_dataframe(
         # (1.2) Else is area estimate
         else:
             for df in [cdf1, cdf2, fdf]:
-                df = df.rename(
-                    columns = {"Does this pixel contain active cropland?" : "crop_noncrop"}
+                df.rename(
+                    columns = {"Does this pixel contain active cropland?" : "crop_noncrop"},
+                    inplace = True
                 )
 
         # (1.3) Compute disagreements
@@ -270,13 +318,13 @@ def create_meta_dataframe(
 
         # (2.2) Rename label column
         for df in [cdf1, cdf2]:
-            df = df.rename(
-                columns = {"Does this pixel contain active cropland?" : "crop_noncrop"}
+            df.rename(
+                columns = {"Does this pixel contain active cropland?" : "crop_noncrop"},
+                inplace = True
             )
 
         # (2.3) Compute disagreements
         disagreements = compute_disagreements(cdf1, cdf2)
-        print(f"Disagreements Between Labeler Sets 1 and 2 : {disagreements.sum()}")
 
         # (2.4) Create dataframe from disagreements
         meta_dataframe = create_meta_dataframe_aux(cdf1, cdf2, disagreements)
