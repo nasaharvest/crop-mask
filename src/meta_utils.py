@@ -219,7 +219,6 @@ def create_meta_dataframe_aux(
     
     """
 
-    print("\n{:^53}".format("Creating meta dataframe..."))
     # Pull lat and lon from one of the dataframes
     #   -> There could be conflict if merging includes `lon` and `lat` due to slight 
     #      variation between saved CSV files - but otherwise plotid/sampleid/lon/lat
@@ -231,6 +230,7 @@ def create_meta_dataframe_aux(
 
     # (1) If `fdf`` is not None, then area estimation!
     if fdf is not None:
+        print("\n{:^61}".format("Creating meta dataframe..."))
         # If area estimation, either area or area change estimation
         if area_change:
             columns.append("area_change")
@@ -277,6 +277,8 @@ def create_meta_dataframe_aux(
 
     # (2) Else `fdf` is None, then crop mapping
     else:
+        print("\n{:^53}".format("Creating meta dataframe..."))
+
         columns.append("crop_noncrop")
         renamed = lambda s : {
             "crop_noncrop" : f"{s}_label",
@@ -295,6 +297,10 @@ def create_meta_dataframe_aux(
 
         # Insert lon and lat columns
         meta_dataframe["lon"], meta_dataframe["lat"] = lon, lat
+
+        # Convert analysis duration to float
+        tofloat = lambda string : float(string.split(" ")[0])
+        meta_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]] = meta_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(tofloat)
 
         # Rearrange columns
         rcolumns = [
@@ -389,7 +395,6 @@ def label_overrides(df : pd.DataFrame) -> None:
     counts = sdf["overridden_label"].value_counts().sort_index()
 
     # Increment with instances of both
-    #   -> TODO: Add robustness if none; 
     bdf = df[df["overridden_label"] == "Both"]
     if bdf.shape[0] != 0:
         for label_1, label_2 in zip(bdf["set_1_label"], bdf["set_2_label"]):
@@ -412,7 +417,19 @@ def label_mistakes(df : pd.DataFrame) -> None:
     for label, count in zip(counts.index, counts.values):
         print("{:^17}: {:>2}".format(label, count))
 
-# (1b) Distribution of exact label-label changes
+# (1c) Distribution of disagreements
+
+def label_disagreements(df):
+    permutations = list(zip(df["set_1_label"], df["set_2_label"]))
+    permutations_sorted = [tuple(sorted(pair)) for pair in permutations]
+    counts = pd.Series(permutations_sorted).value_counts().sort_index()
+    
+    print("{:^43}\n{}".format("Distribution of Disagreements", "-"*42))
+    for (label_1, label_2), count in zip(counts.index, counts.values):
+        print("{:^15} x {:^15} : {:^3}".format(label_1, label_2, count))
+
+
+# (1d) Distribution of exact label-label changes
 
 def label_transitions(df : pd.DataFrame) -> None:
     # Subset
@@ -471,6 +488,8 @@ def median_duration(df : pd.DataFrame) -> None:
         "Overridden Points     : {:.2f} secs \nNon-Overridden Points : {:.2f} secs"
         .format(overridden.median(), nonoverridden.median())
     )
+
+# (3b) Which overridden labels have the highest analysis duration?
 
 def highest_duration(df : pd.DataFrame, q : float) -> None:
     # (2) Combine durations across both sets
