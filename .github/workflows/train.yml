@@ -104,7 +104,8 @@ jobs:
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
         git checkout -b"$MODEL_NAME"
-        git add .
+        git add data/models.dvc
+        git add data/models.json
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
         gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill
@@ -116,6 +117,7 @@ jobs:
       run: |
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
-        git add .
+        git add data/models.dvc
+        git add data/models.json
         git commit -m "Trained new: $MODEL_NAME"
         git push
