@@ -76,7 +76,6 @@ class Classifier(pl.LightningModule):
         self.global_classifier = nn.Sequential(*global_classification_layers)
 
         if self.hparams.multi_headed:
-
             num_local_layers = hparams.num_local_layers
             local_classification_layers: List[nn.Module] = []
             for i in range(num_local_layers):
@@ -100,7 +99,6 @@ class Classifier(pl.LightningModule):
             self.local_classifier = nn.Sequential(*local_classification_layers)
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-
         for _, lstm in enumerate(self.base):
             x, (hn, _) = lstm(x)
             x = x[:, 0, :, :]
@@ -112,7 +110,6 @@ class Classifier(pl.LightningModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
-
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
 
         parser_args: Dict[str, Tuple[Type, Any]] = {

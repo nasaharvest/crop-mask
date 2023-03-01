@@ -28,7 +28,6 @@ def inference_service(img_file):
 
 
 if __name__ == "__main__":
-
     # Creating a pool object for spawning multiprocesses
     pool = multiprocessing.Pool(len(img_list))
     results = pool.map(inference_service, img_list)
