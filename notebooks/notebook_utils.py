@@ -1,51 +1,8 @@
-import pickle
-import sys
-from pathlib import Path
 from typing import Tuple
 
 import numpy as np
-import pandas as pd
-import torch
 from matplotlib import pyplot as plt
-from openmapflow.constants import SOURCE
 from sklearn.metrics import f1_score, precision_score, recall_score
-
-sys.path.append("..")
-from src.models import Model  # noqa: E402s
-
-
-def get_validation_df(model_name: str, default_threshold: float = 0.5) -> pd.DataFrame:
-    """Gets validation set for model as a pandas dataframe"""
-    model = Model.load_from_checkpoint(f"../data/models/{model_name}.ckpt")
-    model = model.eval()
-
-    # Load model validation set
-    val = model.get_dataset(
-        subset="validation", normalizing_dict=model.normalizing_dict, upsample=False
-    )
-
-    df = val.df
-
-    def get_feature(feature_file):
-        with Path(feature_file).open("rb") as f:
-            f = pickle.load(f)
-        return f.instance_lat, f.instance_lon, f.source_file
-
-    df["instance_lat"], df["instance_lon"], df["source_file"] = zip(
-        *df[FEATURE_PATH].apply(get_feature)
-    )
-    df["y_true"] = df["crop_probability"].apply(lambda prob: 1 if prob > 0.5 else 0)
-
-    # Make predictions on validation set
-    x = torch.stack([v[0] for v in val])
-    with torch.no_grad():
-        # model(x) is indexed to get the local predictions (not global at index 0)
-        df["y_pred_decimal"] = model(x).numpy().flatten()
-
-    df["y_pred"] = df["y_pred_decimal"].apply(lambda pred: 1 if pred > default_threshold else 0)
-    df["errors"] = df["y_true"] != df["y_pred"]
-    return df
-
 
 def best_f1_threshold(model_name: str, plot: bool = False) -> Tuple[float, float]:
     """Plots precision recall graphs for model"""
