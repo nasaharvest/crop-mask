@@ -265,7 +265,6 @@ def estimate_num_sample_per_class(
     u_noncrop: float,
     stderr: float = 0.02,
 ) -> Tuple[float, float]:
-
     s_crop = np.sqrt(u_crop * (1 - u_crop))
     s_noncrop = np.sqrt(u_noncrop * (1 - u_crop))
 
@@ -341,7 +340,6 @@ def generate_change_ref_samples(
 
 
 def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_noncrop: int) -> None:
-
     df_noncrop = pd.DataFrame([], columns=["px", "py", "pred_class"])
     df_noncrop["px"], df_noncrop["py"] = random_inds(binary_map, 0, int(n_noncrop))
     df_noncrop["pred_class"] = 0
@@ -372,7 +370,6 @@ def generate_ref_samples(binary_map: np.ndarray, meta: dict, n_crop: int, n_nonc
 def reference_sample_agree(
     binary_map: np.ndarray, meta: dict, ceo_ref1: str, ceo_ref2: str
 ) -> gpd.GeoDataFrame:
-
     ceo_set1 = pd.read_csv(ceo_ref1)
     ceo_set2 = pd.read_csv(ceo_ref2)
 
@@ -572,7 +569,6 @@ def compute_confusion_matrix(ceo_agree_geom: gpd.GeoDataFrame) -> np.ndarray:
 def compute_area_estimate(
     crop_area_px: int, noncrop_area_px: int, cm: np.ndarray, meta: dict
 ) -> pd.DataFrame:
-
     tn, fp, fn, tp = cm
 
     total_area_px = crop_area_px + noncrop_area_px
@@ -781,7 +777,6 @@ def compute_area_estimate(
 
 
 def plot_area(summary: pd.DataFrame) -> None:
-
     area_class = summary.columns
     x_pos = np.arange(len(area_class))
     est_area = summary.loc["Estimated area [ha]"]

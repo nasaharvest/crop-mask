@@ -8,6 +8,6 @@
 - [ ] Once PR is approved, merge and confirm model is deployed to the Cloud
 - [ ] Create a small map ~1000m^2 with your newly deployed model
 
-Once prerequisites are satisfied, you are ready to create cropland maps using this system! 
+Once prerequisites are satisfied, you are ready to create cropland maps using this system!
 
 Notify Ivan to receive a list of maps which need to be made.

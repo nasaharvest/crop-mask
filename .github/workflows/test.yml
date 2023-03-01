@@ -19,14 +19,6 @@ jobs:
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
-    - name: isort
-      run: isort src test --check --diff
-    - name: black
-      run: black --check --diff .
-    - name: Run type checks
-      run: mypy .
-    - name: Run flake8
-      run: flake8 .
     - name: Run unit tests
       run: python -m unittest
     - uses: google-github-actions/auth@v0
@@ -35,15 +27,15 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
     - name: Run data pipeline
-      env:  
+      env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      run: | 
+      run: |
         dvc pull -f
         openmapflow create-datasets --non-interactive
         dvc commit -f
         dvc push
     - name: Push automated dataset updates
-      run: | 
+      run: |
         git config --global user.name 'Dataset bot'
         git config --global user.email 'dataset-bot@users.noreply.github.com'
         git pull
@@ -67,13 +59,9 @@ jobs:
 
     - name: Integration test - Model bboxes match evaluation sets
       run: python -m unittest test/integration_test_model_bbox.py
-      
+
     - name: Integration test - Model results are consistent
       run: python -m unittest test/integration_test_model_evaluation.py
 
     - name: Integration test - Area
       run: python -m unittest test/integration_test_area.py
-
-   
-
-
