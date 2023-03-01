@@ -4,11 +4,8 @@ from pathlib import Path
 import cartopy.io.shapereader as shpreader
 import ee
 import geemap
-import cartopy.io.shapereader as shpreader
 import geopandas as gpd
 import pandas as pd
-
-from pathlib import Path
 from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
@@ -17,21 +14,21 @@ ee.Initialize()
 
 COUNTRIES = ["Kenya", "Togo", "Tanzania"]
 DATA_PATH = "../data/datasets/"
-#Country codes for Natural Earth bounding box according file name of testing set
-TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA"} 
+# Country codes for Natural Earth bounding box according file name of testing set
+TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA"}
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
     shpreader.natural_earth(resolution="10m", category="cultural", name="admin_1_states_provinces")
 )
 
-#OLD 
+# OLD
 TEST_COUNTRIES = ["Kenya", "Togo", "Tanzania_CEO_2019"]
 TEST_PATHS = [p for p in DATASET_PATH if p.stem in TEST_COUNTRIES]  # test data path
 
 TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "Kenya.csv",
     "Togo": DATA_PATH + "Togo.csv",
-    "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv"
+    "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
 }
 
 COVERMAPS = {
@@ -42,7 +39,7 @@ COVERMAPS = {
     "esa": "ESA/WorldCover/v100",
     "glad": "users/potapovpeter/Global_cropland_2019",
     "gfsad": "USGS/GFSAD1000_V1",
-    "asap": "users/sbaber/asap_mask_crop_v03"
+    "asap": "users/sbaber/asap_mask_crop_v03",
 }
 
 REDUCER = ee.Reducer.mode()
@@ -51,6 +48,7 @@ LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
+
 
 class TestCovermaps:
     """
@@ -87,7 +85,7 @@ class TestCovermaps:
         test.reset_index(inplace=True, drop=True)
 
         return test
-    
+
     def extract_covermaps(self, test_df):
         """
         Groups testing points by country then extracts from each map. If map does not include
@@ -143,9 +141,9 @@ class Covermap:
         ee_asset: ee.ImageCollection, 
         resolution, 
         probability=False,
-        crop_label=None, 
-        countries = None) -> None:
-
+        crop_label=None,
+        countries=None,
+    ) -> None:
         # TODO: Check parameters
         self.title = title
         self.ee_asset = ee_asset
@@ -186,9 +184,10 @@ class Covermap:
 
         return sampled[[LAT, LON, self.title]]
 
+
 def extract_harvest(test):
     """
-    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same 
+    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same
     format as one generated using the generate_test_set function.
     """
     test = test.copy()
@@ -224,6 +223,7 @@ def extract_harvest(test):
 
     return test
 
+
 def extract_covermaps(test):
     """
     Generates and extracts test points from Copernicus, ESA, and GLAD covermaps. Test set is assumed to follow same format as one generated using the
@@ -258,6 +258,7 @@ def extract_covermaps(test):
 
     return test
 
+
 # --- SUPPORTING FUNCTIONS ---
 def create_point(row) -> ee.Feature:
     """
@@ -269,6 +270,7 @@ def create_point(row) -> ee.Feature:
     prop = dict(row[[LON, LAT, CLASS_COL]])
 
     return ee.Feature(geom, prop)
+
 
 def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
     """
@@ -296,6 +298,7 @@ def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
 
     return test
 
+
 def bufferPoints(radius: int, bounds: bool):
     """
     Generates function to add buffering radius to point. "bound" (bool) snap boundaries of radii to square pixel
@@ -307,6 +310,7 @@ def bufferPoints(radius: int, bounds: bool):
 
     return function
 
+
 def raster_extraction(
     image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
@@ -317,6 +321,7 @@ def raster_extraction(
     feature = image.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
 
     return feature
+
 
 def extract_points(
     ic: ee.ImageCollection, 
@@ -333,8 +338,8 @@ def extract_points(
 
     return extracted
 
-def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
+def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Filters out data in gdf that is not within country bounds
     """
@@ -352,6 +357,7 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return filtered
 
+
 def read_test(path: str) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -362,6 +368,7 @@ def read_test(path: str) -> gpd.GeoDataFrame:
     test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
     return test
+
 
 def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """

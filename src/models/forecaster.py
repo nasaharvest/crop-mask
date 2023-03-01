@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import pytorch_lightning as pl
 import torch
 from torch import nn
 
-from typing import Dict, Tuple, Type, Any, List, Optional
 from .lstm import UnrolledLSTM
 
 
@@ -46,7 +46,6 @@ class Forecaster(pl.LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         hidden_tuple: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
 
         input_timesteps = x.shape[1]

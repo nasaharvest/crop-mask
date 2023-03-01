@@ -86,7 +86,7 @@ Container CPU utilization: 5.95%
 Container memory: 42.15 %
 Container instance count: active-1
 						   idle:0
-						   
+
 Request latencies: None
 
 ==========================================
@@ -117,5 +117,3 @@ Request latencies: 10.69mins
 Container CPU utilization: 75.39%
 Container memory utilization: 46.55%
 Container startup latency: 4.68s
-
-						   
