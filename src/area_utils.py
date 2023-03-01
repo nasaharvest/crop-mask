@@ -30,6 +30,8 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
         condition = ne_gdf["adm1_code"].str.startswith(country_code)
         boundary = ne_gdf[condition].copy()
         print("Entire country found!")
+        boundary = boundary.dissolve(by="admin")
+        return boundary
 
     else:
         available_regions = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)][
@@ -145,8 +147,8 @@ def cal_map_area_class(
     noncrop_px = np.where(binary_map.flatten() == 0)
     total = crop_px[0].shape[0] + noncrop_px[0].shape[0]
     if unit == "ha":
-        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 100000
-        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 100000
+        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
+        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
         print(
             f"Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
@@ -190,10 +192,10 @@ def cal_map_area_change_class(
     )
 
     if unit == "ha":
-        stable_np_area = stable_np.shape[0] * (px_size * px_size) / 100000
-        p_gain_area = p_gain.shape[0] * (px_size * px_size) / 100000
-        p_loss_area = p_loss.shape[0] * (px_size * px_size) / 100000
-        stable_p_area = stable_p.shape[0] * (px_size * px_size) / 100000
+        stable_np_area = stable_np.shape[0] * (px_size * px_size) / 10000
+        p_gain_area = p_gain.shape[0] * (px_size * px_size) / 10000
+        p_loss_area = p_loss.shape[0] * (px_size * px_size) / 10000
+        stable_p_area = stable_p.shape[0] * (px_size * px_size) / 10000
 
     elif unit == "pixels":
         stable_np_area = int(stable_np.shape[0])
