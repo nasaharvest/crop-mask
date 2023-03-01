@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score, precision_score, recall_score
 
+
 def best_f1_threshold(model_name: str, plot: bool = False) -> Tuple[float, float]:
     """Plots precision recall graphs for model"""
     df = get_validation_df(model_name)
