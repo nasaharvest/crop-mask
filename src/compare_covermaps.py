@@ -4,11 +4,8 @@ from pathlib import Path
 import cartopy.io.shapereader as shpreader
 import ee
 import geemap
-import cartopy.io.shapereader as shpreader
 import geopandas as gpd
 import pandas as pd
-
-from pathlib import Path
 from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
@@ -16,24 +13,23 @@ from sklearn.metrics import classification_report
 ee.Initialize()
 
 
-
 COUNTRIES = ["Kenya", "Togo", "Tanzania"]
 DATA_PATH = "../data/datasets/"
-#Country codes for Natural Earth bounding box according file name of testing set
-TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA"} 
+# Country codes for Natural Earth bounding box according file name of testing set
+TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA"}
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
     shpreader.natural_earth(resolution="10m", category="cultural", name="admin_1_states_provinces")
 )
 
-#OLD 
+# OLD
 TEST_COUNTRIES = ["Kenya", "Togo", "Tanzania_CEO_2019"]
 TEST_PATHS = [p for p in DATASET_PATH if p.stem in TEST_COUNTRIES]  # test data path
 
 TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "Kenya.csv",
     "Togo": DATA_PATH + "Togo.csv",
-    "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv"
+    "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
 }
 
 COVERMAPS = {
@@ -44,7 +40,7 @@ COVERMAPS = {
     "esa": "ESA/WorldCover/v100",
     "glad": "users/potapovpeter/Global_cropland_2019",
     "gfsad": "USGS/GFSAD1000_V1",
-    "asap": "users/sbaber/asap_mask_crop_v03"
+    "asap": "users/sbaber/asap_mask_crop_v03",
 }
 
 REDUCER = ee.Reducer.mode()
@@ -54,22 +50,24 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
+
 class TestCovermaps:
     """
     Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets.
     """
+
     def __init__(self, countries, covermaps) -> None:
         self.countries = countries
-        self.covermaps = covermaps 
+        self.covermaps = covermaps
         self.sampled_maps = {}
-        
+
     def get_test_points(self, targets=None) -> gpd.GeoDataFrame:
         """
         Returns geodataframe containing all test points from labeled maps. Modified from generate_test_data
         """
         if targets == None:
             targets = self.countries.copy()
-            
+
         test_set = []
 
         for country in targets:
@@ -81,7 +79,7 @@ class TestCovermaps:
         test.reset_index(inplace=True, drop=True)
 
         return test
-    
+
     def extract_covermaps(self, test_df):
         """
         Extracts test points from covermaps. Defaults to all countries provided in class. Assumes that
@@ -92,21 +90,25 @@ class TestCovermaps:
             test_temp = test_df.loc[test_df[COUNTRY_COL] == country].copy()
             for map in self.covermaps:
                 map_sampled = map.extract_test(test_df, countries=[country])
-                test_temp[map.title] = pd.merge(test_temp, map_sampled, on=[LAT, LON], how="left")[map.title]
-            
+                test_temp[map.title] = pd.merge(test_temp, map_sampled, on=[LAT, LON], how="left")[
+                    map.title
+                ]
+
             self.sampled_maps[country] = test_temp
-        
+
         return self.sampled_maps.copy()
+
 
 class Covermap:
     def __init__(
-        self, title: str, 
-        ee_asset: ee.ImageCollection, 
-        resolution, 
+        self,
+        title: str,
+        ee_asset: ee.ImageCollection,
+        resolution,
         probability=False,
-        crop_label=None, 
-        countries = None) -> None:
-
+        crop_label=None,
+        countries=None,
+    ) -> None:
         # TODO: Check parameters
         self.title = title
         self.ee_asset = ee_asset
@@ -114,34 +116,37 @@ class Covermap:
         self.resolution = resolution
         self.probability = probability
         self.countries = countries
-    
-    def extract_test(self, test, countries = None) -> gpd.GeoDataFrame:
-        # TODO: Test here for test data params, might not need to worry about since test sets are created through this 
-        
+
+    def extract_test(self, test, countries=None) -> gpd.GeoDataFrame:
+        # TODO: Test here for test data params, might not need to worry about since test sets are created through this
+
         # Check if subset is requested
         if countries != None:
-            test = test.loc[test['country'] in countries].copy
+            test = test.loc[test["country"] in countries].copy
         else:
-            test = test.copy 
+            test = test.copy
 
         test_coll = ee.FeatureCollection(test.apply(create_point, axis=1).to_list())
         sampled = extract_points(self.ee_asset, test_coll, self.resolution)
 
-        assert len(sampled) == len(test), "Extracting error: length of sampled dataset is not the same as testing dataset"
+        assert len(sampled) == len(
+            test
+        ), "Extracting error: length of sampled dataset is not the same as testing dataset"
 
         # Recast values
         if self.probability:
-            mapper = lambda x: 1 if x > 0.5 else 0 
+            mapper = lambda x: 1 if x > 0.5 else 0
         else:
             mapper = lambda x: 1 if x == self.crop_label else 0
-        
+
         sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
 
         return sampled[[LAT, LON, self.title]]
 
+
 def extract_harvest(test):
     """
-    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same 
+    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same
     format as one generated using the generate_test_set function.
     """
     test = test.copy()
@@ -177,6 +182,7 @@ def extract_harvest(test):
 
     return test
 
+
 def extract_covermaps(test):
     """
     Generates and extracts test points from Copernicus, ESA, and GLAD covermaps. Test set is assumed to follow same format as one generated using the
@@ -211,6 +217,7 @@ def extract_covermaps(test):
 
     return test
 
+
 # --- SUPPORTING FUNCTIONS ---
 def create_point(row) -> ee.Feature:
     """
@@ -222,6 +229,7 @@ def create_point(row) -> ee.Feature:
     prop = dict(row[[LON, LAT, CLASS_COL]])
 
     return ee.Feature(geom, prop)
+
 
 def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
     """
@@ -249,6 +257,7 @@ def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
 
     return test
 
+
 def bufferPoints(radius: int, bounds: bool):
     """
     Generates function to add buffering radius to point. "bound" (bool) snap boundaries of radii to square pixel
@@ -259,6 +268,7 @@ def bufferPoints(radius: int, bounds: bool):
         return pt.buffer(radius).bounds() if bounds else pt.buffer(radius)
 
     return function
+
 
 def raster_extraction(
     image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
@@ -272,6 +282,7 @@ def raster_extraction(
 
     return feature
 
+
 def extract_points(
     ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
 ) -> gpd.GeoDataFrame:
@@ -284,8 +295,8 @@ def extract_points(
 
     return extracted
 
-def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
+def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Filters out data in gdf that is not within country bounds
     """
@@ -303,6 +314,7 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return filtered
 
+
 def read_test(path: str) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -313,6 +325,7 @@ def read_test(path: str) -> gpd.GeoDataFrame:
     test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
     return test
+
 
 def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """
@@ -334,4 +347,3 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
         },
         index=[0],
     )
-
