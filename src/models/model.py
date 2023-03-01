@@ -216,7 +216,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
     ) -> CropDataset:
-
         df = self.load_df(subset, self.hparams.train_datasets, self.hparams.eval_datasets)
 
         return CropDataset(
@@ -264,7 +263,6 @@ class Model(pl.LightningModule):
         )
 
     def _output_metrics(self, preds: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
-
         if len(preds) == 0:
             # sometimes this happens in the warmup
             return {}
@@ -345,7 +343,6 @@ class Model(pl.LightningModule):
     def _split_preds_and_get_loss(
         self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
     ) -> Dict:
-
         x, label, is_global = batch
 
         # TODO: Reconcile below with forward()
