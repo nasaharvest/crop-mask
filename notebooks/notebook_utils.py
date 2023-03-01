@@ -1,13 +1,13 @@
 from typing import Tuple
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 
-def best_f1_threshold(model_name: str, plot: bool = False) -> Tuple[float, float]:
+def best_f1_threshold(df: pd.DataFrame, model_name: str, plot: bool = False) -> Tuple[float, float]:
     """Plots precision recall graphs for model"""
-    df = get_validation_df(model_name)
     thresholds = np.arange(0, 1.0, 0.01)
     f1_scores = []
     precision_scores = []
