@@ -8,14 +8,9 @@ on:
         required: true
         type: string
       EVAL_DATASETS:
-        decsription: 'Evaluation dataset(s): (single spaced comma separated)'
+        description: 'Evaluation dataset(s): (single spaced comma separated)'
         required: true
         type: string
-      EPOCHS:
-        description: 'Number of training epochs'
-        required: false
-        default: 5
-        type: int
       BBOX:
         description: 'Bounding box name'
         required: true
@@ -42,7 +37,6 @@ jobs:
     env:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
-      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY  }}
       # Script inputs
       MODEL_NAME: ${{ inputs.MODEL_NAME }}
       EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
@@ -50,7 +44,7 @@ jobs:
       BBOX: ${{ inputs.BBOX }}
       UP_TO_YEAR: ${{ inputs.UP_TO_YEAR }}
       START_MONTH:  ${{ inputs.START_MONTH }}
-      INPUTS_MONTH: ${{ inputs.INPUT_MONTHS }}
+      INPUT_MONTHS: ${{ inputs.INPUT_MONTHS }}
       SEED: ${{ inputs.SEED }}
 
     steps:
@@ -63,6 +57,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install scikit-learn \
         pip install dvc[gs] \
         pip install pytorch-lightning==0.7.1 \
         pip install wandb \
@@ -74,7 +69,7 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
-        credentials_json: $GCP_SA_KEY
+        credentials_json: ${{ secrets.GCP_SA_KEY  }}
 
     - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
@@ -92,16 +87,15 @@ jobs:
         python train.py \
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
-          --epochs $EPOCHS \
           --bbox "$BBOX" \
           --up_to_year $UP_TO_YEAR \
           --start_month "$START_MONTH" \
-          --inputs_months $INPUT_MONTHS \
+          --input_months $INPUT_MONTHS \
           --wandb
 
     - name: Push model to DVC
       run: |
-        dvc commit data/models.dvc
+        dvc commit data/models.dvc -f
         dvc push data/models
 
     - name: Push changes to remote and PR
@@ -110,7 +104,8 @@ jobs:
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
         git checkout -b"$MODEL_NAME"
-        git add .
+        git add data/models.dvc
+        git add data/models.json
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
         gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill
@@ -122,6 +117,7 @@ jobs:
       run: |
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
-        git add .
+        git add data/models.dvc
+        git add data/models.json
         git commit -m "Trained new: $MODEL_NAME"
         git push

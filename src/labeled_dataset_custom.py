@@ -38,7 +38,6 @@ temp_dir = tempfile.gettempdir()
 
 @dataclass
 class CustomLabeledDataset(LabeledDataset):
-
     dataset: str = ""
     country: str = ""
     raw_labels: Tuple[RawLabels, ...] = ()

@@ -7,8 +7,9 @@ assignees: ''
 
 ---
 
-- [ ] Labeling project created
-- [ ] Labeling completed
+- [ ] Labeling projects created and links added below
+- [ ] [Set 1]() Labeling
+- [ ] [Set 2]() Labeling
 - [ ] Data added to repository
 - [ ] Model trained
 - [ ] Map made
