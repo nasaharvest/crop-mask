@@ -54,21 +54,25 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
 def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
+
 class EthiopiaTigrayGhent2021(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         # Read in csv
         df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
         # Rename coordinate columns
-        df = df.rename(columns = {
-            'Latitude (WGS84)' : LAT,
-            'Longitude (WGS84)' : LON,
-            'Crop/Non-Crop' : CLASS_PROB,
-            })
+        df = df.rename(
+            columns={
+                "Latitude (WGS84)": LAT,
+                "Longitude (WGS84)": LON,
+                "Crop/Non-Crop": CLASS_PROB,
+            }
+        )
         # Define starting and end dates
         df[START], df[END] = date(2021, 2, 1), date(2022, 2, 1)
         # Placeholder subset column to pass checks
-        df[SUBSET] = 'validation'
+        df[SUBSET] = "validation"
         return df
+
 
 class HawaiiAgriculturalLandUse2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
@@ -898,7 +902,7 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
-    EthiopiaTigrayGhent2021()
+    EthiopiaTigrayGhent2021(),
 ]
 
 if __name__ == "__main__":
