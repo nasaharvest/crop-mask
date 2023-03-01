@@ -4,15 +4,17 @@ channels:
     - pytorch
 dependencies:
     - python=3.7
+    - pip
     - mypy=0.931
-    - black
     - scikit-learn
-    - flake8
     - cartopy
+    - pytorch=1.7.1
     - pip:
+          - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - types-requests
           - types-python-dateutil
-          - openmapflow[data]==0.1.5
+          - openmapflow[data]==0.2.3rc1
           - dvc[gs]
+          - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34

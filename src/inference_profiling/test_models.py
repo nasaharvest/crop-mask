@@ -5,9 +5,10 @@
 # peak process cpu ranged between 8-70%.
 # Additional details can be found in the "local_model_tests.csv".
 
+import sys
+
 # Importing all the packages
 import torch
-import sys
 
 # Defining the timesteps and the bands
 timesteps = 3
