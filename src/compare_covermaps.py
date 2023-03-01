@@ -15,8 +15,6 @@ from sklearn.metrics import classification_report
 # ee.Authenticate()
 ee.Initialize()
 
-
-
 COUNTRIES = ["Kenya", "Togo", "Tanzania"]
 DATA_PATH = "../data/datasets/"
 #Country codes for Natural Earth bounding box according file name of testing set
@@ -58,23 +56,31 @@ class TestCovermaps:
     """
     Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets.
     """
-    def __init__(self, countries, covermaps) -> None:
-        self.countries = countries
+    def __init__(
+        self, 
+        test_countries: list, 
+        covermaps: list
+        ) -> None:
+
+        self.test_countries = test_countries
         self.covermaps = covermaps 
+        self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps = {}
+        self.results = {}
         
     def get_test_points(self, targets=None) -> gpd.GeoDataFrame:
         """
         Returns geodataframe containing all test points from labeled maps. Modified from generate_test_data
         """
         if targets == None:
-            targets = self.countries.copy()
+            targets = self.test_countries.copy()
             
         test_set = []
 
         for country in targets:
             gdf = read_test(TEST_COUNTRIES[country])
             gdf = filter_by_bounds(TEST_CODE[country], gdf)
+
             test_set.append(gdf)
 
         test = gpd.GeoDataFrame(pd.concat(test_set))
@@ -84,23 +90,56 @@ class TestCovermaps:
     
     def extract_covermaps(self, test_df):
         """
-        Extracts test points from covermaps. Defaults to all countries provided in class. Assumes that
-        if test_df is empty, a testing set using all countries in countries array is used.
+        Groups testing points by country then extracts from each map. If map does not include
+        specified country, the map is skipped. Resulting extracted points are combined for 
+        each country then added to sampled_maps, where key = country and value = a dataframe of extracted
+        points from maps.
         """
-
-        for country in self.countries:
+        for country in self.test_countries:
             test_temp = test_df.loc[test_df[COUNTRY_COL] == country].copy()
+
+            assert not test_temp.is_empty.all(), "No testing points for " + country 
+
             for map in self.covermaps:
-                map_sampled = map.extract_test(test_df, countries=[country])
-                test_temp[map.title] = pd.merge(test_temp, map_sampled, on=[LAT, LON], how="left")[map.title]
-            
-            self.sampled_maps[country] = test_temp
+                if country in map.countries:
+                    print(f"[{country}] sampling " + map.title + "...")
+
+                    map_sampled = map.extract_test(test_temp).copy()    
+                    test_temp = pd.merge(test_temp, map_sampled, on=[LAT, LON], how="left")
+
+            self.sampled_maps[country] = test_temp.copy()
         
         return self.sampled_maps.copy()
 
+    def evaluate(self): 
+        """
+        Evaluates extracted maps using CropHarvest maps as baseline. Groups metrics
+        by country, and countries with NaN values will have those row dropped.
+        """
+        if len(self.sampled_maps) == 0: 
+            print("No maps extracted")
+            return None
+        else:
+            print("evaluating maps...")
+            for country in self.sampled_maps:
+                comparisons = []
+                dataset = self.sampled_maps[country].copy()
+
+                for map in self.covermap_titles:
+                    if map in dataset.columns:
+                        temp = dataset[[CLASS_COL, map]].dropna()
+                        print("dataset: " + map + " | country: " + country)     
+
+                        comparisons.append(generate_report(map, country, temp[CLASS_COL], temp[map]))
+
+                self.results[country] = pd.concat(comparisons)
+                
+            return self.results.copy()
+            
 class Covermap:
     def __init__(
-        self, title: str, 
+        self, 
+        title: str, 
         ee_asset: ee.ImageCollection, 
         resolution, 
         probability=False,
@@ -112,29 +151,37 @@ class Covermap:
         self.ee_asset = ee_asset
         self.crop_label = crop_label
         self.resolution = resolution
-        self.probability = probability
-        self.countries = countries
+        self.probability = probability # for harvest maps, where points are crop probability
+
+        if countries is None:
+            self.countries = [c for c in TEST_COUNTRIES]
+        else:
+            self.countries = countries
     
-    def extract_test(self, test, countries = None) -> gpd.GeoDataFrame:
+    def extract_test(self, test) -> gpd.GeoDataFrame:
         # TODO: Test here for test data params, might not need to worry about since test sets are created through this 
         
-        # Check if subset is requested
-        if countries != None:
-            test = test.loc[test['country'] in countries].copy
-        else:
-            test = test.copy 
+        # Extract from countires that are covered by map
+        test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
-        test_coll = ee.FeatureCollection(test.apply(create_point, axis=1).to_list())
-        sampled = extract_points(self.ee_asset, test_coll, self.resolution)
+        test_coll = ee.FeatureCollection(test_points.apply(lambda x: create_point(x), axis=1).to_list())
+        sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
-        assert len(sampled) == len(test), "Extracting error: length of sampled dataset is not the same as testing dataset"
+        if len(sampled) != len(test_points):
+            print("Extracting error: length of sampled dataset is not the same as testing dataset")
 
         # Recast values
         if self.probability:
-            mapper = lambda x: 1 if x > 0.5 else 0 
+            mapper = lambda x: 1 if x >= 0.5 else 0 
         else:
-            mapper = lambda x: 1 if x == self.crop_label else 0
-        
+            if type(self.crop_label) is list:
+                mapper = lambda x: 1 if x in self.crop_label else 0
+            elif type(self.crop_label) is int:
+                mapper = lambda x: 1 if x == self.crop_label else 0
+            else:
+                print("Invalid valid label")
+                return None
+
         sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
 
         return sampled[[LAT, LON, self.title]]
@@ -267,14 +314,16 @@ def raster_extraction(
     Mapping function used to extract values, given a feature collection, from an earth engine image.
     """
     fc_sub = fc.filterBounds(image.geometry())
-
     feature = image.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
 
     return feature
 
 def extract_points(
-    ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
-) -> gpd.GeoDataFrame:
+    ic: ee.ImageCollection, 
+    fc: ee.FeatureCollection, 
+    resolution=10, 
+    projection="EPSG:4326"
+    ) -> gpd.GeoDataFrame:
     """
     Creates geodataframe of extracted values from image collection. Assumes ic parameters are set (date, region, band, etc.).
     """
@@ -335,3 +384,58 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
         index=[0],
     )
 
+TARGETS = {
+    "harvest_togo": Covermap(
+        "harvest_togo", 
+        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/nasa-harvest/togo_cropland_binary")),
+        resolution=10,
+        probability=True,
+        countries=["Togo"]
+    ),
+    "harvest_kenya": Covermap(
+        "harvest_kenya",
+        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/nasa-harvest/kenya_cropland_binary")),
+        resolution=10,
+        probability=True,
+        countries=["Kenya"]
+    ),
+    "harvest_tanzania": Covermap(
+        "harvest_tanzania",
+        ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
+        resolution=10,
+        probability=True,
+        countries=["Tanzania"]
+    ),
+    "copernicus": Covermap(
+        "copernicus",
+        ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global").select(
+            "discrete_classification").filterDate(
+                "2019-01-01", "2019-12-31"),
+        resolution=100,
+        crop_label=40
+    ),
+    "esa": Covermap(
+        "esa",
+        ee.ImageCollection("ESA/WorldCover/v100"),
+        resolution = 10,
+        crop_label=40
+    ),
+    "glad": Covermap(
+        "glad",
+        ee.ImageCollection("users/potapovpeter/Global_cropland_2019"),
+        resolution=30,
+        probability=True
+    ),
+    "gfsad": Covermap(
+        "gfsad",
+        ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
+        resolution=1000,
+        crop_label=[1, 2, 3, 4, 5]
+    ),
+    "asap": Covermap(
+        "asap",
+        ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
+        resolution=1000
+        # TODO
+    )
+}
