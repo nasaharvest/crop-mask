@@ -30,7 +30,6 @@ ceo_path_2 = (
 
 
 class IntegrationTestArea(TestCase):
-
     sample_input = {
         "country_iso3": "RWA",
         "regions_in_country": ["Kigali City", "Northern"],
