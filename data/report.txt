@@ -324,3 +324,11 @@ HawaiiCorrectiveGuided2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    329
 ✔ training amount: 329, positive class: 21.0%
+
+
+
+MalawiCorrectiveLabels2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    4290
+eo_data_complete        6
+✖ training: 4296 labels, but 6 features
