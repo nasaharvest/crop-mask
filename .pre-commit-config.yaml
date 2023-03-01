@@ -14,7 +14,7 @@ repos:
     hooks:
     -   id: isort
         language: python
-        language_version: 3.9
+        language_version: python3.9
 -   repo: https://github.com/psf/black
     rev: 22.10.0
     hooks:
