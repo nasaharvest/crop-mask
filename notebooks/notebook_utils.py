@@ -1,14 +1,14 @@
-from matplotlib import pyplot as plt
-from sklearn.metrics import f1_score, precision_score, recall_score
+import pickle
+import sys
+from pathlib import Path
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
-import pickle
-import sys
 import torch
-from pathlib import Path
+from matplotlib import pyplot as plt
 from openmapflow.constants import FEATURE_PATH
+from sklearn.metrics import f1_score, precision_score, recall_score
 
 sys.path.append("..")
 from src.models import Model  # noqa: E402s

@@ -25,7 +25,6 @@ class CropDataset(Dataset):
         normalizing_dict: Optional[Dict] = None,
         up_to_year: Optional[int] = None,
     ) -> None:
-
         df = df.copy()
 
         if subset == "training" and up_to_year is not None:
@@ -85,8 +84,8 @@ class CropDataset(Dataset):
                     ),
                     ignore_index=True,
                 )
+                print(f"Upsamplng local non-crop to match crop {local_non_crop} -> {local_crop}")
             elif local_crop < local_non_crop:
-                arrow = "->"
                 df = df.append(
                     df[df["is_local"] & df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
@@ -208,7 +207,6 @@ class CropDataset(Dataset):
 
     @property
     def num_input_features(self) -> int:
-
         # assumes the first value in the tuple is x
         assert len(self.df) > 0, "No files to load!"
 
@@ -223,7 +221,6 @@ class CropDataset(Dataset):
         return 1, 1
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-
         if (self.cache) & (self.x is not None):
             # if we upsample, the caching might not have happened yet
             return (

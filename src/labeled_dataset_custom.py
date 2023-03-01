@@ -38,7 +38,6 @@ temp_dir = tempfile.gettempdir()
 
 @dataclass
 class CustomLabeledDataset(LabeledDataset):
-
     dataset: str = ""
     country: str = ""
     raw_labels: Tuple[RawLabels, ...] = ()
@@ -106,11 +105,10 @@ class CustomLabeledDataset(LabeledDataset):
         timesteps = get_label_timesteps(df).unique()
         eo_status_str = str(df[EO_STATUS].value_counts()).rsplit("\n", 1)[0]
         return (
-            f"{self.name} (Timesteps: {','.join([str(int(t)) for t in timesteps])})\n"
+            f"\n{self.name} (Timesteps: {','.join([str(int(t)) for t in timesteps])})\n"
             + "----------------------------------------------------------------------------\n"
             + f"disagreement: {len(df[df[CLASS_PROB] == 0.5]) / len(df):.1%}\n"
             + eo_status_str
             + "\n"
             + _label_eo_counts(df)
-            + "\n"
         )

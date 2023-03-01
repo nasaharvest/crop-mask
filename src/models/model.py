@@ -23,6 +23,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
 from datasets import datasets
+from src.bboxes import bboxes
 
 from .classifier import Classifier
 from .data import CropDataset
@@ -70,18 +71,24 @@ class Model(pl.LightningModule):
 
     def __init__(self, hparams: Namespace) -> None:
         super().__init__()
-        set_seed()
+        if "seed" in hparams:
+            set_seed(hparams.seed)
+        else:
+            set_seed()
 
         self.hparams = hparams
 
         self.batch_size = hparams.batch_size
 
-        self.target_bbox = BBox(
-            min_lat=hparams.min_lat,
-            max_lat=hparams.max_lat,
-            min_lon=hparams.min_lon,
-            max_lon=hparams.max_lon,
-        )
+        if "bbox" in hparams:
+            self.target_bbox = bboxes[hparams.bbox]
+        else:
+            self.target_bbox = BBox(
+                min_lat=hparams.min_lat,
+                max_lat=hparams.max_lat,
+                min_lon=hparams.min_lon,
+                max_lon=hparams.max_lon,
+            )
 
         if "skip_era5" in hparams and hparams.skip_era5:
             self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
@@ -209,7 +216,6 @@ class Model(pl.LightningModule):
         cache: Optional[bool] = None,
         upsample: Optional[bool] = None,
     ) -> CropDataset:
-
         df = self.load_df(subset, self.hparams.train_datasets, self.hparams.eval_datasets)
 
         return CropDataset(
@@ -257,7 +263,6 @@ class Model(pl.LightningModule):
         )
 
     def _output_metrics(self, preds: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
-
         if len(preds) == 0:
             # sometimes this happens in the warmup
             return {}
@@ -338,7 +343,6 @@ class Model(pl.LightningModule):
     def _split_preds_and_get_loss(
         self, batch, add_preds: bool, loss_label: str, log_loss: bool, training: bool
     ) -> Dict:
-
         x, label, is_global = batch
 
         # TODO: Reconcile below with forward()
@@ -484,12 +488,14 @@ class Model(pl.LightningModule):
         logs.update(metrics)
 
         # Save model with lowest validation loss
-        if self.current_epoch > 0 and self.val_losses[-1] == min(self.val_losses[1:]):
+        model_ckpt_path = PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.ckpt"
+        save_model_condition = self.current_epoch > 0 and (
+            not model_ckpt_path.exists() or (self.val_losses[-1] == min(self.val_losses[1:]))
+        )
+        if save_model_condition:
             saved_metrics = {f"{k}_saved": v for k, v in metrics.items()}
             logs.update(saved_metrics)
-            self.trainer.save_checkpoint(
-                PROJECT_ROOT / DataPaths.MODELS / f"{self.hparams.model_name}.ckpt"
-            )
+            self.trainer.save_checkpoint(model_ckpt_path)
         return {"log": logs}
 
     def test_epoch_end(self, outputs):
