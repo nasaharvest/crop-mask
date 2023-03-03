@@ -49,17 +49,18 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
+
 class TestCovermaps:
     """
     Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets. Covermaps can be self specified
-    or taken from TARGETS dict. If no countries are given to test in, class uses all test sets available. 
+    or taken from TARGETS dict. If no countries are given to test in, class uses all test sets available.
     """
 
     def __init__(self, test_countries: list, covermaps: list) -> None:
         self.test_countries = test_countries
         if test_countries is None:
             self.test_countries = [country for country in TEST_COUNTRIES]
-        self.covermaps = covermaps 
+        self.covermaps = covermaps
         self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps = {}
         self.results = {}
@@ -187,6 +188,7 @@ class Covermap:
 
         return sampled[[LAT, LON, self.title]]
 
+
 def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
     """
     Returns geodataframe containing all test points from labeled maps.
@@ -213,6 +215,7 @@ def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
 
     return test
 
+
 def create_point(row) -> ee.Feature:
     """
     Creates ee.Feature from longitude and latitude coordinates from a dataframe. Column
@@ -223,6 +226,7 @@ def create_point(row) -> ee.Feature:
     prop = dict(row[[LON, LAT, CLASS_COL]])
 
     return ee.Feature(geom, prop)
+
 
 def bufferPoints(radius: int, bounds: bool):
     """
@@ -346,14 +350,9 @@ TARGETS = {
         .select("discrete_classification")
         .filterDate("2019-01-01", "2019-12-31"),
         resolution=100,
-        crop_label=40
+        crop_label=40,
     ),
-    "esa": Covermap(
-        "esa",
-        ee.ImageCollection("ESA/WorldCover/v100"),
-        resolution=10,
-        crop_label=40
-    ),
+    "esa": Covermap("esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_label=40),
     "esa": Covermap("esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_label=40),
     "glad": Covermap(
         "glad",
@@ -371,25 +370,26 @@ TARGETS = {
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000
-        #TODO
+        # TODO
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
-        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").select("crops").filterDate(
-            "2019-01-01", "2019-12-31"),
+        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
+        .select("crops")
+        .filterDate("2019-01-01", "2019-12-31"),
         resolution=10,
-        probability=True
+        probability=True,
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
         resolution=30,
-        crop_label=[2]
+        crop_label=[2],
     ),
     "gfsad-lgrip": Covermap(
-        "gfsad-lgrip", 
+        "gfsad-lgrip",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
         resolution=30,
-        crop_label=[2,3]
-    )
+        crop_label=[2, 3],
+    ),
 }
