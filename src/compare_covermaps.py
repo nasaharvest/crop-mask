@@ -49,10 +49,10 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
-
 class TestCovermaps:
     """
-    Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets.
+    Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets. Covermaps can be self specified
+    or taken from TARGETS dict. If no countries are given to test in, class uses all test sets available. 
     """
     def __init__(
         self, 
@@ -61,6 +61,8 @@ class TestCovermaps:
         ) -> None:
 
         self.test_countries = test_countries
+        if test_countries is None:
+            self.test_countries = [country for country in TEST_COUNTRIES]
         self.covermaps = covermaps 
         self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps = {}
@@ -184,94 +186,6 @@ class Covermap:
 
         return sampled[[LAT, LON, self.title]]
 
-
-def extract_harvest(test):
-    """
-    Generates and extracts tests points from harvest covermaps. Test set is assumed to follow same
-    format as one generated using the generate_test_set function.
-    """
-    test = test.copy()
-    # Create feature collection for each country
-    tgo_coll = ee.FeatureCollection(
-        test.loc[test["country"] == "Togo"].apply(create_point, axis=1).to_list()
-    )
-    ken_coll = ee.FeatureCollection(
-        test.loc[test["country"] == "Kenya"].apply(create_point, axis=1).to_list()
-    )
-    tza_coll = ee.FeatureCollection(
-        test.loc[test["country"] == "Tanzania"].apply(create_point, axis=1).to_list()
-    )
-
-    images = {HARVEST_TGO: tgo_coll, HARVEST_KEN: ken_coll, HARVEST_TZA: tza_coll}
-
-    harvest = []
-    for map in images.keys():
-        name = map.split("/")[-1]
-        print("sampling " + name)
-
-        # Convert image to image collection
-        sampled = extract_points(
-            ic=ee.ImageCollection(ee.Image(map)), fc=images[map], resolution=10
-        )
-
-        # Binarize
-        sampled["sampled"] = sampled[REDUCER_STR].apply(lambda x: 1 if x >= 0.5 else 0)
-
-        harvest.append(sampled)
-
-    test["harvest"] = pd.merge(test, pd.concat(harvest), on=["lat", "lon"], how="left")["sampled"]
-
-    return test
-
-
-def extract_covermaps(test):
-    """
-    Generates and extracts test points from Copernicus, ESA, and GLAD covermaps. Test set is assumed to follow same format as one generated using the
-    generate_test_set function.
-    """
-    test = test.copy()
-    # Create feature collection from test set
-    test_coll = ee.FeatureCollection(test.apply(create_point, axis=1).to_list())
-
-    copernicus = (
-        ee.ImageCollection(COP)
-        .select("discrete_classification")
-        .filterDate("2019-01-01", "2019-12-31")
-    )
-    esa = ee.ImageCollection(ESA)
-    glad = ee.ImageCollection(GLAD)
-
-    print("sampling copernicus")
-    cop_sampled = extract_points(copernicus, test_coll, 100)
-    print("sampling esa")
-    esa_sampled = extract_points(esa, test_coll, 10)
-    print("sampling glad")
-    glad_sampled = extract_points(glad, test_coll, 30)
-
-    test["cop"] = pd.merge(test, cop_sampled, on=["lat", "lon"], how="left")["mode"].apply(
-        lambda x: 1 if x == 40 else 0
-    )
-    test["esa"] = pd.merge(test, esa_sampled, on=["lat", "lon"], how="left")["mode"].apply(
-        lambda x: 1 if x == 40 else 0
-    )
-    test["glad"] = pd.merge(test, glad_sampled, on=["lat", "lon"], how="left")["mode"]
-
-    return test
-
-
-# --- SUPPORTING FUNCTIONS ---
-def create_point(row) -> ee.Feature:
-    """
-    Creates ee.Feature from longitude and latitude coordinates from a dataframe. Column
-    values are assumed to be LAT, LON, and CLASS_COLUMN
-    """
-
-    geom = ee.Geometry.Point(row.lon, row.lat)
-    prop = dict(row[[LON, LAT, CLASS_COL]])
-
-    return ee.Feature(geom, prop)
-
-
 def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
     """
     Returns geodataframe containing all test points from labeled maps.
@@ -298,6 +212,16 @@ def generate_test_data(target_paths: TEST_PATHS) -> gpd.GeoDataFrame:
 
     return test
 
+def create_point(row) -> ee.Feature:
+    """
+    Creates ee.Feature from longitude and latitude coordinates from a dataframe. Column
+    values are assumed to be LAT, LON, and CLASS_COLUMN
+    """
+
+    geom = ee.Geometry.Point(row.lon, row.lat)
+    prop = dict(row[[LON, LAT, CLASS_COL]])
+
+    return ee.Feature(geom, prop)
 
 def bufferPoints(radius: int, bounds: bool):
     """
@@ -424,7 +348,7 @@ TARGETS = {
     "esa": Covermap(
         "esa",
         ee.ImageCollection("ESA/WorldCover/v100"),
-        resolution = 10,
+        resolution=10,
         crop_label=40
     ),
     "glad": Covermap(
@@ -443,6 +367,25 @@ TARGETS = {
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000
-        # TODO
+        #TODO
+    ),
+    "dynamicworld": Covermap(
+        "dynamicworld",
+        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").select("crops").filterDate(
+            "2019-01-01", "2019-12-31"),
+        resolution=10,
+        probability=True
+    ),
+    "gfsad-gcep": Covermap(
+        "gfsad-gcep",
+        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
+        resolution=30,
+        crop_label=[2]
+    ),
+    "gfsad-lgrip": Covermap(
+        "gfsad-lgrip", 
+        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
+        resolution=30,
+        crop_label=[2,3]
     )
 }
