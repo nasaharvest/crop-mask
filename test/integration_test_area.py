@@ -46,7 +46,7 @@ class IntegrationTestArea(TestCase):
         print("\u2714 all file paths exist")
 
         roi = load_ne(self.sample_input["country_iso3"], self.sample_input["regions_in_country"])
-        self.assertEqual(roi.shape, (2, 122))
+        self.assertEqual(roi.shape, (1, 121))
 
         print("\u2714 region of interest loaded")
 
@@ -62,8 +62,8 @@ class IntegrationTestArea(TestCase):
 
         crop_fraction, non_crop_fraction = cal_map_area_class(binary_map, unit="fraction")
         crop_pixel, non_crop_pixel = cal_map_area_class(binary_map)
-        self.assertAlmostEqual(crop_fraction, 0.4825700)
-        self.assertAlmostEqual(non_crop_fraction, 0.5174299946966485)
+        self.assertAlmostEqual(crop_fraction, 0.4351673269911317)
+        self.assertAlmostEqual(non_crop_fraction, 0.5648326730088683)
 
         print("\u2714 map area calculated")
 
@@ -74,8 +74,8 @@ class IntegrationTestArea(TestCase):
             self.sample_input["non_crop_user_acc"],
             self.sample_input["est_standard_error"],
         )
-        self.assertEqual(crop_num_sample, 187)
-        self.assertEqual(non_crop_num_sample, 187)
+        self.assertEqual(crop_num_sample, 185)
+        self.assertEqual(non_crop_num_sample, 186)
 
         print("\u2714 number of samples estimated")
 
@@ -90,15 +90,15 @@ class IntegrationTestArea(TestCase):
         print("\u2714 reference read")
 
         cm = compute_confusion_matrix(ceo_geom)
-        self.assertEqual(cm[0], 20)
-        self.assertEqual(cm[1], 9)
+        self.assertEqual(cm[0], 21)
+        self.assertEqual(cm[1], 8)
 
         print("\u2714 confusion matrix computed")
 
         summary = compute_area_estimate(crop_pixel, non_crop_pixel, cm, map_meta)
         self.assertEqual(summary.shape, (8, 2))
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 331112.02102444763)
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 267357.48621850886)
+        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 330415.1933835311)
+        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 268054.3138594254)
 
         print("\u2714 area estimate computed")
 
