@@ -58,6 +58,7 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
             available_ = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)]
             condition = available_["name"].isin(regions_of_interest)
             boundary = available_[condition].copy()
+            boundary = boundary.dissolve(by="admin")
         return boundary
 
 
