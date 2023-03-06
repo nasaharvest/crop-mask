@@ -164,6 +164,18 @@ class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
         return df
 
 
+class MalawiCorrectiveLabels2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Malawi_dir = raw_dir / "Malawi_corrective_labels_2020"
+        df = pd.read_csv(Malawi_dir / "Malawi_corrective_labels_cleaned.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -902,6 +914,7 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
+    MalawiCorrectiveLabels2020(),
     EthiopiaTigrayGhent2021(),
 ]
 
