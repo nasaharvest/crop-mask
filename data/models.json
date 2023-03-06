@@ -33,6 +33,23 @@
             "roc_auc_score": 0.8285
         }
     },
+    "Ethiopia_Tigray_2021": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3kjd88qq",
+        "test_metrics": {
+            "accuracy": 0.8187,
+            "f1_score": 0.7317,
+            "precision_score": 0.6569,
+            "recall_score": 0.8257,
+            "roc_auc_score": 0.8831
+        },
+        "val_metrics": {
+            "accuracy": 0.8333,
+            "f1_score": 0.733,
+            "precision_score": 0.7232,
+            "recall_score": 0.7431,
+            "roc_auc_score": 0.882
+        }
+    },
     "Hawaii_2020": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2ja2vg42",
         "test_metrics": {
