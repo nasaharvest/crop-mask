@@ -92,6 +92,31 @@ class KenyaCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
+class KenyaCEOFeb2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df1 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-1)-sample-data-2023-02-10.csv"
+        )
+        df2 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-2)-sample-data-2023-02-10.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 8
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2019, 2, 1), date(2020, 2, 1)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
 
 class HawaiiCorrective2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
