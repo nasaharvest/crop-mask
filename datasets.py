@@ -92,6 +92,7 @@ class KenyaCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
+
 class KenyaCEOFeb2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df1 = pd.read_csv(
@@ -117,6 +118,7 @@ class KenyaCEOFeb2019(LabeledDataset):
         df[START], df[END] = date(2019, 2, 1), date(2020, 2, 1)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
+
 
 class HawaiiCorrective2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
