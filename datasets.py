@@ -175,6 +175,7 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df[SUBSET] = "training"
         return df
 
+
 class NamibiaFieldBoundary2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
@@ -185,7 +186,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2022, 11, 30)
         df[SUBSET] = "training"
         return df
-    
+
 
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
