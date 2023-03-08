@@ -55,6 +55,25 @@ def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
 
+class EthiopiaTigrayGhent2021(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        # Read in csv
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
+        # Rename coordinate columns
+        df = df.rename(
+            columns={
+                "Latitude (WGS84)": LAT,
+                "Longitude (WGS84)": LON,
+                "Crop/Non-Crop": CLASS_PROB,
+            }
+        )
+        # Define starting and end dates
+        df[START], df[END] = date(2021, 2, 1), date(2022, 2, 1)
+        # Placeholder subset column to pass checks
+        df[SUBSET] = "validation"
+        return df
+
+
 class HawaiiAgriculturalLandUse2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df = read_zip(raw_dir / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip")
@@ -156,6 +175,7 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df[SUBSET] = "training"
         return df
 
+
 class NamibiaFieldBoundary2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
@@ -166,7 +186,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2022, 11, 30)
         df[SUBSET] = "training"
         return df
-    
+
 
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
@@ -908,6 +928,7 @@ datasets: List[LabeledDataset] = [
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
     NamibiaFieldBoundary2022(),
+    EthiopiaTigrayGhent2021(),
 ]
 
 if __name__ == "__main__":
