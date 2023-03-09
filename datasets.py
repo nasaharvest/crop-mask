@@ -186,7 +186,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2022, 11, 30)
         df[SUBSET] = "training"
         return df
-    
+
 
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
