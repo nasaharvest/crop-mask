@@ -174,7 +174,7 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = "training"
         return df
-    
+
 
 class NamibiaFieldBoundary2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
