@@ -1,6 +1,4 @@
 outs:
-- md5: a532c2e43fdb5903eecfa5d4f1601582.dir
-  size: 438914978
 - md5: 8d2ccf8ca6000eef6599e3db4fb2bb4a.dir
   size: 438255835
   nfiles: 366
