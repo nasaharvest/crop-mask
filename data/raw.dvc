@@ -1,10 +1,7 @@
 outs:
-<<<<<<< HEAD
 - md5: a532c2e43fdb5903eecfa5d4f1601582.dir
   size: 438914978
-=======
 - md5: 8d2ccf8ca6000eef6599e3db4fb2bb4a.dir
   size: 438255835
->>>>>>> d0b38ceebda008b815892c3aa58e3070a0c53844
   nfiles: 366
   path: raw
