@@ -30,6 +30,7 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
         condition = ne_gdf["adm1_code"].str.startswith(country_code)
         boundary = ne_gdf[condition].copy()
         print("Entire country found!")
+        boundary = boundary.dissolve(by="admin")
         return boundary
 
     else:
@@ -57,6 +58,7 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
             available_ = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)]
             condition = available_["name"].isin(regions_of_interest)
             boundary = available_[condition].copy()
+            boundary = boundary.dissolve(by="admin")
         return boundary
 
 
@@ -76,7 +78,9 @@ def clip_raster(
             print("Clipping to boundary.")
         boundary = boundary.to_crs(src.crs)
         boundary = [json.loads(boundary.to_json())["features"][0]["geometry"]]
-        raster, out_transform = mask(src, shapes=boundary, crop=True)
+        raster, out_transform = mask(
+            src, shapes=boundary, crop=True, all_touched=True, nodata=src.nodata
+        )
         raster = raster[0]
         out_meta = src.meta.copy()
         out_meta.update(
@@ -126,8 +130,8 @@ def load_raster(
 
 
 def binarize(raster: np.ma.core.MaskedArray, meta: dict, threshold: float = 0.5) -> np.ndarray:
-    raster[raster < threshold] = 0
-    raster[((raster >= threshold) & (raster != meta["nodata"]))] = 1
+    raster.data[raster.data < threshold] = 0
+    raster.data[((raster.data >= threshold) & (raster.data != meta["nodata"]))] = 1
     return raster.data.astype(np.uint8)
 
 
@@ -144,8 +148,8 @@ def cal_map_area_class(
     noncrop_px = np.where(binary_map.flatten() == 0)
     total = crop_px[0].shape[0] + noncrop_px[0].shape[0]
     if unit == "ha":
-        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 100000
-        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 100000
+        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
+        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
         print(
             f"Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
