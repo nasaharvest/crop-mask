@@ -1,0 +1,27 @@
+program: train.py
+command:
+  - ${interpreter}
+  - ${program}
+  - "--skip_era5"
+  - "--wandb"
+  - ${args}
+method: grid
+metric:
+  goal: minimize
+  name: val_loss
+parameters:
+  model_name:
+    value: Hawaii_2020
+  bbox:
+    value: Hawaii
+  train_datasets:
+    values: [
+      "Hawaii_CEO_2020",
+      "Hawaii_CEO_2020,HawaiiAgriculturalLandUse2020Subset",
+      "Hawaii_CEO_2020,HawaiiCorrective2020",
+      "Hawaii_CEO_2020,HawaiiCorrectiveGuided2020",
+    ]
+  eval_datasets:
+    value: "Hawaii_CEO_2020"
+  seed:
+    values: [0,1,2,3,4]

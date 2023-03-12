@@ -46,7 +46,6 @@ class Forecaster(pl.LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         hidden_tuple: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
 
         input_timesteps = x.shape[1]
