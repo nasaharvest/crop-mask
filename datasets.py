@@ -93,7 +93,7 @@ class KenyaCEO2019(LabeledDataset):
         return df
 
 
-class KenyaCEOFeb2019(LabeledDataset):
+class KenyaCEO2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df1 = pd.read_csv(
             raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-1)-sample-data-2023-02-10.csv"
@@ -115,7 +115,7 @@ class KenyaCEOFeb2019(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2019, 2, 1), date(2020, 2, 1)
+        df[START], df[END] = date(2019, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
