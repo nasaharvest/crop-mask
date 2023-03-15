@@ -135,6 +135,7 @@ class TestCovermaps:
 
             return self.results.copy()
 
+
 class Covermap:
     def __init__(
         self,
@@ -151,7 +152,9 @@ class Covermap:
         self.ee_asset = ee_asset
         self.resolution = resolution
 
-        assert probability ^ crop_labels, "Please specify only 1 of (probability and threshold) or crop_labels"
+        assert (
+            probability ^ crop_labels
+        ), "Please specify only 1 of (probability and threshold) or crop_labels"
 
         if probability:
             self.probability = probability  # for harvest maps, where points are crop probability
@@ -243,6 +246,7 @@ def bufferPoints(radius: int, bounds: bool):
 
     return function
 
+
 def raster_extraction(
     image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
@@ -253,6 +257,7 @@ def raster_extraction(
     feature = image.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
 
     return feature
+
 
 def extract_points(
     ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
@@ -265,6 +270,7 @@ def extract_points(
     extracted = geemap.ee_to_gdf(extracted)
 
     return extracted
+
 
 def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
@@ -284,6 +290,7 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return filtered
 
+
 def read_test(path: str) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -294,6 +301,7 @@ def read_test(path: str) -> gpd.GeoDataFrame:
     test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
     return test
+
 
 def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """
@@ -316,6 +324,7 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
         index=[0],
     )
 
+
 TARGETS = {
     "harvest_togo": Covermap(
         "harvest_togo",
@@ -325,7 +334,7 @@ TARGETS = {
         resolution=10,
         probability=True,
         p_treshold=0.5,
-        countries=["Togo"]
+        countries=["Togo"],
     ),
     "harvest_kenya": Covermap(
         "harvest_kenya",
@@ -335,87 +344,66 @@ TARGETS = {
         resolution=10,
         probability=True,
         p_threshold=0.5,
-        countries=["Kenya"]
+        countries=["Kenya"],
     ),
     "harvest_tanzania": Covermap(
         "harvest_tanzania",
-        ee.ImageCollection(
-            ee.Image("users/adadebay/Tanzania_cropland_2019")
-        ),
+        ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
         resolution=10,
         probability=True,
         p_threshold=0.5,
-        countries=["Tanzania"]
+        countries=["Tanzania"],
     ),
     "copernicus": Covermap(
         "copernicus",
-        ee.ImageCollection(
-            "COPERNICUS/Landcover/100m/Proba-V-C3/Global").select(
-            "discrete_classification").filterDate(
-            "2019-01-01", "2019-12-31"
-        ),
+        ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global")
+        .select("discrete_classification")
+        .filterDate("2019-01-01", "2019-12-31"),
         resolution=100,
-        crop_labels=[40]
+        crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa",
-        ee.ImageCollection(
-            "ESA/WorldCover/v100"
-        ),
-        resolution=10,
-        crop_labels=[40]
+        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
-        ee.ImageCollection(
-            "users/potapovpeter/Global_cropland_2019"
-        ),
+        ee.ImageCollection("users/potapovpeter/Global_cropland_2019"),
         resolution=30,
         probability=True,
-        probability=0.5
+        probability=0.5,
     ),
     "gfsad": Covermap(
         "gfsad",
-        ee.ImageCollection(
-            ee.Image("USGS/GFSAD1000_V1")
-        ),
+        ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
         resolution=1000,
-        crop_label=[1, 2, 3, 4, 5]
+        crop_label=[1, 2, 3, 4, 5],
     ),
     "asap": Covermap(
         "asap",
-        ee.ImageCollection(
-            ee.Image("users/sbaber/asap_mask_crop_v03")
-        ),
+        ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
         probability=True,
-        p_threshold=100
+        p_threshold=100,
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
-        ee.ImageCollection(
-            "GOOGLE/DYNAMICWORLD/V1").select(
-            "crops").filterDate(
-            "2019-01-01", "2019-12-31"
-        ),
+        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
+        .select("crops")
+        .filterDate("2019-01-01", "2019-12-31"),
         resolution=10,
         probability=True,
-        p_threshold=0.5
+        p_threshold=0.5,
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
-        ee.ImageCollection(
-            "projects/sat-io/open-datasets/GFSAD/GCEP30"
-        ),
+        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
         resolution=30,
-        crop_labels=[2]
+        crop_labels=[2],
     ),
     "gfsad-lgrip": Covermap(
-        "gfsad-lgrip", 
-        ee.ImageCollection(
-            "projects/sat-io/open-datasets/GFSAD/LGRIP30"
-        ),
+        "gfsad-lgrip",
+        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
         resolution=30,
-        crop_labels=[2,3]
-    )
+        crop_labels=[2, 3],
+    ),
 }
