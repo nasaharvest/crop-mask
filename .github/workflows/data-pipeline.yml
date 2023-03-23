@@ -1,0 +1,45 @@
+
+name: Data Pipeline
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  data-pipeline:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/setup-gcloud@v0
+
+    - name: Run data pipeline
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: |
+        dvc pull -f
+        openmapflow create-datasets --non-interactive
+        dvc commit -f
+        dvc push
+    - name: Push automated dataset updates
+      run: |
+        git config --global user.name 'Dataset bot'
+        git config --global user.email 'dataset-bot@users.noreply.github.com'
+        git pull
+        git add data
+        git commit -m "Automated dataset updates" || echo "No updates to commit"
+        git push
