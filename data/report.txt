@@ -329,8 +329,8 @@ eo_data_complete    329
 
 MalawiCorrectiveLabels2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete    4296
-✔ training amount: 4296, positive class: 22.9%
+eo_data_complete    4295
+✔ training amount: 4295, positive class: 22.9%
 
 
 
