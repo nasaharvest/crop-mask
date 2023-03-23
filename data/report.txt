@@ -334,6 +334,13 @@ eo_data_complete    4296
 
 
 
+NamibiaFieldBoundary2022 (Timesteps: 23)
+----------------------------------------------------------------------------
+eo_data_exporting    12451
+✖ training: 12451 labels, but 0 features
+
+
+
 EthiopiaTigrayGhent2021 (Timesteps: 12)
 ----------------------------------------------------------------------------
 eo_data_complete    161
