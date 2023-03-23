@@ -336,5 +336,5 @@ eo_data_complete    4295
 
 EthiopiaTigrayGhent2021 (Timesteps: 23)
 ----------------------------------------------------------------------------
-eo_data_exporting    161
-✖ validation: 161 labels, but 0 features
+eo_data_complete    161
+✔ validation amount: 161, positive class: 78.9%
