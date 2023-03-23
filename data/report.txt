@@ -324,3 +324,17 @@ HawaiiCorrectiveGuided2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    329
 ✔ training amount: 329, positive class: 21.0%
+
+
+
+MalawiCorrectiveLabels2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    4295
+✔ training amount: 4295, positive class: 22.9%
+
+
+
+EthiopiaTigrayGhent2021 (Timesteps: 23)
+----------------------------------------------------------------------------
+eo_data_complete    161
+✔ validation amount: 161, positive class: 78.9%

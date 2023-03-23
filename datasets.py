@@ -55,6 +55,25 @@ def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
 
+class EthiopiaTigrayGhent2021(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        # Read in csv
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
+        # Rename coordinate columns
+        df = df.rename(
+            columns={
+                "Latitude (WGS84)": LAT,
+                "Longitude (WGS84)": LON,
+                "Crop/Non-Crop": CLASS_PROB,
+            }
+        )
+        # Define starting and end dates
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        # Placeholder subset column to pass checks
+        df[SUBSET] = "validation"
+        return df
+
+
 class HawaiiAgriculturalLandUse2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df = read_zip(raw_dir / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip")
@@ -142,6 +161,21 @@ class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
 
         # Match length of HawaiiCorrective2020 by dropping points
         df = df.sample(n=329, random_state=0)
+        return df
+
+
+class MalawiCorrectiveLabels2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Malawi_dir = raw_dir / "Malawi_corrective_labels_2020"
+        df = pd.read_csv(Malawi_dir / "Malawi_corrective_labels_cleaned.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        # Removing index=2275 because it is a duplicate of
+        # another point in Malawi_FAO_corrected
+        df.drop(index=2275, inplace=True)
         return df
 
 
@@ -883,6 +917,8 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
+    MalawiCorrectiveLabels2020(),
+    EthiopiaTigrayGhent2021(),
 ]
 
 if __name__ == "__main__":
