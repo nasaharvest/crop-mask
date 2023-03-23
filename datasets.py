@@ -173,6 +173,9 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = "training"
+        # Removing index=2275 because it is a duplicate of
+        # another point in Malawi_FAO_corrected
+        df.drop(index=2275, inplace=True)
         return df
 
 
