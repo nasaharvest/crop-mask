@@ -15,21 +15,11 @@ on:
         description: 'Bounding box name'
         required: true
         type: string
-      UP_TO_YEAR:
-        description: 'Up to year'
+      OPTIONAL_MODEL_ARGS:
+        description: 'Optional model args'
         required: false
-        default: 2022
-        type: int
-      START_MONTH:
-        description: 'Start month'
-        required: false
-        default: 'February'
+        default: ''
         type: string
-      INPUT_MONTHS:
-        description: 'Input months'
-        required: false
-        default: 12
-        type: int
 
 jobs:
   train:
@@ -40,12 +30,8 @@ jobs:
       # Script inputs
       MODEL_NAME: ${{ inputs.MODEL_NAME }}
       EVAL_DATASETS: ${{ inputs.EVAL_DATASETS }}
-      EPOCHS: ${{ inputs.EPOCHS }}
       BBOX: ${{ inputs.BBOX }}
-      UP_TO_YEAR: ${{ inputs.UP_TO_YEAR }}
-      START_MONTH:  ${{ inputs.START_MONTH }}
-      INPUT_MONTHS: ${{ inputs.INPUT_MONTHS }}
-      SEED: ${{ inputs.SEED }}
+      OPTIONAL_MODEL_ARGS: ${{ inputs.OPTIONAL_MODEL_ARGS }}
 
     steps:
     - uses: actions/checkout@v3
@@ -78,9 +64,7 @@ jobs:
       uses: iterative/setup-dvc@v1
 
     - name: Pull latest data
-      run: |
-        dvc pull data/models
-        dvc pull data/datasets
+      run: dvc pull data/datasets data/models
 
     - name: Train model
       run: |
@@ -88,10 +72,7 @@ jobs:
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
           --bbox "$BBOX" \
-          --up_to_year $UP_TO_YEAR \
-          --start_month "$START_MONTH" \
-          --input_months $INPUT_MONTHS \
-          --wandb
+          --wandb "$OPTIONAL_MODEL_ARGS"
 
     - name: Push model to DVC
       run: |
