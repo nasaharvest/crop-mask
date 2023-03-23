@@ -68,7 +68,7 @@ class EthiopiaTigrayGhent2021(LabeledDataset):
             }
         )
         # Define starting and end dates
-        df[START], df[END] = date(2021, 2, 1), date(2022, 2, 1)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
         # Placeholder subset column to pass checks
         df[SUBSET] = "validation"
         return df
