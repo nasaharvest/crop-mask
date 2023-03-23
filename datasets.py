@@ -183,7 +183,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
-        df[START], df[END] = date(2020, 1, 1), date(2022, 11, 30)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
         df[SUBSET] = "training"
         return df
 
