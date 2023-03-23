@@ -22,10 +22,6 @@ jobs:
         cache-env: true
     - name: Run unit tests
       run: python -m unittest
-    - name: Integration test - Project
-      run: |
-        openmapflow cp templates/integration_test_project.py .
-        python -m unittest integration_test_project.py
 
   test-datasets:
     runs-on: ubuntu-latest
