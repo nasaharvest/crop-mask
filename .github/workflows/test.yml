@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  basic-tests:
+  unit-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -14,8 +14,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.ref }}
-    - name: install mamba
-      uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/provision-with-micromamba@main
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
@@ -23,9 +22,9 @@ jobs:
     - name: Run unit tests
       run: python -m unittest
 
-  test-datasets:
+  dataset-tests:
     runs-on: ubuntu-latest
-    needs: basic-tests
+    needs: unit-tests
     defaults:
       run:
         shell: bash -l {0}
@@ -33,8 +32,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.ref }}
-    - name: install mamba
-      uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/provision-with-micromamba@main
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
@@ -42,8 +40,7 @@ jobs:
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
+    - uses: google-github-actions/setup-gcloud@v0
     - name: Pull datasets
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
@@ -53,9 +50,9 @@ jobs:
         openmapflow cp templates/integration_test_datasets.py .
         python -m unittest integration_test_datasets.py
 
-  test-models:
+  model-tests:
     runs-on: ubuntu-latest
-    needs: basic-tests
+    needs: unit-tests
     defaults:
       run:
         shell: bash -l {0}
@@ -74,7 +71,7 @@ jobs:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
-    - name: Pull datasets
+    - name: Pull datasets and models
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       run: dvc pull data/datasets data/models -f
@@ -89,9 +86,9 @@ jobs:
     - name: Integration test - Model results are consistent
       run: python -m unittest test/integration_test_model_evaluation.py
 
-  test-area:
+  area-tests:
     runs-on: ubuntu-latest
-    needs: basic-tests
+    needs: unit-tests
     defaults:
       run:
         shell: bash -l {0}
@@ -105,10 +102,46 @@ jobs:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
         cache-env: true
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/setup-gcloud@v0
+    - name: Pull test area data
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: dvc pull test_area
     - name: Integration test - Area
       run: python -m unittest test/integration_test_area.py
 
-  create-datasets:
+
+  project-tests:
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/setup-gcloud@v0
+    - name: Pull all data
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: dvc pull -f
+    - name: Integration test - Project
+      run: |
+        openmapflow cp templates/integration_test_project.py .
+        python -m unittest integration_test_project.py
+
+  data-pipeline:
     runs-on: ubuntu-latest
     needs: basic-tests
     defaults:
@@ -127,8 +160,7 @@ jobs:
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
+    - uses: google-github-actions/setup-gcloud@v0
 
     - name: Run data pipeline
       env:
