@@ -143,7 +143,7 @@ jobs:
 
   data-pipeline:
     runs-on: ubuntu-latest
-    needs: basic-tests
+    needs: unit-tests
     defaults:
       run:
         shell: bash -l {0}
