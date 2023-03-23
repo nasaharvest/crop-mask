@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  basic-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,13 +19,121 @@ jobs:
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
+        cache-env: true
     - name: Run unit tests
       run: python -m unittest
+    - name: Integration test - Project
+      run: |
+        openmapflow cp templates/integration_test_project.py .
+        python -m unittest integration_test_project.py
+
+  test-datasets:
+    runs-on: ubuntu-latest
+    needs: basic-tests
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
+    - name: Pull datasets
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: dvc pull data/datasets -f
+    - name: Integration test - Data integrity
+      run: |
+        openmapflow cp templates/integration_test_datasets.py .
+        python -m unittest integration_test_datasets.py
+
+  test-models:
+    runs-on: ubuntu-latest
+    needs: basic-tests
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+    - name: Pull datasets
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: dvc pull data/datasets data/models -f
+    - name: Integration test - Train and evaluate
+      run: |
+        openmapflow cp templates/integration_test_train_evaluate.py .
+        python -m unittest integration_test_train_evaluate.py
+
+    - name: Integration test - Model bboxes match evaluation sets
+      run: python -m unittest test/integration_test_model_bbox.py
+
+    - name: Integration test - Model results are consistent
+      run: python -m unittest test/integration_test_model_evaluation.py
+
+  test-area:
+    runs-on: ubuntu-latest
+    needs: basic-tests
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
+    - name: Integration test - Area
+      run: python -m unittest test/integration_test_area.py
+
+  create-datasets:
+    runs-on: ubuntu-latest
+    needs: basic-tests
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    - name: install mamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
+    - uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+
     - name: Run data pipeline
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
@@ -42,26 +150,3 @@ jobs:
         git add data
         git commit -m "Automated dataset updates" || echo "No updates to commit"
         git push
-    - name: Integration test - Project
-      run: |
-        openmapflow cp templates/integration_test_project.py .
-        python -m unittest integration_test_project.py
-
-    - name: Integration test - Data integrity
-      run: |
-        openmapflow cp templates/integration_test_datasets.py .
-        python -m unittest integration_test_datasets.py
-
-    - name: Integration test - Train and evaluate
-      run: |
-        openmapflow cp templates/integration_test_train_evaluate.py .
-        python -m unittest integration_test_train_evaluate.py
-
-    - name: Integration test - Model bboxes match evaluation sets
-      run: python -m unittest test/integration_test_model_bbox.py
-
-    - name: Integration test - Model results are consistent
-      run: python -m unittest test/integration_test_model_evaluation.py
-
-    - name: Integration test - Area
-      run: python -m unittest test/integration_test_area.py
