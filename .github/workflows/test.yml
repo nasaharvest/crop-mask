@@ -46,7 +46,7 @@ jobs:
     - name: Pull datasets
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      run: dvc pull data/datasets -f
+      run: dvc pull data/raw data/datasets -f
     - name: Integration test - Data integrity
       run: |
         openmapflow cp templates/integration_test_datasets.py .
