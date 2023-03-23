@@ -61,7 +61,7 @@ jobs:
         pip install dvc[gs] \
         pip install pytorch-lightning==0.7.1 \
         pip install wandb \
-        pip install openmapflow==0.2.2
+        pip install openmapflow==0.2.3rc3
 
     - name: Login to Weights and Biases
       run: wandb login $WANDB_API_KEY
