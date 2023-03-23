@@ -34,20 +34,20 @@
         }
     },
     "Ethiopia_Tigray_2021": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/6ugwlf5d",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/nfw3i65l",
         "test_metrics": {
-            "accuracy": 0.8516,
-            "f1_score": 0.7589,
-            "precision_score": 0.7391,
-            "recall_score": 0.7798,
-            "roc_auc_score": 0.9109
+            "accuracy": 0.8269,
+            "f1_score": 0.7097,
+            "precision_score": 0.713,
+            "recall_score": 0.7064,
+            "roc_auc_score": 0.8839
         },
         "val_metrics": {
-            "accuracy": 0.8531,
-            "f1_score": 0.7524,
-            "precision_score": 0.7822,
-            "recall_score": 0.7248,
-            "roc_auc_score": 0.8875
+            "accuracy": 0.8503,
+            "f1_score": 0.731,
+            "precision_score": 0.8182,
+            "recall_score": 0.6606,
+            "roc_auc_score": 0.8747
         }
     },
     "Namibia_North_2020": {
