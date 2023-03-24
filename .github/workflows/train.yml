@@ -24,6 +24,9 @@ on:
 jobs:
   train:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     env:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
@@ -72,7 +75,7 @@ jobs:
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
           --bbox "$BBOX" \
-          --wandb "$OPTIONAL_MODEL_ARGS"
+          --wandb "$OPTIONAL_MODEL_ARGS[@]"
 
     - name: Push model to DVC
       run: |
