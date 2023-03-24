@@ -336,8 +336,9 @@ eo_data_complete    4295
 
 NamibiaFieldBoundary2022 (Timesteps: 23)
 ----------------------------------------------------------------------------
-eo_data_exporting    12451
-✖ training: 12451 labels, but 0 features
+eo_data_exporting    9299
+eo_data_complete     3152
+✖ training: 12451 labels, but 3152 features
 
 
 
