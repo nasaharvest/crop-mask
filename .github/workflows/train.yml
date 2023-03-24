@@ -72,7 +72,7 @@ jobs:
           --model_name "$MODEL_NAME" \
           --eval_datasets "$EVAL_DATASETS" \
           --bbox "$BBOX" \
-          --wandb "$OPTIONAL_MODEL_ARGS"
+          --wandb "$OPTIONAL_MODEL_ARGS[@]"
 
     - name: Push model to DVC
       run: |
