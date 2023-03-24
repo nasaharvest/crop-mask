@@ -24,6 +24,9 @@ on:
 jobs:
   train:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     env:
       # Keys
       WANDB_API_KEY: ${{  secrets.WANDB_API_KEY }}
