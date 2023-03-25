@@ -1,4 +1,4 @@
-name: Train
+name: Data Release
 
 on:
   workflow_dispatch
