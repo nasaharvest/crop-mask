@@ -1,0 +1,41 @@
+name: Train
+
+on:
+  workflow_dispatch
+
+jobs:
+  data-release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: pip install dvc[gs] pandas
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY  }}
+
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Setup DVC
+      uses: iterative/setup-dvc@v1
+
+    - name: Pull latest data
+      run: dvc pull data/datasets -f
+
+    - name: Upload data to Google Cloud
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      run: |
+        python data/combine.py
+        gcloud storage cp 'data/all.csv' gs://cropharvest-private/crop-mask/$(date +'%Y-%m').csv
