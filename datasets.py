@@ -81,16 +81,6 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
         df[SUBSET] = "training"
         df[CLASS_PROB] = 1.0
-        for non_crop in [
-            "Commercial Forestry",
-            "Pasture",
-            "Flowers / Foliage / Landscape",
-            "Seed Production",
-            "Aquaculture",
-            "Dairy",
-        ]:
-            df.loc[df["crops_2020"] == non_crop, CLASS_PROB] = 0.0
-
         df = df.drop_duplicates(subset=[LAT, LON])
         return df
 
@@ -201,13 +191,57 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         return df
 
 
-class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
+class KenyaCEO2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
-        df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
-        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
-        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
-        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
-        df[SUBSET] = "training"
+        df1 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2022---Present-(Set-1)-sample-data-2023-03-27.csv"
+        )
+        df2 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2022---Present-(Set-2)-sample-data-2023-03-27.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2022, 1, 1), date(2022, 11, 30)
+        df[SUBSET] = train_val_test_split(df.index, 0.4, 0.4)
+        return df
+
+
+class SudanBlueNileCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df1 = pd.read_csv(
+            raw_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-03-27.csv"
+        )
+        df2 = pd.read_csv(
+            raw_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-03-27.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.4, 0.4)
         return df
 
 
@@ -952,7 +986,6 @@ datasets: List[LabeledDataset] = [
     MalawiCorrectiveLabels2020(),
     NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
-    SudanBlueNileCorrectiveLabels2019(),
 ]
 
 if __name__ == "__main__":
