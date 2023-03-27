@@ -191,6 +191,16 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         return df
 
 
+class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
