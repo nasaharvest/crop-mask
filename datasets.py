@@ -942,6 +942,7 @@ datasets: List[LabeledDataset] = [
     MalawiCorrectiveLabels2020(),
     NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
+    SudanBlueNileCorrectiveLabels2019(),
 ]
 
 if __name__ == "__main__":
