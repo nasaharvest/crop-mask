@@ -68,7 +68,7 @@ class EthiopiaTigrayGhent2021(LabeledDataset):
             }
         )
         # Define starting and end dates
-        df[START], df[END] = date(2021, 2, 1), date(2022, 2, 1)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
         # Placeholder subset column to pass checks
         df[SUBSET] = "validation"
         return df
@@ -81,6 +81,16 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
         df[SUBSET] = "training"
         df[CLASS_PROB] = 1.0
+        for non_crop in [
+            "Commercial Forestry",
+            "Pasture",
+            "Flowers / Foliage / Landscape",
+            "Seed Production",
+            "Aquaculture",
+            "Dairy",
+        ]:
+            df.loc[df["crops_2020"] == non_crop, CLASS_PROB] = 0.0
+
         df = df.drop_duplicates(subset=[LAT, LON])
         return df
 
@@ -172,6 +182,31 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        # Removing index=2275 because it is a duplicate of
+        # another point in Malawi_FAO_corrected
+        df.drop(index=2275, inplace=True)
+        return df
+
+
+class NamibiaFieldBoundary2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
+        df = pd.read_csv(Namibia_dir / "Namibia_field_bnd_2022.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[SUBSET] = "training"
+        return df
+
+
+class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = "training"
         return df
 
@@ -915,7 +950,9 @@ datasets: List[LabeledDataset] = [
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
+    NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
+    SudanBlueNileCorrectiveLabels2019(),
 ]
 
 if __name__ == "__main__":
