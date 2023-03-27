@@ -345,10 +345,3 @@ EthiopiaTigrayGhent2021 (Timesteps: 23)
 ----------------------------------------------------------------------------
 eo_data_complete    161
 ✔ validation amount: 161, positive class: 78.9%
-
-
-
-SudanBlueNileCorrectiveLabels2019 (Timesteps: 24)
-----------------------------------------------------------------------------
-eo_data_complete    47
-✔ training amount: 47, positive class: 10.6%
