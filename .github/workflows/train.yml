@@ -91,6 +91,7 @@ jobs:
         git checkout -b"$MODEL_NAME"
         git add data/models.dvc
         git add data/models.json
+        git add data/all_dataset_params.json
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
         gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill
