@@ -301,7 +301,7 @@ HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     4834
 eo_data_duplicate       1
-✔ training amount: 4834, positive class: 100.0%
+✔ training amount: 4834, positive class: 67.3%
 
 
 
@@ -345,3 +345,10 @@ EthiopiaTigrayGhent2021 (Timesteps: 23)
 ----------------------------------------------------------------------------
 eo_data_complete    161
 ✔ validation amount: 161, positive class: 78.9%
+
+
+
+SudanBlueNileCorrectiveLabels2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    47
+✔ training amount: 47, positive class: 10.6%
