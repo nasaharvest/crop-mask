@@ -127,17 +127,19 @@ class CropDataset(Dataset):
             ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
         timesteps = df["timesteps"].unique().tolist()
-        if len(timesteps) > 1:
-            timesteps_w_dataset = (
-                df[["dataset", "timesteps"]]
-                .groupby("timesteps")
-                .agg({"dataset": lambda ds: ",".join(ds.unique())})
-            )
-            print(
-                "WARNING: Datasets have different amounts of timesteps available. "
-                + "Forecaster will be used to fill gaps."
-                + f"\n{timesteps_w_dataset}"
-            )
+
+        # TEMPORARY FIX: dataset column not always available
+        # if len(timesteps) > 1:
+        #     timesteps_w_dataset = (
+        #         df[["dataset", "timesteps"]]
+        #         .groupby("timesteps")
+        #         .agg({"dataset": lambda ds: ",".join(ds.unique())})
+        #     )
+        #     print(
+        #         "WARNING: Datasets have different amounts of timesteps available. "
+        #         + "Forecaster will be used to fill gaps."
+        #         + f"\n{timesteps_w_dataset}"
+        #     )
 
         return timesteps
 
