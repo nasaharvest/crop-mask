@@ -81,6 +81,16 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
         df[SUBSET] = "training"
         df[CLASS_PROB] = 1.0
+        for non_crop in [
+            "Commercial Forestry",
+            "Pasture",
+            "Flowers / Foliage / Landscape",
+            "Seed Production",
+            "Aquaculture",
+            "Dairy",
+        ]:
+            df.loc[df["crops_2020"] == non_crop, CLASS_PROB] = 0.0
+
         df = df.drop_duplicates(subset=[LAT, LON])
         return df
 
