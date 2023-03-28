@@ -1,5 +1,0 @@
-scikit-learn==1.2.2
-dvc[gs]==2.10.2
-pytorch-lightning==0.7.1
-wandb==0.14.0
-openmapflow==0.2.3rc3
