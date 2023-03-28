@@ -153,20 +153,20 @@
         }
     },
     "Sudan_Blue_Nile_2019": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/z0c5j1yg",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/g2ob01f3",
         "test_metrics": {
-            "accuracy": 0.9468,
-            "f1_score": 0.9213,
-            "precision_score": 0.8962,
-            "recall_score": 0.948,
-            "roc_auc_score": 0.9819
+            "accuracy": 0.9506,
+            "f1_score": 0.9253,
+            "precision_score": 0.92,
+            "recall_score": 0.9306,
+            "roc_auc_score": 0.9815
         },
         "val_metrics": {
-            "accuracy": 0.9427,
-            "f1_score": 0.9201,
-            "precision_score": 0.8836,
-            "recall_score": 0.9598,
-            "roc_auc_score": 0.9762
+            "accuracy": 0.9447,
+            "f1_score": 0.9213,
+            "precision_score": 0.9011,
+            "recall_score": 0.9425,
+            "roc_auc_score": 0.9773
         }
     },
     "Tanzania-2019": {
