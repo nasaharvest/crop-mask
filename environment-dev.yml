@@ -3,32 +3,15 @@ channels:
     - conda-forge
     - pytorch
 dependencies:
-    - python=3.7
-    - earthengine-api
-    - mypy=0.931
-    - black
-    - pandas
-    - xarray=0.17.0
-    - netcdf4
-    - rasterio
-    - jupyter
-    - matplotlib
+    - python=3.9
     - pip
-    - cpuonly
-    - pytorch=1.7.1
-    - pyproj
-    - tqdm
-    - geopandas
-    - cartopy
     - scikit-learn
-    - flake8
-    - google-cloud-storage
-    - python-dotenv
+    - cartopy
+    - pytorch=1.7.1
     - pip:
+          - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
-          - cropharvest==0.4.1
-          - types-requests
-          - types-python-dateutil
-          - openmapflow==0.1.2
+          - openmapflow[data]==0.2.3rc3
           - dvc[gs]
+          - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34

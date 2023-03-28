@@ -1,12 +1,15 @@
 name: Deploy
 
 on:
-  push:
-    branches: [ master ]
-    paths: 'data/models.dvc'
+  workflow_dispatch:
+    inputs:
+      MODELS:
+        description: 'Models to deploy (space separated)'
+        required: true
+        type: string
 
 jobs:
-  deploy: 
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -15,7 +18,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
-      run: pip install openmapflow 'dvc[gs]'
+      run: pip install openmapflow[data]==0.2.1 'dvc[gs]'
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -25,7 +28,6 @@ jobs:
     - name: Get latest models
       run: dvc pull data/models -f
     - name: Deploy Google Cloud Architecture
+      env:
+          OPENMAPFLOW_MODELS: ${{ inputs.MODELS }}
       run: openmapflow deploy
-      
-
-

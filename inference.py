@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 
-from cropharvest.inference import Inference
 from openmapflow.config import PROJECT_ROOT, DataPaths
+from openmapflow.inference import Inference
+
 from src.models.model import Model
 
 if __name__ == "__main__":

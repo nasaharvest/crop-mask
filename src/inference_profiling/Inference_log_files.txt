@@ -1,0 +1,119 @@
+=========================================================================================================
+Model performance on a local environment
+========================================================================================================
+Model_name	   Batch_size	total_execution_time	Peak_cpu_percent	Peak_memory_percent	peak_proc_cpu	peak_proc_mem
+Rwanda_2019	      2	        1.005228281	41.4	39.5	77.8	1.818827345
+Rwanda_2019	      4	        1.010442495	39.7	39.6	61.8	1.883021986
+Rwanda_2019	      8	        1.006428719	41.1	39.5	59.8	1.891897974
+Rwanda_2019	     16	        1.007906437	40.2	39.5	65.7	1.906024545
+Rwanda_2019	     32	        1.004901171	40.3	39.6	55.8	1.968906541
+Rwanda_2019	     64	        1.004705667	34	39.3	129.7	1.629181246
+Rwanda_2019	    128	        1.004937172	39.6	39.4	95.7	1.655309153
+Rwanda_2019	    256	        1.004770517	41.4	39.6	61.9	1.927401923
+Rwanda_2019	    512	        1.006473064	41	39.5	69.7	1.888772626
+Rwanda_2019	      1024	1.004610062	39.5	39.5	65.9	1.902899198
+Namibia_North_2020	2	1.005601406	39.3	39.4	83.7	1.793011973
+Namibia_North_2020	4	1.005109072	41.7	39.5	83.8	1.883084493
+Namibia_North_2020	8	1.005523682	43	39.3	87.7	1.717941121
+Namibia_North_2020	16	1.005611181	40.9	39.5	79.7	1.886459869
+Namibia_North_2020	32	1.006366491	40.9	39.5	67.7	1.871645721
+Namibia_North_2020	64	1.005242825	40	39.5	69.8	1.894148224
+Namibia_North_2020	128	1.010027647	41.4	39.4	77.8	1.826078151
+Namibia_North_2020	256	1.005787373	40.9	39.5	89.6	1.89689853
+Namibia_North_2020	512	1.005892754	40	39.5	71.7	1.898523711
+Namibia_North_2020	1024	1.005366802	41.7	39.4	91.7	1.881896861
+
+
+==============================================================================================================
+Model performance inside a Docker container
+==============================================================================================================
+
+I] For a single model deployed inside a Docker container:
+
+No_of_requests	total_execution_time	Peak_cpu_percent	Peak_memory_percent
+1	14.02950239	51.4	41.5
+2	22.06029224	72.2	58.6
+3	51.11676359	100	69.1
+4	49.11480284	100	79.9
+3	47.11207771	100	80.5
+4	50.12755036	100	84.1
+5	121.2547596	100	88.2
+6	121.2751651	100	66.9
+7	120.2889287	100	61.8
+8	121.2762375	100	68.3
+9	121.2737088	100	75.8
+10	123.2690644	100	70.8
+
+
+II] For multiple models deployed inside a Docker container:
+
+No_of_requests	total_execution_time	Peak_cpu_percent	Peak_memory_percent
+1	118.1949422	55.7	59.7
+2	120.1929886	31.1	59.9
+3	121.1939814	40.2	61.4
+4	121.1893461	50.9	62.4
+5	79.13941169	63.7	59.1
+6	121.247596	76.4	60.7
+7	121.3211231	100	71.2
+8	121.2765548	100	83.9
+9	134.4270723	100	80.3
+10	130.3482349	100	63.5
+20	314.5730925	100	62.3
+15	249.4502938	100	64.3
+
+
+==========================================================================
+Multiple models deployed on Google cloud run environment
+=========================================================================
+-===========================================
+for 1 request:
+
+Time taken: 7.35s
+Container instance count: active-1
+						idle-0
+Request latencies: 8.15s 99% of time
+Container startup latency: 3seconds
+Container CPU itulization: 5.95%
+Container memory utilization: 25%-27%
+
+
+===========================================
+for 2 requests
+
+Time taken: 7 seconds
+Request latencies:8.15s 99% of time
+Container CPU utilization: 5.95%
+Container memory: 42.15 %
+Container instance count: active-1
+						   idle:0
+
+Request latencies: None
+
+==========================================
+For 10 requests:
+
+Time taken: 27.46s
+Container instance count: 10
+Request latencies: 32.6s
+Container CPU utilization: 32.23%
+Container memory utilization: 34.75%
+
+=======================================
+For 100 requests
+
+Time taken: 47 seconds
+Container instance count: max: active -50
+Container CPU utilization: 82.23%
+Container memory utilization: 46.15%
+Container startup latency: 4.43s
+Request latency: 1.09 mins
+
+==================================
+For 1000 requests
+
+Time taken:300seconds
+Container instance count: max: active -151
+Request latencies: 10.69mins
+Container CPU utilization: 75.39%
+Container memory utilization: 46.55%
+Container startup latency: 4.68s

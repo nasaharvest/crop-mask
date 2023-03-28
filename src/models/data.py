@@ -1,16 +1,13 @@
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
+
 import numpy as np
 import pandas as pd
-
-from dateutil.relativedelta import relativedelta
-from tqdm import tqdm
-
 import torch
+from dateutil.relativedelta import relativedelta
+from openmapflow.bbox import BBox
+from openmapflow.constants import CLASS_PROB, END, EO_DATA, LAT, LON, MONTHS, START
 from torch.utils.data import Dataset
-
-from openmapflow.constants import CLASS_PROB, LAT, LON, START, END, MONTHS, EO_DATA
-from cropharvest.countries import BBox
-
-from typing import cast, Any, Tuple, Optional, List, Dict, Union
+from tqdm import tqdm
 
 
 class CropDataset(Dataset):
@@ -28,7 +25,6 @@ class CropDataset(Dataset):
         normalizing_dict: Optional[Dict] = None,
         up_to_year: Optional[int] = None,
     ) -> None:
-
         df = df.copy()
 
         if subset == "training" and up_to_year is not None:
@@ -78,24 +74,24 @@ class CropDataset(Dataset):
             wandb_logger.experiment.config.update(to_log)
 
         if upsample:
-            if local_crop > local_non_crop:
-                arrow = "<-"
+            if local_crop == local_non_crop:
+                print(f"No upsampling: {local_crop} == {local_non_crop}")
+            elif local_crop > local_non_crop:
                 df = df.append(
                     df[df["is_local"] & ~df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
                     ),
                     ignore_index=True,
                 )
+                print(f"Upsamplng local non-crop to match crop {local_non_crop} -> {local_crop}")
             elif local_crop < local_non_crop:
-                arrow = "->"
                 df = df.append(
                     df[df["is_local"] & df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
                     ),
                     ignore_index=True,
                 )
-
-            print(f"Upsampling: local crop{arrow}non-crop: {local_crop}{arrow}{local_non_crop}")
+                print(f"Upsampling: local crop to non-crop: {local_crop} -> {local_non_crop}")
 
         self.normalizing_dict: Dict = (
             normalizing_dict
@@ -131,17 +127,19 @@ class CropDataset(Dataset):
             ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
         timesteps = df["timesteps"].unique().tolist()
-        if len(timesteps) > 1:
-            timesteps_w_dataset = (
-                df[["dataset", "timesteps"]]
-                .groupby("timesteps")
-                .agg({"dataset": lambda ds: ",".join(ds.unique())})
-            )
-            print(
-                "WARNING: Datasets have different amounts of timesteps available. "
-                + "Forecaster will be used to fill gaps."
-                + f"\n{timesteps_w_dataset}"
-            )
+
+        # TEMPORARY FIX: dataset column not always available
+        # if len(timesteps) > 1:
+        #     timesteps_w_dataset = (
+        #         df[["dataset", "timesteps"]]
+        #         .groupby("timesteps")
+        #         .agg({"dataset": lambda ds: ",".join(ds.unique())})
+        #     )
+        #     print(
+        #         "WARNING: Datasets have different amounts of timesteps available. "
+        #         + "Forecaster will be used to fill gaps."
+        #         + f"\n{timesteps_w_dataset}"
+        #     )
 
         return timesteps
 
@@ -210,7 +208,6 @@ class CropDataset(Dataset):
 
     @property
     def num_input_features(self) -> int:
-
         # assumes the first value in the tuple is x
         assert len(self.df) > 0, "No files to load!"
 
@@ -225,7 +222,6 @@ class CropDataset(Dataset):
         return 1, 1
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-
         if (self.cache) & (self.x is not None):
             # if we upsample, the caching might not have happened yet
             return (

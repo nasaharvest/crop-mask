@@ -1,29 +1,26 @@
-from sklearn.metrics import f1_score
-from tqdm import tqdm
+import json
 from typing import Any, Dict, List, Tuple
 from unittest import TestCase
-import json
-import torch
-import pytorch_lightning as pl
 
+import pytorch_lightning as pl
+import torch
 from openmapflow.config import PROJECT_ROOT, DataPaths
+from sklearn.metrics import f1_score
+from tqdm import tqdm
 
 from src.models.model import Model
 
 
 class IntegrationTestModelEvaluation(TestCase):
-
     scores: List[Tuple[Any, ...]] = []
 
     @classmethod
     def setUpClass(cls) -> None:
-
         model_dir = PROJECT_ROOT / DataPaths.MODELS
         with (PROJECT_ROOT / DataPaths.METRICS).open("rb") as f:
             models_dict: Dict[str, Any] = json.load(f)
 
         for model_name, model_dict in tqdm(models_dict.items()):
-
             recorded_f1 = model_dict["val_metrics"]["f1_score"]
 
             if not (model_dir / f"{model_name}.ckpt").exists():

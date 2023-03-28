@@ -1,9 +1,20 @@
-import pandas as pd
-from datetime import timedelta
+from datetime import date, timedelta
+from typing import List
 
-from openmapflow.labeled_dataset import CustomLabeledDataset, create_datasets
-from openmapflow.raw_labels import RawLabels
-from openmapflow.constants import LON, LAT
+import pandas as pd
+from openmapflow.config import PROJECT_ROOT, DataPaths
+from openmapflow.constants import CLASS_PROB, END, LAT, LON, START, SUBSET
+from openmapflow.label_utils import (
+    get_lat_lon_from_centroid,
+    read_zip,
+    train_val_test_split,
+)
+from openmapflow.labeled_dataset import LabeledDataset, create_datasets
+
+from src.labeled_dataset_custom import CustomLabeledDataset
+from src.raw_labels import RawLabels
+
+raw_dir = PROJECT_ROOT / DataPaths.RAW_LABELS
 
 
 def clean_pv_kenya(df: pd.DataFrame) -> pd.DataFrame:
@@ -40,7 +51,167 @@ def clean_ceo_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-datasets = [
+def join_unique(values):
+    return ",".join([str(i) for i in values.unique()])
+
+
+class EthiopiaTigrayGhent2021(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        # Read in csv
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
+        # Rename coordinate columns
+        df = df.rename(
+            columns={
+                "Latitude (WGS84)": LAT,
+                "Longitude (WGS84)": LON,
+                "Crop/Non-Crop": CLASS_PROB,
+            }
+        )
+        # Define starting and end dates
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        # Placeholder subset column to pass checks
+        df[SUBSET] = "validation"
+        return df
+
+
+class HawaiiAgriculturalLandUse2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = read_zip(raw_dir / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip")
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
+        df[SUBSET] = "training"
+        df[CLASS_PROB] = 1.0
+        for non_crop in [
+            "Commercial Forestry",
+            "Pasture",
+            "Flowers / Foliage / Landscape",
+            "Seed Production",
+            "Aquaculture",
+            "Dairy",
+        ]:
+            df.loc[df["crops_2020"] == non_crop, CLASS_PROB] = 0.0
+
+        df = df.drop_duplicates(subset=[LAT, LON])
+        return df
+
+
+class KenyaCEO2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df1 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-12-05.csv"
+        )
+        df2 = pd.read_csv(
+            raw_dir / "ceo-Kenya-Feb-2019---Feb-2020-(Set-2)-sample-data-2022-12-05.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+class HawaiiCorrective2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        hawaii_dir = raw_dir / "Hawaii_corrective_2020"
+        df1 = pd.read_csv(hawaii_dir / "corrective_Nakalembe.csv")
+        df2 = pd.read_csv(hawaii_dir / "corrective-Asare-Ansah.csv")
+        df3 = pd.read_csv(hawaii_dir / "corrective-devereux.csv")
+        df4 = pd.read_csv(hawaii_dir / "corrective-kerner.csv")
+        df5 = pd.read_csv(hawaii_dir / "corrective-zvonkov.csv")
+        df = pd.concat([df1, df2, df3, df4, df5])
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+class HawaiiCorrectiveGuided2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        hawaii_dir = raw_dir / "Hawaii_corrective_2020"
+        df1 = pd.read_csv(hawaii_dir / "corrective_guided_Nakalembe.csv")
+        df2 = pd.read_csv(hawaii_dir / "corrective-guided-Asare-Ansah.csv")
+        df3 = pd.read_csv(hawaii_dir / "corrective-guided-kerner.csv")
+        df4 = pd.read_csv(hawaii_dir / "corrective-guided-zvonkov.csv")
+        df5 = pd.read_csv(hawaii_dir / "corrective-guided-Satish.csv")
+        df = pd.concat([df1, df2, df3, df4, df5])
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+
+        # All points in this dataset are non-crop
+        df6 = pd.read_csv(hawaii_dir / "corrective-guided-devereux.csv")
+        df6[CLASS_PROB] = 0
+
+        # Match length of HawaiiCorrective2020 (329) by dropping points
+        # from non-corrective set (351 - 329 = 22)
+        df6.drop(df6.tail(22).index, inplace=True)
+
+        df = pd.concat([df, df6])
+
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = HawaiiAgriculturalLandUse2020().load_labels()
+
+        # Match length of HawaiiCorrective2020 by dropping points
+        df = df.sample(n=329, random_state=0)
+        return df
+
+
+class MalawiCorrectiveLabels2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Malawi_dir = raw_dir / "Malawi_corrective_labels_2020"
+        df = pd.read_csv(Malawi_dir / "Malawi_corrective_labels_cleaned.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        # Removing index=2275 because it is a duplicate of
+        # another point in Malawi_FAO_corrected
+        df.drop(index=2275, inplace=True)
+        return df
+
+
+class NamibiaFieldBoundary2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
+        df = pd.read_csv(Namibia_dir / "Namibia_field_bnd_2022.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[SUBSET] = "training"
+        return df
+
+
+class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
         country="global",
@@ -610,6 +781,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -618,6 +790,7 @@ datasets = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
+                train_val_test=(0.0, 0.5, 0.5),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -645,6 +818,21 @@ datasets = [
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Namibia_corrective_labels_2020",
+        country="Namibia",
+        raw_labels=(
+            RawLabels(
+                filename="Namibia_corrected_labels.csv",
+                class_prob=lambda df: (df["Landcover"] == "crop"),
+                start_year=2020,
+                train_val_test=(1.0, 0.0, 0.0),
+                latitude_col="latitude",
+                longitude_col="longitude",
+                # filter_df=clean_ceo_data,
             ),
         ),
     ),
@@ -677,7 +865,7 @@ datasets = [
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-1)-sample-data-2022-04-20.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.2, 0.4, 0.4),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -686,13 +874,85 @@ datasets = [
                 filename="ceo-Namibia-North-Jan-2020---Dec-2020-(Set-2)-sample-data-2022-04-20.csv",
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2020,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.2, 0.4, 0.4),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
             ),
         ),
     ),
+    CustomLabeledDataset(
+        dataset="Namibia_WFP",
+        country="Namibia",
+        raw_labels=(
+            RawLabels(
+                filename="NAM_052021.zip",
+                class_prob=1.0,
+                start_year=2020,
+                train_val_test=(1.0, 0.0, 0.0),
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Sudan_Blue_Nile_CEO_2019",
+        country="Sudan",
+        raw_labels=(
+            RawLabels(
+                filename=(
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-1)-sample-data-2022-10-31.csv"
+                ),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename=(
+                    "ceo-Sudan-(Blue-Nile)-Feb-2019---Feb-2020-(Set-2)-sample-data-2022-10-31.csv"
+                ),
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2019,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    CustomLabeledDataset(
+        dataset="Hawaii_CEO_2020",
+        country="Hawaii",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-1)-sample-data-2022-11-14.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.4, 0.3, 0.3),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Hawaii-Jan-Dec-2020-(Set-2)-sample-data-2022-11-14.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2020,
+                train_val_test=(0.4, 0.3, 0.3),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+    HawaiiAgriculturalLandUse2020(),
+    KenyaCEO2019(),
+    HawaiiCorrective2020(),
+    HawaiiCorrectiveGuided2020(),
+    MalawiCorrectiveLabels2020(),
+    NamibiaFieldBoundary2022(),
+    EthiopiaTigrayGhent2021(),
+    SudanBlueNileCorrectiveLabels2019(),
 ]
 
 if __name__ == "__main__":

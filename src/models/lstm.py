@@ -1,9 +1,8 @@
 import math
+from typing import List, Optional, Tuple
 
 import torch
 from torch import nn
-
-from typing import List, Tuple, Optional
 
 
 class UnrolledLSTM(nn.Module):
@@ -23,7 +22,6 @@ class UnrolledLSTM(nn.Module):
     def forward(
         self, x: torch.Tensor, state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None
     ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-
         sequence_length = x.shape[1] if self.batch_first else x.shape[0]
         batch_size = x.shape[0] if self.batch_first else x.shape[1]
 

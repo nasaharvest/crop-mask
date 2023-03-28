@@ -1,4 +1,4 @@
-version: 0.1.2
+version: 0.2.1
 project: crop-mask
 description: NASA Harvest's crop mapping tool
 gcloud:
