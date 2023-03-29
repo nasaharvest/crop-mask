@@ -38,11 +38,7 @@ class TestCovermaps:
     or taken from TARGETS dict. If no countries are given to test in, class uses all test sets available.
     """
 
-    def __init__(
-            self, 
-            test_countries: list, 
-            covermaps: list
-        ) -> None:
+    def __init__(self, test_countries: list, covermaps: list) -> None:
         self.test_countries = test_countries
         if test_countries is None:
             self.test_countries = TEST_COUNTRIES.keys
@@ -121,6 +117,7 @@ class TestCovermaps:
 
             return self.results.copy()
 
+
 class Covermap:
     def __init__(
         self,
@@ -129,15 +126,15 @@ class Covermap:
         resolution: int,
         countries=None,
         probability=None,
-        crop_labels=None
+        crop_labels=None,
     ) -> None:
         # TODO: Check parameters
         self.title = title
         self.ee_asset = ee_asset
         self.resolution = resolution
 
-        assert (
-            (probability is None) ^ (crop_labels is None)
+        assert (probability is None) ^ (
+            crop_labels is None
         ), "Please specify only 1 of (probability and threshold) or crop_labels"
 
         self.probability = probability
@@ -176,6 +173,7 @@ class Covermap:
 
         return sampled[[LAT, LON, self.title]]
 
+
 def generate_test_data(target_paths) -> gpd.GeoDataFrame:
     """
     Returns geodataframe containing all test points from labeled maps.
@@ -202,6 +200,7 @@ def generate_test_data(target_paths) -> gpd.GeoDataFrame:
 
     return test
 
+
 def create_point(row) -> ee.Feature:
     """
     Creates ee.Feature from longitude and latitude coordinates from a dataframe. Column
@@ -212,6 +211,7 @@ def create_point(row) -> ee.Feature:
     prop = dict(row[[LON, LAT, CLASS_COL]])
 
     return ee.Feature(geom, prop)
+
 
 def bufferPoints(radius: int, bounds: bool):
     """
@@ -224,6 +224,7 @@ def bufferPoints(radius: int, bounds: bool):
 
     return function
 
+
 def raster_extraction(
     image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
@@ -234,6 +235,7 @@ def raster_extraction(
     feature = image.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
 
     return feature
+
 
 def extract_points(
     ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
@@ -246,6 +248,7 @@ def extract_points(
     extracted = geemap.ee_to_gdf(extracted)
 
     return extracted
+
 
 def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
@@ -265,6 +268,7 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return filtered
 
+
 def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -272,7 +276,7 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
 
     try:
         test = pd.read_csv(path)[["lat", "lon", "class_probability", "country", "subset"]]
-    except: 
+    except:
         test = pd.read_csv(path)[["lat", "lon", "class_probability", "subset"]]
         if country is None:
             raise Exception("No country given in dataset. Input country string needed")
@@ -283,6 +287,7 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
     return test
+
 
 def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """
@@ -315,7 +320,7 @@ TARGETS = {
         ),
         resolution=10,
         probability=0.5,
-        countries=["Togo"]
+        countries=["Togo"],
     ),
     "harvest_kenya": Covermap(
         "harvest_kenya",
@@ -324,14 +329,14 @@ TARGETS = {
         ),
         resolution=10,
         probability=0.5,
-        countries=["Kenya"]
+        countries=["Kenya"],
     ),
     "harvest_tanzania": Covermap(
         "harvest_tanzania",
         ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
         resolution=10,
         probability=0.5,
-        countries=["Tanzania"]
+        countries=["Tanzania"],
     ),
     "copernicus": Covermap(
         "copernicus",
@@ -339,31 +344,28 @@ TARGETS = {
         .select("discrete_classification")
         .filterDate("2019-01-01", "2019-12-31"),
         resolution=100,
-        crop_labels=[40]
+        crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa", 
-        ee.ImageCollection("ESA/WorldCover/v100"), 
-        resolution=10, 
-        crop_labels=[40]
+        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
         ee.ImageCollection("users/potapovpeter/Global_cropland_2019"),
         resolution=30,
-        probability=0.5
+        probability=0.5,
     ),
     "gfsad": Covermap(
         "gfsad",
         ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
         resolution=1000,
-        crop_labels=[1, 2, 3, 4, 5]
+        crop_labels=[1, 2, 3, 4, 5],
     ),
     "asap": Covermap(
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
-        probability=100
+        probability=100,
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
@@ -371,18 +373,18 @@ TARGETS = {
         .select("crops")
         .filterDate("2019-01-01", "2019-12-31"),
         resolution=10,
-        probability=0.5
+        probability=0.5,
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
         resolution=30,
-        crop_labels=[2]
+        crop_labels=[2],
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
         resolution=30,
-        crop_labels=[2, 3]
+        crop_labels=[2, 3],
     ),
 }
