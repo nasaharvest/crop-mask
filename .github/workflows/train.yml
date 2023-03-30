@@ -39,18 +39,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup python
-      uses: actions/setup-python@v4
+    - name: Setup environment
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        python-version: 3.8
-
-    - name: Install dependencies
-      run: |
-        pip install scikit-learn \
-        pip install dvc[gs] \
-        pip install pytorch-lightning==0.7.1 \
-        pip install wandb \
-        pip install openmapflow==0.2.3rc3
+        environment-file: environment-dev.yml
+        environment-name: landcover-mapping
+        cache-env: true
 
     - name: Login to Weights and Biases
       run: wandb login $WANDB_API_KEY
@@ -91,6 +85,7 @@ jobs:
         git checkout -b"$MODEL_NAME"
         git add data/models.dvc
         git add data/models.json
+        git add data/all_dataset_params.json
         git commit -m "Trained new: $MODEL_NAME"
         git push -u origin $MODEL_NAME
         gh pr create --base master --head $MODEL_NAME --title "Trained new: $MODEL_NAME" --fill

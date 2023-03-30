@@ -8,5 +8,8 @@ assignees: ''
 ---
 
 - [ ] High quality cropland map generated
+- [ ] [Set 1]() Labeling
+- [ ] [Set 2]() Labeling
+- [ ] Data added to repository
 - [ ] Area estimation pipeline run
 - [ ] Expert check
