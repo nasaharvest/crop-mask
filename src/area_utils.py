@@ -159,8 +159,8 @@ def cal_map_area_class(
         crop_area = int(crop_px[0].shape[0])
         noncrop_area = int(noncrop_px[0].shape[0])
         print(
-            f"Crop area: {crop_area} pixels, Non-crop area: {noncrop_area} pixels \n \
-            Total area: {crop_area + noncrop_area} pixels"
+            f"Crop pixels count: {crop_area}, Non-crop pixels count: {noncrop_area} pixels \n \
+            Total counts: {crop_area + noncrop_area} pixels"
         )
 
     elif unit == "fraction":
@@ -198,12 +198,12 @@ def estimate_num_sample_per_class(
 def random_inds(
     binary_map: np.ndarray, strata: int, sample_size: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    # """ Generate random indices for sampling from a binary map."""
+    """ Generate random indices for sampling from a binary map."""
     inds = np.where(binary_map == strata)
     rand_inds = np.random.permutation(np.arange(inds[0].shape[0]))[:sample_size]
     rand_px = inds[0][rand_inds]
     rand_py = inds[1][rand_inds]
-    # del inds
+    
     return rand_px, rand_py
 
 
@@ -286,22 +286,17 @@ def reference_sample_agree(
 
     label_responses = ceo_agree_geom[label_question].unique()
     assert len(label_responses) == 2
-
+    
     for r, row in ceo_agree_geom.iterrows():
         lon, lat = row["geometry"].y, row["geometry"].x
         px, py = transform.rowcol(meta["transform"], lat, lon)
 
         ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
 
-        if label_responses[1].startswith("C") or label_responses[1].startswith("c"):
-            ceo_agree_geom.loc[
-                ceo_agree_geom[label_question] == label_responses[1], "Reference label"
-            ] = 1
-            ceo_agree_geom.loc[
-                ceo_agree_geom[label_question] == label_responses[0], "Reference label"
-            ] = 0
-
-        ceo_agree_geom["Reference label"] = ceo_agree_geom["Reference label"].astype(np.uint8)
+        if row[label_question] == "Cropland" or row[label_question] == "cropland":
+            ceo_agree_geom.loc[r, "Reference label"] = 1
+        elif row[label_question] == "Non-cropland" or row[label_question] == "non-cropland":
+            ceo_agree_geom.loc[r, "Reference label"] = 0
 
     return ceo_agree_geom
 
