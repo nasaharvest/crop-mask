@@ -53,12 +53,10 @@ class TestAreaUtils(TestCase):
         self.assertTrue(ceo_path_1.exists(), f"{ceo_path_1} not found. Try dvc pull.")
         self.assertTrue(ceo_path_2.exists(), f"{ceo_path_2} not found. Try dvc pull.")
 
-    def test_region_of_interests(self):
-        self.assertEqual(self.roi.shape, (1, 121), f"region of interest shape is {self.roi.shape}")
-
     def test_read_map_with_map_roi(self):
         map_array, map_meta = load_raster(map_path, self.roi)
         binary_map = binarize(map_array, map_meta)
+        self.assertEqual(self.roi.shape, (1, 121), f"region of interest shape is {self.roi.shape}")
         self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
         self.assertEqual(
             np.unique(binary_map).shape, (3,), f"map unique values are {np.unique(binary_map)}"
