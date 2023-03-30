@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from unittest import TestCase
+
 import numpy as np
 
 from src.area_utils import (
@@ -29,19 +30,23 @@ ceo_path_2 = (
     / "data/test_area/ceo-2019-Rwanda-Cropland-(RCMRD-Set-2)-sample-data-2022-08-29_subset.csv"
 )
 
+
 def get_test_parameter():
     return {
         "country_iso3": "RWA",
-        "regions_in_country": ["Kigali City","Northern"],
+        "regions_in_country": ["Kigali City", "Northern"],
         "crop_user_acc": 0.8,
         "non_crop_user_acc": 0.7,
         "est_standard_error": 0.02,
     }
 
+
 class TestAreaUtils(TestCase):
     def setUp(self):
         self.sample_input = get_test_parameter()
-        self.roi = load_ne(self.sample_input["country_iso3"], self.sample_input["regions_in_country"])
+        self.roi = load_ne(
+            self.sample_input["country_iso3"], self.sample_input["regions_in_country"]
+        )
 
     def test_area_path(self):
         self.assertTrue(map_path.exists(), f"{map_path} not found. Try dvc pull.")
@@ -55,13 +60,17 @@ class TestAreaUtils(TestCase):
         map_array, map_meta = load_raster(map_path, self.roi)
         binary_map = binarize(map_array, map_meta)
         self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
-        self.assertEqual(np.unique(binary_map).shape, (3,), f"map unique values are {np.unique(binary_map)}")
+        self.assertEqual(
+            np.unique(binary_map).shape, (3,), f"map unique values are {np.unique(binary_map)}"
+        )
 
     def test_area_util(self):
         map_array, map_meta = load_raster(map_path)
         binary_map = binarize(map_array, map_meta)
         self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
-        self.assertEqual(np.unique(binary_map).shape, (2,), f"map unique values are {np.unique(binary_map)}")
+        self.assertEqual(
+            np.unique(binary_map).shape, (2,), f"map unique values are {np.unique(binary_map)}"
+        )
 
         crop_fraction, non_crop_fraction = cal_map_area_class(binary_map, unit="fraction")
         crop_pixel, non_crop_pixel = cal_map_area_class(binary_map)
@@ -76,20 +85,19 @@ class TestAreaUtils(TestCase):
             self.sample_input["est_standard_error"],
         )
         self.assertEqual(crop_num_sample, 176, f"crop sample number is {crop_num_sample}")
-        self.assertEqual(non_crop_num_sample, 176, f"non-crop sample number is {non_crop_num_sample}")
+        self.assertEqual(
+            non_crop_num_sample, 176, f"non-crop sample number is {non_crop_num_sample}"
+        )
 
-        generate_ref_samples(
-            binary_map,
-            map_meta,
-            crop_num_sample,
-            non_crop_num_sample
-            )
+        generate_ref_samples(binary_map, map_meta, crop_num_sample, non_crop_num_sample)
 
-        self.assertTrue(Path(Path.cwd() / "ceo_reference_sample.shp").exists(), "reference sample file not generated")
+        self.assertTrue(
+            Path(Path.cwd() / "ceo_reference_sample.shp").exists(),
+            "reference sample file not generated",
+        )
 
-        ceo_geom = reference_sample_agree(binary_map, 
-        map_meta, ceo_path_1, ceo_path_2)
-        self.assertEqual(ceo_geom.shape, (63,15), f"ceo_geom shape is {ceo_geom.shape}")
+        ceo_geom = reference_sample_agree(binary_map, map_meta, ceo_path_1, ceo_path_2)
+        self.assertEqual(ceo_geom.shape, (63, 15), f"ceo_geom shape is {ceo_geom.shape}")
 
         cm = compute_confusion_matrix(ceo_geom)
         self.assertEqual(cm[0], 28, f"cm[0] is {cm[0]}")

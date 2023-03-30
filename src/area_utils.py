@@ -198,12 +198,12 @@ def estimate_num_sample_per_class(
 def random_inds(
     binary_map: np.ndarray, strata: int, sample_size: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """ Generate random indices for sampling from a binary map."""
+    """Generate random indices for sampling from a binary map."""
     inds = np.where(binary_map == strata)
     rand_inds = np.random.permutation(np.arange(inds[0].shape[0]))[:sample_size]
     rand_px = inds[0][rand_inds]
     rand_py = inds[1][rand_inds]
-    
+
     return rand_px, rand_py
 
 
@@ -286,7 +286,7 @@ def reference_sample_agree(
 
     label_responses = ceo_agree_geom[label_question].unique()
     assert len(label_responses) == 2
-    
+
     for r, row in ceo_agree_geom.iterrows():
         lon, lat = row["geometry"].y, row["geometry"].x
         px, py = transform.rowcol(meta["transform"], lat, lon)
