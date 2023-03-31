@@ -30,6 +30,8 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
         condition = ne_gdf["adm1_code"].str.startswith(country_code)
         boundary = ne_gdf[condition].copy()
         print("Entire country found!")
+        boundary = boundary.dissolve(by="admin")
+        return boundary
 
     else:
         available_regions = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)][
@@ -56,6 +58,7 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
             available_ = ne_gdf[ne_gdf["adm1_code"].str.startswith(country_code)]
             condition = available_["name"].isin(regions_of_interest)
             boundary = available_[condition].copy()
+            boundary = boundary.dissolve(by="admin")
         return boundary
 
 
@@ -75,7 +78,9 @@ def clip_raster(
             print("Clipping to boundary.")
         boundary = boundary.to_crs(src.crs)
         boundary = [json.loads(boundary.to_json())["features"][0]["geometry"]]
-        raster, out_transform = mask(src, shapes=boundary, crop=True)
+        raster, out_transform = mask(
+            src, shapes=boundary, crop=True, all_touched=True, nodata=src.nodata
+        )
         raster = raster[0]
         out_meta = src.meta.copy()
         out_meta.update(
@@ -125,8 +130,8 @@ def load_raster(
 
 
 def binarize(raster: np.ma.core.MaskedArray, meta: dict, threshold: float = 0.5) -> np.ndarray:
-    raster[raster < threshold] = 0
-    raster[((raster >= threshold) & (raster != meta["nodata"]))] = 1
+    raster.data[raster.data < threshold] = 0
+    raster.data[((raster.data >= threshold) & (raster.data != meta["nodata"]))] = 1
     return raster.data.astype(np.uint8)
 
 
@@ -143,8 +148,8 @@ def cal_map_area_class(
     noncrop_px = np.where(binary_map.flatten() == 0)
     total = crop_px[0].shape[0] + noncrop_px[0].shape[0]
     if unit == "ha":
-        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 100000
-        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 100000
+        crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
+        noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
         print(
             f"Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
@@ -154,8 +159,8 @@ def cal_map_area_class(
         crop_area = int(crop_px[0].shape[0])
         noncrop_area = int(noncrop_px[0].shape[0])
         print(
-            f"Crop area: {crop_area} pixels, Non-crop area: {noncrop_area} pixels \n \
-            Total area: {crop_area + noncrop_area} pixels"
+            f"Crop pixels count: {crop_area}, Non-crop pixels count: {noncrop_area} pixels \n \
+            Total counts: {crop_area + noncrop_area} pixels"
         )
 
     elif unit == "fraction":
@@ -193,12 +198,12 @@ def estimate_num_sample_per_class(
 def random_inds(
     binary_map: np.ndarray, strata: int, sample_size: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    # """ Generate random indices for sampling from a binary map."""
+    """Generate random indices for sampling from a binary map."""
     inds = np.where(binary_map == strata)
     rand_inds = np.random.permutation(np.arange(inds[0].shape[0]))[:sample_size]
     rand_px = inds[0][rand_inds]
     rand_py = inds[1][rand_inds]
-    # del inds
+
     return rand_px, rand_py
 
 
@@ -288,15 +293,10 @@ def reference_sample_agree(
 
         ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
 
-        if label_responses[1].startswith("C") or label_responses[1].startswith("c"):
-            ceo_agree_geom.loc[
-                ceo_agree_geom[label_question] == label_responses[1], "Reference label"
-            ] = 1
-            ceo_agree_geom.loc[
-                ceo_agree_geom[label_question] == label_responses[0], "Reference label"
-            ] = 0
-
-        ceo_agree_geom["Reference label"] = ceo_agree_geom["Reference label"].astype(np.uint8)
+        if row[label_question] == "Cropland" or row[label_question] == "cropland":
+            ceo_agree_geom.loc[r, "Reference label"] = 1
+        elif row[label_question] == "Non-cropland" or row[label_question] == "non-cropland":
+            ceo_agree_geom.loc[r, "Reference label"] = 0
 
     return ceo_agree_geom
 
