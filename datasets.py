@@ -121,14 +121,17 @@ class KenyaCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
+
 class SudanBlueNileCEO2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         SudanBlueNile_dir = raw_dir / "Sudan_Blue_Nile_CEO_2020"
         df1 = pd.read_csv(
-            SudanBlueNile_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv"
+            SudanBlueNile_dir
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv"
         )
         df2 = pd.read_csv(
-            SudanBlueNile_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv"
+            SudanBlueNile_dir
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv"
         )
         df = pd.concat([df1, df2])
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
@@ -147,6 +150,7 @@ class SudanBlueNileCEO2020(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
+
 
 class HawaiiCorrective2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
