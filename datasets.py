@@ -127,12 +127,10 @@ class SudanBlueNileCEO2020(LabeledDataset):
         SudanBlueNile_dir = raw_dir / "Sudan_Blue_Nile_CEO_2020"
         df1 = pd.read_csv(
             SudanBlueNile_dir
-            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv"
-        )
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv")
         df2 = pd.read_csv(
             SudanBlueNile_dir
-            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv"
-        )
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv")
         df = pd.concat([df1, df2])
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
         df[CLASS_PROB] = df[CLASS_PROB].astype(int)
