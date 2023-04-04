@@ -111,6 +111,32 @@ class KenyaCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
+class SudanBlueNileCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        SudanBlueNile_dir = raw_dir / "Sudan_Blue_Nile_CEO_2020"
+        df1 = pd.read_csv(
+            SudanBlueNile_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv"
+        )
+        df2 = pd.read_csv(
+            SudanBlueNile_dir / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
 
 class HawaiiCorrective2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
@@ -916,6 +942,7 @@ datasets: List[LabeledDataset] = [
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
     EthiopiaTigrayGhent2021(),
+    SudanBlueNileCEO2020(),
 ]
 
 if __name__ == "__main__":
