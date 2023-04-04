@@ -148,7 +148,7 @@ class SudanBlueNileCEO2020(LabeledDataset):
             }
         )
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
-        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
         return df
 
 
