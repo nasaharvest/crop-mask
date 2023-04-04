@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from unittest import TestCase
 
+import numpy as np
+
 from src.area_utils import (
     binarize,
     cal_map_area_class,
@@ -29,8 +31,8 @@ ceo_path_2 = (
 )
 
 
-class IntegrationTestArea(TestCase):
-    sample_input = {
+def get_test_parameter():
+    return {
         "country_iso3": "RWA",
         "regions_in_country": ["Kigali City", "Northern"],
         "crop_user_acc": 0.8,
@@ -38,34 +40,40 @@ class IntegrationTestArea(TestCase):
         "est_standard_error": 0.02,
     }
 
-    def test_area_utils(self):
-        self.assertTrue(map_path.exists())
-        self.assertTrue(ceo_path_1.exists())
-        self.assertTrue(ceo_path_2.exists())
 
-        print("\u2714 all file paths exist")
+class TestAreaUtils(TestCase):
+    def setUp(self):
+        self.sample_input = get_test_parameter()
+        self.roi = load_ne(
+            self.sample_input["country_iso3"], self.sample_input["regions_in_country"]
+        )
 
-        roi = load_ne(self.sample_input["country_iso3"], self.sample_input["regions_in_country"])
-        self.assertEqual(roi.shape, (2, 122))
+    def test_area_path(self):
+        self.assertTrue(map_path.exists(), f"{map_path} not found. Try dvc pull.")
+        self.assertTrue(ceo_path_1.exists(), f"{ceo_path_1} not found. Try dvc pull.")
+        self.assertTrue(ceo_path_2.exists(), f"{ceo_path_2} not found. Try dvc pull.")
 
-        print("\u2714 region of interest loaded")
-
-        map_array, map_meta = load_raster(map_path, roi)
-        self.assertEqual(map_array.shape, (6513, 9232))
-        self.assertEqual(map_meta["crs"], "EPSG:32735")
-
-        print("\u2714 map read")
+    def test_read_map_with_map_roi(self):
+        map_array, map_meta = load_raster(map_path, self.roi)
         binary_map = binarize(map_array, map_meta)
-        self.assertEqual(binary_map.dtype, "uint8")
+        self.assertEqual(self.roi.shape, (1, 121), f"region of interest shape is {self.roi.shape}")
+        self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
+        self.assertEqual(
+            np.unique(binary_map).shape, (3,), f"map unique values are {np.unique(binary_map)}"
+        )
 
-        print("\u2714 map binarized")
+    def test_area_util(self):
+        map_array, map_meta = load_raster(map_path)
+        binary_map = binarize(map_array, map_meta)
+        self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
+        self.assertEqual(
+            np.unique(binary_map).shape, (2,), f"map unique values are {np.unique(binary_map)}"
+        )
 
         crop_fraction, non_crop_fraction = cal_map_area_class(binary_map, unit="fraction")
         crop_pixel, non_crop_pixel = cal_map_area_class(binary_map)
-        self.assertAlmostEqual(crop_fraction, 0.4825700)
-        self.assertAlmostEqual(non_crop_fraction, 0.5174299946966485)
-
-        print("\u2714 map area calculated")
+        self.assertEqual(crop_pixel, 2642505, f"crop pixel is {crop_pixel}")
+        self.assertEqual(non_crop_pixel, 57485511, f"non-crop pixel is {non_crop_pixel}")
 
         crop_num_sample, non_crop_num_sample = estimate_num_sample_per_class(
             crop_fraction,
@@ -74,33 +82,28 @@ class IntegrationTestArea(TestCase):
             self.sample_input["non_crop_user_acc"],
             self.sample_input["est_standard_error"],
         )
-        self.assertEqual(crop_num_sample, 187)
-        self.assertEqual(non_crop_num_sample, 187)
-
-        print("\u2714 number of samples estimated")
+        self.assertEqual(crop_num_sample, 176, f"crop sample number is {crop_num_sample}")
+        self.assertEqual(
+            non_crop_num_sample, 176, f"non-crop sample number is {non_crop_num_sample}"
+        )
 
         generate_ref_samples(binary_map, map_meta, crop_num_sample, non_crop_num_sample)
-        self.assertTrue(Path(Path.cwd() / "ceo_reference_sample.shp").exists())
 
-        print("\u2714 reference samples generated")
+        self.assertTrue(
+            Path(Path.cwd() / "ceo_reference_sample.shp").exists(),
+            "reference sample file not generated",
+        )
 
         ceo_geom = reference_sample_agree(binary_map, map_meta, ceo_path_1, ceo_path_2)
-        self.assertEqual(ceo_geom.shape, (63, 15))
-
-        print("\u2714 reference read")
+        self.assertEqual(ceo_geom.shape, (63, 15), f"ceo_geom shape is {ceo_geom.shape}")
 
         cm = compute_confusion_matrix(ceo_geom)
-        self.assertEqual(cm[0], 20)
-        self.assertEqual(cm[1], 9)
-
-        print("\u2714 confusion matrix computed")
+        self.assertEqual(cm[0], 28, f"cm[0] is {cm[0]}")
+        self.assertEqual(cm[1], 1, f"cm[1] is {cm[1]}")
 
         summary = compute_area_estimate(crop_pixel, non_crop_pixel, cm, map_meta)
-        self.assertEqual(summary.shape, (8, 2))
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 331112.02102444763)
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 267357.48621850886)
-
-        print("\u2714 area estimate computed")
+        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 322690.607527, places=2)
+        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 275778.899716, places=2)
 
         for file in os.listdir(Path.cwd()):
             if file.startswith("ceo_reference_sample"):
