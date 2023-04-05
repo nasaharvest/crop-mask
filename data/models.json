@@ -169,6 +169,23 @@
             "roc_auc_score": 0.9773
         }
     },
+    "Sudan_Blue_Nile_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/nisuw9xs",
+        "test_metrics": {
+            "accuracy": 0.9443,
+            "f1_score": 0.8968,
+            "precision_score": 0.8626,
+            "recall_score": 0.9339,
+            "roc_auc_score": 0.9845
+        },
+        "val_metrics": {
+            "accuracy": 0.9158,
+            "f1_score": 0.8482,
+            "precision_score": 0.7569,
+            "recall_score": 0.9646,
+            "roc_auc_score": 0.973
+        }
+    },
     "Tanzania-2019": {
         "params": "",
         "test_metrics": {
