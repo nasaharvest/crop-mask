@@ -38,11 +38,7 @@ class TestCovermaps:
     test in, class uses all test sets available.
     """
 
-    def __init__(
-            self,
-            test_countries: list,
-            covermaps: list
-            ) -> None:
+    def __init__(self, test_countries: list, covermaps: list) -> None:
         self.test_countries = test_countries
         if test_countries is None:
             self.test_countries = TEST_COUNTRIES.keys
@@ -166,12 +162,16 @@ class Covermap:
 
         # Recast values
         if self.probability:
+
             def mapper(x):
                 return 1 if x >= self.probability else 0
+
         else:
             if type(self.crop_labels) is list:
+
                 def mapper(x):
                     return 1 if x in self.crop_labels else 0
+
             else:
                 print("Invalid valid label format")
                 return None
@@ -357,10 +357,7 @@ TARGETS = {
         crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa",
-        ee.ImageCollection("ESA/WorldCover/v100"),
-        resolution=10,
-        crop_labels=[40]
+        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -382,9 +379,12 @@ TARGETS = {
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
-        ee.ImageCollection(ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
-                           .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
-                           .select(["crops"]).mode()),
+        ee.ImageCollection(
+            ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
+            .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
+            .select(["crops"])
+            .mode()
+        ),
         resolution=10,
         probability=0.5,
     ),
