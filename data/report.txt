@@ -350,11 +350,10 @@ eo_data_complete    161
 
 SudanBlueNileCEO2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    891
-eo_data_complete     609
-✖ training: 449 labels, but 186 features
-✖ validation: 518 labels, but 207 features
-✖ testing: 533 labels, but 216 features
+eo_data_complete    1500
+✔ training amount: 449, positive class: 27.4%
+✔ validation amount: 518, positive class: 21.8%
+✔ testing amount: 533, positive class: 22.7%
 
 
 
