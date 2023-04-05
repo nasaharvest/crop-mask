@@ -100,11 +100,7 @@ class TestCovermaps:
     test in, class uses all test sets available.
     """
 
-    def __init__(
-            self,
-            test_countries: list,
-            covermaps: list
-            ) -> None:
+    def __init__(self, test_countries: list, covermaps: list) -> None:
         self.test_countries = test_countries
         if test_countries is None:
             self.test_countries = TEST_COUNTRIES.keys
@@ -366,10 +362,7 @@ TARGETS = {
         crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa",
-        ee.ImageCollection("ESA/WorldCover/v100"),
-        resolution=10,
-        crop_labels=[40]
+        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -391,9 +384,12 @@ TARGETS = {
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
-        ee.ImageCollection(ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
-                           .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
-                           .select(["crops"]).mode()),
+        ee.ImageCollection(
+            ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
+            .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
+            .select(["crops"])
+            .mode()
+        ),
         resolution=10,
         probability=0.5,
     ),
