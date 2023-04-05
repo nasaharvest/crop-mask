@@ -1,3 +1,5 @@
+__author__ = "Adam Yang"
+
 from pathlib import Path
 
 import cartopy.io.shapereader as shpreader
@@ -30,6 +32,66 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
+class Covermap:
+    def __init__(
+        self,
+        title: str,
+        ee_asset: ee.ImageCollection,
+        resolution: int,
+        countries=None,
+        probability=None,
+        crop_labels=None,
+    ) -> None:
+        # TODO: Check parameters
+        self.title = title
+        self.ee_asset = ee_asset
+        self.resolution = resolution
+
+        assert (probability is None) ^ (
+            crop_labels is None
+        ), "Please specify only 1 of (probability and threshold) or crop_labels"
+
+        self.probability = probability
+        self.crop_labels = crop_labels
+
+        if countries is None:
+            self.countries = [c for c in TEST_COUNTRIES]
+        else:
+            self.countries = countries
+
+    def extract_test(self, test) -> gpd.GeoDataFrame:
+        # TODO: Test here for test data params,
+
+        # Extract from countires that are covered by map
+        test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
+
+        test_coll = ee.FeatureCollection(
+            test_points.apply(lambda x: create_point(x), axis=1).to_list()
+        )
+        sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
+
+        if len(sampled) != len(test_points):
+            print("Extracting error: length of sampled dataset is not the same as testing dataset")
+
+        # Recast values
+        if self.probability:
+            def mapper(x):
+                return 1 if x >= self.probability else 0
+        else:
+            if type(self.crop_labels) is list:
+                def mapper(x):
+                    return 1 if x in self.crop_labels else 0
+            else:
+                print("Invalid valid label format")
+                return None
+
+        sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
+
+        return sampled[[LAT, LON, self.title]]
+    
+    def __repr__(self) -> str:
+        return self.title + " " + repr(self.countries)
+
 
 class TestCovermaps:
     """
@@ -48,8 +110,8 @@ class TestCovermaps:
             self.test_countries = TEST_COUNTRIES.keys
         self.covermaps = covermaps
         self.covermap_titles = [x.title for x in self.covermaps]
-        self.sampled_maps: dict
-        self.results: dict
+        self.sampled_maps: dict = {}
+        self.results: dict = {}
 
     def get_test_points(self, targets=None) -> gpd.GeoDataFrame:
         """
@@ -118,68 +180,15 @@ class TestCovermaps:
                             generate_report(map, country, temp[CLASS_COL], temp[map])
                         )
 
-                self.results[country] = pd.concat(comparisons)
+                self.results[country] = pd.concat(comparisons).set_index(['dataset'])
 
             return self.results.copy()
+    
+    def __repr__(self) -> str:
+        return repr(self.covermap_titles) + " " + repr(self.test_countries)
+ 
 
-
-class Covermap:
-    def __init__(
-        self,
-        title: str,
-        ee_asset: ee.ImageCollection,
-        resolution: int,
-        countries=None,
-        probability=None,
-        crop_labels=None,
-    ) -> None:
-        # TODO: Check parameters
-        self.title = title
-        self.ee_asset = ee_asset
-        self.resolution = resolution
-
-        assert (probability is None) ^ (
-            crop_labels is None
-        ), "Please specify only 1 of (probability and threshold) or crop_labels"
-
-        self.probability = probability
-        self.crop_labels = crop_labels
-
-        if countries is None:
-            self.countries = [c for c in TEST_COUNTRIES]
-        else:
-            self.countries = countries
-
-    def extract_test(self, test) -> gpd.GeoDataFrame:
-        # TODO: Test here for test data params,
-
-        # Extract from countires that are covered by map
-        test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
-
-        test_coll = ee.FeatureCollection(
-            test_points.apply(lambda x: create_point(x), axis=1).to_list()
-        )
-        sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
-
-        if len(sampled) != len(test_points):
-            print("Extracting error: length of sampled dataset is not the same as testing dataset")
-
-        # Recast values
-        if self.probability:
-            def mapper(x):
-                return 1 if x >= self.probability else 0
-        else:
-            if type(self.crop_labels) is list:
-                def mapper(x):
-                    return 1 if x in self.crop_labels else 0
-            else:
-                print("Invalid valid label format")
-                return None
-
-        sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
-
-        return sampled[[LAT, LON, self.title]]
-
+# Supporting funcs
 
 def generate_test_data(target_paths) -> gpd.GeoDataFrame:
     """
@@ -286,7 +295,7 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
 
     try:
         test = pd.read_csv(path)[["lat", "lon", "class_probability", "country", "subset"]]
-    except:
+    except KeyError:
         test = pd.read_csv(path)[["lat", "lon", "class_probability", "subset"]]
         if country is None:
             raise Exception("No country given in dataset. Input country string needed")
