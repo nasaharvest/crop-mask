@@ -131,15 +131,15 @@ class Covermap:
         resolution: int,
         countries=None,
         probability=None,
-        crop_labels=None
+        crop_labels=None,
     ) -> None:
         # TODO: Check parameters
         self.title = title
         self.ee_asset = ee_asset
         self.resolution = resolution
 
-        assert (
-            (probability is None) ^ (crop_labels is None)
+        assert (probability is None) ^ (
+            crop_labels is None
         ), "Please specify only 1 of (probability and threshold) or crop_labels"
 
         self.probability = probability
@@ -330,7 +330,7 @@ TARGETS = {
         ),
         resolution=10,
         probability=0.5,
-        countries=["Togo"]
+        countries=["Togo"],
     ),
     "harvest_kenya": Covermap(
         "harvest_kenya",
@@ -339,14 +339,14 @@ TARGETS = {
         ),
         resolution=10,
         probability=0.5,
-        countries=["Kenya"]
+        countries=["Kenya"],
     ),
     "harvest_tanzania": Covermap(
         "harvest_tanzania",
         ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
         resolution=10,
         probability=0.5,
-        countries=["Tanzania"]
+        countries=["Tanzania"],
     ),
     "copernicus": Covermap(
         "copernicus",
@@ -354,7 +354,7 @@ TARGETS = {
         .select("discrete_classification")
         .filterDate("2019-01-01", "2019-12-31"),
         resolution=100,
-        crop_labels=[40]
+        crop_labels=[40],
     ),
     "esa": Covermap(
         "esa",
@@ -366,19 +366,19 @@ TARGETS = {
         "glad",
         ee.ImageCollection("users/potapovpeter/Global_cropland_2019"),
         resolution=30,
-        probability=0.5
+        probability=0.5,
     ),
     "gfsad": Covermap(
         "gfsad",
         ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
         resolution=1000,
-        crop_labels=[1, 2, 3, 4, 5]
+        crop_labels=[1, 2, 3, 4, 5],
     ),
     "asap": Covermap(
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
-        probability=100
+        probability=100,
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
@@ -386,18 +386,18 @@ TARGETS = {
                            .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
                            .select(["crops"]).mode()),
         resolution=10,
-        probability=0.5
+        probability=0.5,
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
         resolution=30,
-        crop_labels=[2]
+        crop_labels=[2],
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
         ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
         resolution=30,
-        crop_labels=[2, 3]
+        crop_labels=[2, 3],
     ),
 }
