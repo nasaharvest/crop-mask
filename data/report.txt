@@ -348,6 +348,15 @@ eo_data_complete    161
 
 
 
+SudanBlueNileCEO2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1500
+✔ training amount: 449, positive class: 27.4%
+✔ validation amount: 518, positive class: 21.8%
+✔ testing amount: 533, positive class: 22.7%
+
+
+
 SudanBlueNileCorrectiveLabels2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    47

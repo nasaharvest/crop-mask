@@ -240,6 +240,7 @@ class Model(pl.LightningModule):
             ),
             shuffle=True,
             batch_size=self.hparams.batch_size,
+            drop_last=True,
         )
 
     def val_dataloader(self):
