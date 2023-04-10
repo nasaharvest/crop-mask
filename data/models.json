@@ -305,6 +305,23 @@
             "roc_auc_score": 0.9567
         }
     },
+    "Zambia_2019_HQ": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/s16bkjq1",
+        "test_metrics": {
+            "accuracy": 0.9373,
+            "f1_score": 0.4715,
+            "precision_score": 0.3452,
+            "recall_score": 0.7436,
+            "roc_auc_score": 0.956
+        },
+        "val_metrics": {
+            "accuracy": 0.9484,
+            "f1_score": 0.5299,
+            "precision_score": 0.3924,
+            "recall_score": 0.8158,
+            "roc_auc_score": 0.9473
+        }
+    },
     "Zambia_2019_skip_era5": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2dep91zg",
         "test_metrics": {
