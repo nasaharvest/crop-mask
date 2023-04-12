@@ -55,9 +55,17 @@ def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
 
+class EthiopiaTigrayCorrective2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Corrective_2020.csv")
+        df.rename(columns={"latitude":LAT, "longitude" : LON}, inplace = True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2020,2,1), date(2021,2,1)
+        df[SUBSET] = "training"
+        return df
+
 class EthiopiaTigrayGhent2021(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
-        # Read in csv
         df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
         # Rename coordinate columns
         df = df.rename(
@@ -67,9 +75,7 @@ class EthiopiaTigrayGhent2021(LabeledDataset):
                 "Crop/Non-Crop": CLASS_PROB,
             }
         )
-        # Define starting and end dates
         df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
-        # Placeholder subset column to pass checks
         df[SUBSET] = "validation"
         return df
 
@@ -984,6 +990,7 @@ datasets: List[LabeledDataset] = [
     EthiopiaTigrayGhent2021(),
     SudanBlueNileCEO2020(),
     SudanBlueNileCorrectiveLabels2019(),
+    EthiopiaTigrayCorrective2020()
 ]
 
 if __name__ == "__main__":
