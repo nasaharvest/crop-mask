@@ -60,7 +60,7 @@ class EthiopiaTigrayCorrective2020(LabeledDataset):
         df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Corrective_2020.csv")
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
-        df[START], df[END] = date(2020, 2, 1), date(2021, 2, 1)
+        df[START], df[END] = date(2020, 1, 1), date(2022, 12, 31)
         df[SUBSET] = "training"
         return df
 
@@ -76,7 +76,7 @@ class EthiopiaTigrayGhent2021(LabeledDataset):
                 "Crop/Non-Crop": CLASS_PROB,
             }
         )
-        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
         df[SUBSET] = "validation"
         return df
 
