@@ -366,5 +366,5 @@ eo_data_complete    47
 
 EthiopiaTigrayCorrective2020 (Timesteps: 12)
 ----------------------------------------------------------------------------
-eo_data_exporting    200
-✖ training: 200 labels, but 0 features
+eo_data_complete    200
+✔ training amount: 200, positive class: 2.0%
