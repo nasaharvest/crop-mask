@@ -343,9 +343,8 @@ eo_data_complete    12451
 
 EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     139
-eo_data_exporting     22
-✖ validation: 161 labels, but 139 features
+eo_data_complete    161
+✔ validation amount: 161, positive class: 78.9%
 
 
 
@@ -367,5 +366,5 @@ eo_data_complete    47
 
 EthiopiaTigrayCorrective2020 (Timesteps: 36)
 ----------------------------------------------------------------------------
-eo_data_exporting    200
-✖ training: 200 labels, but 0 features
+eo_data_complete    200
+✔ training amount: 200, positive class: 2.0%
