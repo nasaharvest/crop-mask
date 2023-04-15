@@ -341,7 +341,7 @@ eo_data_complete    12451
 
 
 
-EthiopiaTigrayGhent2021 (Timesteps: 23)
+EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    161
 ✔ validation amount: 161, positive class: 78.9%
@@ -364,7 +364,7 @@ eo_data_complete    47
 
 
 
-EthiopiaTigrayCorrective2020 (Timesteps: 12)
+EthiopiaTigrayCorrective2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    200
 ✔ training amount: 200, positive class: 2.0%
