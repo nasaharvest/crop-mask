@@ -50,6 +50,23 @@
             "roc_auc_score": 0.8747
         }
     },
+    "Ethiopia_Tigray_Corrected_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/b6cz9gze",
+        "test_metrics": {
+            "accuracy": 0.8146,
+            "f1_score": 0.6412,
+            "precision_score": 0.6829,
+            "recall_score": 0.6043,
+            "roc_auc_score": 0.8407
+        },
+        "val_metrics": {
+            "accuracy": 0.8404,
+            "f1_score": 0.7261,
+            "precision_score": 0.7285,
+            "recall_score": 0.7237,
+            "roc_auc_score": 0.883
+        }
+    },
     "Kenya_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/43zyar0x",
         "test_metrics": {
