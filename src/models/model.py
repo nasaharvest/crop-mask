@@ -10,8 +10,8 @@ import torch
 from openmapflow.bands import ERA5_BANDS
 from openmapflow.bbox import BBox
 from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
-from openmapflow.constants import CLASS_PROB, SUBSET
-from openmapflow.engineer import BANDS
+from openmapflow.constants import CLASS_PROB, EO_DATA, SUBSET
+from openmapflow.engineer import BANDS, calculate_ndvi
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -207,7 +207,12 @@ class Model(pl.LightningModule):
                 df = d.load_df(to_np=True, disable_tqdm=True)
                 dfs.append(df[df[CLASS_PROB] != 0.5])
 
-        return pd.concat(dfs)
+        big_df = pd.concat(dfs)
+
+        # Recompute NDVI
+        big_df[EO_DATA] = big_df[EO_DATA].apply(lambda x: calculate_ndvi(x[:, : len(BANDS) - 1]))
+
+        return big_df
 
     def get_dataset(
         self,
