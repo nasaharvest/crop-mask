@@ -1,19 +1,19 @@
 {
     "Ethiopia_Bure_Jimma_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/8r72ggy0",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3uq4p4sz",
         "test_metrics": {
-            "accuracy": 0.8923,
-            "f1_score": 0.8205,
-            "precision_score": 0.7778,
+            "accuracy": 0.8967,
+            "f1_score": 0.8266,
+            "precision_score": 0.7887,
             "recall_score": 0.8682,
-            "roc_auc_score": 0.9538
+            "roc_auc_score": 0.9545
         },
         "val_metrics": {
-            "accuracy": 0.8903,
-            "f1_score": 0.7954,
-            "precision_score": 0.763,
+            "accuracy": 0.8923,
+            "f1_score": 0.7984,
+            "precision_score": 0.7687,
             "recall_score": 0.8306,
-            "roc_auc_score": 0.954
+            "roc_auc_score": 0.9536
         }
     }
 }
