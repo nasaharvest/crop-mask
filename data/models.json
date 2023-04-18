@@ -32,5 +32,22 @@
             "recall_score": 0.6711,
             "roc_auc_score": 0.8874
         }
+    },
+    "Ethiopia_Tigray_2021": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3ebyb5g6",
+        "test_metrics": {
+            "accuracy": 0.8242,
+            "f1_score": 0.7193,
+            "precision_score": 0.6891,
+            "recall_score": 0.7523,
+            "roc_auc_score": 0.8782
+        },
+        "val_metrics": {
+            "accuracy": 0.8503,
+            "f1_score": 0.744,
+            "precision_score": 0.7857,
+            "recall_score": 0.7064,
+            "roc_auc_score": 0.8765
+        }
     }
 }
