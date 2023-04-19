@@ -49,5 +49,22 @@
             "recall_score": 0.7064,
             "roc_auc_score": 0.8765
         }
+    },
+    "Kenya_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/sthnqh6i",
+        "test_metrics": {
+            "accuracy": 0.9345,
+            "f1_score": 0.6667,
+            "precision_score": 0.5806,
+            "recall_score": 0.7826,
+            "roc_auc_score": 0.941
+        },
+        "val_metrics": {
+            "accuracy": 0.9463,
+            "f1_score": 0.5556,
+            "precision_score": 0.4348,
+            "recall_score": 0.7692,
+            "roc_auc_score": 0.9625
+        }
     }
 }
