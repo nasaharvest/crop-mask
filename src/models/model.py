@@ -140,6 +140,7 @@ class Model(pl.LightningModule):
 
             with all_dataset_params_path.open("w") as f:
                 json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
+                f.write("\n")
 
         dataset_params = all_dataset_params[normalizing_dict_key]
         self.train_num_timesteps: List[int] = dataset_params["train_num_timesteps"]
