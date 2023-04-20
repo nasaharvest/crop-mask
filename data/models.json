@@ -67,6 +67,23 @@
             "roc_auc_score": 0.9625
         }
     },
+    "Malawi_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/8y0wa3fq",
+        "test_metrics": {
+            "accuracy": 0.884,
+            "f1_score": 0.5954,
+            "precision_score": 0.6094,
+            "recall_score": 0.5821,
+            "roc_auc_score": 0.9179
+        },
+        "val_metrics": {
+            "accuracy": 0.8612,
+            "f1_score": 0.4516,
+            "precision_score": 0.359,
+            "recall_score": 0.6087,
+            "roc_auc_score": 0.8784
+        }
+    },
     "Rwanda_2019_skip_era5": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/a9kyjwwt",
         "test_metrics": {
