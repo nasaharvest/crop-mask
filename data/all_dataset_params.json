@@ -48,5 +48,57 @@
         "val_num_timesteps": [
             12
         ]
+    },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Argentina_Buenos_Aires,Malawi_CEO_2020,Malawi_CEO_2019,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019,Namibia_corrective_labels_2020,Malawi_corrected,Namibia_CEO_2020,Namibia_WFP,Sudan_Blue_Nile_CEO_2019,Hawaii_CEO_2020,HawaiiAgriculturalLandUse2020,KenyaCEO2019,HawaiiCorrective2020,HawaiiCorrectiveGuided2020,MalawiCorrectiveLabels2020,NamibiaFieldBoundary2022,SudanBlueNileCEO2020,SudanBlueNileCorrectiveLabels2019,EthiopiaTigrayCorrective2020_November_2022": {
+        "normalizing_dict": {
+            "mean": [
+                -11.363600430172939,
+                -18.475127981196426,
+                1450.4328626061358,
+                1420.0432888037856,
+                1460.2193169767331,
+                1698.9099594594784,
+                2456.095104053176,
+                2837.5927228335795,
+                2734.10176408695,
+                3111.559334607576,
+                868.4728681889706,
+                2612.95910278317,
+                1776.4613618719611,
+                290.0037993048394,
+                0.003469156075501947,
+                894.2585360332348,
+                5.582854863396833,
+                0.3376249623725362
+            ],
+            "std": [
+                4.158643938580521,
+                5.033832340345675,
+                995.4404722080856,
+                966.3849867807796,
+                1169.1231682681248,
+                1120.5921007114753,
+                1052.0931675486324,
+                1114.1398883964953,
+                1079.790107158016,
+                1149.263502546417,
+                678.6376328286839,
+                1279.0044331212496,
+                1189.1036952902348,
+                35.56671052686138,
+                0.004360463074610253,
+                637.8005066512918,
+                7.073073454100647,
+                0.2262281666560301
+            ]
+        },
+        "train_num_timesteps": [
+            12,
+            5,
+            10
+        ],
+        "val_num_timesteps": [
+            12
+        ]
     }
 }
