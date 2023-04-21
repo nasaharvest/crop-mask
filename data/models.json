@@ -135,6 +135,23 @@
             "roc_auc_score": 0.9638
         }
     },
+    "Uganda_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/dlztexn6",
+        "test_metrics": {
+            "accuracy": 0.8377,
+            "f1_score": 0.5067,
+            "precision_score": 0.3878,
+            "recall_score": 0.7308,
+            "roc_auc_score": 0.8863
+        },
+        "val_metrics": {
+            "accuracy": 0.8458,
+            "f1_score": 0.5205,
+            "precision_score": 0.4419,
+            "recall_score": 0.6333,
+            "roc_auc_score": 0.8442
+        }
+    },
     "Zambia_2019_skip_era5": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/hgvt6wqk",
         "test_metrics": {
