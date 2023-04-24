@@ -289,20 +289,20 @@
         }
     },
     "Zambia_2019": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2bk5xggu",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/ehzji1ge",
         "test_metrics": {
-            "accuracy": 0.947,
-            "f1_score": 0.4762,
-            "precision_score": 0.3788,
-            "recall_score": 0.641,
-            "roc_auc_score": 0.9588
+            "accuracy": 0.9441,
+            "f1_score": 0.1471,
+            "precision_score": 0.1724,
+            "recall_score": 0.1282,
+            "roc_auc_score": 0.9053
         },
         "val_metrics": {
-            "accuracy": 0.9568,
-            "f1_score": 0.5577,
-            "precision_score": 0.4394,
-            "recall_score": 0.7632,
-            "roc_auc_score": 0.9567
+            "accuracy": 0.9512,
+            "f1_score": 0.1333,
+            "precision_score": 0.1818,
+            "recall_score": 0.1053,
+            "roc_auc_score": 0.8968
         }
     },
     "Zambia_2019_skip_era5": {
