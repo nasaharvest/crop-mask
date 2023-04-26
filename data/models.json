@@ -17,20 +17,20 @@
         }
     },
     "Ethiopia_Tigray_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2r0i4plc",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/fmze4du4",
         "test_metrics": {
             "accuracy": 0.8225,
-            "f1_score": 0.6429,
-            "precision_score": 0.7168,
-            "recall_score": 0.5827,
-            "roc_auc_score": 0.8331
+            "f1_score": 0.6591,
+            "precision_score": 0.696,
+            "recall_score": 0.6259,
+            "roc_auc_score": 0.8515
         },
         "val_metrics": {
-            "accuracy": 0.8442,
-            "f1_score": 0.7158,
-            "precision_score": 0.7669,
-            "recall_score": 0.6711,
-            "roc_auc_score": 0.8874
+            "accuracy": 0.8308,
+            "f1_score": 0.7197,
+            "precision_score": 0.6975,
+            "recall_score": 0.7434,
+            "roc_auc_score": 0.8872
         }
     },
     "Ethiopia_Tigray_2021": {
