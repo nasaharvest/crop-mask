@@ -68,7 +68,7 @@
         }
     },
     "Malawi_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/8y0wa3fq",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/ded0f7z5",
         "test_metrics": {
             "accuracy": 0.884,
             "f1_score": 0.5954,
