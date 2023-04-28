@@ -1,36 +1,36 @@
 {
     "Ethiopia_Bure_Jimma_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/0cmnrytd",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/0yporfjp",
         "test_metrics": {
-            "accuracy": 0.8813,
-            "f1_score": 0.8099,
-            "precision_score": 0.7419,
-            "recall_score": 0.8915,
-            "roc_auc_score": 0.9588
+            "accuracy": 0.9143,
+            "f1_score": 0.8592,
+            "precision_score": 0.8041,
+            "recall_score": 0.9225,
+            "roc_auc_score": 0.9636
         },
         "val_metrics": {
-            "accuracy": 0.8944,
-            "f1_score": 0.8075,
-            "precision_score": 0.7589,
-            "recall_score": 0.8629,
-            "roc_auc_score": 0.9559
+            "accuracy": 0.8903,
+            "f1_score": 0.8073,
+            "precision_score": 0.7351,
+            "recall_score": 0.8952,
+            "roc_auc_score": 0.9571
         }
     },
     "Ethiopia_Tigray_2020": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/2r0i4plc",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/h89pakgn",
         "test_metrics": {
-            "accuracy": 0.8225,
-            "f1_score": 0.6429,
-            "precision_score": 0.7168,
-            "recall_score": 0.5827,
-            "roc_auc_score": 0.8331
+            "accuracy": 0.8304,
+            "f1_score": 0.6884,
+            "precision_score": 0.6934,
+            "recall_score": 0.6835,
+            "roc_auc_score": 0.8502
         },
         "val_metrics": {
-            "accuracy": 0.8442,
-            "f1_score": 0.7158,
-            "precision_score": 0.7669,
-            "recall_score": 0.6711,
-            "roc_auc_score": 0.8874
+            "accuracy": 0.8308,
+            "f1_score": 0.7179,
+            "precision_score": 0.7,
+            "recall_score": 0.7368,
+            "roc_auc_score": 0.8805
         }
     },
     "Ethiopia_Tigray_2021": {
@@ -65,6 +65,40 @@
             "precision_score": 0.4348,
             "recall_score": 0.7692,
             "roc_auc_score": 0.9625
+        }
+    },
+    "Malawi_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/ded0f7z5",
+        "test_metrics": {
+            "accuracy": 0.884,
+            "f1_score": 0.5954,
+            "precision_score": 0.6094,
+            "recall_score": 0.5821,
+            "roc_auc_score": 0.9179
+        },
+        "val_metrics": {
+            "accuracy": 0.8612,
+            "f1_score": 0.4516,
+            "precision_score": 0.359,
+            "recall_score": 0.6087,
+            "roc_auc_score": 0.8784
+        }
+    },
+    "Namibia_North_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/0px6gsf3",
+        "test_metrics": {
+            "accuracy": 0.955,
+            "f1_score": 0.0909,
+            "precision_score": 0.0588,
+            "recall_score": 0.2,
+            "roc_auc_score": 0.8806
+        },
+        "val_metrics": {
+            "accuracy": 0.9412,
+            "f1_score": 0.1935,
+            "precision_score": 0.125,
+            "recall_score": 0.4286,
+            "roc_auc_score": 0.8814
         }
     },
     "Rwanda_2019_skip_era5": {
@@ -116,6 +150,74 @@
             "precision_score": 0.7329,
             "recall_score": 0.9469,
             "roc_auc_score": 0.9638
+        }
+    },
+    "Tanzania_February_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3aept9rs",
+        "test_metrics": {
+            "accuracy": 0.8552,
+            "f1_score": 0.7437,
+            "precision_score": 0.8152,
+            "recall_score": 0.6837,
+            "roc_auc_score": 0.9203
+        },
+        "val_metrics": {
+            "accuracy": 0.8513,
+            "f1_score": 0.7406,
+            "precision_score": 0.8007,
+            "recall_score": 0.6889,
+            "roc_auc_score": 0.9076
+        }
+    },
+    "Tanzania_September_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/ri13nskv",
+        "test_metrics": {
+            "accuracy": 0.8581,
+            "f1_score": 0.7515,
+            "precision_score": 0.8138,
+            "recall_score": 0.6981,
+            "roc_auc_score": 0.9169
+        },
+        "val_metrics": {
+            "accuracy": 0.8488,
+            "f1_score": 0.7311,
+            "precision_score": 0.8092,
+            "recall_score": 0.6667,
+            "roc_auc_score": 0.9112
+        }
+    },
+    "Uganda_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/dlztexn6",
+        "test_metrics": {
+            "accuracy": 0.8377,
+            "f1_score": 0.5067,
+            "precision_score": 0.3878,
+            "recall_score": 0.7308,
+            "roc_auc_score": 0.8863
+        },
+        "val_metrics": {
+            "accuracy": 0.8458,
+            "f1_score": 0.5205,
+            "precision_score": 0.4419,
+            "recall_score": 0.6333,
+            "roc_auc_score": 0.8442
+        }
+    },
+    "Zambia_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/bfmypvwy",
+        "test_metrics": {
+            "accuracy": 0.9499,
+            "f1_score": 0.2121,
+            "precision_score": 0.2593,
+            "recall_score": 0.1795,
+            "roc_auc_score": 0.9261
+        },
+        "val_metrics": {
+            "accuracy": 0.955,
+            "f1_score": 0.2,
+            "precision_score": 0.2727,
+            "recall_score": 0.1579,
+            "roc_auc_score": 0.9221
         }
     },
     "Zambia_2019_skip_era5": {
