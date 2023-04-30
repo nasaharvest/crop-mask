@@ -33,6 +33,7 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
+
 class Covermap:
     """
     Object class for earth engine covermap. Covermap is defined by:
@@ -89,12 +90,16 @@ class Covermap:
 
         # Recast values
         if self.probability:
+
             def mapper(x):
                 return 1 if x >= self.probability else 0
+
         else:
             if type(self.crop_labels) is list:
+
                 def mapper(x):
                     return 1 if x in self.crop_labels else 0
+
             else:
                 print("Invalid valid label format")
                 return None
@@ -104,7 +109,7 @@ class Covermap:
         assert len(sampled) != 0, "Empty testing set"
 
         return sampled[[LAT, LON, self.title]]
-    
+
     def __repr__(self) -> str:
         return self.title + " " + repr(self.countries)
 
@@ -193,15 +198,16 @@ class TestCovermaps:
                             generate_report(map, country, temp[CLASS_COL], temp[map])
                         )
 
-                self.results[country] = pd.concat(comparisons).set_index(['dataset'])
+                self.results[country] = pd.concat(comparisons).set_index(["dataset"])
 
             return self.results.copy()
-    
+
     def __repr__(self) -> str:
         return repr(self.covermap_titles) + " " + repr(self.test_countries)
- 
+
 
 # Supporting funcs
+
 
 def generate_test_data(target_paths) -> gpd.GeoDataFrame:
     """
