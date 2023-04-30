@@ -11,8 +11,8 @@ from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
 DATA_PATH = "../data/datasets/"
-# Country codes for Natural Earth bounding box according file name of testing set
-TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA"}
+# Country codes for Natural Earth bounding box according file name of testing set (try looking up 3 letter codes)
+TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA", "Malawi": "MWI"}
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
     shpreader.natural_earth(resolution="10m", category="cultural", name="admin_1_states_provinces")
@@ -23,6 +23,7 @@ TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "KenyaCEO2019.csv",
     "Togo": DATA_PATH + "Togo.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
+    "Malawi": DATA_PATH + "Malawi_CEO_2020.csv"
 }
 
 REDUCER = ee.Reducer.mode()
@@ -33,6 +34,18 @@ CLASS_COL = "binary"
 COUNTRY_COL = "country"
 
 class Covermap:
+    """
+    Object class for earth engine covermap. Covermap is defined by:
+        1. Dataset title (ex: 'dynamicworld', 'gfsad-lgrip' )
+        2. earth engine asset (must be image collection)
+        3. resolution (int in meters)
+        4. countries covered (if left blank, we assume it covers all countries in test_countries,
+            as is the case with global datasets)
+        5. the final parameter can either be a float defining the treshold for positive/negative 
+        labels (typically 0.5)
+           OR a list of labels for cropland 
+    See examples in TARGETS. 
+    """
     def __init__(
         self,
         title: str,
@@ -42,7 +55,6 @@ class Covermap:
         probability=None,
         crop_labels=None,
     ) -> None:
-        # TODO: Check parameters
         self.title = title
         self.ee_asset = ee_asset
         self.resolution = resolution
@@ -60,7 +72,6 @@ class Covermap:
             self.countries = countries
 
     def extract_test(self, test) -> gpd.GeoDataFrame:
-        # TODO: Test here for test data params,
 
         # Extract from countires that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
@@ -71,7 +82,10 @@ class Covermap:
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
-            print("Extracting error: length of sampled dataset is not the same as testing dataset")
+            if len(sampled) > len(test_points):
+                print("Extracting error: length of sampled dataset is not the same as testing dataset (more)")
+            else:
+                print("Extracting error: length of sampled dataset is not the same as testing dataset (less)")
 
         # Recast values
         if self.probability:
@@ -86,6 +100,8 @@ class Covermap:
                 return None
 
         sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
+        
+        assert len(sampled) != 0, "Empty testing set"
 
         return sampled[[LAT, LON, self.title]]
     
@@ -138,18 +154,19 @@ class TestCovermaps:
         extracted points from maps.
         """
         for country in self.test_countries:
-            test_temp = test_df.loc[test_df[COUNTRY_COL] == country].copy()
+            country_test = test_df.loc[test_df[COUNTRY_COL] == country].copy()
 
-            assert not test_temp.is_empty.all(), "No testing points for " + country
+            assert not country_test.is_empty.all(), "No testing points for " + country
 
             for map in self.covermaps:
                 if country in map.countries:
                     print(f"[{country}] sampling " + map.title + "...")
 
-                    map_sampled = map.extract_test(test_temp).copy()
-                    test_temp = pd.merge(test_temp, map_sampled, on=[LAT, LON], how="left")
+                    map_sampled = map.extract_test(country_test).copy()
+                    country_test = pd.merge(country_test, map_sampled, on=[LAT, LON], how="left")
+                    country_test.drop_duplicates(inplace=True) #TODO find why points get duplicated
 
-            self.sampled_maps[country] = test_temp.copy()
+            self.sampled_maps[country] = country_test
 
         return self.sampled_maps.copy()
 
@@ -246,7 +263,7 @@ def raster_extraction(
     """
     fc_sub = fc.filterBounds(image.geometry())
     im = image.reproject(crs=crs, scale=resolution)
-    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
+    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs) #TODO Sample regions? 
 
     return feature
 
@@ -265,11 +282,11 @@ def extract_points(
     return extracted
 
 
-def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def filter_by_bounds(country_code: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Filters out data in gdf that is not within country bounds
     """
-    boundary = NE_GDF.loc[NE_GDF["adm1_code"].str.startswith(country), :].copy()
+    boundary = NE_GDF.loc[NE_GDF["adm1_code"].str.startswith(country_code), :].copy()
 
     if boundary.crs is None:
         boundary = boundary.set_crs("epsg:4326")
@@ -282,7 +299,6 @@ def filter_by_bounds(country: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     filtered = gdf.loc[mask].copy()
 
     return filtered
-
 
 def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     """
@@ -298,9 +314,15 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
         test["country"] = country
 
     test = gpd.GeoDataFrame(test, geometry=gpd.points_from_xy(test.lon, test.lat), crs="epsg:4326")
-    test = test.loc[test["subset"] == "testing"]
-    test["binary"] = test["class_probability"].apply(lambda x: 1 if x >= 0.5 else 0)
 
+    # Use only consensus points, and use entire Kenya map
+    if country == "Kenya":
+        test = test[test["class_probability"].isin([0,1])]
+    else:
+        test = test[test["class_probability"].isin([0,1])].loc[test["subset"] == "testing"]
+    test.rename(columns={"class_probability": CLASS_COL}, inplace=True)
+    test[CLASS_COL] = test[CLASS_COL].astype(int)
+    
     return test
 
 
@@ -323,13 +345,13 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
             "noncrop_precision": report["0"]["precision"],
         },
         index=[0],
-    )
+    ).round(2)
 
 
 # Maps
 TARGETS = {
-    "harvest_togo": Covermap(
-        "harvest_togo",
+    "harvest-togo": Covermap(
+        "harvest-togo",
         ee.ImageCollection(
             ee.Image("projects/sat-io/open-datasets/nasa-harvest/togo_cropland_binary")
         ),
@@ -337,8 +359,8 @@ TARGETS = {
         probability=0.5,
         countries=["Togo"],
     ),
-    "harvest_kenya": Covermap(
-        "harvest_kenya",
+    "harvest-kenya": Covermap(
+        "harvest-kenya",
         ee.ImageCollection(
             ee.Image("projects/sat-io/open-datasets/nasa-harvest/kenya_cropland_binary")
         ),
@@ -346,8 +368,8 @@ TARGETS = {
         probability=0.5,
         countries=["Kenya"],
     ),
-    "harvest_tanzania": Covermap(
-        "harvest_tanzania",
+    "harvest-tanzania": Covermap(
+        "harvest-tanzania",
         ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
         resolution=10,
         probability=0.5,
@@ -362,7 +384,10 @@ TARGETS = {
         crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
+        "esa", 
+        ee.ImageCollection("ESA/WorldCover/v100"), 
+        resolution=10, 
+        crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -380,18 +405,18 @@ TARGETS = {
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
-        probability=100,
+        crop_labels=list(range(10,190)),
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
         ee.ImageCollection(
             ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
             .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
-            .select(["crops"])
+            .select(["label"])
             .mode()
         ),
         resolution=10,
-        probability=0.5,
+        crop_labels=[4],
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
@@ -405,4 +430,37 @@ TARGETS = {
         resolution=30,
         crop_labels=[2, 3],
     ),
+    "de-africa-2019": Covermap(
+        "de-africa-2019",
+        ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
+        resolution=10,
+        crop_labels=[1]
+    ),
+    "esa-cci-africa": Covermap(
+        "esa-cci-africa",
+        ee.ImageCollection(
+            ee.Image("projects/sat-io/open-datasets/ESA/ESACCI-LC-L4-LC10-Map-20m-P1Y-2016-v10")
+        ),
+        resolution=20,
+        crop_labels=[4]
+    ),
+    "globcover-v23": Covermap(
+        "globcover-v23",
+        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_L4_200901_200912_V23")),
+        resolution=300,
+        crop_labels=[11, 14, 20, 30]
+    ),
+    "globcover-v22": Covermap(
+        "globcover-v22",
+        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_200412_200606_V22_Global_CLA")),
+        resolution=300,
+        crop_labels=[11, 14, 20, 30]
+    ),
+    "harvest-crop-maps": Covermap(
+        "harvest-crop-maps",
+        ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
+        resolution= 10,
+        probability=0.5,
+        countries=["Togo", "Kenya", "Malawi"]
+    )
 }
