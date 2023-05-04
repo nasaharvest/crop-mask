@@ -27,7 +27,7 @@ TEST_COUNTRIES = {
 }
 
 REDUCER = ee.Reducer.mode()
-REDUCER_STR = "mode"
+MAP_COLUMN = "extracted"
 LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
@@ -77,10 +77,7 @@ class Covermap:
         # Extract from countires that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
-        test_coll = ee.FeatureCollection(
-            test_points.apply(lambda x: create_point(x), axis=1).to_list()
-        )
-        sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
+        sampled = extract_points(ic=self.ee_asset, test_points=test_points, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
             if len(sampled) > len(test_points):
@@ -104,7 +101,7 @@ class Covermap:
                 print("Invalid valid label format")
                 return None
 
-        sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
+        sampled[self.title] = sampled[MAP_COLUMN].apply(lambda x: mapper(x))
         
         assert len(sampled) != 0, "Empty testing set"
 
@@ -262,28 +259,32 @@ def bufferPoints(radius: int, bounds: bool):
 
 
 def raster_extraction(
-    image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
+    image, fc, resolution, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
     """
     Mapping function used to extract values, given a feature collection, from an earth engine image.
     """
     fc_sub = fc.filterBounds(image.geometry())
     im = image.reproject(crs=crs, scale=resolution)
-    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs) #TODO Sample regions? 
+    feature = im.sampleRegions(collection=fc_sub, scale=resolution, projection=crs) #TODO Sample regions? 
 
     return feature
 
 
 def extract_points(
-    ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
+    ic: ee.ImageCollection, test_points, resolution=10, projection="EPSG:4326"
 ) -> gpd.GeoDataFrame:
     """
     Creates geodataframe of extracted values from image collection. Assumes ic parameters are set
     (date, region, band, etc.).
     """
+    test_coll = ee.FeatureCollection(
+        test_points.apply(lambda x: create_point(x), axis=1).to_list()
+    )
 
-    extracted = ic.map(lambda x: raster_extraction(x, fc, resolution, crs=projection)).flatten()
+    extracted = ic.map(lambda x: raster_extraction(x, test_coll, resolution, crs=projection)).flatten()
     extracted = geemap.ee_to_gdf(extracted)
+    extracted.rename(columns={extracted.columns[1]:MAP_COLUMN}, inplace=True)
 
     return extracted
 
@@ -468,5 +469,12 @@ TARGETS = {
         resolution= 10,
         probability=0.5,
         countries=["Togo", "Kenya", "Malawi"]
+    ),
+    "esri-lulc": Covermap(
+        "esri-lulc", 
+        ee.ImageCollection("projects/sat-io/open-datasets/landcover/ESRI_Global-LULC_10m_TS")
+        .filter(ee.Filter.date("2019-01-01", "2020-01-01")),
+        resolution=10,
+        crop_labels=[5]
     )
 }
