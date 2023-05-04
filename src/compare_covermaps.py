@@ -12,7 +12,13 @@ from sklearn.metrics import classification_report
 
 DATA_PATH = "../data/datasets/"
 # Country codes for Natural Earth bounding box according file name of testing set (try looking up 3 letter codes)
-TEST_CODE = {"Kenya": "KEN", "Togo": "TGO", "Tanzania": "TZA", "Tanzania_CEO_2019": "TZA", "Malawi": "MWI"}
+TEST_CODE = {
+    "Kenya": "KEN",
+    "Togo": "TGO",
+    "Tanzania": "TZA",
+    "Tanzania_CEO_2019": "TZA",
+    "Malawi": "MWI",
+}
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
     shpreader.natural_earth(resolution="10m", category="cultural", name="admin_1_states_provinces")
@@ -23,7 +29,7 @@ TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "KenyaCEO2019.csv",
     "Togo": DATA_PATH + "Togo.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
-    "Malawi": DATA_PATH + "Malawi_CEO_2020.csv"
+    "Malawi": DATA_PATH + "Malawi_CEO_2020.csv",
 }
 
 REDUCER = ee.Reducer.mode()
@@ -42,11 +48,12 @@ class Covermap:
         3. resolution (int in meters)
         4. countries covered (if left blank, we assume it covers all countries in test_countries,
             as is the case with global datasets)
-        5. the final parameter can either be a float defining the treshold for positive/negative 
+        5. the final parameter can either be a float defining the treshold for positive/negative
         labels (typically 0.5)
-           OR a list of labels for cropland 
-    See examples in TARGETS. 
+           OR a list of labels for cropland
+    See examples in TARGETS.
     """
+
     def __init__(
         self,
         title: str,
@@ -73,7 +80,6 @@ class Covermap:
             self.countries = countries
 
     def extract_test(self, test) -> gpd.GeoDataFrame:
-
         # Extract from countires that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
@@ -81,9 +87,13 @@ class Covermap:
 
         if len(sampled) != len(test_points):
             if len(sampled) > len(test_points):
-                print("Extracting error: length of sampled dataset is not the same as testing dataset (more)")
+                print(
+                    "Extracting error: length of sampled dataset is not the same as testing dataset (more)"
+                )
             else:
-                print("Extracting error: length of sampled dataset is not the same as testing dataset (less)")
+                print(
+                    "Extracting error: length of sampled dataset is not the same as testing dataset (less)"
+                )
 
         # Recast values
         if self.probability:
@@ -166,7 +176,9 @@ class TestCovermaps:
 
                     map_sampled = map.extract_test(country_test).copy()
                     country_test = pd.merge(country_test, map_sampled, on=[LAT, LON], how="left")
-                    country_test.drop_duplicates(inplace=True) #TODO find why points get duplicated
+                    country_test.drop_duplicates(
+                        inplace=True
+                    )  # TODO find why points get duplicated
 
             self.sampled_maps[country] = country_test
 
@@ -307,6 +319,7 @@ def filter_by_bounds(country_code: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFra
 
     return filtered
 
+
 def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
@@ -324,12 +337,12 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
 
     # Use only consensus points, and use entire Kenya map
     if country == "Kenya":
-        test = test[test["class_probability"].isin([0,1])]
+        test = test[test["class_probability"].isin([0, 1])]
     else:
-        test = test[test["class_probability"].isin([0,1])].loc[test["subset"] == "testing"]
+        test = test[test["class_probability"].isin([0, 1])].loc[test["subset"] == "testing"]
     test.rename(columns={"class_probability": CLASS_COL}, inplace=True)
     test[CLASS_COL] = test[CLASS_COL].astype(int)
-    
+
     return test
 
 
@@ -391,10 +404,7 @@ TARGETS = {
         crop_labels=[40],
     ),
     "esa": Covermap(
-        "esa", 
-        ee.ImageCollection("ESA/WorldCover/v100"), 
-        resolution=10, 
-        crop_labels=[40]
+        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -412,7 +422,7 @@ TARGETS = {
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
-        crop_labels=list(range(10,190)),
+        crop_labels=list(range(10, 190)),
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
@@ -441,7 +451,7 @@ TARGETS = {
         "de-africa-2019",
         ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
         resolution=10,
-        crop_labels=[1]
+        crop_labels=[1],
     ),
     "esa-cci-africa": Covermap(
         "esa-cci-africa",
@@ -449,24 +459,28 @@ TARGETS = {
             ee.Image("projects/sat-io/open-datasets/ESA/ESACCI-LC-L4-LC10-Map-20m-P1Y-2016-v10")
         ),
         resolution=20,
-        crop_labels=[4]
+        crop_labels=[4],
     ),
     "globcover-v23": Covermap(
         "globcover-v23",
-        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_L4_200901_200912_V23")),
+        ee.ImageCollection(
+            ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_L4_200901_200912_V23")
+        ),
         resolution=300,
-        crop_labels=[11, 14, 20, 30]
+        crop_labels=[11, 14, 20, 30],
     ),
     "globcover-v22": Covermap(
         "globcover-v22",
-        ee.ImageCollection(ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_200412_200606_V22_Global_CLA")),
+        ee.ImageCollection(
+            ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_200412_200606_V22_Global_CLA")
+        ),
         resolution=300,
-        crop_labels=[11, 14, 20, 30]
+        crop_labels=[11, 14, 20, 30],
     ),
     "harvest-crop-maps": Covermap(
         "harvest-crop-maps",
         ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
-        resolution= 10,
+        resolution=10,
         probability=0.5,
         countries=["Togo", "Kenya", "Malawi"]
     ),
