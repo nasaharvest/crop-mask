@@ -1,9 +1,10 @@
-import os, sys
+import os
+import sys
 import unittest
 
 import numpy as np
 
-module_path = os.path.abspath(os.path.join('..'))
+module_path = os.path.abspath(os.path.join(".."))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
@@ -17,6 +18,7 @@ from src.area_utils_refac import (
     compute_var_p_i,
     compute_var_u_j,
 )
+
 
 class ChangeAreaTest(unittest.TestCase):
     """Multi-year change area estimation testcase.
@@ -147,10 +149,7 @@ class CropAreaTest(unittest.TestCase):
     def setUp(self):
         self.cm = np.array([[248, 15], [26, 179]])
 
-        self.am = np.array([
-            [0.3436694530, 0.0479613932], 
-            [0.0360298620, 0.5723392919]
-        ])
+        self.am = np.array([[0.3436694530, 0.0479613932], [0.0360298620, 0.5723392919]])
 
         self.a_j = np.array([556_725_045, 909_501_053], dtype=np.int64)
         self.w_j = np.array([0.37969931, 0.62030069], dtype=np.float64)
