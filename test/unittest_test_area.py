@@ -40,7 +40,7 @@ class ChangeAreaTest(unittest.TestCase):
         )
 
         self.a_j = np.array([200_000, 150_000, 3_200_000, 6_450_000], dtype=np.int64)
-        self.w_j = np.array([0.020, 0.015, 0.320, 0.645], dtype=np.float64)
+        self.w_j = self.a_j / self.a_j.sum()
 
         self.u_j = np.array([0.88, 0.73, 0.93, 0.96])
         self.p_i = np.array([0.75, 0.85, 0.93, 0.96])
@@ -152,7 +152,7 @@ class CropAreaTest(unittest.TestCase):
         self.am = np.array([[0.3436694530, 0.0479613932], [0.0360298620, 0.5723392919]])
 
         self.a_j = np.array([556_725_045, 909_501_053], dtype=np.int64)
-        self.w_j = np.array([0.37969931, 0.62030069], dtype=np.float64)
+        self.w_j = self.a_j / self.a_j.sum()
 
         self.u_j = np.array([0.91, 0.92])
         self.p_i = np.array([0.88, 0.94])
