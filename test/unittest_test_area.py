@@ -1,6 +1,11 @@
+import os, sys
 import unittest
 
 import numpy as np
+
+module_path = os.path.abspath(os.path.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 from src.area_utils_refac import (
     compute_acc,
@@ -12,7 +17,6 @@ from src.area_utils_refac import (
     compute_var_p_i,
     compute_var_u_j,
 )
-
 
 class ChangeAreaTest(unittest.TestCase):
     """Multi-year change area estimation testcase.
@@ -143,10 +147,13 @@ class CropAreaTest(unittest.TestCase):
     def setUp(self):
         self.cm = np.array([[248, 15], [26, 179]])
 
-        self.am = np.array([[0.3437, 0.0480], [0.0360, 0.5723]])
+        self.am = np.array([
+            [0.3436694530, 0.0479613932], 
+            [0.0360298620, 0.5723392919]
+        ])
 
         self.a_j = np.array([556_725_045, 909_501_053], dtype=np.int64)
-        self.w_j = np.array([0.380, 0.620], dtype=np.float64)
+        self.w_j = np.array([0.37969931, 0.62030069], dtype=np.float64)
 
         self.u_j = np.array([0.91, 0.92])
         self.p_i = np.array([0.88, 0.94])
@@ -225,7 +232,7 @@ class CropAreaTest(unittest.TestCase):
         am = compute_area_error_matrix(self.cm, self.w_j)
         a_i = am.sum(axis=1)
         a_px = a_i * self.a_j.sum()
-        a_ha = a_px * (10**2) / (100**2)  # Aproximation b/c unknown
+        a_ha = a_px * (10**2) / (100**2)
         np.testing.assert_almost_equal(
             actual=a_ha,
             desired=np.array([5_742_194, 8_920_067]),
