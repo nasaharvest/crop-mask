@@ -221,12 +221,11 @@ class CropAreaTest(unittest.TestCase):
             verbose=True,
         )
 
-    @unittest.skip("Skip until original pixel size for this project becomes known.")
     def test_area_estimation(self):
         am = compute_area_error_matrix(self.cm, self.w_j)
         a_i = am.sum(axis=1)
         a_px = a_i * self.a_j.sum()
-        a_ha = a_px * (9.999995**2) / (100**2)  # Aproximation b/c unknown
+        a_ha = a_px * (10 **2) / (100**2)  # Aproximation b/c unknown
         np.testing.assert_almost_equal(
             actual=a_ha,
             desired=np.array([5_742_194, 8_920_067]),
