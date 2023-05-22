@@ -21,28 +21,6 @@ def compute_confusion_matrix(df: Union[pd.DataFrame, gpd.GeoDataFrame]) -> np.nd
     return cm
 
 
-def compute_p_ij(cm: np.ndarray, wh: np.ndarray, i: int, j: int) -> np.ndarray:
-    """Computes a single entry of area proportion error matrix p[i,j].
-
-    Args:
-        cm:
-            Confusion matrix of reference and map samples expressed in terms of
-            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
-        wh:
-            Array containing the area proportion of each mapped class.
-        i:
-            Row index.
-        j:
-            Column index.
-
-    """
-
-    w_j = wh[j]
-    n_ij = cm[i, j]
-    n_dotj = cm[:, j].sum()
-    return w_j * (n_ij / n_dotj)
-
-
 def compute_area_error_matrix(cm: np.ndarray, w_j: np.ndarray) -> np.ndarray:
     """Computes error matrix in terms of area proportion, p[i,j].
 
