@@ -203,7 +203,7 @@ def compute_std_p_i(w_j: np.ndarray, am: np.ndarray, cm: np.ndarray) -> np.ndarr
 
 
 def compute_area_estimate(
-    cm: np.ndarray, a_j: np.ndarray, w_j: np.ndarray, total_px: int, px_size: float
+    cm: np.ndarray, a_j: np.ndarray, px_size: float
 ) -> dict:
     """Computes area estimate from confusion matrix, pixel total, and area totals.
 
@@ -213,10 +213,6 @@ def compute_area_estimate(
             sample counts, n[i,j]. Row-column ordered reference-row, map-column.
         a_j:
             Array containing the pixel total of each mapped class.
-        w_j:
-            Array containing the marginal area proportion of each mapped class.
-        total_px:
-            Total number of pixels in map.
         px_size:
             Spatial resolution of pixels in map (unsquared).
 
@@ -232,6 +228,10 @@ def compute_area_estimate(
 
     """
 
+    total_px = a_j.sum()
+
+    w_j = a_j / total_px
+    
     am = compute_area_error_matrix(cm, w_j)
 
     # User's accuracy
