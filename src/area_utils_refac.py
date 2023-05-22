@@ -225,11 +225,7 @@ def compute_std_p_i(w_j: np.ndarray, am: np.ndarray, cm: np.ndarray) -> np.ndarr
 
 
 def compute_area_estimate(
-    cm: np.ndarray,
-    a_j: np.ndarray,
-    w_j: np.ndarray,
-    total_px : int,
-    px_size : float
+    cm: np.ndarray, a_j: np.ndarray, w_j: np.ndarray, total_px: int, px_size: float
 ) -> dict:
     """Computes area estimate from confusion matrix, pixel total, and area totals.
 
@@ -244,20 +240,20 @@ def compute_area_estimate(
         total_px:
             Total number of pixels in map.
         px_size:
-            Spatial resolution of pixels in map (unsquared). 
+            Spatial resolution of pixels in map (unsquared).
 
     Returns:
         summary:
             Dictionary with estimates of user's accuracy, producer's accuracy, area
-            estimates, and the 95% confidence interval of each for every class of 
+            estimates, and the 95% confidence interval of each for every class of
             the confusion matrix.
 
-            Value of area estimate key in 'summary' is nested dictionary containing 
-            the estimates and interval for area in proportion [pr], pixels [px], and 
+            Value of area estimate key in 'summary' is nested dictionary containing
+            the estimates and interval for area in proportion [pr], pixels [px], and
             hectacres [ha].
 
     """
-    
+
     am = compute_area_error_matrix(cm, w_j)
 
     # User's accuracy
@@ -276,25 +272,21 @@ def compute_area_estimate(
     err_acc = 1.96 * np.sqrt(var_acc)
 
     # Area estimate
-    a_i = am.sum(axis = 1)
+    a_i = am.sum(axis=1)
     std_a_i = compute_std_p_i(w_j, am, cm)
     err_a_i = 1.96 * std_a_i
 
     # Adjusted marginal area estimate in [px] and [ha]
     a_px = total_px * a_i
-    a_ha = a_px * (px_size ** 2) / (100 ** 2)
+    a_ha = a_px * (px_size**2) / (100**2)
     err_px = err_a_i * total_px
-    err_ha = err_a_i * (px_size ** 2) / (100 ** 2)
+    err_ha = err_a_i * (px_size**2) / (100**2)
 
     summary = {
-        "user" : (u_j, err_u_j),
-        "producer" : (p_i, err_p_i),
-        "accuracy" : (acc, err_acc),
-        "area" : {
-            "pr" : (a_i, err_a_i),
-            "px" : (a_px, err_px),
-            "ha" : (a_ha, err_ha)
-        }
+        "user": (u_j, err_u_j),
+        "producer": (p_i, err_p_i),
+        "accuracy": (acc, err_acc),
+        "area": {"pr": (a_i, err_a_i), "px": (a_px, err_px), "ha": (a_ha, err_ha)},
     }
 
     return summary
