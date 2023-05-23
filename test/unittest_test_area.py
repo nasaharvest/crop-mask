@@ -17,6 +17,7 @@ from src.area_utils_refac import (
     compute_var_acc,
     compute_var_p_i,
     compute_var_u_j,
+    compute_area_estimate
 )
 
 
@@ -42,8 +43,14 @@ class ChangeAreaTest(unittest.TestCase):
         self.a_j = np.array([200_000, 150_000, 3_200_000, 6_450_000], dtype=np.int64)
         self.w_j = self.a_j / self.a_j.sum()
 
-        self.u_j = np.array([0.88, 0.73, 0.93, 0.96])
-        self.p_i = np.array([0.75, 0.85, 0.93, 0.96])
+        self.u_j = np.array([0.8800, 0.7333, 0.9274, 0.9631])
+        self.err_u_j = np.array([0.0740, 0.1008, 0.0398, 0.0205])
+
+        self.p_i = np.array([0.7487, 0.8472, 0.9345, 0.9616])
+        self.err_p_i = np.array([0.2133, 0.2544, 0.0343, 0.0184])
+
+        self.acc = 0.9464
+        self.err_acc = 0.0185
 
     def test_area_error_matrix(self):
         am = compute_area_error_matrix(self.cm, self.w_j)
@@ -69,8 +76,8 @@ class ChangeAreaTest(unittest.TestCase):
         var_u_j = compute_var_u_j(self.u_j, self.cm)
         np.testing.assert_array_almost_equal(
             x=1.96 * np.sqrt(var_u_j),
-            y=np.array([0.074, 0.101, 0.040, 0.021]),
-            decimal=3,
+            y=self.err_u_j,
+            decimal=4,
             err_msg="[Change Area] - Incorrect variance of user's accuracy.",
             verbose=True,
         )
@@ -89,8 +96,8 @@ class ChangeAreaTest(unittest.TestCase):
         var_p_i = compute_var_p_i(self.p_i, self.u_j, self.a_j, self.cm)
         np.testing.assert_array_almost_equal(
             x=1.96 * np.sqrt(var_p_i),
-            y=np.array([0.213, 0.254, 0.034, 0.018]),
-            decimal=3,
+            y=self.err_p_i,
+            decimal=4,
             err_msg="[Change Area] - Incorrect variance of producer's accuracy.",
             verbose=True,
         )
@@ -99,7 +106,7 @@ class ChangeAreaTest(unittest.TestCase):
         acc = compute_acc(self.am)
         np.testing.assert_almost_equal(
             actual=acc,
-            desired=0.947,
+            desired=self.acc,
             decimal=3,
             err_msg="[Change Area] - Incorrect accuracy.",
             verbose=True,
@@ -109,7 +116,7 @@ class ChangeAreaTest(unittest.TestCase):
         var_acc = compute_var_acc(self.w_j, self.u_j, self.cm)
         np.testing.assert_almost_equal(
             actual=1.96 * np.sqrt(var_acc),
-            desired=0.018,
+            desired=self.err_acc,
             decimal=3,
             err_msg="[Change Area] - Incorrect variance of accuracy.",
             verbose=True,
@@ -138,6 +145,51 @@ class ChangeAreaTest(unittest.TestCase):
             verbose=True,
         )
 
+    def test_compute_area_estimate(self):
+        estimates = compute_area_estimate(self.cm, self.a_j, px_size=30)
+        u_j, err_u_j = estimates["user"]
+        p_i, err_p_i = estimates["producer"]
+        acc, err_acc = estimates["accuracy"]
+        a_ha, err_ha = estimates["area"]["ha"]
+
+        # users
+        np.testing.assert_almost_equal(
+            actual=np.stack([u_j, err_u_j]),
+            desired=np.stack([self.u_j, self.err_u_j]),
+            decimal=4,
+            err_msg="[Change Area] - ",
+            verbose=True
+        )
+
+        # producers
+        np.testing.assert_almost_equal(
+            actual=np.stack([p_i, err_p_i]),
+            desired=np.stack([self.p_i, self.err_p_i]),
+            decimal=4,
+            err_msg="[Change Area] - ",
+            verbose=True
+        )
+
+        # accuracy
+        np.testing.assert_almost_equal(
+            actual=np.hstack([acc, err_acc]),
+            desired=np.hstack([self.acc, self.err_acc]),
+            decimal=4,
+            err_msg="[Change Area] - ",
+            verbose=True
+        )
+
+        # ha
+        np.testing.assert_almost_equal(
+            actual=np.stack([a_ha, err_ha]),
+            desired=np.stack([
+                np.array([21_158, 11_686, 285_770, 581_386]),
+                np.array([6_158, 3_756, 15_510, 16_282])
+            ]),
+            decimal=0,
+            err_msg="[Change Area] - ",
+            verbose=True
+        )
 
 class CropAreaTest(unittest.TestCase):
     """Single year crop area estimation testcase.
