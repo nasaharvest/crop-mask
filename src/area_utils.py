@@ -1,14 +1,14 @@
 import json
 import os
-from typing import List, Union, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import cartopy.io.shapereader as shpreader
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import pandas as pd
 import rasterio as rio
+import seaborn as sns
 from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
@@ -27,6 +27,7 @@ def gdal_cutline(
 ) -> None:
     cmd = f"gdalwarp -cutline {shape_fn} -crop_to_cutline {source_fn} {dest_fn} -dstnodata 255"
     os.system(cmd)
+
 
 def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
     """
