@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import os
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +8,23 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
+
+def gdal_reproject(
+        target_crs : str,
+        source_crs : str,
+        source_fn : str,
+        dest_fn : str
+        ) -> None:
+    cmd = f"gdalwarp -t_srs {target_crs} -s_srs {source_crs} -tr 10 10 {source_fn} {dest_fn} -dstnodata 255"
+    os.system(cmd)
+
+def gdal_cutline(
+        shape_fn : str,
+        source_fn : str,
+        dest_fn : str,
+    ) -> None:
+    cmd = f"gdalwarp -cutline {shape_fn} -crop_to_cutline {source_fn} {dest_fn} -dstnodata 255"
+    os.system(cmd)
 
 def compute_confusion_matrix(df: Union[pd.DataFrame, gpd.GeoDataFrame]) -> np.ndarray:
     """Computes confusion matrix of reference and map samples.
@@ -256,7 +274,7 @@ def compute_area_estimate(cm: np.ndarray, a_j: np.ndarray, px_size: float) -> di
     a_px = total_px * a_i
     a_ha = a_px * (px_size**2) / (100**2)
     err_px = err_a_i * total_px
-    err_ha = err_a_i * (px_size**2) / (100**2)
+    err_ha = err_px * (px_size**2) / (100**2)
 
     summary = {
         "user": (u_j, err_u_j),
