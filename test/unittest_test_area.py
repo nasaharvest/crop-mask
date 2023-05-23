@@ -11,13 +11,13 @@ if module_path not in sys.path:
 from src.area_utils_refac import (
     compute_acc,
     compute_area_error_matrix,
+    compute_area_estimate,
     compute_p_i,
     compute_std_p_i,
     compute_u_j,
     compute_var_acc,
     compute_var_p_i,
     compute_var_u_j,
-    compute_area_estimate
 )
 
 
@@ -158,7 +158,7 @@ class ChangeAreaTest(unittest.TestCase):
             desired=np.stack([self.u_j, self.err_u_j]),
             decimal=4,
             err_msg="[Change Area] - ",
-            verbose=True
+            verbose=True,
         )
 
         # producers
@@ -167,7 +167,7 @@ class ChangeAreaTest(unittest.TestCase):
             desired=np.stack([self.p_i, self.err_p_i]),
             decimal=4,
             err_msg="[Change Area] - ",
-            verbose=True
+            verbose=True,
         )
 
         # accuracy
@@ -176,20 +176,23 @@ class ChangeAreaTest(unittest.TestCase):
             desired=np.hstack([self.acc, self.err_acc]),
             decimal=4,
             err_msg="[Change Area] - ",
-            verbose=True
+            verbose=True,
         )
 
         # ha
         np.testing.assert_almost_equal(
             actual=np.stack([a_ha, err_ha]),
-            desired=np.stack([
-                np.array([21_158, 11_686, 285_770, 581_386]),
-                np.array([6_158, 3_756, 15_510, 16_282])
-            ]),
+            desired=np.stack(
+                [
+                    np.array([21_158, 11_686, 285_770, 581_386]),
+                    np.array([6_158, 3_756, 15_510, 16_282]),
+                ]
+            ),
             decimal=0,
             err_msg="[Change Area] - ",
-            verbose=True
+            verbose=True,
         )
+
 
 class CropAreaTest(unittest.TestCase):
     """Single year crop area estimation testcase.

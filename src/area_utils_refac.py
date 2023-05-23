@@ -1,6 +1,6 @@
+import os
 from typing import List, Union
 
-import os
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,22 +9,19 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
 
-def gdal_reproject(
-        target_crs : str,
-        source_crs : str,
-        source_fn : str,
-        dest_fn : str
-        ) -> None:
+def gdal_reproject(target_crs: str, source_crs: str, source_fn: str, dest_fn: str) -> None:
     cmd = f"gdalwarp -t_srs {target_crs} -s_srs {source_crs} -tr 10 10 {source_fn} {dest_fn} -dstnodata 255"
     os.system(cmd)
 
+
 def gdal_cutline(
-        shape_fn : str,
-        source_fn : str,
-        dest_fn : str,
-    ) -> None:
+    shape_fn: str,
+    source_fn: str,
+    dest_fn: str,
+) -> None:
     cmd = f"gdalwarp -cutline {shape_fn} -crop_to_cutline {source_fn} {dest_fn} -dstnodata 255"
     os.system(cmd)
+
 
 def compute_confusion_matrix(df: Union[pd.DataFrame, gpd.GeoDataFrame]) -> np.ndarray:
     """Computes confusion matrix of reference and map samples.
