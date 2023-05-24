@@ -321,5 +321,22 @@
             "recall_score": 0.7368,
             "roc_auc_score": 0.9472
         }
+    },
+    "Zambia_2019_v1": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/yuer96o4",
+        "test_metrics": {
+            "accuracy": 0.9569,
+            "f1_score": 0.5814,
+            "precision_score": 0.4902,
+            "recall_score": 0.7143,
+            "roc_auc_score": 0.9676
+        },
+        "val_metrics": {
+            "accuracy": 0.9456,
+            "f1_score": 0.3611,
+            "precision_score": 0.2826,
+            "recall_score": 0.5,
+            "roc_auc_score": 0.9087
+        }
     }
 }
