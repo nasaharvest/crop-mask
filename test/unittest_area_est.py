@@ -157,7 +157,7 @@ class ChangeAreaTest(unittest.TestCase):
             actual=np.stack([u_j, err_u_j]),
             desired=np.stack([self.u_j, self.err_u_j]),
             decimal=4,
-            err_msg="[Change Area] - ",
+            err_msg="[Change Area] - Incorrect user's accuracy estimate and interval.",
             verbose=True,
         )
 
@@ -166,7 +166,7 @@ class ChangeAreaTest(unittest.TestCase):
             actual=np.stack([p_i, err_p_i]),
             desired=np.stack([self.p_i, self.err_p_i]),
             decimal=4,
-            err_msg="[Change Area] - ",
+            err_msg="[Change Area] - Incorrect producer's accuracy estimate and interval.",
             verbose=True,
         )
 
@@ -175,7 +175,7 @@ class ChangeAreaTest(unittest.TestCase):
             actual=np.hstack([acc, err_acc]),
             desired=np.hstack([self.acc, self.err_acc]),
             decimal=4,
-            err_msg="[Change Area] - ",
+            err_msg="[Change Area] - Incorrect accuracy estimate and interval.",
             verbose=True,
         )
 
@@ -189,7 +189,7 @@ class ChangeAreaTest(unittest.TestCase):
                 ]
             ),
             decimal=0,
-            err_msg="[Change Area] - ",
+            err_msg="[Change Area] - Incorrect ha and interval estimate.",
             verbose=True,
         )
 
