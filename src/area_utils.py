@@ -15,8 +15,16 @@ from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
 
 
-def gdal_reproject(target_crs: str, source_crs: str, source_fn: str, dest_fn: str) -> None:
-    cmd = f"gdalwarp -t_srs {target_crs} -s_srs {source_crs} -tr 10 10 {source_fn} {dest_fn} -dstnodata 255"
+def gdal_reproject(
+        target_crs: str, 
+        source_crs: str, 
+        source_fn: str, 
+        dest_fn: str
+) -> None:
+    cmd = (
+        f"gdalwarp -t_srs {target_crs} -s_srs {source_crs} -tr 10 10 "
+        f"{source_fn} {dest_fn} -dstnodata 255"
+        )
     os.system(cmd)
 
 
@@ -25,8 +33,12 @@ def gdal_cutline(
     source_fn: str,
     dest_fn: str,
 ) -> None:
-    cmd = f"gdalwarp -cutline {shape_fn} -crop_to_cutline {source_fn} {dest_fn} -dstnodata 255"
+    cmd = (
+        f"gdalwarp -cutline {shape_fn} -crop_to_cutline " 
+        f"{source_fn} {dest_fn} -dstnodata 255"
+    )
     os.system(cmd)
+
 
 def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
     """
