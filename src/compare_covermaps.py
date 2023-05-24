@@ -11,7 +11,7 @@ from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
 DATA_PATH = "../data/datasets/"
-# Country codes for Natural Earth bounding box according file name of testing set 
+# Country codes for Natural Earth bounding box according file name of testing set
 # (try looking up 3 letter codes)
 TEST_CODE = {
     "Kenya": "KEN",
@@ -86,7 +86,6 @@ class Covermap:
         # Extract from countires that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
-        
         test_coll = ee.FeatureCollection(
             test_points.apply(lambda x: create_point(x), axis=1).to_list()
         )
@@ -95,13 +94,13 @@ class Covermap:
         if len(sampled) != len(test_points):
             if len(sampled) > len(test_points):
                 print(
-                    "Extracting error: length of sampled dataset is" + 
-                    "not the same as testing dataset (more)"
+                    "Extracting error: length of sampled dataset is"
+                    + "not the same as testing dataset (more)"
                 )
             else:
                 print(
-                    "Extracting error: length of sampled dataset is" +
-                    "not the same as testing dataset (less)"
+                    "Extracting error: length of sampled dataset is"
+                    + "not the same as testing dataset (less)"
                 )
 
         # Recast values
@@ -121,7 +120,7 @@ class Covermap:
                 return None
 
         sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
-        
+
         assert len(sampled) != 0, "Empty testing set"
 
         return sampled[[LAT, LON, self.title]]
@@ -287,10 +286,9 @@ def raster_extraction(
     """
     fc_sub = fc.filterBounds(image.geometry())
     im = image.reproject(crs=crs, scale=resolution)
-    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs) 
+    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
 
     return feature
-
 
 
 def extract_points(
@@ -305,6 +303,7 @@ def extract_points(
     extracted = geemap.ee_to_gdf(extracted)
 
     return extracted
+
 
 def filter_by_bounds(country_code: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
