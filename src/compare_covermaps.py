@@ -487,13 +487,14 @@ TARGETS = {
         ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
         resolution=10,
         probability=0.5,
-        countries=["Togo", "Kenya", "Malawi"]
+        countries=["Togo", "Kenya", "Malawi"],
     ),
     "esri-lulc": Covermap(
-        "esri-lulc", 
-        ee.ImageCollection("projects/sat-io/open-datasets/landcover/ESRI_Global-LULC_10m_TS")
-        .filter(ee.Filter.date("2019-01-01", "2020-01-01")),
+        "esri-lulc",
+        ee.ImageCollection(
+            "projects/sat-io/open-datasets/landcover/ESRI_Global-LULC_10m_TS"
+        ).filter(ee.Filter.date("2019-01-01", "2020-01-01")),
         resolution=10,
-        crop_labels=[5]
-    )
+        crop_labels=[5],
+    ),
 }
