@@ -11,7 +11,8 @@ from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report
 
 DATA_PATH = "../data/datasets/"
-# Country codes for Natural Earth bounding box according file name of testing set (try looking up 3 letter codes)
+# Country codes for Natural Earth bounding box according file name of testing set 
+# (try looking up 3 letter codes)
 TEST_CODE = {
     "Kenya": "KEN",
     "Togo": "TGO",
@@ -33,7 +34,9 @@ TEST_COUNTRIES = {
 }
 
 REDUCER = ee.Reducer.mode()
-MAP_COLUMN = "extracted"
+# MAP_COLUMN = "extracted"
+REDUCER_STR = "mode"
+MAP_COLUMN = "mode"
 LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
@@ -79,20 +82,26 @@ class Covermap:
         else:
             self.countries = countries
 
-    def extract_test(self, test) -> gpd.GeoDataFrame:
+    def extract_test(self, test: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         # Extract from countires that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
-        sampled = extract_points(ic=self.ee_asset, test_points=test_points, resolution=self.resolution)
+        
+        test_coll = ee.FeatureCollection(
+            test_points.apply(lambda x: create_point(x), axis=1).to_list()
+        )
+        sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
             if len(sampled) > len(test_points):
                 print(
-                    "Extracting error: length of sampled dataset is not the same as testing dataset (more)"
+                    "Extracting error: length of sampled dataset is" + 
+                    "not the same as testing dataset (more)"
                 )
             else:
                 print(
-                    "Extracting error: length of sampled dataset is not the same as testing dataset (less)"
+                    "Extracting error: length of sampled dataset is" +
+                    "not the same as testing dataset (less)"
                 )
 
         # Recast values
@@ -111,7 +120,7 @@ class Covermap:
                 print("Invalid valid label format")
                 return None
 
-        sampled[self.title] = sampled[MAP_COLUMN].apply(lambda x: mapper(x))
+        sampled[self.title] = sampled[REDUCER_STR].apply(lambda x: mapper(x))
         
         assert len(sampled) != 0, "Empty testing set"
 
@@ -271,35 +280,31 @@ def bufferPoints(radius: int, bounds: bool):
 
 
 def raster_extraction(
-    image, fc, resolution, crs="EPSG:4326"
+    image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
 ) -> ee.FeatureCollection:
     """
     Mapping function used to extract values, given a feature collection, from an earth engine image.
     """
     fc_sub = fc.filterBounds(image.geometry())
     im = image.reproject(crs=crs, scale=resolution)
-    feature = im.sampleRegions(collection=fc_sub, scale=resolution, projection=crs) #TODO Sample regions? 
+    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs) 
 
     return feature
 
 
+
 def extract_points(
-    ic: ee.ImageCollection, test_points, resolution=10, projection="EPSG:4326"
+    ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
 ) -> gpd.GeoDataFrame:
     """
     Creates geodataframe of extracted values from image collection. Assumes ic parameters are set
     (date, region, band, etc.).
     """
-    test_coll = ee.FeatureCollection(
-        test_points.apply(lambda x: create_point(x), axis=1).to_list()
-    )
 
-    extracted = ic.map(lambda x: raster_extraction(x, test_coll, resolution, crs=projection)).flatten()
+    extracted = ic.map(lambda x: raster_extraction(x, fc, resolution, crs=projection)).flatten()
     extracted = geemap.ee_to_gdf(extracted)
-    extracted.rename(columns={extracted.columns[1]:MAP_COLUMN}, inplace=True)
 
     return extracted
-
 
 def filter_by_bounds(country_code: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """

@@ -13,6 +13,7 @@ Togo,esa-cci-africa,Togo,0.58,0.78,51,131,0.55,0.87,0.62,0.83
 Togo,globcover-v23,Togo,0.43,0.74,51,131,0.35,0.89,0.56,0.78
 Togo,globcover-v22,Togo,0.36,0.7,51,131,0.29,0.86,0.45,0.76
 Togo,harvest-crop-maps,Togo,0.84,0.91,51,131,0.88,0.92,0.8,0.95
+Togo,esri-lulc,Togo,0.07,0.73,51,131,0.04,0.99,0.67,0.73
 Kenya,harvest-kenya,Kenya,0.42,0.92,36,531,0.44,0.95,0.4,0.96
 Kenya,copernicus,Kenya,0.49,0.91,36,537,0.69,0.92,0.38,0.98
 Kenya,esa,Kenya,0.41,0.94,36,537,0.31,0.99,0.61,0.95
@@ -27,6 +28,7 @@ Kenya,esa-cci-africa,Kenya,0.48,0.89,36,537,0.83,0.89,0.34,0.99
 Kenya,globcover-v23,Kenya,0.29,0.78,36,537,0.72,0.78,0.18,0.98
 Kenya,globcover-v22,Kenya,0.35,0.82,36,537,0.78,0.82,0.23,0.98
 Kenya,harvest-crop-maps,Kenya,0.42,0.92,36,531,0.44,0.95,0.4,0.96
+Kenya,esri-lulc,Kenya,0.66,0.96,36,537,0.64,0.98,0.68,0.98
 Malawi,copernicus,Malawi,0.66,0.85,31,123,0.71,0.89,0.61,0.92
 Malawi,esa,Malawi,0.74,0.89,31,123,0.77,0.92,0.71,0.94
 Malawi,glad,Malawi,0.62,0.86,31,123,0.55,0.94,0.71,0.89
@@ -40,6 +42,7 @@ Malawi,esa-cci-africa,Malawi,0.66,0.82,31,123,0.84,0.82,0.54,0.95
 Malawi,globcover-v23,Malawi,0.49,0.76,31,123,0.58,0.8,0.43,0.88
 Malawi,globcover-v22,Malawi,0.43,0.78,31,123,0.42,0.87,0.45,0.86
 Malawi,harvest-crop-maps,Malawi,0.82,0.92,31,123,0.94,0.91,0.72,0.98
+Malawi,esri-lulc,Malawi,0.44,0.82,31,123,0.35,0.93,0.58,0.85
 Tanzania,harvest-tanzania,Tanzania,0.77,0.85,431,770,0.69,0.94,0.86,0.85
 Tanzania,copernicus,Tanzania,0.79,0.86,431,770,0.72,0.94,0.86,0.86
 Tanzania,esa,Tanzania,0.83,0.89,431,770,0.75,0.97,0.94,0.87
@@ -53,3 +56,4 @@ Tanzania,de-africa-2019,Tanzania,0.73,0.83,431,770,0.65,0.93,0.84,0.82
 Tanzania,esa-cci-africa,Tanzania,0.66,0.78,431,770,0.6,0.88,0.73,0.8
 Tanzania,globcover-v23,Tanzania,0.54,0.7,431,770,0.49,0.81,0.6,0.74
 Tanzania,globcover-v22,Tanzania,0.55,0.71,431,770,0.49,0.82,0.61,0.74
+Tanzania,esri-lulc,Tanzania,0.49,0.76,431,770,0.33,1.0,0.99,0.73
