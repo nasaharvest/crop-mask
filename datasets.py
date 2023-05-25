@@ -55,6 +55,32 @@ def join_unique(values):
     return ",".join([str(i) for i in values.unique()])
 
 
+class EthiopiaTigrayCorrective2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Corrective_2020.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+class EthiopiaTigrayGhent2021(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Ethiopia_Tigray_Ghent_2021.csv")
+        # Rename coordinate columns
+        df = df.rename(
+            columns={
+                "Latitude (WGS84)": LAT,
+                "Longitude (WGS84)": LON,
+                "Crop/Non-Crop": CLASS_PROB,
+            }
+        )
+        df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
+        df[SUBSET] = "validation"
+        return df
+
+
 class HawaiiAgriculturalLandUse2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df = read_zip(raw_dir / "Hawaii_Agricultural_Land_Use_-_2020_Update.zip")
@@ -62,6 +88,16 @@ class HawaiiAgriculturalLandUse2020(LabeledDataset):
         df[LAT], df[LON] = get_lat_lon_from_centroid(df.geometry)
         df[SUBSET] = "training"
         df[CLASS_PROB] = 1.0
+        for non_crop in [
+            "Commercial Forestry",
+            "Pasture",
+            "Flowers / Foliage / Landscape",
+            "Seed Production",
+            "Aquaculture",
+            "Dairy",
+        ]:
+            df.loc[df["crops_2020"] == non_crop, CLASS_PROB] = 0.0
+
         df = df.drop_duplicates(subset=[LAT, LON])
         return df
 
@@ -90,6 +126,36 @@ class KenyaCEO2019(LabeledDataset):
         )
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+class SudanBlueNileCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        SudanBlueNile_dir = raw_dir / "Sudan_Blue_Nile_CEO_2020"
+        df1 = pd.read_csv(
+            SudanBlueNile_dir
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-1)-sample-data-2023-04-04.csv"
+        )
+        df2 = pd.read_csv(
+            SudanBlueNile_dir
+            / "ceo-Sudan-Blue-Nile-Feb-2020---Feb-2021-(Set-2)-sample-data-2023-04-04.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
         return df
 
 
@@ -142,6 +208,43 @@ class HawaiiAgriculturalLandUse2020Subset(LabeledDataset):
 
         # Match length of HawaiiCorrective2020 by dropping points
         df = df.sample(n=329, random_state=0)
+        return df
+
+
+class MalawiCorrectiveLabels2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Malawi_dir = raw_dir / "Malawi_corrective_labels_2020"
+        df = pd.read_csv(Malawi_dir / "Malawi_corrective_labels_cleaned.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["True_value"] == 1).astype(int)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = "training"
+        # Removing index=2275 because it is a duplicate of
+        # another point in Malawi_FAO_corrected
+        df.drop(index=2275, inplace=True)
+        return df
+
+
+class NamibiaFieldBoundary2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
+        df = pd.read_csv(Namibia_dir / "Namibia_field_bnd_2022.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[SUBSET] = "training"
+        return df
+
+
+class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = "training"
         return df
 
 
@@ -883,6 +986,12 @@ datasets: List[LabeledDataset] = [
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
+    MalawiCorrectiveLabels2020(),
+    NamibiaFieldBoundary2022(),
+    EthiopiaTigrayGhent2021(),
+    SudanBlueNileCEO2020(),
+    SudanBlueNileCorrectiveLabels2019(),
+    EthiopiaTigrayCorrective2020(),
 ]
 
 if __name__ == "__main__":

@@ -10,8 +10,8 @@ import torch
 from openmapflow.bands import ERA5_BANDS
 from openmapflow.bbox import BBox
 from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
-from openmapflow.constants import CLASS_PROB, SUBSET
-from openmapflow.engineer import BANDS
+from openmapflow.constants import CLASS_PROB, EO_DATA, SUBSET
+from openmapflow.engineer import BANDS, calculate_ndvi
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -140,6 +140,7 @@ class Model(pl.LightningModule):
 
             with all_dataset_params_path.open("w") as f:
                 json.dump(all_dataset_params, f, ensure_ascii=False, indent=4, sort_keys=True)
+                f.write("\n")
 
         dataset_params = all_dataset_params[normalizing_dict_key]
         self.train_num_timesteps: List[int] = dataset_params["train_num_timesteps"]
@@ -199,15 +200,20 @@ class Model(pl.LightningModule):
         for d in datasets:
             # If dataset is used for evaluation, take only the right subset out of the dataframe
             if d.name in eval_datasets.split(","):
-                df = d.load_df(to_np=True)
+                df = d.load_df(to_np=True, disable_tqdm=True)
                 dfs.append(df[(df[SUBSET] == subset) & (df[CLASS_PROB] != 0.5)])
 
             # If dataset is only used for training, take the whole dataframe
             elif subset == "training" and d.name in train_datasets.split(","):
-                df = d.load_df(to_np=True)
+                df = d.load_df(to_np=True, disable_tqdm=True)
                 dfs.append(df[df[CLASS_PROB] != 0.5])
 
-        return pd.concat(dfs)
+        big_df = pd.concat(dfs)
+
+        # Recompute NDVI
+        big_df[EO_DATA] = big_df[EO_DATA].apply(lambda x: calculate_ndvi(x[:, : len(BANDS) - 1]))
+
+        return big_df
 
     def get_dataset(
         self,
@@ -240,6 +246,7 @@ class Model(pl.LightningModule):
             ),
             shuffle=True,
             batch_size=self.hparams.batch_size,
+            drop_last=True,
         )
 
     def val_dataloader(self):

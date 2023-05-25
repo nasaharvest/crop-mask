@@ -133,5 +133,6 @@ def run_evaluation(
 
     with (PROJECT_ROOT / DataPaths.METRICS).open("w") as f:
         json.dump(models_dict, f, ensure_ascii=False, indent=4, sort_keys=True)
+        f.write("\n")
 
     return model, all_info

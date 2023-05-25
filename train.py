@@ -8,7 +8,7 @@ from src.bboxes import bboxes
 from src.models import Model
 from src.pipeline_funcs import train_model
 
-train_datasets = [d.name for d in datasets]
+train_datasets = [d.name for d in datasets if d.name != "EthiopiaTigrayGhent2021"]
 
 parser = ArgumentParser()
 parser.add_argument("--model_name", type=str, default="Sudan_Blue_Nile_2019")

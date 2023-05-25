@@ -74,7 +74,9 @@ class CropDataset(Dataset):
             wandb_logger.experiment.config.update(to_log)
 
         if upsample:
-            if local_crop > local_non_crop:
+            if local_crop == local_non_crop:
+                print(f"No upsampling: {local_crop} == {local_non_crop}")
+            elif local_crop > local_non_crop:
                 df = df.append(
                     df[df["is_local"] & ~df["is_crop"]].sample(
                         n=local_difference, replace=True, random_state=42
@@ -89,7 +91,7 @@ class CropDataset(Dataset):
                     ),
                     ignore_index=True,
                 )
-                print(f"Upsamplng local crop to match non-crop {local_crop} -> {local_non_crop}")
+                print(f"Upsampling: local crop to non-crop: {local_crop} -> {local_non_crop}")
 
         self.normalizing_dict: Dict = (
             normalizing_dict
@@ -125,17 +127,19 @@ class CropDataset(Dataset):
             ((df_end_date - df_start_date) / np.timedelta64(1, "M")).round().astype(int)
         )
         timesteps = df["timesteps"].unique().tolist()
-        if len(timesteps) > 1:
-            timesteps_w_dataset = (
-                df[["dataset", "timesteps"]]
-                .groupby("timesteps")
-                .agg({"dataset": lambda ds: ",".join(ds.unique())})
-            )
-            print(
-                "WARNING: Datasets have different amounts of timesteps available. "
-                + "Forecaster will be used to fill gaps."
-                + f"\n{timesteps_w_dataset}"
-            )
+
+        # TEMPORARY FIX: dataset column not always available
+        # if len(timesteps) > 1:
+        #     timesteps_w_dataset = (
+        #         df[["dataset", "timesteps"]]
+        #         .groupby("timesteps")
+        #         .agg({"dataset": lambda ds: ",".join(ds.unique())})
+        #     )
+        #     print(
+        #         "WARNING: Datasets have different amounts of timesteps available. "
+        #         + "Forecaster will be used to fill gaps."
+        #         + f"\n{timesteps_w_dataset}"
+        #     )
 
         return timesteps
 

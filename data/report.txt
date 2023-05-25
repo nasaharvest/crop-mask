@@ -301,7 +301,7 @@ HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     4834
 eo_data_duplicate       1
-✔ training amount: 4834, positive class: 100.0%
+✔ training amount: 4834, positive class: 67.3%
 
 
 
@@ -324,3 +324,47 @@ HawaiiCorrectiveGuided2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    329
 ✔ training amount: 329, positive class: 21.0%
+
+
+
+MalawiCorrectiveLabels2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    4295
+✔ training amount: 4295, positive class: 22.9%
+
+
+
+NamibiaFieldBoundary2022 (Timesteps: 23)
+----------------------------------------------------------------------------
+eo_data_complete    12451
+✔ training amount: 12451, positive class: 55.3%
+
+
+
+EthiopiaTigrayGhent2021 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    161
+✔ validation amount: 161, positive class: 78.9%
+
+
+
+SudanBlueNileCEO2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1500
+✔ training amount: 449, positive class: 27.4%
+✔ validation amount: 518, positive class: 21.8%
+✔ testing amount: 533, positive class: 22.7%
+
+
+
+SudanBlueNileCorrectiveLabels2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    47
+✔ training amount: 47, positive class: 10.6%
+
+
+
+EthiopiaTigrayCorrective2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    200
+✔ training amount: 200, positive class: 2.0%
