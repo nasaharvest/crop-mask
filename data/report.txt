@@ -373,8 +373,8 @@ eo_data_complete    200
 
 SudanAlGadarefCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    965
-eo_data_complete     535
-✖ training: 449 labels, but 171 features
-✖ validation: 518 labels, but 178 features
-✖ testing: 533 labels, but 186 features
+eo_data_complete     1069
+eo_data_exporting     431
+✖ training: 449 labels, but 316 features
+✖ validation: 518 labels, but 367 features
+✖ testing: 533 labels, but 386 features
