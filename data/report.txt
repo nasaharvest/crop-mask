@@ -368,3 +368,12 @@ EthiopiaTigrayCorrective2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    200
 ✔ training amount: 200, positive class: 2.0%
+
+
+
+SudanAlGadarefCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    1500
+✖ training: 449 labels, but 0 features
+✖ validation: 518 labels, but 0 features
+✖ testing: 533 labels, but 0 features
