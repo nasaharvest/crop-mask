@@ -685,6 +685,7 @@ def create_confusion_matrix_summary(
     print(summary.round(2))
     return summary
 
+
 def plot_area(summary: pd.DataFrame) -> None:
     area_class = summary.columns
     x_pos = np.arange(len(area_class))
