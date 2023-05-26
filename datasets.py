@@ -276,8 +276,8 @@ class SudanAlGadarefCEO2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
         return df
-    
-    
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
