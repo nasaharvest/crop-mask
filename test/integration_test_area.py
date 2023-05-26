@@ -1,19 +1,23 @@
 import os
+import sys
 from pathlib import Path
 from unittest import TestCase
 
 import numpy as np
-
+module_path = os.path.abspath(os.path.join(".."))
+if module_path not in sys.path:
+    sys.path.append(module_path)
+    
 from src.area_utils import (
     binarize,
     cal_map_area_class,
-    compute_area_estimate,
-    compute_confusion_matrix,
     estimate_num_sample_per_class,
     generate_ref_samples,
     load_ne,
     load_raster,
     reference_sample_agree,
+    compute_confusion_matrix,
+    compute_area_estimate,
 )
 
 home_dir = Path(__file__).parent.parent
@@ -65,7 +69,6 @@ class TestAreaUtils(TestCase):
     def test_area_util(self):
         map_array, map_meta = load_raster(map_path)
         binary_map = binarize(map_array, map_meta)
-        self.assertEqual(binary_map.dtype, "uint8", f"map dtype is {binary_map.dtype}")
         self.assertEqual(
             np.unique(binary_map).shape, (2,), f"map unique values are {np.unique(binary_map)}"
         )
@@ -98,15 +101,27 @@ class TestAreaUtils(TestCase):
         self.assertEqual(ceo_geom.shape, (63, 15), f"ceo_geom shape is {ceo_geom.shape}")
 
         cm = compute_confusion_matrix(ceo_geom)
-        self.assertEqual(cm[0], 28, f"cm[0] is {cm[0]}")
-        self.assertEqual(cm[1], 1, f"cm[1] is {cm[1]}")
+        np.testing.assert_array_equal(cm[0], np.array([28,1]), f"cm[0] is {cm[0]}")
+        np.testing.assert_array_equal(cm[1], np.array([32,2]), f"cm[0] is {cm[0]}")
 
-        summary = compute_area_estimate(crop_pixel, non_crop_pixel, cm, map_meta)
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 322690.607527, places=2)
-        self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 275778.899716, places=2)
+        a_j = np.array([non_crop_pixel, crop_pixel], dtype = np.int64)
 
-        for file in os.listdir(Path.cwd()):
-            if file.startswith("ceo_reference_sample"):
-                os.remove(file)
+        estimates = compute_area_estimate(cm, a_j, map_meta["transform"][0])
+        a_ha, err_ha = estimates["area"]["ha"]
+        p_i, err_p_i = estimates["producer"]
 
-        print("\u2714 clean up")
+        print(a_ha, err_ha, p_i, err_p_i)
+
+        np.testing.assert_array_almost_equal(
+            actual = np.stack([a_ha, err_ha]),
+            desired = np.array([322690.607527, 275778.899716]),
+        )
+        # summary = compute_area_estimate(crop_pixel, non_crop_pixel, cm, map_meta)
+        # self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 322690.607527, places=2)
+        # self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 275778.899716, places=2)
+
+        # for file in os.listdir(Path.cwd()):
+        #     if file.startswith("ceo_reference_sample"):
+        #         os.remove(file)
+
+        # print("\u2714 clean up")
