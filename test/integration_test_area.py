@@ -4,10 +4,11 @@ from pathlib import Path
 from unittest import TestCase
 
 import numpy as np
+
 module_path = os.path.abspath(os.path.join(".."))
 if module_path not in sys.path:
     sys.path.append(module_path)
-    
+
 from src.area_utils import (
     binarize,
     cal_map_area_class,
@@ -51,6 +52,11 @@ class TestAreaUtils(TestCase):
         self.roi = load_ne(
             self.sample_input["country_iso3"], self.sample_input["regions_in_country"]
         )
+
+        self.a_ha = np.array([275778.90, 322690.61])
+        self.err_a_ha = np.array([74837.24, 74837.24])
+        self.u_acc = np.array([0.47, 0.67])
+        self.err_u_acc = np.array([0.13, 0.65])
 
     def test_area_path(self):
         self.assertTrue(map_path.exists(), f"{map_path} not found. Try dvc pull.")
@@ -101,27 +107,32 @@ class TestAreaUtils(TestCase):
         self.assertEqual(ceo_geom.shape, (63, 15), f"ceo_geom shape is {ceo_geom.shape}")
 
         cm = compute_confusion_matrix(ceo_geom)
-        np.testing.assert_array_equal(cm[0], np.array([28,1]), f"cm[0] is {cm[0]}")
-        np.testing.assert_array_equal(cm[1], np.array([32,2]), f"cm[0] is {cm[0]}")
+        np.testing.assert_array_equal(cm[0], np.array([28, 1]), f"cm[0] is {cm[0]}")
+        np.testing.assert_array_equal(cm[1], np.array([32, 2]), f"cm[0] is {cm[0]}")
 
-        a_j = np.array([non_crop_pixel, crop_pixel], dtype = np.int64)
+        a_j = np.array([non_crop_pixel, crop_pixel], dtype=np.int64)
 
         estimates = compute_area_estimate(cm, a_j, map_meta["transform"][0])
         a_ha, err_ha = estimates["area"]["ha"]
-        p_i, err_p_i = estimates["producer"]
+        p_i, err_p_i = estimates["user"]
 
-        print(a_ha, err_ha, p_i, err_p_i)
-
-        np.testing.assert_array_almost_equal(
-            actual = np.stack([a_ha, err_ha]),
-            desired = np.array([322690.607527, 275778.899716]),
+        np.testing.assert_almost_equal(
+            actual=np.stack([a_ha, err_ha]),
+            desired=np.stack([self.a_ha, self.err_a_ha]),
+            decimal=2,
+            err_msg="Area estimates are not equal",
+            verbose=True,
         )
-        # summary = compute_area_estimate(crop_pixel, non_crop_pixel, cm, map_meta)
-        # self.assertAlmostEqual(summary.loc["Estimated area [ha]"][0], 322690.607527, places=2)
-        # self.assertAlmostEqual(summary.loc["Estimated area [ha]"][1], 275778.899716, places=2)
+        np.testing.assert_almost_equal(
+            actual=np.stack([p_i, err_p_i]),
+            desired=np.stack([self.u_acc, self.err_u_acc]),
+            decimal=2,
+            err_msg="User accuracy estimates are not equal",
+            verbose=True,
+        )
 
-        # for file in os.listdir(Path.cwd()):
-        #     if file.startswith("ceo_reference_sample"):
-        #         os.remove(file)
+        for file in os.listdir(Path.cwd()):
+            if file.startswith("ceo_reference_sample"):
+                os.remove(file)
 
-        # print("\u2714 clean up")
+        print("\u2714 clean up")
