@@ -9,7 +9,7 @@ module_path = os.path.abspath(os.path.join(".."))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from src.area_utils import (
+from src.area_utils import (  # noqa: E402
     binarize,
     cal_map_area_class,
     compute_area_estimate,
