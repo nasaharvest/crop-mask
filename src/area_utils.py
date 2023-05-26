@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio as rio
-import seaborn as sns
 from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
@@ -685,37 +684,6 @@ def create_confusion_matrix_summary(
 
     print(summary.round(2))
     return summary
-
-
-def plot_confusion_matrix(cm: np.ndarray, labels: Union[List[str], np.ndarray]) -> None:
-    """Pretty prints confusion matrix.
-
-    Expects row 'Reference' and column 'Prediction/Map' ordered confusion matrix.
-
-    Args:
-        cm:
-            Confusion matrix of reference and map samples expressed in terms of
-            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
-        labels:
-            List-like containing labels in same order as confusion matrix. For
-            example:
-
-            ["Stable NP", "PGain", "PLoss", "Stable P"]
-
-            ["Non-Crop", "Crop"]
-
-    """
-
-    _, ax = plt.subplots(nrows=1, ncols=1)
-    sns.heatmap(cm, cmap="crest", annot=True, fmt="d", cbar=False, square=True, ax=ax)
-    ax.xaxis.tick_top()
-    ax.xaxis.set_label_coords(0.50, 1.125)
-    ax.yaxis.set_label_coords(-0.125, 0.50)
-    ax.set_xticklabels(labels=labels)
-    ax.set_yticklabels(labels=labels)
-    ax.set_xlabel("Map", fontsize=12)
-    ax.set_ylabel("Reference", fontsize=12)
-    plt.tight_layout()
 
 
 def plot_area(summary: pd.DataFrame) -> None:
