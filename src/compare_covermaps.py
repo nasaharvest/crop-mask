@@ -382,8 +382,8 @@ TARGETS = {
         resolution=100,
         crop_labels=[40],
     ),
-    "esa": Covermap(
-        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
+    "worldcover": Covermap(
+        "worldcover", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -391,12 +391,12 @@ TARGETS = {
         resolution=30,
         probability=0.5,
     ),
-    "gfsad": Covermap(
-        "gfsad",
-        ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
-        resolution=1000,
-        crop_labels=[1, 2, 3, 4, 5],
-    ),
+    # "gfsad": Covermap(
+    #     "gfsad",
+    #     ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
+    #     resolution=1000,
+    #     crop_labels=[1, 2, 3, 4, 5],
+    # ),
     "asap": Covermap(
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
@@ -426,8 +426,8 @@ TARGETS = {
         resolution=30,
         crop_labels=[2, 3],
     ),
-    "de-africa-2019": Covermap(
-        "de-africa-2019",
+    "digital-earth-africa": Covermap(
+        "digital-earth-africa",
         ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
         resolution=10,
         crop_labels=[1],
