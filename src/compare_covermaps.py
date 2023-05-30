@@ -19,6 +19,11 @@ TEST_CODE = {
     "Tanzania": "TZA",
     "Tanzania_CEO_2019": "TZA",
     "Malawi": "MWI",
+    "Mali": "MLI",
+    "Namibia": "NAM",
+    "Rwanda": "RWA",
+    "Uganda": "UGA",
+    "Zambia": "ZMB"
 }
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
@@ -31,6 +36,11 @@ TEST_COUNTRIES = {
     "Togo": DATA_PATH + "Togo.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
     "Malawi": DATA_PATH + "Malawi_CEO_2020.csv",
+    "Mali": DATA_PATH + "MaliStratifiedCEO2019.csv",
+    "Namibia": DATA_PATH + "Namibia_CEO_2020.csv",
+    "Rwanda": DATA_PATH + "Rwanda.csv",
+    "Uganda": DATA_PATH + "Uganda.csv",
+    "Zambia": DATA_PATH + "Zambia_CEO_2019.csv"
 }
 
 REDUCER = ee.Reducer.mode()
@@ -137,9 +147,10 @@ class TestCovermaps:
     """
 
     def __init__(self, test_countries: list, covermaps: list) -> None:
-        self.test_countries = test_countries
         if test_countries is None:
             self.test_countries = list(TEST_COUNTRIES.keys())
+        else:
+            self.test_countries = test_countries
         self.covermaps = covermaps
         self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps: dict = {}
@@ -150,6 +161,7 @@ class TestCovermaps:
         Returns geodataframe containing all test points from labeled maps.
         *Modified from generate_test_data()*
         """
+
         if targets is None:
             targets = self.test_countries.copy()
 
