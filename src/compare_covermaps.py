@@ -374,31 +374,6 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
 
 # Maps
 TARGETS = {
-    "harvest-togo": Covermap(
-        "harvest-togo",
-        ee.ImageCollection(
-            ee.Image("projects/sat-io/open-datasets/nasa-harvest/togo_cropland_binary")
-        ),
-        resolution=10,
-        probability=0.5,
-        countries=["Togo"],
-    ),
-    "harvest-kenya": Covermap(
-        "harvest-kenya",
-        ee.ImageCollection(
-            ee.Image("projects/sat-io/open-datasets/nasa-harvest/kenya_cropland_binary")
-        ),
-        resolution=10,
-        probability=0.5,
-        countries=["Kenya"],
-    ),
-    "harvest-tanzania": Covermap(
-        "harvest-tanzania",
-        ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
-        resolution=10,
-        probability=0.5,
-        countries=["Tanzania"],
-    ),
     "copernicus": Covermap(
         "copernicus",
         ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global")
