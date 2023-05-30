@@ -139,7 +139,7 @@ class TestCovermaps:
     def __init__(self, test_countries: list, covermaps: list) -> None:
         self.test_countries = test_countries
         if test_countries is None:
-            self.test_countries = TEST_COUNTRIES.keys
+            self.test_countries = list(TEST_COUNTRIES.keys)
         self.covermaps = covermaps
         self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps: dict = {}
