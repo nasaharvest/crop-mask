@@ -306,8 +306,8 @@ class SudanAlGadarefCEO2020(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
         return df
-    
-    
+
+
 class MaliStratifiedCEO2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         MaliStratified_dir = raw_dir / "Mali_Stratified_CEO_2019"
