@@ -395,7 +395,9 @@ TARGETS = {
         crop_labels=[40],
     ),
     "worldcover": Covermap(
-        "worldcover", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
+        "worldcover", ee.ImageCollection("ESA/WorldCover/v100"),
+        resolution=10,
+        crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -482,5 +484,13 @@ TARGETS = {
         ).filter(ee.Filter.date("2019-01-01", "2020-01-01")),
         resolution=10,
         crop_labels=[5],
+    ),
+    "nabil-etal-2021": Covermap(
+        "nabil-etal-2021",
+        ee.ImageCollection.fromImages([ee.Image(
+            "projects/sat-io/open-datasets/landcover/AF_Cropland_mask_30m_2016_v3"
+        )]),
+        resolution=30,
+        crop_labels=[2],
     ),
 }
