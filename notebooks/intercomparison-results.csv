@@ -13,6 +13,7 @@ Togo,globcover-v22,Togo,0.36,0.7,51,131,0.29,0.86,0.45,0.76
 Togo,harvest-crop-maps,Togo,0.84,0.91,51,131,0.88,0.92,0.8,0.95
 Togo,esri-lulc,Togo,0.07,0.73,51,131,0.04,0.99,0.67,0.73
 Togo,nabil-etal-2021,Togo,0.61,0.79,51,131,0.61,0.85,0.62,0.85
+Togo,ensemble-subset,Togo,0.63,0.84,51,131,0.49,0.98,0.89,0.83
 Kenya,copernicus,Kenya,0.49,0.91,36,537,0.69,0.92,0.38,0.98
 Kenya,worldcover,Kenya,0.41,0.94,36,537,0.31,0.99,0.61,0.95
 Kenya,glad,Kenya,0.73,0.96,36,537,0.78,0.98,0.68,0.98
@@ -27,6 +28,7 @@ Kenya,globcover-v22,Kenya,0.35,0.82,36,537,0.78,0.82,0.23,0.98
 Kenya,harvest-crop-maps,Kenya,0.42,0.92,36,531,0.44,0.95,0.4,0.96
 Kenya,esri-lulc,Kenya,0.66,0.96,36,537,0.64,0.98,0.68,0.98
 Kenya,nabil-etal-2021,Kenya,0.61,0.92,36,537,0.94,0.92,0.45,1.0
+Kenya,ensemble-subset,Kenya,0.68,0.95,36,537,0.83,0.96,0.58,0.99
 Malawi,copernicus,Malawi,0.66,0.85,31,123,0.71,0.89,0.61,0.92
 Malawi,worldcover,Malawi,0.74,0.89,31,123,0.77,0.92,0.71,0.94
 Malawi,glad,Malawi,0.62,0.86,31,123,0.55,0.94,0.71,0.89
@@ -41,6 +43,7 @@ Malawi,globcover-v22,Malawi,0.43,0.78,31,123,0.42,0.87,0.45,0.86
 Malawi,harvest-crop-maps,Malawi,0.82,0.92,31,123,0.94,0.91,0.72,0.98
 Malawi,esri-lulc,Malawi,0.44,0.82,31,123,0.35,0.93,0.58,0.85
 Malawi,nabil-etal-2021,Malawi,0.61,0.8,31,123,0.77,0.8,0.5,0.93
+Malawi,ensemble-subset,Malawi,0.68,0.86,31,123,0.74,0.89,0.62,0.93
 Tanzania,copernicus,Tanzania,0.79,0.86,431,770,0.72,0.94,0.86,0.86
 Tanzania,worldcover,Tanzania,0.83,0.89,431,770,0.75,0.97,0.94,0.87
 Tanzania,glad,Tanzania,0.78,0.87,431,770,0.67,0.98,0.95,0.84
@@ -54,6 +57,7 @@ Tanzania,globcover-v23,Tanzania,0.54,0.7,431,770,0.49,0.81,0.6,0.74
 Tanzania,globcover-v22,Tanzania,0.55,0.71,431,770,0.49,0.82,0.61,0.74
 Tanzania,esri-lulc,Tanzania,0.49,0.76,431,770,0.33,1.0,0.99,0.73
 Tanzania,nabil-etal-2021,Tanzania,0.83,0.89,431,770,0.77,0.95,0.9,0.88
+Tanzania,ensemble-subset,Tanzania,0.84,0.9,431,770,0.75,0.98,0.96,0.87
 Mali,copernicus,Mali,0.18,0.92,10,437,0.4,0.93,0.12,0.99
 Mali,worldcover,Mali,0.43,0.95,10,437,0.8,0.96,0.3,1.0
 Mali,glad,Mali,0.34,0.94,10,437,0.7,0.95,0.23,0.99
@@ -67,6 +71,7 @@ Mali,globcover-v23,Mali,0.08,0.67,10,437,0.6,0.67,0.04,0.99
 Mali,globcover-v22,Mali,0.1,0.75,10,437,0.6,0.76,0.05,0.99
 Mali,esri-lulc,Mali,0.0,0.98,10,437,0.0,1.0,0.0,0.98
 Mali,nabil-etal-2021,Mali,0.2,0.91,10,437,0.5,0.92,0.13,0.99
+Mali,ensemble-subset,Mali,0.28,0.95,10,437,0.4,0.97,0.21,0.99
 Namibia,copernicus,Namibia,0.33,0.97,5,439,0.6,0.98,0.23,1.0
 Namibia,worldcover,Namibia,0.17,0.98,5,439,0.2,0.99,0.14,0.99
 Namibia,glad,Namibia,0.27,0.96,5,439,0.6,0.97,0.18,1.0
@@ -80,6 +85,7 @@ Namibia,globcover-v23,Namibia,0.0,0.9,5,439,0.0,0.91,0.0,0.99
 Namibia,globcover-v22,Namibia,0.0,0.84,5,439,0.0,0.85,0.0,0.99
 Namibia,esri-lulc,Namibia,0.29,0.99,5,439,0.2,1.0,0.5,0.99
 Namibia,nabil-etal-2021,Namibia,0.21,0.95,5,439,0.6,0.95,0.13,1.0
+Namibia,ensemble-subset,Namibia,0.29,0.98,5,439,0.4,0.98,0.22,0.99
 Rwanda,copernicus,Rwanda,0.71,0.78,43,64,0.7,0.83,0.73,0.8
 Rwanda,worldcover,Rwanda,0.82,0.87,43,64,0.74,0.95,0.91,0.85
 Rwanda,glad,Rwanda,0.62,0.76,43,64,0.49,0.94,0.84,0.73
@@ -93,6 +99,7 @@ Rwanda,globcover-v23,Rwanda,0.57,0.63,43,64,0.63,0.62,0.53,0.71
 Rwanda,globcover-v22,Rwanda,0.62,0.67,43,64,0.65,0.69,0.58,0.75
 Rwanda,esri-lulc,Rwanda,0.71,0.81,43,64,0.58,0.97,0.93,0.78
 Rwanda,nabil-etal-2021,Rwanda,0.7,0.75,43,64,0.72,0.77,0.67,0.8
+Rwanda,ensemble-subset,Rwanda,0.72,0.79,43,64,0.67,0.88,0.78,0.8
 Uganda,copernicus,Uganda,0.4,0.78,26,207,0.65,0.8,0.29,0.95
 Uganda,worldcover,Uganda,0.51,0.92,26,207,0.38,0.99,0.77,0.93
 Uganda,glad,Uganda,0.54,0.88,26,207,0.65,0.9,0.46,0.95
@@ -106,6 +113,7 @@ Uganda,globcover-v23,Uganda,0.3,0.61,26,207,0.77,0.58,0.19,0.95
 Uganda,globcover-v22,Uganda,0.35,0.67,26,207,0.81,0.65,0.23,0.96
 Uganda,esri-lulc,Uganda,0.39,0.87,26,207,0.38,0.93,0.4,0.92
 Uganda,nabil-etal-2021,Uganda,0.44,0.83,26,207,0.62,0.86,0.35,0.95
+Uganda,ensemble-subset,Uganda,0.51,0.86,26,207,0.65,0.88,0.41,0.95
 Zambia,copernicus,Zambia,0.57,0.95,20,469,0.75,0.96,0.45,0.99
 Zambia,worldcover,Zambia,0.65,0.97,20,469,0.7,0.98,0.61,0.99
 Zambia,glad,Zambia,0.71,0.98,20,469,0.75,0.99,0.68,0.99
@@ -119,3 +127,4 @@ Zambia,globcover-v23,Zambia,0.19,0.91,20,469,0.25,0.94,0.15,0.97
 Zambia,globcover-v22,Zambia,0.1,0.85,20,469,0.2,0.88,0.07,0.96
 Zambia,esri-lulc,Zambia,0.74,0.98,20,469,0.7,0.99,0.78,0.99
 Zambia,nabil-etal-2021,Zambia,0.56,0.95,20,469,0.75,0.96,0.44,0.99
+Zambia,ensemble-subset,Zambia,0.74,0.98,20,469,0.8,0.99,0.7,0.99
