@@ -3,34 +3,35 @@ from typing import Callable, List, Optional
 import numpy as np
 import pandas as pd
 
-def path_fn(set_id : str, date : str) -> str:
-    """ Returns string path to CEO *.csv file.
+
+def path_fn(set_id: str, date: str) -> str:
+    """Returns string path to CEO *.csv file.
 
     Gives the path + file name to the csv label file by labeler set `set_id` at the timestamp `date`. For labeled
-    CEO files, the files are named identically except for labeler set and timestamp date. 
-    
+    CEO files, the files are named identically except for labeler set and timestamp date.
+
     Example : how to generalize the file name
-    
+
     -> File for set 1 :
         ceo-Tigray-2020-2021-Change-(set-1)-sample-data-2022-01-10.csv
 
-    -> File for set 2 : 
+    -> File for set 2 :
         ceo-Tigray-2020-2021-Change-(set-2)-sample-data-2022-01-17.csv
-    
+
     -> Generalized file name:
         ceo-Tigray-2020-2021-Change-({set_id})-sample-data-2020-{date}.csv
 
     Args
-        set_id: 
+        set_id:
           String indicating the label set as it appears on the labeling csv file - e.g., 'set-1', or 'set-2'.
         date:
           String indicating the date as it appears on the labeling csv file.
     Returns
-        path: 
-          String indicating path to csv label file for `set_id` at `date`. 
-    
+        path:
+          String indicating path to csv label file for `set_id` at `date`.
+
     """
-    
+
     path = f"data/ceo-Tigray-2020-2021-Change-({set_id})-sample-data-2022-{date}.csv"
     return path
 
@@ -43,24 +44,24 @@ def isna(df: pd.DataFrame, column: str) -> bool:
 def check_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
     """Peforms check on set of CEO files loaded as dataframe.
 
-    Checks that the set of dataframes all - 
+    Checks that the set of dataframes all -
         (1) Have the same shape
         (2) Do not contain duplicate rows/points
         (3) Do not contain any NaNs/missing values
 
     Args:
         dfs:
-            List-like containing up to three dataframes - minimum of two. Each dataframe is a 
-            labeled CEO file of the same ROI by a different set (two). 
-            
+            List-like containing up to three dataframes - minimum of two. Each dataframe is a
+            labeled CEO file of the same ROI by a different set (two).
+
             In the case of three dataframes - the third is considered the "final" agreement from
             either of the two labeler sets.
-    
+
     Returns:
         dfs:
-            List-like containing the same dataframes after passing checks for shape, duplicates, and 
+            List-like containing the same dataframes after passing checks for shape, duplicates, and
             NaNs/missing values.
-    
+
     """
 
     label = dfs[0].columns[-1]
@@ -93,28 +94,28 @@ def load_dataframes(
 
         (2) Estimation, consisting of potentially several CEO files.
             -> There will be two CEO files from an earlier date when
-               labeling is completed for all points, the "completed date".  
-            
-            -> There will be two CEO files from a later date, after
-               labeling is completed, and where any disagreements between 
-               the two sets have been forced into "agreement". There are no 
-               disagreements between the two sets for any points at this stage. 
+               labeling is completed for all points, the "completed date".
 
-            -> At the "final" agreement date, the CEO files of the two sets will 
+            -> There will be two CEO files from a later date, after
+               labeling is completed, and where any disagreements between
+               the two sets have been forced into "agreement". There are no
+               disagreements between the two sets for any points at this stage.
+
+            -> At the "final" agreement date, the CEO files of the two sets will
                be identical.
 
     Args:
         path_fn:
-            A helper function to read in multiple CEO files of the same project. 
+            A helper function to read in multiple CEO files of the same project.
         completed_date:
-            String indicating the "completed" date as it appears on the CEO .csv file. 
+            String indicating the "completed" date as it appears on the CEO .csv file.
         final_date:
             String indicating the "final" date as it appears on the CEO .csv file.
 
     Returns:
         dfs:
             List-like containing the set of CEO *.csv files loaded to dataframe.
-    
+
     """
 
     if (completed_date is not None) and (final_date is not None):
@@ -125,7 +126,7 @@ def load_dataframes(
         # Dataframe @ final date
         #   -> Arbitrarily choose "set-1", both sets are in agreement by this point.
         df3 = pd.read_csv(path_fn("set-1", final_date))
-        
+
         dfs = check_dataframes([df1, df2, df3])
         return dfs
 
@@ -164,8 +165,8 @@ def compute_disagreements(df1: pd.DataFrame, df2: pd.DataFrame, column_name: str
 
     Returns
         disagreements:
-            Indices of where values of column_name in df1 and df2 are not equal to eachother.            
-    
+            Indices of where values of column_name in df1 and df2 are not equal to eachother.
+
     """
 
     print("\n{:^61}\n{}".format("Computing disagreements...", "-" * 59))
@@ -178,9 +179,9 @@ def create_consensus_features(consensus_dataframe: pd.DataFrame) -> pd.DataFrame
     """Creates and adds features to consensus dataframe."""
 
     # Convert analysis duration to float
-    def tofloat(string : str) -> float:
+    def tofloat(string: str) -> float:
         return float(string.split(" ")[0])
-    
+
     consensus_dataframe[
         ["set_1_analysis_duration", "set_2_analysis_duration"]
     ] = consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(
@@ -190,7 +191,7 @@ def create_consensus_features(consensus_dataframe: pd.DataFrame) -> pd.DataFrame
     # (1)
     def compute_incorrect_label_aux(l1, l2, f):
         return l2 if l1 == f else l1 if l2 == f else "Both"
-    
+
     def compute_incorrect_label(df):
         return compute_incorrect_label_aux(df["set_1_label"], df["set_2_label"], df["final_label"])
 
@@ -199,9 +200,9 @@ def create_consensus_features(consensus_dataframe: pd.DataFrame) -> pd.DataFrame
         axis=1,
     )
 
-    def compute_incorrect_email_aux(e1, e2, l1, l2, f): 
+    def compute_incorrect_email_aux(e1, e2, l1, l2, f):
         return e2 if l1 == f else e1 if l2 == f else "Both"
-    
+
     def compute_incorrect_email(df):
         return compute_incorrect_email_aux(
             df["set_1_email"],
@@ -216,28 +217,28 @@ def create_consensus_features(consensus_dataframe: pd.DataFrame) -> pd.DataFrame
         axis=1,
     )
 
-    def compute_incorrect_analysis_aux(t1, t2, l1, l2, f): 
+    def compute_incorrect_analysis_aux(t1, t2, l1, l2, f):
         return t2 if l1 == f else t1 if l2 == f else "Both"
 
-    def compute_correct_analysis_aux(t1, t2, l1, l2, f): 
+    def compute_correct_analysis_aux(t1, t2, l1, l2, f):
         return t1 if l1 == f else t2 if l2 == f else "None"
-    
+
     def compute_incorrect_analysis(df):
         return compute_incorrect_analysis_aux(
             df["set_1_analysis_duration"],
             df["set_2_analysis_duration"],
             df["set_1_label"],
             df["set_2_label"],
-            df["final_label"]
+            df["final_label"],
         )
-    
+
     def compute_correct_analysis(df):
         return compute_correct_analysis_aux(
             df["set_1_analysis_duration"],
             df["set_2_analysis_duration"],
             df["set_1_label"],
             df["set_2_label"],
-            df["final_label"]
+            df["final_label"],
         )
 
     consensus_dataframe["overridden_analysis"] = consensus_dataframe.apply(
@@ -260,11 +261,12 @@ def create_consensus_dataframe_aux(
     label = "area_change" if area_change else "crop_noncrop"
     columns = ["plotid", "sampleid", "email", "analysis_duration", label]
 
-    def renaming_func(s): 
+    def renaming_func(s):
         return {
             label: f"{s}_label",
             "email": f"{s}_email",
-            "analysis_duration": f"{s}_analysis_duration"}
+            "analysis_duration": f"{s}_analysis_duration",
+        }
 
     df1, df2, *df3 = dfs
     lon, lat = df1.loc[disagreements, "lon"].values, df1.loc[disagreements, "lat"].values
