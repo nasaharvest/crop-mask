@@ -8,7 +8,8 @@ import geemap
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import GeometryCollection
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
+from area_utils import *
 
 DATA_PATH = "../data/datasets/"
 # Country codes for Natural Earth bounding box according file name of testing set
@@ -102,16 +103,8 @@ class Covermap:
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
-            if len(sampled) > len(test_points):
-                print(
-                    "Extracting error: length of sampled dataset is"
-                    + "not the same as testing dataset (more)"
-                )
-            else:
-                print(
-                    "Extracting error: length of sampled dataset is"
-                    + "not the same as testing dataset (less)"
-                )
+            print("Warning: length of sampled dataset ({}) != test points ({})" \
+                    .format(len(sampled), len(test_points)))
 
         # Recast values
         if self.probability:
@@ -367,6 +360,7 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
     Creates classification report on crop coverage binary values. Assumes 1 indicates cropland.
     """
     report = classification_report(true, pred, output_dict=True)
+    tn, fp, fn, tp = confusion_matrix(true, pred).ravel()
     return pd.DataFrame(
         data={
             "dataset": dataset_name,
@@ -379,6 +373,10 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
             "noncrop_recall": report["0"]["recall"],
             "crop_precision": report["1"]["precision"],
             "noncrop_precision": report["0"]["precision"],
+            "tn": tn,
+            "fp": fp,
+            "fn": fn,
+            "tp": tp
         },
         index=[0],
     ).round(2)
