@@ -278,6 +278,36 @@ class SudanAlGadarefCEO2019(LabeledDataset):
         return df
 
 
+class SudanAlGadarefCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        SudanAlGadaref_20_dir = raw_dir / "Sudan_Al_Gadaref_CEO_2020"
+        df1 = pd.read_csv(
+            SudanAlGadaref_20_dir
+            / "ceo-Sudan-Al-Gadaref-May-2020---March-2021-(Set-1)-sample-data-2023-05-30.csv"
+        )
+        df2 = pd.read_csv(
+            SudanAlGadaref_20_dir
+            / "ceo-Sudan-Al-Gadaref-May-2020---March-2021-(Set-2)-sample-data-2023-05-30.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this point contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
+        return df
+
+
 class MaliStratifiedCEO2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         MaliStratified_dir = raw_dir / "Mali_Stratified_CEO_2019"
@@ -1054,6 +1084,7 @@ datasets: List[LabeledDataset] = [
     EthiopiaTigrayCorrective2020(),
     SudanAlGadarefCEO2019(),
     MaliStratifiedCEO2019(),
+    SudanAlGadarefCEO2020(),
 ]
 
 if __name__ == "__main__":
