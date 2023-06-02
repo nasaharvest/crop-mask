@@ -103,8 +103,11 @@ class Covermap:
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
-            print("Warning: length of sampled dataset ({}) != test points ({})" \
-                    .format(len(sampled), len(test_points)))
+            print(
+                "Warning: length of sampled dataset ({}) != test points ({})".format(
+                    len(sampled), len(test_points)
+                )
+            )
 
         # Recast values
         if self.probability:
@@ -416,7 +419,7 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
             "tn": tn,
             "fp": fp,
             "fn": fn,
-            "tp": tp
+            "tp": tp,
         },
         index=[0],
     ).round(2)
