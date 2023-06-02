@@ -7,8 +7,9 @@ import pandas as pd
 def path_fn(set_id: str, date: str) -> str:
     """Returns string path to CEO *.csv file.
 
-    Gives the path + file name to the csv label file by labeler set `set_id` at the timestamp `date`.
-    For labeled CEO files, the files are named identically except for labeler set and timestamp date.
+    Gives the path + file name to the csv label file by labeler set `set_id` at the timestamp 
+    `date`. For labeled CEO files, the files are named identically except for labeler set and 
+    timestamp date.
 
     Example : how to generalize the file name
 
@@ -33,7 +34,7 @@ def path_fn(set_id: str, date: str) -> str:
 
     """
 
-    path = f"data/ceo-Tigray-2020-2021-Change-({set_id})-sample-data-2022-{date}.csv"
+    path = f"../data/raw/ceo-Tigray-2020-2021-Change-({set_id})-sample-data-2022-{date}.csv"
     return path
 
 
@@ -361,10 +362,15 @@ def create_consensus_dataframe(
         area_change:
             Bool indicating if CEO project is single year or multi-year.
         y1, y2:
+            For multi-year change estimation - strings indicating the first and second
+            year.
+
+            With multi-year change estimation - CEO file will have two columns denoting
+            active cropland in the first year, and second year. 
 
     Returns:
         consensus_dataframe:
-            TODO: Finish description.
+            A dataframe containing the disagreements between the two labeled CEO files.
 
     """
 
@@ -493,7 +499,6 @@ def median_duration(df: pd.DataFrame) -> None:
     nonoverridden = sdf["nonoverridden_analysis"].astype(np.float64)
 
     # Append overridden analysis time with durations from both incidents
-    #   -> TODO: Add robustness if none;
     bdf = df[df["overridden_label"] == "Both"]
     if bdf.shape[0] != 0:
         overridden = pd.concat(
