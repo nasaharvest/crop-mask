@@ -9,6 +9,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report, confusion_matrix
+
 from src.area_utils import *
 
 DATA_PATH = "../data/datasets/"
@@ -53,6 +54,7 @@ LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
 Z_SCORE = 1
+
 
 class Covermap:
     """
@@ -367,7 +369,7 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     p = precision_i[label]
     dr = std_rec_i[label]
     dp = std_prec_i[label]
-    df = (p+r)*(2*(r*dp+p*dr)) + (2*p*r)*(dp+dr)
+    df = (p + r) * (2 * (r * dp + p * dr)) + (2 * p * r) * (dp + dr)
     return df
 
 
@@ -379,8 +381,8 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
     report = classification_report(true, pred, output_dict=True)
     cm = confusion_matrix(true, pred)
     tn, fp, fn, tp = cm.ravel()
-    a_j = np.array([tn+fn, tp+fp])
-    w_j = np.array([(tn+fn) / (tn+fp+fn+tp), (tp+fp) / (tn+fp+fn+tp)])
+    a_j = np.array([tn + fn, tp + fp])
+    w_j = np.array([(tn + fn) / (tn + fp + fn + tp), (tp + fp) / (tn + fp + fn + tp)])
     am = compute_area_error_matrix(cm, w_j)
     u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
     p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
@@ -389,31 +391,25 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
             "dataset": dataset_name,
             "country": country,
             "crop_f1": report["1"]["f1-score"],
-            "std_crop_f1": Z_SCORE * compute_std_f1(label=1,
-                                          recall_i=compute_p_i(am),
-                                          precision_i=compute_u_j(am),
-                                          std_rec_i=np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j,
-                                                            a_j=a_j, cm=cm)),
-                                          std_prec_i=np.sqrt(
-                                            compute_var_u_j(u_j=u_j, cm=cm)),
-                                          ),
+            "std_crop_f1": Z_SCORE
+            * compute_std_f1(
+                label=1,
+                recall_i=compute_p_i(am),
+                precision_i=compute_u_j(am),
+                std_rec_i=np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm)),
+                std_prec_i=np.sqrt(compute_var_u_j(u_j=u_j, cm=cm)),
+            ),
             "accuracy": compute_acc(am),
-            "std_acc":
-                Z_SCORE * np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
+            "std_acc": Z_SCORE * np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
             "crop_recall_pa": compute_p_i(am)[1],
-            "std_crop_pa":
-                Z_SCORE * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j,
-                                                  a_j=a_j, cm=cm))[1],
+            "std_crop_pa": Z_SCORE * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
             "noncrop_recall_pa": compute_p_i(am)[0],
-            "std_noncrop_pa":
-                Z_SCORE * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j,
-                                                  a_j=a_j, cm=cm))[0],
+            "std_noncrop_pa": Z_SCORE
+            * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
             "crop_precision_ua": compute_u_j(am)[1],
-            "std_crop_ua":
-                Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
+            "std_crop_ua": Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
             "noncrop_precision_ua": compute_u_j(am)[0],
-            "std_noncrop_ua":
-                Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
+            "std_noncrop_ua": Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
             "crop_support": report["1"]["support"],
             "noncrop_support": report["0"]["support"],
             "tn": tn,
