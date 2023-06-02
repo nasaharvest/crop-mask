@@ -7,8 +7,8 @@ import pandas as pd
 def path_fn(set_id: str, date: str) -> str:
     """Returns string path to CEO *.csv file.
 
-    Gives the path + file name to the csv label file by labeler set `set_id` at the timestamp 
-    `date`. For labeled CEO files, the files are named identically except for labeler set and 
+    Gives the path + file name to the csv label file by labeler set `set_id` at the timestamp
+    `date`. For labeled CEO files, the files are named identically except for labeler set and
     timestamp date.
 
     Example : how to generalize the file name
@@ -366,7 +366,7 @@ def create_consensus_dataframe(
             year.
 
             With multi-year change estimation - CEO file will have two columns denoting
-            active cropland in the first year, and second year. 
+            active cropland in the first year, and second year.
 
     Returns:
         consensus_dataframe:
