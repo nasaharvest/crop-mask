@@ -459,7 +459,7 @@ def compute_var_p_i(
     sigma = ((n_j_px**2) * (cm_div) * (cm_div_comp) / (n_j_su - 1)).sum(axis=1)
     expr_2 = (p_i**2) * sigma
     expr_1 = (n_j_px**2) * ((1 - p_i) ** 2) * u_j * (1 - u_j) / (n_j_su - 1)
-    expr_3 = (1 / n_i_px**2)
+    expr_3 = 1 / n_i_px**2
     # convert inf to 0 (can result from divide by 0)
     expr_3[np.where(np.isinf(expr_3))] = 0
 
