@@ -53,7 +53,6 @@ LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
-Z_SCORE = 1
 
 
 class Covermap:
@@ -391,8 +390,7 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
             "dataset": dataset_name,
             "country": country,
             "crop_f1": report["1"]["f1-score"],
-            "std_crop_f1": Z_SCORE
-            * compute_std_f1(
+            "std_crop_f1": compute_std_f1(
                 label=1,
                 recall_i=compute_p_i(am),
                 precision_i=compute_u_j(am),
@@ -400,16 +398,15 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
                 std_prec_i=np.sqrt(compute_var_u_j(u_j=u_j, cm=cm)),
             ),
             "accuracy": compute_acc(am),
-            "std_acc": Z_SCORE * np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
+            "std_acc": np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
             "crop_recall_pa": compute_p_i(am)[1],
-            "std_crop_pa": Z_SCORE * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
+            "std_crop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
             "noncrop_recall_pa": compute_p_i(am)[0],
-            "std_noncrop_pa": Z_SCORE
-            * np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
+            "std_noncrop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
             "crop_precision_ua": compute_u_j(am)[1],
-            "std_crop_ua": Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
+            "std_crop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
             "noncrop_precision_ua": compute_u_j(am)[0],
-            "std_noncrop_ua": Z_SCORE * np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
+            "std_noncrop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
             "crop_support": report["1"]["support"],
             "noncrop_support": report["0"]["support"],
             "tn": tn,
