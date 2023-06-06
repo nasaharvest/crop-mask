@@ -1,4 +1,4 @@
-__author__ = "Adam Yang"
+__author__ = "Adam Yang, Hannah Kerner"
 
 from pathlib import Path
 
