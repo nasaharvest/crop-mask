@@ -7,10 +7,11 @@ import ee
 import geemap
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 from shapely.geometry import GeometryCollection
 from sklearn.metrics import classification_report, confusion_matrix
 
-from src.area_utils import *
+from src.area_utils import compute_area_error_matrix, compute_p_i, compute_u_j, compute_var_p_i, compute_var_u_j
 
 DATA_PATH = "../data/datasets/"
 # Country codes for Natural Earth bounding box according file name of testing set
