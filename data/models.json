@@ -135,6 +135,23 @@
             "roc_auc_score": 0.9393
         }
     },
+    "Sudan_Al_Gadaref_2020": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/leg0btix",
+        "test_metrics": {
+            "accuracy": 0.85,
+            "f1_score": 0.8571,
+            "precision_score": 0.8219,
+            "recall_score": 0.8955,
+            "roc_auc_score": 0.9205
+        },
+        "val_metrics": {
+            "accuracy": 0.8586,
+            "f1_score": 0.867,
+            "precision_score": 0.8224,
+            "recall_score": 0.9167,
+            "roc_auc_score": 0.933
+        }
+    },
     "Sudan_Blue_Nile_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/u7z0fftu",
         "test_metrics": {
