@@ -1065,7 +1065,6 @@ datasets: List[LabeledDataset] = [
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
-    NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
     SudanBlueNileCEO2020(),
     SudanBlueNileCorrectiveLabels2019(),
