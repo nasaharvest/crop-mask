@@ -226,18 +226,6 @@ class MalawiCorrectiveLabels2020(LabeledDataset):
         return df
 
 
-class NamibiaFieldBoundary2022(LabeledDataset):
-    def load_labels(self) -> pd.DataFrame:
-        Namibia_dir = raw_dir / "Namibia_field_boundaries_2022"
-        df = pd.read_csv(Namibia_dir / "Namibia_field_bnd_2022.csv")
-        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
-        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
-        df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
-        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
-        df[SUBSET] = "training"
-        return df
-
-
 class SudanBlueNileCorrectiveLabels2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "Sudan.Blue.Nile_new.points.csv")
