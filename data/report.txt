@@ -334,13 +334,6 @@ eo_data_complete    4295
 
 
 
-NamibiaFieldBoundary2022 (Timesteps: 23)
-----------------------------------------------------------------------------
-eo_data_complete    12451
-✔ training amount: 12451, positive class: 55.3%
-
-
-
 EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    161
