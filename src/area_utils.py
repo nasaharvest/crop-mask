@@ -348,6 +348,8 @@ def compute_area_error_matrix(cm: np.ndarray, w_j: np.ndarray) -> np.ndarray:
 
     n_dotj = cm.sum(axis=0)
     area_matrix = (w_j * cm) / n_dotj
+    # if no predictions for class j, n_dotj will be 0
+    area_matrix[np.where(np.isnan(area_matrix))] = 0
     return area_matrix
 
 
@@ -366,7 +368,10 @@ def compute_u_j(am: np.ndarray) -> np.ndarray:
 
     p_jjs = np.diag(am)
     p_dotjs = am.sum(axis=0)
-    return p_jjs / p_dotjs
+    u_j = p_jjs / p_dotjs
+    # if no predictions for class j, p_dotj will be 0
+    u_j[np.where(np.isnan(u_j))] = 0
+    return u_j
 
 
 def compute_var_u_j(u_j: np.ndarray, cm: np.ndarray) -> np.ndarray:
@@ -442,6 +447,8 @@ def compute_var_p_i(
 
     # Confusion matrix divided by total number of sample units per mapped class
     cm_div = cm / n_j_su
+    # if no predictions for class j, n_j_su will be 0
+    cm_div[np.where(np.isnan(cm_div))] = 0
     cm_div_comp = 1 - cm_div
 
     # We fill the diagonals to '0' because of summation condition that i =/= j
@@ -452,8 +459,11 @@ def compute_var_p_i(
     sigma = ((n_j_px**2) * (cm_div) * (cm_div_comp) / (n_j_su - 1)).sum(axis=1)
     expr_2 = (p_i**2) * sigma
     expr_1 = (n_j_px**2) * ((1 - p_i) ** 2) * u_j * (1 - u_j) / (n_j_su - 1)
+    expr_3 = 1 / n_i_px**2
+    # convert inf to 0 (can result from divide by 0)
+    expr_3[np.where(np.isinf(expr_3))] = 0
 
-    return (1 / n_i_px**2) * (expr_1 + expr_2)
+    return expr_3 * (expr_1 + expr_2)
 
 
 def compute_acc(am: np.ndarray) -> float:
