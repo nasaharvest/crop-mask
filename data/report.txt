@@ -334,13 +334,6 @@ eo_data_complete    4295
 
 
 
-NamibiaFieldBoundary2022 (Timesteps: 23)
-----------------------------------------------------------------------------
-eo_data_complete    12451
-✔ training amount: 12451, positive class: 55.3%
-
-
-
 EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    161
@@ -386,3 +379,12 @@ eo_data_complete    1350
 ✔ training amount: 405, positive class: 4.9%
 ✔ validation amount: 458, positive class: 5.9%
 ✔ testing amount: 487, positive class: 2.3%
+
+
+
+SudanAlGadarefCEO2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1500
+✔ training amount: 449, positive class: 42.1%
+✔ validation amount: 518, positive class: 37.1%
+✔ testing amount: 533, positive class: 37.7%
