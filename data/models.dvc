@@ -1,5 +1,6 @@
 outs:
-- md5: f5283aa12cef8df52d28810351e77465.dir
-  size: 67296021
-  nfiles: 46
+- md5: 9fb27f8c9e3be94cecf90fce7dcc929c.dir
+  size: 73322562
+  nfiles: 48
   path: models
+  hash: md5
