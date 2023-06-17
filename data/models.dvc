@@ -3,3 +3,4 @@ outs:
   size: 47222896
   nfiles: 32
   path: models
+  hash: md5
