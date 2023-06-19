@@ -377,7 +377,9 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     p = precision_i[label]
     dr = std_rec_i[label]
     dp = std_prec_i[label]
-    df = (p + r) * (2 * (r * dp + p * dr)) + (2 * p * r) * (dp + dr)
+    expr1 = 2 * (r * dp + p * dr) / (p + r)
+    expr2 = ((2 * p * r) * (dp + dr)) / ((p + r) * (p + r))
+    df = expr1 + expr2
     return df
 
 
