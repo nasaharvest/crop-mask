@@ -361,3 +361,37 @@ SudanBlueNileCorrectiveLabels2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    47
 ✔ training amount: 47, positive class: 10.6%
+
+
+
+EthiopiaTigrayCorrective2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    200
+✔ training amount: 200, positive class: 2.0%
+
+
+
+SudanAlGadarefCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1500
+✔ training amount: 449, positive class: 21.6%
+✔ validation amount: 518, positive class: 21.6%
+✔ testing amount: 533, positive class: 25.3%
+
+
+
+MaliStratifiedCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1350
+✔ training amount: 405, positive class: 4.9%
+✔ validation amount: 458, positive class: 5.9%
+✔ testing amount: 487, positive class: 2.3%
+
+
+
+SudanAlGadarefCEO2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1500
+✔ training amount: 449, positive class: 42.1%
+✔ validation amount: 518, positive class: 37.1%
+✔ testing amount: 533, positive class: 37.7%

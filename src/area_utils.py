@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import cartopy.io.shapereader as shpreader
 import geopandas as gpd
@@ -12,6 +12,23 @@ from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
+
+
+def gdal_reproject(target_crs: str, source_crs: str, source_fn: str, dest_fn: str) -> None:
+    cmd = (
+        f"gdalwarp -t_srs {target_crs} -s_srs {source_crs} -tr 10 10 "
+        f"{source_fn} {dest_fn} -dstnodata 255"
+    )
+    os.system(cmd)
+
+
+def gdal_cutline(
+    shape_fn: str,
+    source_fn: str,
+    dest_fn: str,
+) -> None:
+    cmd = f"gdalwarp -cutline {shape_fn} -crop_to_cutline " f"{source_fn} {dest_fn} -dstnodata 255"
+    os.system(cmd)
 
 
 def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFrame:
@@ -301,226 +318,381 @@ def reference_sample_agree(
     return ceo_agree_geom
 
 
-def compute_confusion_matrix(ceo_agree_geom: gpd.GeoDataFrame) -> np.ndarray:
-    """ """
-    y_true = np.array(ceo_agree_geom["Reference label"]).astype(np.uint8)
-    y_pred = np.array(ceo_agree_geom["Mapped class"]).astype(np.uint8)
-    cm = confusion_matrix(y_true, y_pred).ravel()
-    print("Error matrix \n")
-    print("True negatives: %d" % cm[0])
-    print("False positives: %d" % cm[1])
-    print("False negatives: %d" % cm[2])
-    print("True positives: %d" % cm[3])
+def compute_confusion_matrix(df: Union[pd.DataFrame, gpd.GeoDataFrame]) -> np.ndarray:
+    """Computes confusion matrix of reference and map samples.
+
+    Returns confusion matrix in row 'Truth' and column 'Prediction' order.
+
+    """
+
+    y_true = np.array(df["Reference label"]).astype(np.uint8)
+    y_pred = np.array(df["Mapped class"]).astype(np.uint8)
+    cm = confusion_matrix(y_true, y_pred)
     return cm
 
 
-def compute_area_estimate(
-    crop_area_px: int, noncrop_area_px: int, cm: np.ndarray, meta: dict
+def compute_area_error_matrix(cm: np.ndarray, w_j: np.ndarray) -> np.ndarray:
+    """Computes error matrix in terms of area proportion, p[i,j].
+
+    Args:
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+        w_j:
+            Array containing the marginal pixel area proportion of each mapped class.
+
+    Returns:
+        Error matrix of reference and map samples expressed in terms of area proportion.
+
+    """
+
+    n_dotj = cm.sum(axis=0)
+    area_matrix = (w_j * cm) / n_dotj
+    # if no predictions for class j, n_dotj will be 0
+    area_matrix[np.where(np.isnan(area_matrix))] = 0
+    return area_matrix
+
+
+def compute_u_j(am: np.ndarray) -> np.ndarray:
+    """Computes the user's accuracy of mapped classes.
+
+    Args:
+        am:
+            Error matrix of reference and map samples expressed in terms of
+            area proportions, p[i,j]. Row-column ordered reference-row, map-column.
+
+    Returns:
+        An array containing the user accuracy of each mapped class 'j'.
+
+    """
+
+    p_jjs = np.diag(am)
+    p_dotjs = am.sum(axis=0)
+    u_j = p_jjs / p_dotjs
+    # if no predictions for class j, p_dotj will be 0
+    u_j[np.where(np.isnan(u_j))] = 0
+    return u_j
+
+
+def compute_var_u_j(u_j: np.ndarray, cm: np.ndarray) -> np.ndarray:
+    """Estimates the variance of user's accuracy of mapped classes.
+
+    Args:
+        u_j:
+            Array containing the user's accuracy of each mapped class.
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+
+    Returns:
+        An array containing the variance of user accuracy for the mapped classes.
+        Each entry is the variance of producer accuracy for the corresponding class index.
+
+    """
+
+    n_dotj = cm.sum(axis=0)
+    return u_j * (1 - u_j) / (n_dotj - 1)
+
+
+def compute_p_i(am: np.ndarray) -> np.ndarray:
+    """Computes the producer's accuracy of reference classes.
+
+    Args:
+        am:
+            Error matrix of reference and map samples expressed in terms of
+            area proportions, p[i,j]. Row-column ordered reference-row, map-column.
+
+    Returns:
+        An array containing the producer's accuracy of each reference class 'i'.
+
+    """
+
+    p_iis = np.diag(am)
+    p_idots = am.sum(axis=1)
+    return p_iis / p_idots
+
+
+def compute_var_p_i(
+    p_i: np.ndarray, u_j: np.ndarray, a_j: np.ndarray, cm: np.ndarray
+) -> np.ndarray:
+    """Estimates the variance of producer's accuracy of reference classes.
+
+    For more details, reference Eq. 7 from Olofsson et al., 2014 "Good Practices...".
+
+    Args:
+        p_i:
+            Array containing the producer's accuracy of each reference class.
+        u_j:
+            Array containing the user's accuracy of each mapped class.
+        a_j:
+            Array containing the pixel total of each mapped class.
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+
+    Returns:
+        An array containing the variance of producer accuracy for reference classes.
+        Each entry is the variance of producer accuracy for the corresponding class index.
+
+    """
+
+    # Estimated marginal total of pixels of reference class
+    n_i_px = ((a_j / cm.sum(axis=0) * cm).sum(axis=1)).astype(np.uint64)
+
+    # Marginal total number of pixels of mapped class
+    n_j_px = a_j.astype(np.uint64)
+
+    # Total number of sample units of mapped class
+    n_j_su = cm.sum(axis=0)
+
+    # Confusion matrix divided by total number of sample units per mapped class
+    cm_div = cm / n_j_su
+    # if no predictions for class j, n_j_su will be 0
+    cm_div[np.where(np.isnan(cm_div))] = 0
+    cm_div_comp = 1 - cm_div
+
+    # We fill the diagonals to '0' because of summation condition that i =/= j
+    # in the second expression of equation
+    np.fill_diagonal(cm_div, 0.0)
+    np.fill_diagonal(cm_div_comp, 0.0)
+
+    sigma = ((n_j_px**2) * (cm_div) * (cm_div_comp) / (n_j_su - 1)).sum(axis=1)
+    expr_2 = (p_i**2) * sigma
+    expr_1 = (n_j_px**2) * ((1 - p_i) ** 2) * u_j * (1 - u_j) / (n_j_su - 1)
+    expr_3 = 1 / n_i_px**2
+    # convert inf to 0 (can result from divide by 0)
+    expr_3[np.where(np.isinf(expr_3))] = 0
+
+    return expr_3 * (expr_1 + expr_2)
+
+
+def compute_acc(am: np.ndarray) -> float:
+    """Computes the overall accuracy.
+
+    Args:
+        am:
+            Error matrix of reference and map samples expressed in terms of
+            area proportions, p[i,j]. Row-column ordered reference-row, map-column.
+
+    """
+
+    acc = np.diag(am).sum()
+    return acc
+
+
+def compute_var_acc(w_j: np.ndarray, u_j: np.ndarray, cm: np.ndarray) -> float:
+    """Estimates the variance of overall accuracy.
+
+    Args:
+        w_j:
+            Array containing the marginal area proportion of each mapped class.
+        u_j:
+            Array containing the user's accuracy of each mapped class.
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+
+    """
+
+    sigma = (w_j**2) * (u_j) * (1 - u_j) / (cm.sum(axis=0) - 1)
+    return sigma.sum()
+
+
+def compute_std_p_i(w_j: np.ndarray, am: np.ndarray, cm: np.ndarray) -> np.ndarray:
+    """Estimates the standard error of area estimator, p_{i.}.
+
+    Args:
+        w_j:
+            Array containing the area proportion of each mapped class.
+        am:
+            Confusion matrix of reference and map samples expressed in terms of
+            area proportion, p[i,j]. Row-column ordered reference-row, map-column.
+
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+
+    Returns:
+        An array containing the estimatated standard deviation of area estimator.
+        Each entry is the stdDev of estimated area for the corresponding class index.
+
+    """
+
+    sigma = (w_j * am - am**2) / (cm.sum(axis=0) - 1)
+    return np.sqrt(sigma.sum(axis=1))
+
+
+def compute_area_estimate(cm: np.ndarray, a_j: np.ndarray, px_size: float) -> dict:
+    """Computes area estimate from confusion matrix, pixel total, and area totals.
+
+    Args:
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+        a_j:
+            Array containing the pixel total of each mapped class.
+        px_size:
+            Spatial resolution of pixels in map (unsquared).
+
+    Returns:
+        summary:
+            Dictionary with estimates of user's accuracy, producer's accuracy, area
+            estimates, and the 95% confidence interval of each for every class of
+            the confusion matrix.
+
+            Value of area estimate key in 'summary' is nested dictionary containing
+            the estimates and interval for area in proportion [pr], pixels [px], and
+            hectacres [ha].
+
+    """
+
+    total_px = a_j.sum()
+
+    w_j = a_j / total_px
+
+    am = compute_area_error_matrix(cm, w_j)
+
+    # User's accuracy
+    u_j = compute_u_j(am)
+    var_u_j = compute_var_u_j(u_j, cm)
+    err_u_j = 1.96 * np.sqrt(var_u_j)
+
+    # Producer's accuracy
+    p_i = compute_p_i(am)
+    var_p_i = compute_var_p_i(p_i, u_j, a_j, cm)
+    err_p_i = 1.96 * np.sqrt(var_p_i)
+
+    # Overall accuracy
+    acc = compute_acc(am)
+    var_acc = compute_var_acc(w_j, u_j, cm)
+    err_acc = 1.96 * np.sqrt(var_acc)
+
+    # Area estimate
+    a_i = am.sum(axis=1)
+    std_a_i = compute_std_p_i(w_j, am, cm)
+    err_a_i = 1.96 * std_a_i
+
+    # Adjusted marginal area estimate in [px] and [ha]
+    a_px = total_px * a_i
+    a_ha = a_px * (px_size**2) / (100**2)
+    err_px = err_a_i * total_px
+    err_ha = err_px * (px_size**2) / (100**2)
+
+    summary = {
+        "user": (u_j, err_u_j),
+        "producer": (p_i, err_p_i),
+        "accuracy": (acc, err_acc),
+        "area": {"pr": (a_i, err_a_i), "px": (a_px, err_px), "ha": (a_ha, err_ha)},
+    }
+
+    return summary
+
+
+def create_area_estimate_summary(
+    a_ha: np.ndarray,
+    err_ha: np.ndarray,
+    u_j: np.ndarray,
+    err_u_j: np.ndarray,
+    p_i: np.ndarray,
+    err_p_i: np.ndarray,
+    columns: Union[List[str], np.ndarray],
 ) -> pd.DataFrame:
-    tn, fp, fn, tp = cm
+    """Generates summary table of area estimation and statistics.
 
-    total_area_px = crop_area_px + noncrop_area_px
+    Args:
+        a_ha:
+            Area estimate of each class, in units of hectacres.
+        err_ha:
+            95% confidence interval of each class area estimate, in hectacres.
+        u_j:
+            User's accuray of each mapped class, "j".
+        err_u_j:
+            95% confidence interval of user's accuracy for each mapped class, "j".
+        p_i:
+            Producer's accuracy of each reference class, "i".
+        err_p_i:
+            95% confidence interval of producer's accuracy fo each reference class, "i".
+        columns:
+            List-like containing labels in same order as confusion matrix. For
+            example:
 
-    wh_crop = crop_area_px / total_area_px
-    wh_noncrop = noncrop_area_px / total_area_px
-    print("Proportion of mapped area for each class")
-    print("Crop: %.2f" % wh_crop)
-    print("Non-crop: %.2f \n" % wh_noncrop)
+            ["Stable NP", "PGain", "PLoss", "Stable P"]
 
-    tp_area = tp / (tp + fp) * wh_crop
-    fp_area = fp / (tp + fp) * wh_crop
-    fn_area = fn / (fn + tn) * wh_noncrop
-    tn_area = tn / (fn + tn) * wh_noncrop
-    print("Fraction of the proportional area of each class")
-    print(
-        "TP crop: %f \t FP crop: %f \n FN noncrop: %f \t TN noncrop: %f \n"
-        % (tp_area, fp_area, fn_area, tn_area)
-    )
+            ["Non-Crop", "Crop"]
 
-    u_crop = tp_area / (tp_area + fp_area)
-    print("User's accuracy")
-    print("U_crop = %f" % u_crop)
+    Returns:
+        summary:
+            Table with estimates of area [ha], user's accuracy, producer's accuracy, and 95%
+            confidence interval of each for every class.
 
-    u_noncrop = tn_area / (tn_area + fn_area)
-    print("U_noncrop = %f \n" % u_noncrop)
-
-    v_u_crop = u_crop * (1 - u_crop) / (tp + fp)
-    print("Estimated variance of user accuracy for each mapped class")
-    print("V(U)_crop = %f" % v_u_crop)
-
-    v_u_noncrop = u_noncrop * (1 - u_noncrop) / (fn + tn)
-    print("V(U)_noncrop = %f \n" % v_u_noncrop)
-
-    s_u_crop = np.sqrt(v_u_crop)
-    print("Estimated standard error of user accuracy for each mapped class")
-    print("S(U)_crop = %f" % s_u_crop)
-
-    s_u_noncrop = np.sqrt(v_u_noncrop)
-    print("S(U)_noncrop = %f \n" % s_u_noncrop)
-
-    u_crop_err = s_u_crop * 1.96
-    print("95% confidence interval for User's accuracy")
-    print("95%% CI of User accuracy for crop = %f" % u_crop_err)
-
-    u_noncrop_err = s_u_noncrop * 1.96
-    print("95%% CI of User accuracy for noncrop = %f \n" % u_noncrop_err)
-
-    p_crop = tp_area / (tp_area + fn_area)
-    print("Producer's accuracy")
-    print("P_crop = %f" % p_crop)
-
-    p_noncrop = tn_area / (tn_area + fp_area)
-    print("P_noncrop = %f \n" % p_noncrop)
-
-    n_j_crop = (crop_area_px * tp) / (tp + fp) + (noncrop_area_px * fn) / (fn + tn)
-    print("Estimated marginal total number of pixels of each reference class")
-    print("N_j_crop = %f" % n_j_crop)
-
-    n_j_noncrop = (crop_area_px * fp) / (tp + fp) + (noncrop_area_px * tn) / (fn + tn)
-    print("N_j_crop = %f \n" % n_j_noncrop)
-
-    expr1_crop = crop_area_px**2 * (1 - p_crop) ** 2 * u_crop * (1 - u_crop) / (tp + fp - 1)
-    print("expr1 crop = %f" % expr1_crop)
-
-    expr1_noncrop = (
-        noncrop_area_px**2 * (1 - p_noncrop) ** 2 * u_noncrop * (1 - u_noncrop) / (fp + tn - 1)
-    )
-    print("expr1 noncrop = %f \n" % expr1_noncrop)
-
-    expr2_crop = p_crop**2 * (
-        noncrop_area_px**2 * fn / (fn + tn) * (1 - fn / (fn + tn)) / (fn + tn - 1)
-    )
-    print("expr2 crop = %f" % expr2_crop)
-
-    expr2_noncrop = p_crop**2 * (
-        crop_area_px**2 * fp / (fp + tp) * (1 - fp / (fp + tp)) / (fp + tp - 1)
-    )
-    print("expr2 noncrop = %f \n" % expr2_noncrop)
-
-    v_p_crop = (1 / n_j_crop**2) * (expr1_crop + expr2_crop)
-    print("Variance of producer's accuracy for each mapped class")
-    print("V(P) crop = %f" % v_p_crop)
-
-    v_p_noncrop = (1 / n_j_noncrop**2) * (expr1_noncrop + expr2_noncrop)
-    print("V(P) noncrop = %f \n" % v_p_noncrop)
-
-    s_p_crop = np.sqrt(v_p_crop)
-    print("Estimated standard error of producer accuracy for each mapped class")
-    print("S(P) crop = %f" % s_p_crop)
-
-    s_p_noncrop = np.sqrt(v_p_noncrop)
-    print("S(P) noncrop = %f \n" % s_p_noncrop)
-
-    p_crop_err = s_p_crop * 1.96
-    print("95% confidence interval for Producer's accuracy")
-    print("95%% CI of Producer accuracy for crop = %f" % p_crop_err)
-
-    p_noncrop_err = s_p_noncrop * 1.96
-    print("95%% CI of Producer accuracy for noncrop = %f \n" % p_noncrop_err)
-
-    acc = tp_area + tn_area
-    print("Overall accuracy")
-    print("Overall accuracy = %f \n" % acc)
-
-    v_acc = wh_crop**2 * u_crop * (1 - u_crop) / (tp + fp - 1) + wh_noncrop**2 * u_noncrop * (
-        1 - u_noncrop
-    ) / (fn + tn - 1)
-    print("Estimated variance of the overall accuracy")
-    print("V(O) = %f \n" % v_acc)
-
-    s_acc = np.sqrt(v_acc)
-    print("Estimated standard error of the overall accuracy")
-    print("S(O) = %f \n" % s_acc)
-
-    acc_err = s_acc * 1.96
-    print("95% confidence interval for overall accuracy")
-    print("95%% CI of overall accuracy = %f \n" % acc_err)
-
-    a_pixels_crop = total_area_px * (tp_area + fn_area)
-    print(
-        "Adjusted map area in units of pixels \
-            A^[pixels] crop = %f"
-        % a_pixels_crop
-    )
-
-    a_pixels_noncrop = total_area_px * (tn_area + fp_area)
-    print("A^[pixels] noncrop = %f \n" % a_pixels_noncrop)
-
-    pixel_size = meta["transform"][0]
-
-    a_ha_crop = a_pixels_crop * (pixel_size * pixel_size) / (100 * 100)
-    print(
-        "Adjusted map area in units of hectares \
-        A^[ha] crop = %f"
-        % a_ha_crop
-    )
-
-    a_ha_noncrop = a_pixels_noncrop * (pixel_size * pixel_size) / (100 * 100)
-    print("A^[ha] noncrop = %f \n" % a_ha_noncrop)
-
-    S_pk_crop = (
-        np.sqrt(
-            (wh_crop * tp_area - tp_area**2) / (tp + fp - 1)
-            + (wh_noncrop * fn_area - fn_area**2) / (fn + tn - 1)
-        )
-        * total_area_px
-    )
-    print("Standard error for the area")
-    print("S_pk_crop = %f" % S_pk_crop)
-
-    S_pk_noncrop = (
-        np.sqrt(
-            (wh_crop * fp_area - fp_area**2) / (tp + fp - 1)
-            + (wh_noncrop * tn_area - tn_area**2) / (fn + tn - 1)
-        )
-        * total_area_px
-    )
-    print("S_pk_noncrop = %f \n" % S_pk_noncrop)
-
-    a_pixels_crop_err = S_pk_crop * 1.96
-    print("Margin of error for the 95% confidence interval")
-    print("Crop area standard error 95%% confidence interval [pixels] = %f" % a_pixels_crop_err)
-
-    a_pixels_noncrop_err = S_pk_noncrop * 1.96
-    print(
-        "Non-crop area standard error 95%% confidence interval [pixels] = %f \n"
-        % a_pixels_noncrop_err
-    )
-
-    a_ha_crop_err = a_pixels_crop_err * (pixel_size**2) / (100**2)
-    print("Margin of error for the 95% confidence interval in hectares")
-    print("Crop area standard error 95%% confidence interval [ha] = %f" % a_ha_crop_err)
-
-    a_ha_noncrop_err = a_pixels_noncrop_err * (pixel_size**2) / (100**2)
-    print("Non-crop area standard error 95%% confidence interval [ha] = %f" % a_ha_noncrop_err)
+    """
 
     summary = pd.DataFrame(
-        [
-            [a_ha_crop, a_ha_noncrop],
-            [a_ha_crop_err, a_ha_noncrop_err],
-            [u_crop, u_noncrop],
-            [u_crop_err, u_noncrop_err],
-            [p_crop, p_noncrop],
-            [p_crop_err, p_noncrop_err],
-            [acc, acc],
-            [acc_err, acc_err],
+        data=[
+            a_ha,
+            err_ha,
+            u_j,
+            err_u_j,
+            p_i,
+            err_p_i,
         ],
         index=pd.Index(
             [
                 "Estimated area [ha]",
                 "95% CI of area [ha]",
-                "User accuracy",
-                "95% CI of user acc",
-                "Producer accuracy",
-                "95% CI of prod acc",
-                "Overall accuracy",
-                "95% CI of overall acc",
+                "User's accuracy",
+                "95% CI of user acc.",
+                "Producer's accuracy",
+                "95% CI of prod acc.",
             ]
         ),
-        columns=["Crop", "Non-crop"],
+        columns=columns,
     )
 
-    summary.round(2)
+    print(summary.round(2))
+    return summary
+
+
+def create_confusion_matrix_summary(
+    cm: np.ndarray, columns: Union[List[str], np.ndarray]
+) -> pd.DataFrame:
+    """Generates summary table of confusion matrix.
+
+    Computes and displays false positive rate (FPR), true positive rate (TPR), and accuracies.
+
+    Args:
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+        columns:
+            List-like containing labels in same order as confusion matrix. For
+            example:
+
+            ["Stable NP", "PGain", "PLoss", "Stable P"]
+
+            ["Non-Crop", "Crop"]
+
+    Returns:
+        summary:
+            Table with FPR, TPR, and accuracies for each class of confusion matrix.
+
+    """
+
+    fp = cm.sum(axis=0) - np.diag(cm)  # Column-wise (Prediction)
+    fn = cm.sum(axis=1) - np.diag(cm)  # Row-wise (Truth)
+    tp = np.diag(cm)  # Diagonals (Prediction and Truth)
+    tn = cm.sum() - (fp + fn + tp)
+
+    fpr = fp / (fp + tn)
+    tpr = tp / (tp + fn)
+    acc = (tp + fn) / (tp + tn + fp + fn)
+    summary = pd.DataFrame(
+        data=[fpr, tpr, acc],
+        index=["False Positive Rate", "True Positive Rate", "Accuracy"],
+        columns=columns,
+    )
+
+    print(summary.round(2))
     return summary
 
 

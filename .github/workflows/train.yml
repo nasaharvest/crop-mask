@@ -99,5 +99,6 @@ jobs:
         git config --global user.email github-actions@github.com
         git add data/models.dvc
         git add data/models.json
+        git add data/all_dataset_params.json
         git commit -m "Trained new: $MODEL_NAME"
         git push
