@@ -93,7 +93,9 @@ class Model(pl.LightningModule):
         if "skip_era5" in hparams and hparams.skip_era5:
             self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
         elif "skip_era5_s1" in hparams and hparams.skip_era5_s1:
-            self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS and v not in S1_BANDS]
+            self.bands_to_use = [
+                i for i, v in enumerate(BANDS) if v not in ERA5_BANDS and v not in S1_BANDS
+            ]
         else:
             self.bands_to_use = [i for i, _ in enumerate(BANDS)]
 
