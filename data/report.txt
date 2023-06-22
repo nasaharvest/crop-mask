@@ -394,4 +394,3 @@ eo_data_complete    1500
 ✔ training amount: 429, positive class: 37.5%
 ✔ validation amount: 539, positive class: 40.6%
 ✔ testing amount: 532, positive class: 38.0%
-
