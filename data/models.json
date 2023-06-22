@@ -238,7 +238,7 @@
         }
     },
     "Zambia_2019": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/os7uawih",
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/c4n9ioqo",
         "test_metrics": {
             "accuracy": 0.9612,
             "f1_score": 0.5405,
