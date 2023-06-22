@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import torch
-from openmapflow.bands import ERA5_BANDS
+from openmapflow.bands import ERA5_BANDS, S1_BANDS
 from openmapflow.bbox import BBox
 from openmapflow.config import DATA_DIR, PROJECT_ROOT, DataPaths
 from openmapflow.constants import CLASS_PROB, EO_DATA, SUBSET
@@ -92,6 +92,10 @@ class Model(pl.LightningModule):
 
         if "skip_era5" in hparams and hparams.skip_era5:
             self.bands_to_use = [i for i, v in enumerate(BANDS) if v not in ERA5_BANDS]
+        elif "skip_era5_s1" in hparams and hparams.skip_era5_s1:
+            self.bands_to_use = [
+                i for i, v in enumerate(BANDS) if v not in ERA5_BANDS and v not in S1_BANDS
+            ]
         else:
             self.bands_to_use = [i for i, _ in enumerate(BANDS)]
 

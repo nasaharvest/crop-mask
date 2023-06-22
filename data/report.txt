@@ -220,11 +220,11 @@ eo_data_duplicate      5
 Zambia_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 12.2%
-eo_data_complete          2103
-eo_data_skipped            293
-eo_data_missing_values       3
-✔ validation amount: 1066, positive class: 3.6%
-✔ testing amount: 1037, positive class: 3.8%
+eo_data_complete    2106
+eo_data_skipped      293
+✔ training amount: 1270, positive class: 3.3%
+✔ validation amount: 398, positive class: 3.8%
+✔ testing amount: 438, positive class: 4.6%
 
 
 
@@ -383,15 +383,15 @@ eo_data_complete    1500
 MaliStratifiedCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1350
-✔ training amount: 405, positive class: 4.9%
-✔ validation amount: 458, positive class: 5.9%
-✔ testing amount: 487, positive class: 2.3%
+✔ training amount: 401, positive class: 4.5%
+✔ validation amount: 481, positive class: 4.4%
+✔ testing amount: 468, positive class: 4.1%
 
 
 
 SudanAlGadarefCEO2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1500
-✔ training amount: 449, positive class: 42.1%
-✔ validation amount: 518, positive class: 37.1%
-✔ testing amount: 533, positive class: 37.7%
+✔ training amount: 429, positive class: 37.5%
+✔ validation amount: 539, positive class: 40.6%
+✔ testing amount: 532, positive class: 38.0%
