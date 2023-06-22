@@ -254,57 +254,6 @@
             "roc_auc_score": 0.9511
         }
     },
-    "Zambia_2019_skip_era5": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/hgvt6wqk",
-        "test_metrics": {
-            "accuracy": 0.9499,
-            "f1_score": 0.2121,
-            "precision_score": 0.2593,
-            "recall_score": 0.1795,
-            "roc_auc_score": 0.9261
-        },
-        "val_metrics": {
-            "accuracy": 0.955,
-            "f1_score": 0.2,
-            "precision_score": 0.2727,
-            "recall_score": 0.1579,
-            "roc_auc_score": 0.9221
-        }
-    },
-    "Zambia_2019_v1": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/4k39krn6",
-        "test_metrics": {
-            "accuracy": 0.9726,
-            "f1_score": 0.7,
-            "precision_score": 0.7,
-            "recall_score": 0.7,
-            "roc_auc_score": 0.9703
-        },
-        "val_metrics": {
-            "accuracy": 0.9749,
-            "f1_score": 0.7222,
-            "precision_score": 0.619,
-            "recall_score": 0.8667,
-            "roc_auc_score": 0.9662
-        }
-    },
-    "Zambia_2019_v1_era5": {
-        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/kddsrmyt",
-        "test_metrics": {
-            "accuracy": 0.9635,
-            "f1_score": 0.6,
-            "precision_score": 0.6,
-            "recall_score": 0.6,
-            "roc_auc_score": 0.9749
-        },
-        "val_metrics": {
-            "accuracy": 0.9749,
-            "f1_score": 0.7222,
-            "precision_score": 0.619,
-            "recall_score": 0.8667,
-            "roc_auc_score": 0.973
-        }
-    },
     "Zambia_2019_v2": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/gqni0fso",
         "test_metrics": {
