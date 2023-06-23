@@ -338,6 +338,36 @@ class MaliStratifiedCEO2019(LabeledDataset):
         return df
 
 
+class NamibiaNorthStratifiedCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        NamibiaNorthStratified_dir = raw_dir / "Namibia_North_2020_stratified"
+        df1 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-sample-data-2023-06-22.csv"
+        )
+        df2 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-sample-data-2023-06-22.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 9, 1), date(2021, 9, 30)
+        df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1085,6 +1115,7 @@ datasets: List[LabeledDataset] = [
     SudanAlGadarefCEO2019(),
     MaliStratifiedCEO2019(),
     SudanAlGadarefCEO2020(),
+    NamibiaNorthStratifiedCEO2020(),
 ]
 
 if __name__ == "__main__":
