@@ -363,7 +363,7 @@ class NamibiaNorthStratifiedCEO2020(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2020, 9, 1), date(2021, 9, 30)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 1, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
         return df
 
