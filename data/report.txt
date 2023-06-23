@@ -400,8 +400,7 @@ eo_data_complete    1500
 
 NamibiaNorthStratifiedCEO2020 (Timesteps: 13)
 ----------------------------------------------------------------------------
-eo_data_complete     685
-eo_data_exporting    665
-✖ training: 405 labels, but 204 features
-✖ validation: 458 labels, but 235 features
-✖ testing: 487 labels, but 246 features
+eo_data_complete    1350
+✔ training amount: 405, positive class: 0.0%
+✔ validation amount: 458, positive class: 0.4%
+✔ testing amount: 487, positive class: 0.6%
