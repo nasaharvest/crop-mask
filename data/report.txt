@@ -296,6 +296,7 @@ eo_data_skipped       82
 ✔ testing amount: 360, positive class: 1.7%
 
 
+
 HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     4834
@@ -400,6 +401,12 @@ eo_data_complete    1500
 NamibiaNorthStratifiedCEO2020 (Timesteps: 13)
 ----------------------------------------------------------------------------
 eo_data_complete    1350
+<<<<<<< HEAD
 ✔ validation amount: 681, positive class: 0.1%
 ✔ testing amount: 669, positive class: 0.6%
 
+=======
+✔ training amount: 405, positive class: 0.0%
+✔ validation amount: 458, positive class: 0.4%
+✔ testing amount: 487, positive class: 0.6%
+>>>>>>> a3fdabc243bac24a408f44a0a7ede0bb4ea16dbc
