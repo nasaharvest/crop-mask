@@ -340,16 +340,14 @@ class MaliStratifiedCEO2019(LabeledDataset):
 
 class NamibiaNorthStratifiedCEO2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
-        NamibiaNorthStratified_dir = raw_dir / "Namibia_North_2020_stratified"
+        NamibiaNorthStratified_dir = raw_dir / "Namibia_North_stratified_CEO_2020"
         df1 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-\
-            sample-data-2023-06-22.csv"
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-sample-data-2023-06-22.csv"
         )
         df2 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-\
-            sample-data-2023-06-22.csv"
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-sample-data-2023-06-22.csv"
         )
         df = pd.concat([df1, df2])
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
@@ -366,7 +364,7 @@ class NamibiaNorthStratifiedCEO2020(LabeledDataset):
             }
         )
         df[START], df[END] = date(2020, 1, 1), date(2021, 1, 31)
-        df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
 
