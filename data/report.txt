@@ -403,3 +403,10 @@ NamibiaNorthStratified2020 (Timesteps: 13)
 eo_data_complete    1350
 ✔ validation amount: 681, positive class: 0.1%
 ✔ testing amount: 669, positive class: 0.6%
+
+
+
+Namibia_field_samples_22_23 (Timesteps: 15)
+----------------------------------------------------------------------------
+eo_data_exporting    4811
+✖ training: 4811 labels, but 0 features
