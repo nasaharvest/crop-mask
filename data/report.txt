@@ -398,9 +398,8 @@ eo_data_complete    1500
 
 
 
-NamibiaNorthStratifiedCEO2020 (Timesteps: 13)
+NamibiaNorthStratified2020 (Timesteps: 13)
 ----------------------------------------------------------------------------
 eo_data_complete    1350
-✔ training amount: 405, positive class: 0.0%
-✔ validation amount: 458, positive class: 0.4%
-✔ testing amount: 487, positive class: 0.6%
+✔ validation amount: 681, positive class: 0.1%
+✔ testing amount: 669, positive class: 0.6%
