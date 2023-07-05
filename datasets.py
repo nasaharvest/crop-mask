@@ -368,6 +368,18 @@ class NamibiaNorthStratified2020(LabeledDataset):
         return df
 
 
+class Namibia_field_samples_22_23(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_fld_dir = raw_dir / "Namibia_field_samples_22_23"
+        df = pd.read_csv(Namibia_fld_dir / "Namibia_fld_pts_Sep22_May23.csv")
+        df.rename(columns={"Latitude": LAT, "Longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["Landcover"] == "crop").astype(int)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 3, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1116,6 +1128,7 @@ datasets: List[LabeledDataset] = [
     MaliStratifiedCEO2019(),
     SudanAlGadarefCEO2020(),
     NamibiaNorthStratified2020(),
+    Namibia_field_samples_22_23(),
 ]
 
 if __name__ == "__main__":
