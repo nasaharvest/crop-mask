@@ -408,6 +408,6 @@ eo_data_complete    1350
 
 Namibia_field_samples_22_23 (Timesteps: 15)
 ----------------------------------------------------------------------------
-eo_data_exporting    3948
-eo_data_complete      863
-✖ training: 4811 labels, but 863 features
+eo_data_exporting    3105
+eo_data_complete     1706
+✖ training: 4811 labels, but 1706 features
