@@ -408,6 +408,5 @@ eo_data_complete    1350
 
 Namibia_field_samples_22_23 (Timesteps: 15)
 ----------------------------------------------------------------------------
-eo_data_complete     2435
-eo_data_exporting    2376
-✖ training: 4811 labels, but 2435 features
+eo_data_complete    4811
+✔ training amount: 4811, positive class: 8.3%
