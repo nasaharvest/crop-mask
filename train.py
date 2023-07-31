@@ -8,7 +8,7 @@ from src.bboxes import bboxes
 from src.models import Model
 from src.pipeline_funcs import train_model
 
-train_datasets = [d.name for d in datasets if d.name != "NamibiaFieldBoundary2022"]
+train_datasets = [d.name for d in datasets if d.name != "EthiopiaTigrayGhent2021"]
 
 parser = ArgumentParser()
 parser.add_argument("--model_name", type=str, default="Sudan_Blue_Nile_2019")
@@ -16,7 +16,7 @@ parser.add_argument("--eval_datasets", type=str, default="Sudan_Blue_Nile_CEO_20
 parser.add_argument("--train_datasets", type=str, default=",".join(train_datasets))
 parser.add_argument("--bbox", type=str, default="Sudan_Blue_Nile")
 parser.add_argument("--up_to_year", type=int, default=2022)
-parser.add_argument("--start_month", type=str, default="September")
+parser.add_argument("--start_month", type=str, default="February")
 parser.add_argument("--input_months", type=int, default=12)
 parser.add_argument("--seed", type=int, default=42)
 
