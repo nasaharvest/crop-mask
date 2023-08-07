@@ -395,3 +395,18 @@ eo_data_complete    1500
 ✔ training amount: 429, positive class: 37.5%
 ✔ validation amount: 539, positive class: 40.6%
 ✔ testing amount: 532, positive class: 38.0%
+
+
+
+NamibiaNorthStratified2020 (Timesteps: 13)
+----------------------------------------------------------------------------
+eo_data_complete    1350
+✔ validation amount: 681, positive class: 0.1%
+✔ testing amount: 669, positive class: 0.6%
+
+
+
+Namibia_field_samples_22_23 (Timesteps: 15)
+----------------------------------------------------------------------------
+eo_data_complete    4811
+✔ training amount: 4811, positive class: 8.3%
