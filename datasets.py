@@ -343,11 +343,13 @@ class NamibiaNorthStratified2020(LabeledDataset):
         NamibiaNorthStratified_dir = raw_dir / "Namibia_North_stratified_2020"
         df1 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-sample-data-2023-06-22.csv"
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)"
+            + "-sample-data-2023-06-22.csv"
         )
         df2 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-sample-data-2023-06-22.csv"
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)"
+            + "-sample-data-2023-06-22.csv"
         )
         df = pd.concat([df1, df2])
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
