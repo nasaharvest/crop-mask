@@ -338,6 +338,48 @@ class MaliStratifiedCEO2019(LabeledDataset):
         return df
 
 
+class NamibiaNorthStratified2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        NamibiaNorthStratified_dir = raw_dir / "Namibia_North_stratified_2020"
+        df1 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-sample-data-2023-06-22.csv"
+        )
+        df2 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-sample-data-2023-06-22.csv"
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 1, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+class Namibia_field_samples_22_23(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_fld_dir = raw_dir / "Namibia_field_samples_22_23"
+        df = pd.read_csv(Namibia_fld_dir / "Namibia_fld_pts_Sep22_May23.csv")
+        df.rename(columns={"Latitude": LAT, "Longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["Landcover"] == "crop").astype(int)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 3, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1085,6 +1127,8 @@ datasets: List[LabeledDataset] = [
     SudanAlGadarefCEO2019(),
     MaliStratifiedCEO2019(),
     SudanAlGadarefCEO2020(),
+    NamibiaNorthStratified2020(),
+    Namibia_field_samples_22_23(),
 ]
 
 if __name__ == "__main__":
