@@ -35,6 +35,14 @@ TEST_CODE = {
     "Rwanda": "RWA",
     "Uganda": "UGA",
     "Zambia": "ZMB",
+    "Hawaii": "USA",
+    "BlueNile2020": "SDN",
+    "BlueNile2019": "SDN",
+    "AlGadaref2019": "SDN",
+    "BureJimma2019": "ETH",
+    "BureJimma2020": "ETH",
+    "Tigray2021": "ETH",
+    "Tigray2020": "ETH"
 }
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
@@ -52,6 +60,14 @@ TEST_COUNTRIES = {
     "Rwanda": DATA_PATH + "Rwanda.csv",
     "Uganda": DATA_PATH + "Uganda.csv",
     "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
+    "Hawaii": DATA_PATH + "Hawaii_CEO_2020.csv",
+    "BlueNile2020": DATA_PATH + "SudanBlueNileCEO2020.csv",
+    "BlueNile2019": DATA_PATH + "Sudan_Blue_Nile_CEO_2019.csv",
+    "AlGadaref2019": DATA_PATH + "SudanAlGadarefCEO2019.csv",
+    "BureJimma2019": DATA_PATH + "Ethiopia_Bure_Jimma_2019.csv",
+    "BureJimma2020": DATA_PATH + "Ethiopia_Bure_Jimma_2020.csv",
+    "Tigray2021": DATA_PATH + "Ethiopia_Tigray_2021.csv",
+    "Tigray2020": DATA_PATH + "Ethiopia_Tigray_2020.csv"
 }
 
 REDUCER = ee.Reducer.mode()
@@ -99,12 +115,12 @@ class Covermap:
         self.crop_labels = crop_labels
 
         if countries is None:
-            self.countries = [c for c in TEST_COUNTRIES]
+            self.countries = [c for c in TEST_COUNTRIES.keys()]
         else:
             self.countries = countries
 
     def extract_test(self, test: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-        # Extract from countires that are covered by map
+        # Extract from countries that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
         test_coll = ee.FeatureCollection(
@@ -346,14 +362,8 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     """
     Opens and binarizes dataframe used for test set.
     """
-
-    try:
-        test = pd.read_csv(path)[["lat", "lon", "class_probability", "country", "subset"]]
-    except KeyError:
-        test = pd.read_csv(path)[["lat", "lon", "class_probability", "subset"]]
-        if country is None:
-            raise Exception("No country given in dataset. Input country string needed")
-        test["country"] = country
+    test = pd.read_csv(path)[["lat", "lon", "class_probability", "subset"]]
+    test["country"] = country
 
     test = gpd.GeoDataFrame(test, geometry=gpd.points_from_xy(test.lon, test.lat), crs="epsg:4326")
 
@@ -439,8 +449,17 @@ TARGETS = {
         resolution=100,
         crop_labels=[40],
     ),
-    "worldcover": Covermap(
-        "worldcover", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
+    "worldcover-v100": Covermap(
+        "worldcover-v100",
+        ee.ImageCollection("ESA/WorldCover/v100"),
+        resolution=10,
+        crop_labels=[40]
+    ),
+    "worldcover-v200": Covermap(
+        "worldcover-v200",
+        ee.ImageCollection("ESA/WorldCover/v200"),
+        resolution=10,
+        crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -459,6 +478,7 @@ TARGETS = {
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
         resolution=1000,
         crop_labels=list(range(10, 190)),
+        countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"]
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
@@ -488,6 +508,7 @@ TARGETS = {
         ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
         resolution=10,
         crop_labels=[1],
+        countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"]
     ),
     "esa-cci-africa": Covermap(
         "esa-cci-africa",
@@ -496,6 +517,7 @@ TARGETS = {
         ),
         resolution=20,
         crop_labels=[4],
+        countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"]
     ),
     "globcover-v23": Covermap(
         "globcover-v23",
@@ -513,13 +535,6 @@ TARGETS = {
         resolution=300,
         crop_labels=[11, 14, 20, 30],
     ),
-    "harvest-crop-maps": Covermap(
-        "harvest-crop-maps",
-        ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
-        resolution=10,
-        probability=0.5,
-        countries=["Togo", "Kenya", "Malawi"],
-    ),
     "esri-lulc": Covermap(
         "esri-lulc",
         ee.ImageCollection(
@@ -535,5 +550,38 @@ TARGETS = {
         ),
         resolution=30,
         crop_labels=[2],
+        countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"]
     ),
+    "harvest-crop-maps": Covermap(
+        "harvest-crop-maps",
+        ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
+        resolution=10,
+        probability=0.5,
+        countries=["Togo", "Kenya", "Malawi"],
+    ),
+    "harvest-dev": Covermap(
+        "harvest-dev",
+        ee.ImageCollection.fromImages(
+            [
+                ee.Image("users/abaansah/Namibia_North_2020_V3"),
+                ee.Image("users/adadebay/Zambia_cropland_2019"),
+                ee.Image("users/izvonkov/Hawaii_skip_era5_v4"),
+                ee.Image("users/adadebay/Uganda_2019_skip_ERA5_min_lat--1-63_min_lon-29-3_max_lat-4-3_max_lon-35-17_dates-2019-02-01_2020-02-"),
+                ee.Image("users/abaansah/Sudan_Al_Gadaref_2020_Feb"),
+                ee.Image("users/abaansah/Sudan_Al_Gadaref_2019_Feb"),
+                ee.Image("users/izvonkov/Sudan_Blue_Nile_2020"),
+                ee.Image("users/izvonkov/Sudan_Blue_Nile_2019_v3"),
+                ee.Image("users/byeh1/ethiopia_tigray_2020_v4"),
+                ee.Image("users/byeh1/ethiopia_tigray_2021_v1"),
+                ee.Image("users/adadebay/Tanzania_cropland_2019"),
+                ee.Image("users/eutzschn/Ethiopia_Bure_Jimma_2020_v1"),
+                ee.Image("users/izvonkov/Ethiopia_Bure_Jimma_2019_v1")
+            ]
+        ),
+        resolution=10,
+        probability=0.5,
+        countries=['Tanzania', 'Namibia', 'Uganda', 'Zambia', 'Hawaii',
+                   'BlueNile2020', 'BlueNile2019', 'AlGadaref2019', 'BureJimma2019',
+                   'BureJimma2020', 'Tigray2021', 'Tigray2020']
+    )
 }
