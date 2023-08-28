@@ -334,13 +334,6 @@ eo_data_complete    4295
 
 
 
-NamibiaFieldBoundary2022 (Timesteps: 23)
-----------------------------------------------------------------------------
-eo_data_complete    12451
-✔ training amount: 12451, positive class: 55.3%
-
-
-
 EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    161
@@ -398,11 +391,12 @@ eo_data_complete    1500
 
 
 
-NamibiaNorthStratified2020 (Timesteps: 13)
+NamibiaNorthStratified2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete    1350
-✔ validation amount: 681, positive class: 0.1%
-✔ testing amount: 669, positive class: 0.6%
+eo_data_exporting    1349
+eo_data_complete        1
+✖ validation: 681 labels, but 0 features
+✖ testing: 669 labels, but 1 features
 
 
 
