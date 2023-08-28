@@ -1114,6 +1114,31 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
+    CustomLabeledDataset(
+        dataset="Senegal_CEO_2022",
+        country="Senegal",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-1)-sample-data-2023-08-28.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-2)-sample-data-2023-08-28.csv",
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
+
     HawaiiAgriculturalLandUse2020(),
     KenyaCEO2019(),
     HawaiiCorrective2020(),
