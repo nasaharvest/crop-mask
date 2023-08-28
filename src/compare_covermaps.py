@@ -1,4 +1,4 @@
-__author__ = "Adam Yang"
+__author__ = "Adam Yang, Hannah Kerner"
 
 from pathlib import Path
 
@@ -6,9 +6,20 @@ import cartopy.io.shapereader as shpreader
 import ee
 import geemap
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from shapely.geometry import GeometryCollection
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
+
+from src.area_utils import (
+    compute_acc,
+    compute_area_error_matrix,
+    compute_p_i,
+    compute_u_j,
+    compute_var_acc,
+    compute_var_p_i,
+    compute_var_u_j,
+)
 
 DATA_PATH = "../data/datasets/"
 # Country codes for Natural Earth bounding box according file name of testing set
@@ -19,6 +30,11 @@ TEST_CODE = {
     "Tanzania": "TZA",
     "Tanzania_CEO_2019": "TZA",
     "Malawi": "MWI",
+    "Mali": "MLI",
+    "Namibia": "NAM",
+    "Rwanda": "RWA",
+    "Uganda": "UGA",
+    "Zambia": "ZMB",
 }
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
@@ -31,6 +47,11 @@ TEST_COUNTRIES = {
     "Togo": DATA_PATH + "Togo.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
     "Malawi": DATA_PATH + "Malawi_CEO_2020.csv",
+    "Mali": DATA_PATH + "MaliStratifiedCEO2019.csv",
+    "Namibia": DATA_PATH + "Namibia_CEO_2020.csv",
+    "Rwanda": DATA_PATH + "Rwanda.csv",
+    "Uganda": DATA_PATH + "Uganda.csv",
+    "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
 }
 
 REDUCER = ee.Reducer.mode()
@@ -92,16 +113,11 @@ class Covermap:
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
 
         if len(sampled) != len(test_points):
-            if len(sampled) > len(test_points):
-                print(
-                    "Extracting error: length of sampled dataset is"
-                    + "not the same as testing dataset (more)"
+            print(
+                "Warning: length of sampled dataset ({}) != test points ({})".format(
+                    len(sampled), len(test_points)
                 )
-            else:
-                print(
-                    "Extracting error: length of sampled dataset is"
-                    + "not the same as testing dataset (less)"
-                )
+            )
 
         # Recast values
         if self.probability:
@@ -137,9 +153,10 @@ class TestCovermaps:
     """
 
     def __init__(self, test_countries: list, covermaps: list) -> None:
-        self.test_countries = test_countries
         if test_countries is None:
-            self.test_countries = TEST_COUNTRIES.keys
+            self.test_countries = list(TEST_COUNTRIES.keys())
+        else:
+            self.test_countries = test_countries
         self.covermaps = covermaps
         self.covermap_titles = [x.title for x in self.covermaps]
         self.sampled_maps: dict = {}
@@ -150,6 +167,7 @@ class TestCovermaps:
         Returns geodataframe containing all test points from labeled maps.
         *Modified from generate_test_data()*
         """
+
         if targets is None:
             targets = self.test_countries.copy()
 
@@ -350,23 +368,62 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     return test
 
 
+def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
+    """
+    Propagates standard deviation of precision and recall to get
+    standard deviation of F1 score.
+    """
+    r = recall_i[label]
+    p = precision_i[label]
+    dr = std_rec_i[label]
+    dp = std_prec_i[label]
+    expr1 = 2 * (r * dp + p * dr) / (p + r)
+    expr2 = ((2 * p * r) * (dp + dr)) / ((p + r) * (p + r))
+    df = expr1 + expr2
+    return df
+
+
 def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
     """
-    Creates classification report on crop coverage binary values. Assumes 1 indicates cropland.
+    Creates classification report on crop coverage binary values.
+    Assumes 1 indicates cropland.
     """
     report = classification_report(true, pred, output_dict=True)
+    cm = confusion_matrix(true, pred)
+    tn, fp, fn, tp = cm.ravel()
+    a_j = np.array([tn + fn, tp + fp])
+    w_j = np.array([(tn + fn) / (tn + fp + fn + tp), (tp + fp) / (tn + fp + fn + tp)])
+    am = compute_area_error_matrix(cm, w_j)
+    u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
+    p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
     return pd.DataFrame(
         data={
             "dataset": dataset_name,
             "country": country,
             "crop_f1": report["1"]["f1-score"],
-            "accuracy": report["accuracy"],
+            "std_crop_f1": compute_std_f1(
+                label=1,
+                recall_i=compute_p_i(am),
+                precision_i=compute_u_j(am),
+                std_rec_i=np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm)),
+                std_prec_i=np.sqrt(compute_var_u_j(u_j=u_j, cm=cm)),
+            ),
+            "accuracy": compute_acc(am),
+            "std_acc": np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
+            "crop_recall_pa": compute_p_i(am)[1],
+            "std_crop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
+            "noncrop_recall_pa": compute_p_i(am)[0],
+            "std_noncrop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
+            "crop_precision_ua": compute_u_j(am)[1],
+            "std_crop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
+            "noncrop_precision_ua": compute_u_j(am)[0],
+            "std_noncrop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
             "crop_support": report["1"]["support"],
             "noncrop_support": report["0"]["support"],
-            "crop_recall": report["1"]["recall"],
-            "noncrop_recall": report["0"]["recall"],
-            "crop_precision": report["1"]["precision"],
-            "noncrop_precision": report["0"]["precision"],
+            "tn": tn,
+            "fp": fp,
+            "fn": fn,
+            "tp": tp,
         },
         index=[0],
     ).round(2)
@@ -374,31 +431,6 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
 
 # Maps
 TARGETS = {
-    "harvest-togo": Covermap(
-        "harvest-togo",
-        ee.ImageCollection(
-            ee.Image("projects/sat-io/open-datasets/nasa-harvest/togo_cropland_binary")
-        ),
-        resolution=10,
-        probability=0.5,
-        countries=["Togo"],
-    ),
-    "harvest-kenya": Covermap(
-        "harvest-kenya",
-        ee.ImageCollection(
-            ee.Image("projects/sat-io/open-datasets/nasa-harvest/kenya_cropland_binary")
-        ),
-        resolution=10,
-        probability=0.5,
-        countries=["Kenya"],
-    ),
-    "harvest-tanzania": Covermap(
-        "harvest-tanzania",
-        ee.ImageCollection(ee.Image("users/adadebay/Tanzania_cropland_2019")),
-        resolution=10,
-        probability=0.5,
-        countries=["Tanzania"],
-    ),
     "copernicus": Covermap(
         "copernicus",
         ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global")
@@ -407,8 +439,8 @@ TARGETS = {
         resolution=100,
         crop_labels=[40],
     ),
-    "esa": Covermap(
-        "esa", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
+    "worldcover": Covermap(
+        "worldcover", ee.ImageCollection("ESA/WorldCover/v100"), resolution=10, crop_labels=[40]
     ),
     "glad": Covermap(
         "glad",
@@ -416,12 +448,12 @@ TARGETS = {
         resolution=30,
         probability=0.5,
     ),
-    "gfsad": Covermap(
-        "gfsad",
-        ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
-        resolution=1000,
-        crop_labels=[1, 2, 3, 4, 5],
-    ),
+    # "gfsad": Covermap(
+    #     "gfsad",
+    #     ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
+    #     resolution=1000,
+    #     crop_labels=[1, 2, 3, 4, 5],
+    # ),
     "asap": Covermap(
         "asap",
         ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
@@ -451,8 +483,8 @@ TARGETS = {
         resolution=30,
         crop_labels=[2, 3],
     ),
-    "de-africa-2019": Covermap(
-        "de-africa-2019",
+    "digital-earth-africa": Covermap(
+        "digital-earth-africa",
         ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
         resolution=10,
         crop_labels=[1],
@@ -495,5 +527,13 @@ TARGETS = {
         ).filter(ee.Filter.date("2019-01-01", "2020-01-01")),
         resolution=10,
         crop_labels=[5],
+    ),
+    "nabil-etal-2021": Covermap(
+        "nabil-etal-2021",
+        ee.ImageCollection.fromImages(
+            [ee.Image("projects/sat-io/open-datasets/landcover/AF_Cropland_mask_30m_2016_v3")]
+        ),
+        resolution=30,
+        crop_labels=[2],
     ),
 }

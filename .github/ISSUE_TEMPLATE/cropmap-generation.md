@@ -11,6 +11,7 @@ assignees: ''
 - [ ] [Set 1]() Labeling
 - [ ] [Set 2]() Labeling
 - [ ] Data added to repository
+- [ ] Data added to intercomparison
 - [ ] Model trained
 - [ ] Map made
 - [ ] Expert check
