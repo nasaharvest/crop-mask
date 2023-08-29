@@ -393,10 +393,9 @@ eo_data_complete    1500
 
 NamibiaNorthStratified2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     1226
-eo_data_exporting     124
-✖ validation: 681 labels, but 620 features
-✖ testing: 669 labels, but 606 features
+eo_data_complete    1350
+✔ validation amount: 681, positive class: 0.1%
+✔ testing amount: 669, positive class: 0.6%
 
 
 
