@@ -258,6 +258,17 @@ eo_data_skipped       82
 
 
 
+Senegal_CEO_2022 (Timesteps: 16)
+----------------------------------------------------------------------------
+disagreement: 10.5%
+eo_data_complete    1342
+eo_data_skipped      158
+✔ training amount: 276, positive class: 4.7%
+✔ validation amount: 516, positive class: 6.6%
+✔ testing amount: 550, positive class: 10.7%
+
+
+
 HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     4834
