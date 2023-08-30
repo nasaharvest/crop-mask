@@ -131,6 +131,26 @@ eo_data_skipped      173
 
 
 
+Ethiopia_Tigray_2021 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 19.0%
+eo_data_exporting    718
+eo_data_skipped      168
+✖ validation: 351 labels, but 0 features
+✖ testing: 367 labels, but 0 features
+
+
+
+Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 17.8%
+eo_data_complete    986
+eo_data_skipped     214
+✔ validation amount: 488, positive class: 38.7%
+✔ testing amount: 498, positive class: 32.3%
+
+
+
 Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 21.8%
