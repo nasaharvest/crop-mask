@@ -121,15 +121,6 @@ eo_data_export_failed        1
 
 
 
-Ethiopia (Timesteps: 24,15)
-----------------------------------------------------------------------------
-disagreement: 0.0%
-eo_data_complete     3651
-eo_data_duplicate     862
-✔ training amount: 3651, positive class: 55.1%
-
-
-
 Ethiopia_Tigray_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 14.4%
@@ -140,26 +131,6 @@ eo_data_skipped      173
 
 
 
-Ethiopia_Tigray_2021 (Timesteps: 20)
-----------------------------------------------------------------------------
-disagreement: 19.0%
-eo_data_complete    718
-eo_data_skipped     168
-✔ validation amount: 354, positive class: 30.8%
-✔ testing amount: 364, positive class: 29.9%
-
-
-
-Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
-----------------------------------------------------------------------------
-disagreement: 17.8%
-eo_data_complete    986
-eo_data_skipped     214
-✔ validation amount: 488, positive class: 38.7%
-✔ testing amount: 498, positive class: 32.3%
-
-
-
 Ethiopia_Bure_Jimma_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 21.8%
@@ -167,16 +138,6 @@ eo_data_complete    938
 eo_data_skipped     262
 ✔ validation amount: 483, positive class: 25.7%
 ✔ testing amount: 455, positive class: 28.4%
-
-
-
-Argentina_Buenos_Aires (Timesteps: 15)
-----------------------------------------------------------------------------
-disagreement: 0.0%
-eo_data_complete     566
-eo_data_duplicate     92
-✔ training amount: 457, positive class: 48.1%
-✔ validation amount: 109, positive class: 45.0%
 
 
 
@@ -346,13 +307,6 @@ eo_data_complete    4295
 
 
 
-NamibiaFieldBoundary2022 (Timesteps: 23)
-----------------------------------------------------------------------------
-eo_data_complete    12451
-✔ training amount: 12451, positive class: 55.3%
-
-
-
 EthiopiaTigrayGhent2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    161
@@ -410,7 +364,7 @@ eo_data_complete    1500
 
 
 
-NamibiaNorthStratified2020 (Timesteps: 13)
+NamibiaNorthStratified2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1350
 ✔ validation amount: 681, positive class: 0.1%

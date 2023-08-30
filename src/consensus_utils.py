@@ -89,7 +89,7 @@ def check_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
 
 
 def load_dataframes(
-    path_fn: Callable[[str], str],
+    path_fn: Callable[[str, str], str],
     completed_date: Optional[str] = None,
     final_date: Optional[str] = None,
 ) -> List[pd.DataFrame]:
@@ -140,8 +140,8 @@ def load_dataframes(
     else:
         print("{:^53}\n{}".format("Loading dataframes from file...", "-" * 51))
         # Dataframes @ completed date for set 1 and 2
-        df1 = pd.read_csv(path_fn("set-1"))
-        df2 = pd.read_csv(path_fn("set-2"))
+        df1 = pd.read_csv(path_fn("set-1", ""))
+        df2 = pd.read_csv(path_fn("set-2", ""))
 
         dfs = check_dataframes([df1, df2])
         return dfs
@@ -260,14 +260,14 @@ def create_consensus_dataframe_aux(
             "analysis_duration": f"{s}_analysis_duration",
         }
 
-    df1, df2, *df3 = dfs
+    df1, df2, *df_list = dfs
     lon, lat = df1.loc[disagreements, "lon"].values, df1.loc[disagreements, "lat"].values
     df1 = df1.loc[disagreements, columns].rename(columns=renaming_func("set_1"))
     df2 = df2.loc[disagreements, columns].rename(columns=renaming_func("set_2"))
 
-    if df3:
+    if df_list:
         print("\n{:^61}".format("Creating consensus dataframe..."))
-        df3 = df3[0]
+        df3 = df_list[0]
         df3 = (
             df3.loc[disagreements, columns]
             .rename(columns=renaming_func("final"))
@@ -327,7 +327,7 @@ def create_consensus_dataframe_aux(
 
 
 def create_consensus_dataframe(
-    path_fn: Callable[[str], str],
+    path_fn: Callable[[str, str], str],
     cdate: Optional[str] = None,
     fdate: Optional[str] = None,
     area_change: bool = False,
