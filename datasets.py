@@ -1125,7 +1125,7 @@ datasets: List[LabeledDataset] = [
         country="Senegal",
         raw_labels=(
             RawLabels(
-                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-1)-sample-data-2023-08-28.csv", # noqa: E501
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-1)-sample-data-2023-08-28.csv",  # noqa: E501
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2022,
                 train_val_test=(0.2, 0.4, 0.4),
@@ -1134,7 +1134,7 @@ datasets: List[LabeledDataset] = [
                 filter_df=clean_ceo_data,
             ),
             RawLabels(
-                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-2)-sample-data-2023-08-28.csv", # noqa: E501
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-2)-sample-data-2023-08-28.csv",  # noqa: E501
                 class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
                 start_year=2022,
                 train_val_test=(0.2, 0.4, 0.4),
