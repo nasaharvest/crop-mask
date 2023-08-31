@@ -724,44 +724,44 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
-    # CustomLabeledDataset(
-    #     dataset="Ethiopia",
-    #     country="Ethiopia",
-    #     raw_labels=(
-    #         RawLabels(filename="tigray/tigrayWW_crop.shp", class_prob=1.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_crop2.shp", class_prob=1.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_forest.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_forest2.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_shrub.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_shrub2.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_sparse.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(filename="tigray/tigrayWW_sparse2.shp", class_prob=0.0, start_year=2019),
-    #         RawLabels(
-    #             filename="tigray_non_fallow_crop/nonFallowCrop2019.shp",
-    #             class_prob=1.0,
-    #             start_year=2019,
-    #         ),
-    #         RawLabels(
-    #             filename="tigray_non_fallow_crop/nonFallowCrop2020.shp",
-    #             class_prob=1.0,
-    #             start_year=2020,
-    #         ),
-    #         RawLabels(
-    #             filename="tigray_corrective_2020/non_crop.shp", class_prob=0.0, start_year=2020
-    #         ),
-    #        RawLabels(filename="tigray_corrective_2020/crop.shp", class_prob=1.0, start_year=2020),
-    #         RawLabels(
-    #             filename="tigray_corrective_2021/non_crop.shp",
-    #             class_prob=0.0,
-    #             start_year=2021,
-    #         ),
-    #         RawLabels(
-    #             filename="tigray_corrective_2021/crop.shp",
-    #             class_prob=1.0,
-    #             start_year=2021,
-    #         ),
-    #     ),
-    # ),
+    CustomLabeledDataset(
+        dataset="Ethiopia",
+        country="Ethiopia",
+        raw_labels=(
+            RawLabels(filename="tigray/tigrayWW_crop.shp", class_prob=1.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_crop2.shp", class_prob=1.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_forest.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_forest2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_shrub.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_shrub2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_sparse.shp", class_prob=0.0, start_year=2019),
+            RawLabels(filename="tigray/tigrayWW_sparse2.shp", class_prob=0.0, start_year=2019),
+            RawLabels(
+                filename="tigray_non_fallow_crop/nonFallowCrop2019.shp",
+                class_prob=1.0,
+                start_year=2019,
+            ),
+            RawLabels(
+                filename="tigray_non_fallow_crop/nonFallowCrop2020.shp",
+                class_prob=1.0,
+                start_year=2020,
+            ),
+            RawLabels(
+                filename="tigray_corrective_2020/non_crop.shp", class_prob=0.0, start_year=2020
+            ),
+            RawLabels(filename="tigray_corrective_2020/crop.shp", class_prob=1.0, start_year=2020),
+            RawLabels(
+                filename="tigray_corrective_2021/non_crop.shp",
+                class_prob=0.0,
+                start_year=2021,
+            ),
+            RawLabels(
+                filename="tigray_corrective_2021/crop.shp",
+                class_prob=1.0,
+                start_year=2021,
+            ),
+        ),
+    ),
     CustomLabeledDataset(
         dataset="Ethiopia_Tigray_2020",
         country="Ethiopia",
