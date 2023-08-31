@@ -135,8 +135,8 @@ def load_raster(
                 (EPSG:XXXXX)."""
             )
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            options = {'dstSRS': f'EPSG:{t_srs}', 'dstNodata': 255}
-            gdal.Warp(f'prj_{in_raster_basename}', in_raster_basename, **options)
+            options = {"dstSRS": f"EPSG:{t_srs}", "dstNodata": 255}
+            gdal.Warp(f"prj_{in_raster_basename}", in_raster_basename, **options)
             in_raster = f"prj_{in_raster_basename}"
             return clip_raster(in_raster, boundary)
         else:
@@ -310,7 +310,10 @@ def reference_sample_agree(
 
         if row[label_question].lower() == "cropland" or row[label_question].lower() == "crop":
             ceo_agree_geom.loc[r, "Reference label"] = 1
-        elif row[label_question].lower() == "non-cropland" or row[label_question].lower() == "non-crop":
+        elif (
+            row[label_question].lower() == "non-cropland"
+            or row[label_question].lower() == "non-crop"
+        ):
             ceo_agree_geom.loc[r, "Reference label"] = 0
 
     return ceo_agree_geom
