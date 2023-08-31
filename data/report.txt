@@ -124,10 +124,9 @@ eo_data_export_failed        1
 Ethiopia (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 0.0%
-eo_data_complete     3344
+eo_data_complete     3649
 eo_data_duplicate     864
-eo_data_exporting     305
-✖ training: 3649 labels, but 3344 features
+✔ training amount: 3649, positive class: 55.0%
 
 
 
