@@ -121,6 +121,16 @@ eo_data_export_failed        1
 
 
 
+Ethiopia (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 0.0%
+eo_data_complete     3344
+eo_data_duplicate     864
+eo_data_exporting     305
+✖ training: 3649 labels, but 3344 features
+
+
+
 Ethiopia_Tigray_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 14.4%
