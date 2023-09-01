@@ -307,22 +307,22 @@ def reference_sample_agree(
         px, py = transform.rowcol(meta["transform"], lat, lon)
 
         try:
-          ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
-          if (
-              row[label_question].lower() == "cropland"
-              or row[label_question].lower() == "crop"
-              or row[label_question].lower() == "planted"
-          ):
-              ceo_agree_geom.loc[r, "Reference label"] = 1
-          elif (
-              row[label_question].lower() == "non-cropland"
-              or row[label_question].lower() == "non-crop"
-              or row[label_question].lower() == "not planted"
-          ):
-              ceo_agree_geom.loc[r, "Reference label"] = 0
+            ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
+            if (
+                row[label_question].lower() == "cropland"
+                or row[label_question].lower() == "crop"
+                or row[label_question].lower() == "planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 1
+            elif (
+                row[label_question].lower() == "non-cropland"
+                or row[label_question].lower() == "non-crop"
+                or row[label_question].lower() == "not planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 0
         except:
-          ceo_agree_geom.loc[r, "Mapped class"] = 255
-          ceo_agree_geom.loc[r, "Reference label"] = 0
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
+            ceo_agree_geom.loc[r, "Reference label"] = 0
 
     return ceo_agree_geom
 
