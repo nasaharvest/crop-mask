@@ -233,7 +233,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
-        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
         df[SUBSET] = "training"
         return df
 
@@ -343,11 +343,17 @@ class NamibiaNorthStratified2020(LabeledDataset):
         NamibiaNorthStratified_dir = raw_dir / "Namibia_North_stratified_2020"
         df1 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)-sample-data-2023-06-22.csv"
+            / (
+                "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)"
+                + "-sample-data-2023-06-22.csv"
+            )
         )
         df2 = pd.read_csv(
             NamibiaNorthStratified_dir
-            / "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)-sample-data-2023-06-22.csv"
+            / (
+                "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)"
+                + "-sample-data-2023-06-22.csv"
+            )
         )
         df = pd.concat([df1, df2])
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
@@ -363,7 +369,7 @@ class NamibiaNorthStratified2020(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2020, 1, 1), date(2021, 1, 31)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
         return df
 
@@ -860,30 +866,30 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
-    CustomLabeledDataset(
-        dataset="Argentina_Buenos_Aires",
-        country="Argentina",
-        raw_labels=(
-            RawLabels(
-                filename="bc_mapeo_del_cultivo_0.csv",
-                filter_df=lambda df: df[
-                    (
-                        df["Seleccione el cultivo principal en el lote:"].notnull()
-                        & ~df["Seleccione el cultivo principal en el lote:"].isin(
-                            ["otro", "barbecho", "sin_dato"]
-                        )
-                    )
-                ].copy(),
-                longitude_col="longitud",
-                latitude_col="latitud",
-                class_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
-                    ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
-                ),
-                train_val_test=(0.8, 0.2, 0.0),
-                start_year=2021,
-            ),
-        ),
-    ),
+    # CustomLabeledDataset(
+    #     dataset="Argentina_Buenos_Aires",
+    #     country="Argentina",
+    #     raw_labels=(
+    #         RawLabels(
+    #             filename="bc_mapeo_del_cultivo_0.csv",
+    #             filter_df=lambda df: df[
+    #                 (
+    #                     df["Seleccione el cultivo principal en el lote:"].notnull()
+    #                     & ~df["Seleccione el cultivo principal en el lote:"].isin(
+    #                         ["otro", "barbecho", "sin_dato"]
+    #                     )
+    #                 )
+    #             ].copy(),
+    #             longitude_col="longitud",
+    #             latitude_col="latitud",
+    #             class_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
+    #                 ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
+    #             ),
+    #             train_val_test=(0.8, 0.2, 0.0),
+    #             start_year=2021,
+    #         ),
+    #     ),
+    # ),
     CustomLabeledDataset(
         dataset="Malawi_CEO_2020",
         country="Malawi",
@@ -1114,12 +1120,36 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
+    CustomLabeledDataset(
+        dataset="Senegal_CEO_2022",
+        country="Senegal",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-1)-sample-data-2023-08-28.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-2)-sample-data-2023-08-28.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
     HawaiiAgriculturalLandUse2020(),
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
-    NamibiaFieldBoundary2022(),
+    # NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
     SudanBlueNileCEO2020(),
     SudanBlueNileCorrectiveLabels2019(),
