@@ -121,6 +121,15 @@ eo_data_export_failed        1
 
 
 
+Ethiopia (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 0.0%
+eo_data_complete     3649
+eo_data_duplicate     864
+✔ training amount: 3649, positive class: 55.0%
+
+
+
 Ethiopia_Tigray_2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 14.4%
@@ -128,6 +137,26 @@ eo_data_complete    1027
 eo_data_skipped      173
 ✔ validation amount: 520, positive class: 29.2%
 ✔ testing amount: 507, positive class: 27.4%
+
+
+
+Ethiopia_Tigray_2021 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 19.0%
+eo_data_complete    718
+eo_data_skipped     168
+✔ validation amount: 351, positive class: 27.9%
+✔ testing amount: 367, positive class: 32.7%
+
+
+
+Ethiopia_Bure_Jimma_2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+disagreement: 17.8%
+eo_data_complete    986
+eo_data_skipped     214
+✔ validation amount: 488, positive class: 38.7%
+✔ testing amount: 498, positive class: 32.3%
 
 
 
