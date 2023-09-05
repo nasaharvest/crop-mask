@@ -35,6 +35,7 @@ TEST_CODE = {
     "Rwanda": "RWA",
     "Uganda": "UGA",
     "Zambia": "ZMB",
+    "Senegal": "SEN"
 }
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
@@ -52,6 +53,7 @@ TEST_COUNTRIES = {
     "Rwanda": DATA_PATH + "Rwanda.csv",
     "Uganda": DATA_PATH + "Uganda.csv",
     "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
+    "Senegal": DATA_PATH + "Senegal_CEO_2022.csv"
 }
 
 REDUCER = ee.Reducer.mode()
