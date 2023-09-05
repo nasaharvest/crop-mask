@@ -8,7 +8,7 @@ dependencies:
     - scikit-learn
     - cartopy
     - pytorch=1.7.1
-    - osgeo
+    - gdal
     - pip:
           - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
