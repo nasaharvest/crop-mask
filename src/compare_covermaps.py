@@ -35,6 +35,7 @@ TEST_CODE = {
     "Rwanda": "RWA",
     "Uganda": "UGA",
     "Zambia": "ZMB",
+    "Senegal": "SEN",
     "Hawaii": "USA",
     "BlueNile2020": "SDN",
     "BlueNile2019": "SDN",
@@ -60,6 +61,7 @@ TEST_COUNTRIES = {
     "Rwanda": DATA_PATH + "Rwanda.csv",
     "Uganda": DATA_PATH + "Uganda.csv",
     "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
+    "Senegal": DATA_PATH + "Senegal_CEO_2022.csv",
     "Hawaii": DATA_PATH + "Hawaii_CEO_2020.csv",
     "BlueNile2020": DATA_PATH + "SudanBlueNileCEO2020.csv",
     "BlueNile2019": DATA_PATH + "Sudan_Blue_Nile_CEO_2019.csv",
@@ -567,7 +569,8 @@ TARGETS = {
                 ee.Image("users/adadebay/Zambia_cropland_2019"),
                 ee.Image("users/izvonkov/Hawaii_skip_era5_v4"),
                 ee.Image(
-                    "users/adadebay/Uganda_2019_skip_ERA5_min_lat--1-63_min_lon-29-3_max_lat-4-3_max_lon-35-17_dates-2019-02-01_2020-02-"
+                    "users/adadebay/Uganda_2019_skip_ERA5_min_lat--1-63"
+                    "_min_lon-29-3_max_lat-4-3_max_lon-35-17_dates-2019-02-01_2020-02-"
                 ),
                 ee.Image("users/abaansah/Sudan_Al_Gadaref_2020_Feb"),
                 ee.Image("users/abaansah/Sudan_Al_Gadaref_2019_Feb"),

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio as rio
+from osgeo import gdal
 from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
@@ -134,11 +135,8 @@ def load_raster(
                 (EPSG:XXXXX)."""
             )
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            cmd = f"gdalwarp -t_srs EPSG:{t_srs} {in_raster} -overwrite \
-                prj_{in_raster_basename} -dstnodata 255"
-            print(cmd)
-            print("Reprojecting the raster...")
-            os.system(cmd)
+            options = {"dstSRS": f"EPSG:{t_srs}", "dstNodata": 255}
+            gdal.Warp(f"prj_{in_raster_basename}", in_raster_basename, **options)
             in_raster = f"prj_{in_raster_basename}"
             return clip_raster(in_raster, boundary)
         else:
@@ -308,11 +306,22 @@ def reference_sample_agree(
         lon, lat = row["geometry"].y, row["geometry"].x
         px, py = transform.rowcol(meta["transform"], lat, lon)
 
-        ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
-
-        if row[label_question] == "Cropland" or row[label_question] == "cropland":
-            ceo_agree_geom.loc[r, "Reference label"] = 1
-        elif row[label_question] == "Non-cropland" or row[label_question] == "non-cropland":
+        try:
+            ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
+            if (
+                row[label_question].lower() == "cropland"
+                or row[label_question].lower() == "crop"
+                or row[label_question].lower() == "planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 1
+            elif (
+                row[label_question].lower() == "non-cropland"
+                or row[label_question].lower() == "non-crop"
+                or row[label_question].lower() == "not planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 0
+        except IndexError:
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
             ceo_agree_geom.loc[r, "Reference label"] = 0
 
     return ceo_agree_geom
