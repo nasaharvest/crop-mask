@@ -320,7 +320,7 @@ def reference_sample_agree(
                 or row[label_question].lower() == "not planted"
             ):
                 ceo_agree_geom.loc[r, "Reference label"] = 0
-        except:
+        except IndexError:
             ceo_agree_geom.loc[r, "Mapped class"] = 255
             ceo_agree_geom.loc[r, "Reference label"] = 0
 
