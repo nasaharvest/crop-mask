@@ -144,6 +144,7 @@ Map.centerObject(aoi, 7);\n
             if len(self.crop_labels) > 1:
                 for crop_value in self.crop_labels[1:]:
                     script += f".or({self.title_safe}.eq({crop_value}))"
+        script += ".rename('crop')"
 
         script += f"\nMap.addLayer({self.title_safe}, classVis, 'Cropland from {self.title}');"
 
