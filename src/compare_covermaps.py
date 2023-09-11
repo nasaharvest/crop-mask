@@ -44,6 +44,7 @@ TEST_CODE = {
     "BureJimma2020": "ETH",
     "Tigray2021": "ETH",
     "Tigray2020": "ETH",
+    "Zambia2019": "ZMB",
 }
 DATASET_PATH = Path(DATA_PATH).glob("*")
 NE_GDF = gpd.read_file(
@@ -70,6 +71,7 @@ TEST_COUNTRIES = {
     "BureJimma2020": DATA_PATH + "Ethiopia_Bure_Jimma_2020.csv",
     "Tigray2021": DATA_PATH + "Ethiopia_Tigray_2021.csv",
     "Tigray2020": DATA_PATH + "Ethiopia_Tigray_2020.csv",
+    "Zambia2019": DATA_PATH + "Zambia_CEO_2019.csv",
 }
 
 REDUCER = ee.Reducer.mode()
