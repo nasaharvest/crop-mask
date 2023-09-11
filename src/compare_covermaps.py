@@ -97,14 +97,16 @@ class Covermap:
     def __init__(
         self,
         title: str,
-        ee_asset: ee.ImageCollection,
+        ee_asset_str: str,
         resolution: int,
         countries=None,
         probability=None,
         crop_labels=None,
     ) -> None:
         self.title = title
-        self.ee_asset = ee_asset
+        self.title_safe = title.replace("-", "_")
+        self.ee_asset_str = ee_asset_str
+        self.ee_asset = eval(ee_asset_str.replace("\n", "").replace(" ", ""))
         self.resolution = resolution
 
         assert (probability is None) ^ (
@@ -118,6 +120,45 @@ class Covermap:
             self.countries = [c for c in TEST_COUNTRIES.keys()]
         else:
             self.countries = countries
+
+    def ee_script(self, country: str, include_export: bool = True, include_prefix: bool = True):
+        script = ""
+        if include_prefix:
+            script += f"""
+var palettes = require('users/gena/packages:palettes');
+var classVis = {{palette: palettes.cmocean.Speed[7].slice(0,-2)}}
+var aoi = ee.FeatureCollection("FAO/GAUL/2015/level0")
+    .filter(ee.Filter.eq('ADM0_NAME', '{country}'));
+Map.centerObject(aoi, 7);\n
+"""
+        script += f"var {self.title_safe} = {self.ee_asset_str}"
+        script += ".filterBounds(aoi).mosaic().clip(aoi);"
+        script += f"\n{self.title_safe} = "
+
+        if self.crop_labels is None:
+            script += f"{self.title_safe}.gte({self.probability})"
+        else:
+            script += f"{self.title_safe}.eq({self.crop_labels[0]})"
+            if len(self.crop_labels) > 1:
+                for crop_value in self.crop_labels[1:]:
+                    script += f".or({self.title_safe}.eq({crop_value}))"
+
+        script += f"\nMap.addLayer({self.title_safe}, classVis, 'Cropland from {self.title}');"
+
+        if include_export:
+            script += f"""
+Export.image.toCloudStorage({{
+    image: {self.title_safe},
+    description: "{country}_{self.title_safe}",
+    bucket: 'crop-mask-preds-merged',
+    fileNamePrefix: '{country}_{self.title_safe}',
+    region: aoi,
+    scale: 10,
+    crs: "EPSG:4326",
+    maxPixels: 1e10,
+    skipEmptyTiles: true
+}});"""
+        return script
 
     def extract_test(self, test: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         # Extract from countries that are covered by map
@@ -443,27 +484,27 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
 TARGETS = {
     "copernicus": Covermap(
         "copernicus",
-        ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global")
+        """ee.ImageCollection("COPERNICUS/Landcover/100m/Proba-V-C3/Global")
         .select("discrete_classification")
-        .filterDate("2019-01-01", "2019-12-31"),
+        .filterDate("2019-01-01", "2019-12-31")""",
         resolution=100,
         crop_labels=[40],
     ),
     "worldcover-v100": Covermap(
         "worldcover-v100",
-        ee.ImageCollection("ESA/WorldCover/v100"),
+        'ee.ImageCollection("ESA/WorldCover/v100")',
         resolution=10,
         crop_labels=[40],
     ),
     "worldcover-v200": Covermap(
         "worldcover-v200",
-        ee.ImageCollection("ESA/WorldCover/v200"),
+        'ee.ImageCollection("ESA/WorldCover/v200")',
         resolution=10,
         crop_labels=[40],
     ),
     "glad": Covermap(
         "glad",
-        ee.ImageCollection("users/potapovpeter/Global_cropland_2019"),
+        'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
         resolution=30,
         probability=0.5,
     ),
@@ -475,93 +516,93 @@ TARGETS = {
     # ),
     "asap": Covermap(
         "asap",
-        ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03")),
+        'ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03"))',
         resolution=1000,
         crop_labels=list(range(10, 190)),
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
-        ee.ImageCollection(
+        """ee.ImageCollection(
             ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
             .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
             .select(["label"])
             .mode()
-        ),
+        )""",
         resolution=10,
         crop_labels=[4],
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
-        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30"),
+        'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30")',
         resolution=30,
         crop_labels=[2],
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
-        ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30"),
+        'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30")',
         resolution=30,
         crop_labels=[2, 3],
     ),
     "digital-earth-africa": Covermap(
         "digital-earth-africa",
-        ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered"),
+        'ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered")',
         resolution=10,
         crop_labels=[1],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
     ),
     "esa-cci-africa": Covermap(
         "esa-cci-africa",
-        ee.ImageCollection(
+        """ee.ImageCollection(
             ee.Image("projects/sat-io/open-datasets/ESA/ESACCI-LC-L4-LC10-Map-20m-P1Y-2016-v10")
-        ),
+        )""",
         resolution=20,
         crop_labels=[4],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
     ),
     "globcover-v23": Covermap(
         "globcover-v23",
-        ee.ImageCollection(
+        """ee.ImageCollection(
             ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_L4_200901_200912_V23")
-        ),
+        )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
     ),
     "globcover-v22": Covermap(
         "globcover-v22",
-        ee.ImageCollection(
+        """ee.ImageCollection(
             ee.Image("projects/sat-io/open-datasets/ESA/GLOBCOVER_200412_200606_V22_Global_CLA")
-        ),
+        )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
     ),
     "esri-lulc": Covermap(
         "esri-lulc",
-        ee.ImageCollection(
+        """ee.ImageCollection(
             "projects/sat-io/open-datasets/landcover/ESRI_Global-LULC_10m_TS"
-        ).filter(ee.Filter.date("2019-01-01", "2020-01-01")),
+        ).filter(ee.Filter.date("2019-01-01", "2020-01-01"))""",
         resolution=10,
         crop_labels=[5],
     ),
     "nabil-etal-2021": Covermap(
         "nabil-etal-2021",
-        ee.ImageCollection.fromImages(
+        """ee.ImageCollection.fromImages(
             [ee.Image("projects/sat-io/open-datasets/landcover/AF_Cropland_mask_30m_2016_v3")]
-        ),
+        )""",
         resolution=30,
         crop_labels=[2],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
     ),
     "harvest-crop-maps": Covermap(
         "harvest-crop-maps",
-        ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps"),
+        'ee.ImageCollection("projects/bsos-geog-harvest1/assets/harvest-crop-maps")',
         resolution=10,
         probability=0.5,
         countries=["Togo", "Kenya", "Malawi"],
     ),
     "harvest-dev": Covermap(
         "harvest-dev",
-        ee.ImageCollection.fromImages(
+        """ee.ImageCollection.fromImages(
             [
                 ee.Image("users/abaansah/Namibia_North_2020_V3"),
                 ee.Image("users/adadebay/Zambia_cropland_2019"),
@@ -579,7 +620,7 @@ TARGETS = {
                 ee.Image("users/eutzschn/Ethiopia_Bure_Jimma_2020_v1"),
                 ee.Image("users/izvonkov/Ethiopia_Bure_Jimma_2019_v1"),
             ]
-        ),
+        )""",
         resolution=10,
         probability=0.5,
         countries=[
