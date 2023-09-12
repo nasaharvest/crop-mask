@@ -17,5 +17,6 @@ bboxes = {
     "Uganda": BBox(min_lat=-1.63, max_lat=4.30, min_lon=29.12, max_lon=35.18),
     "Hawaii": BBox(min_lat=18.9, max_lat=28.41, min_lon=-178.3, max_lon=-154.82),
     "Tanzania": BBox(min_lat=-13.794, max_lat=0.801, min_lon=28.082, max_lon=41.331),
+    "Senegal": BBox(min_lat=12.3, max_lat=16.7, min_lon=-17.63, max_lon=-11.3),
     "Zambia": BBox(min_lat=-18.334, max_lat=-7.536, min_lon=21.379, max_lon=33.991),
 }
