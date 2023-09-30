@@ -127,7 +127,7 @@ def load_raster(
     in_raster_basename = os.path.basename(in_raster)
 
     with rio.open(in_raster) as src:
-        if src.meta["crs"] == "EPSG:4326" or not src.meta["crs"].startswith("EPSG:326"):
+        if src.meta["crs"] == "EPSG:4326":
             print(
                 """WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
                 and the pixel-wise areas will not be in meters.
