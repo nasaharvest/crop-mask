@@ -118,7 +118,7 @@ def load_raster(
     in_raster: str, boundary: Optional[gpd.GeoDataFrame] = None
 ) -> Tuple[Optional[np.ma.core.MaskedArray], dict]:
     """
-    Chcked if the raster is projected in the correct CRS.
+    Check if the raster is projected in the correct CRS.
     If not, reproject it.
     Clip the raster to the boundary. If no boundary is provided, clip to map bounds.
     in_raster: path to the input raster
@@ -131,7 +131,7 @@ def load_raster(
             print(
                 """WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
                 and the pixel-wise areas will not be in meters.
-                \n You need to project the  project the map to using the local UTM Zone \
+                \n You need to project the map to the local UTM Zone \
                 (EPSG:XXXXX)."""
             )
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
@@ -144,10 +144,12 @@ def load_raster(
             return clip_raster(in_raster, boundary)
 
 
-def binarize(raster: np.ma.core.MaskedArray, meta: dict, threshold: float = 0.5) -> np.ndarray:
+def binarize(
+    raster: np.ma.core.MaskedArray, meta: dict, threshold: Optional[float] = 0.5
+) -> np.ma.core.MaskedArray:
     raster.data[raster.data < threshold] = 0
     raster.data[((raster.data >= threshold) & (raster.data != meta["nodata"]))] = 1
-    return raster.data.astype(np.uint8)
+    return raster.astype(np.uint8)
 
 
 def cal_map_area_class(
