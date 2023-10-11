@@ -516,7 +516,7 @@ TARGETS = {
             .mosaic()
         )""",
         resolution=10,
-        crop_labels=[100]
+        crop_labels=[100],
     ),
     "glad": Covermap(
         "glad",
