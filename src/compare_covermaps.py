@@ -507,6 +507,17 @@ TARGETS = {
         resolution=10,
         crop_labels=[40],
     ),
+    "worldcereal-v100": Covermap(
+        "worldcereal-v100",
+        """ee.ImageCollection(
+            ee.ImageCollection("ESA/WorldCereal/2021/MODELS/v100")
+            .filter('product == "temporarycrops"')
+            .select("classification")
+            .mosaic()
+        )""",
+        resolution=10,
+        crop_labels=[100]
+    ),
     "glad": Covermap(
         "glad",
         'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
