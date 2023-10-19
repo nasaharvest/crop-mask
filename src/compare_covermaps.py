@@ -658,7 +658,7 @@ TARGETS = {
             "BureJimma2020",
             "Tigray2021",
             "Tigray2020",
-            "Rwanda"
+            "Rwanda",
         ],
     ),
 }
