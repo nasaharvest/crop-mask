@@ -636,6 +636,11 @@ TARGETS = {
                 ee.Image("users/adadebay/Tanzania_cropland_2019"),
                 ee.Image("users/eutzschn/Ethiopia_Bure_Jimma_2020_v1"),
                 ee.Image("users/izvonkov/Ethiopia_Bure_Jimma_2019_v1"),
+                ee.Image(
+                    "users/izvonkov/Rwanda_2019_skip_era5_min_lat--3"
+                    "-035_min_lon-28-43_max_lat--0-76_max_lon-31-013"
+                    "_dates-2019-02-01_202"
+                )
             ]
         )""",
         resolution=10,
@@ -653,6 +658,7 @@ TARGETS = {
             "BureJimma2020",
             "Tigray2021",
             "Tigray2020",
+            "Rwanda",
         ],
     ),
 }
