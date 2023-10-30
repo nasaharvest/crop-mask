@@ -507,6 +507,17 @@ TARGETS = {
         resolution=10,
         crop_labels=[40],
     ),
+    "worldcereal-v100": Covermap(
+        "worldcereal-v100",
+        """ee.ImageCollection(
+            ee.ImageCollection("ESA/WorldCereal/2021/MODELS/v100")
+            .filter('product == "temporarycrops"')
+            .select("classification")
+            .mosaic()
+        )""",
+        resolution=10,
+        crop_labels=[100],
+    ),
     "glad": Covermap(
         "glad",
         'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
@@ -625,6 +636,11 @@ TARGETS = {
                 ee.Image("users/adadebay/Tanzania_cropland_2019"),
                 ee.Image("users/eutzschn/Ethiopia_Bure_Jimma_2020_v1"),
                 ee.Image("users/izvonkov/Ethiopia_Bure_Jimma_2019_v1"),
+                ee.Image(
+                    "users/izvonkov/Rwanda_2019_skip_era5_min_lat--3"
+                    "-035_min_lon-28-43_max_lat--0-76_max_lon-31-013"
+                    "_dates-2019-02-01_202"
+                )
             ]
         )""",
         resolution=10,
@@ -642,6 +658,7 @@ TARGETS = {
             "BureJimma2020",
             "Tigray2021",
             "Tigray2020",
+            "Rwanda",
         ],
     ),
 }
