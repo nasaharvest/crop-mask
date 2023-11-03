@@ -1189,6 +1189,7 @@ datasets: List[LabeledDataset] = [
     SudanAlGadarefCEO2020(),
     NamibiaNorthStratified2020(),
     Namibia_field_samples_22_23(),
+    SudanGedarefDarfurAlJazirah2022(),
 ]
 
 if __name__ == "__main__":
