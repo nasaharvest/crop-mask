@@ -396,6 +396,9 @@ class SudanGedarefDarfurAlJazirah2022(LabeledDataset):
             raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-03.csv"
         )
         df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
         df[CLASS_PROB] = df[CLASS_PROB].astype(int)
         df["num_labelers"] = 1
