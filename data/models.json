@@ -220,6 +220,23 @@
             "roc_auc_score": 0.9638
         }
     },
+    "Sudan_South_2022": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/h4fwsvrt",
+        "test_metrics": {
+            "accuracy": 0.8429,
+            "f1_score": 0.4762,
+            "precision_score": 0.4545,
+            "recall_score": 0.5,
+            "roc_auc_score": 0.8113
+        },
+        "val_metrics": {
+            "accuracy": 0.8593,
+            "f1_score": 0.5957,
+            "precision_score": 0.7,
+            "recall_score": 0.5185,
+            "roc_auc_score": 0.8776
+        }
+    },
     "Tanzania_February_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/3aept9rs",
         "test_metrics": {
