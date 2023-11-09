@@ -143,6 +143,13 @@ Map.centerObject(aoi, 7);\n
 
         if self.crop_labels is None:
             script += f"{self.title_safe}.gte({self.probability})"
+
+        # Check if crop_labels are an ordered list
+        elif len(self.crop_labels) > 2 and self.crop_labels == list(
+            range(self.crop_labels[0], self.crop_labels[-1] + 1)
+        ):
+            script += f"{self.title_safe}.gte({self.crop_labels[0]})"
+            script += f".and({self.title_safe}.lte({self.crop_labels[-1]}))"
         else:
             script += f"{self.title_safe}.eq({self.crop_labels[0]})"
             if len(self.crop_labels) > 1:
@@ -534,9 +541,9 @@ TARGETS = {
     # ),
     "asap": Covermap(
         "asap",
-        'ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03"))',
+        'ee.ImageCollection(ee.Image("users/sbaber/asap_mask_crop_v03").unmask())',
         resolution=1000,
-        crop_labels=list(range(10, 190)),
+        probability=100,
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
     ),
     "dynamicworld": Covermap(
