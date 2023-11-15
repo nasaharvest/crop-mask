@@ -13,6 +13,6 @@ dependencies:
           - pre-commit==2.20.0
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
-          - openmapflow[data]==0.2.3
+          - openmapflow[data]==0.2.4rc4
           - dvc[gs]
           - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34
