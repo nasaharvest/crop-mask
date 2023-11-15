@@ -420,10 +420,12 @@ class Uganda_NorthCEO2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North"
         df1 = pd.read_csv(
-            raw_folder / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-1)-sample-data-2023-11-13.csv"
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-1)-sample-data-2023-11-13.csv"
         )
         df2 = pd.read_csv(
-            raw_folder / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-13.csv"
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-13.csv"
         )
         df = pd.concat([df1, df2])
 
@@ -444,8 +446,8 @@ class Uganda_NorthCEO2022(LabeledDataset):
         df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
-    
-    
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
