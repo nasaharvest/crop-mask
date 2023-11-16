@@ -390,10 +390,10 @@ class SudanGedarefDarfurAlJazirah2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Sudan_Gedaref_Darfur_Al_Jazirah_2022"
         df1 = pd.read_csv(
-            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-1)-sample-data-2023-11-03.csv"
+            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-1)-sample-data-2023-11-15.csv"
         )
         df2 = pd.read_csv(
-            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-03.csv"
+            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-15.csv"
         )
         df = pd.concat([df1, df2])
 
