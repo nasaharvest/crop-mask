@@ -409,7 +409,7 @@ eo_data_complete    4811
 
 SudanGedarefDarfurAlJazirah2022 (Timesteps: 19)
 ----------------------------------------------------------------------------
-eo_data_complete    513
-✔ training amount: 216, positive class: 14.4%
-✔ validation amount: 142, positive class: 19.0%
-✔ testing amount: 155, positive class: 12.9%
+eo_data_complete    1196
+✔ training amount: 483, positive class: 26.3%
+✔ validation amount: 338, positive class: 32.5%
+✔ testing amount: 375, positive class: 33.9%
