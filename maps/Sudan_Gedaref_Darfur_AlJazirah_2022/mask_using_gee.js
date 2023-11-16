@@ -16,16 +16,7 @@ var S2display = {
     5: 'October',
 };
 
-var border = ee
-    .FeatureCollection('FAO/GAUL/2015/level1')
-    .filter(
-        ee.Filter.inList('ADM1_NAME', [
-            'Gadaref',
-            'Western Darfur',
-            'Southern Darfur',
-            'Al Jazeera',
-        ])
-    );
+var border = ee.FeatureCollection('projects/ee-gmuhawenayo/assets/rois');
 
 var roi = border.geometry();
 var area = ee.Number(roi.area()).divide(1e6).round();
@@ -156,6 +147,6 @@ Export.image.toCloudStorage({
     region: roi,
     scale: 10,
     crs: 'EPSG:4326',
-    maxPixels: 1e10,
+    maxPixels: 1e12,
     skipEmptyTiles: true,
 });
