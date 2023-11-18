@@ -127,7 +127,7 @@ def load_raster(
     in_raster_basename = os.path.basename(in_raster)
 
     with rio.open(in_raster) as src:
-        if src.meta["crs"] == "EPSG:4326":
+        if src.meta["crs"] == "EPSG:4326" or True:
             print(
                 """WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
                 and the pixel-wise areas will not be in meters.
@@ -324,7 +324,10 @@ def reference_sample_agree(
                 ceo_agree_geom.loc[r, "Reference label"] = 0
         except IndexError:
             ceo_agree_geom.loc[r, "Mapped class"] = 255
-            ceo_agree_geom.loc[r, "Reference label"] = 0
+            ceo_agree_geom.loc[r, "Reference label"] = 255
+        except np.ma.core.MaskError:
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
+            ceo_agree_geom.loc[r, "Reference label"] = 255
 
     return ceo_agree_geom
 
