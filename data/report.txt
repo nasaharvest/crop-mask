@@ -290,12 +290,12 @@ eo_data_skipped       82
 Senegal_CEO_2022 (Timesteps: 19)
 ----------------------------------------------------------------------------
 disagreement: 0.1%
-eo_data_exporting    1323
-eo_data_complete      176
+eo_data_exporting    1297
+eo_data_complete      202
 eo_data_skipped         1
-✖ training: 310 labels, but 34 features
-✖ validation: 579 labels, but 62 features
-✖ testing: 610 labels, but 80 features
+✖ training: 310 labels, but 42 features
+✖ validation: 579 labels, but 69 features
+✖ testing: 610 labels, but 91 features
 
 
 
