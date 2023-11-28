@@ -1204,6 +1204,15 @@ datasets: List[LabeledDataset] = [
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
             ),
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-3)-sample-data-2023-11-26.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
         ),
     ),
     HawaiiAgriculturalLandUse2020(),

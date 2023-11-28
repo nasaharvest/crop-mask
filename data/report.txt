@@ -287,14 +287,14 @@ eo_data_skipped       82
 
 
 
-Senegal_CEO_2022 (Timesteps: 16)
+Senegal_CEO_2022 (Timesteps: 19)
 ----------------------------------------------------------------------------
-disagreement: 10.5%
-eo_data_complete    1342
-eo_data_skipped      158
-✔ training amount: 276, positive class: 4.7%
-✔ validation amount: 516, positive class: 6.6%
-✔ testing amount: 550, positive class: 10.7%
+disagreement: 0.1%
+eo_data_complete    1499
+eo_data_skipped        1
+✔ training amount: 310, positive class: 11.0%
+✔ validation amount: 579, positive class: 11.7%
+✔ testing amount: 610, positive class: 14.8%
 
 
 
