@@ -324,7 +324,10 @@ def reference_sample_agree(
                 ceo_agree_geom.loc[r, "Reference label"] = 0
         except IndexError:
             ceo_agree_geom.loc[r, "Mapped class"] = 255
-            ceo_agree_geom.loc[r, "Reference label"] = 0
+            ceo_agree_geom.loc[r, "Reference label"] = 255
+        except np.ma.core.MaskError:
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
+            ceo_agree_geom.loc[r, "Reference label"] = 255
 
     return ceo_agree_geom
 
