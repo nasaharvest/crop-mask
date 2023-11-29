@@ -1,4 +1,4 @@
-﻿plotid,sampleid,lon,lat,email,flagged,collection_time,analysis_duration,imagery_title,imagery_attributions,sample_geom,pl_sampleid,Do you see *active* cropland at this point in 2020? ,Do you see *active* cropland at this point in 2021? 
+﻿plotid,sampleid,lon,lat,email,flagged,collection_time,analysis_duration,imagery_title,imagery_attributions,sample_geom,pl_sampleid,Do you see *active* cropland at this point in 2020? ,Do you see *active* cropland at this point in 2021?
 0,0,36.639760826735255,13.621487416126497,cnakalem@umd.edu,false,2023-10-25 23:18,16.9 secs,Planet Monthly Mosaics,,POINT(36.639760826735255 13.621487416126497),0,Non-crop,Non-crop
 1,1,39.560657489500336,13.254369089750586,cnakalem@umd.edu,false,2023-10-12 20:13,127.9 secs,Planet Monthly Mosaics,,POINT(39.560657489500336 13.254369089750586),1,Non-crop,Crop
 2,2,38.1311212970839,14.312330615888365,cnakalem@umd.edu,false,2023-10-12 20:22,542.5 secs,Planet Monthly Mosaics,,POINT(38.1311212970839 14.312330615888365),2,Non-crop,Non-crop
