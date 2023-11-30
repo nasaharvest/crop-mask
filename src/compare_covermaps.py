@@ -212,12 +212,10 @@ Export.image.toCloudStorage({{
             year_diff = [abs(y - year) for y in self.years_covered]
             nearest_year_idx = min(enumerate(year_diff), key=lambda x: x[1])[0]
             nearest_year = self.years_covered[nearest_year_idx]
-            self.ee_asset_str = self.ee_asset_str.replace("2019-01-01",
-                                                          "%s-01-01" % nearest_year)
-            self.ee_asset_str = self.ee_asset_str.replace("2019-12-31",
-                                                          "%s-12-31" % nearest_year)
+            self.ee_asset_str = self.ee_asset_str.replace("2019-01-01", "%s-01-01" % nearest_year)
+            self.ee_asset_str = self.ee_asset_str.replace("2019-12-31", "%s-12-31" % nearest_year)
             self.ee_asset = eval(self.ee_asset_str.replace("\n", "").replace(" ", ""))
-            print('using closest map year (%s) to test year (%s)' % (nearest_year, year))
+            print("using closest map year (%s) to test year (%s)" % (nearest_year, year))
 
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
         if len(sampled) != len(test_points):
