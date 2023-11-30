@@ -182,7 +182,6 @@ Export.image.toCloudStorage({{
             test_points.apply(lambda x: create_point(x), axis=1).to_list()
         )
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
-
         if len(sampled) != len(test_points):
             print(
                 "Warning: length of sampled dataset ({}) != test points ({})".format(
@@ -367,19 +366,6 @@ def bufferPoints(radius: int, bounds: bool):
     return function
 
 
-def raster_extraction(
-    image, fc, resolution, reducer=REDUCER, crs="EPSG:4326"
-) -> ee.FeatureCollection:
-    """
-    Mapping function used to extract values, given a feature collection, from an earth engine image.
-    """
-    fc_sub = fc.filterBounds(image.geometry())
-    im = image.reproject(crs=crs, scale=resolution)
-    feature = im.reduceRegions(collection=fc_sub, reducer=reducer, scale=resolution, crs=crs)
-
-    return feature
-
-
 def extract_points(
     ic: ee.ImageCollection, fc: ee.FeatureCollection, resolution=10, projection="EPSG:4326"
 ) -> gpd.GeoDataFrame:
@@ -387,11 +373,11 @@ def extract_points(
     Creates geodataframe of extracted values from image collection. Assumes ic parameters are set
     (date, region, band, etc.).
     """
-
-    extracted = ic.map(lambda x: raster_extraction(x, fc, resolution, crs=projection)).flatten()
-    extracted = geemap.ee_to_gdf(extracted)
-
-    return extracted
+    image = ic.filterBounds(fc).mosaic().reproject(crs=projection, scale=resolution)
+    extracted = image.reduceRegions(
+        collection=fc, scale=resolution, crs=projection, reducer=REDUCER
+    )
+    return geemap.ee_to_gdf(extracted)
 
 
 def filter_by_bounds(country_code: str, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -640,8 +626,8 @@ TARGETS = {
                 ee.Image("users/abaansah/Sudan_Al_Gadaref_2019_Feb"),
                 ee.Image("users/izvonkov/Sudan_Blue_Nile_2020"),
                 ee.Image("users/izvonkov/Sudan_Blue_Nile_2019_v3"),
-                ee.Image("users/byeh1/ethiopia_tigray_2020_v4"),
-                ee.Image("users/byeh1/ethiopia_tigray_2021_v1"),
+                ee.Image("users/izvonkov/Ethiopia_Tigray_2020_threshold-3-5"),
+                ee.Image("users/izvonkov/Ethiopia_Tigray_2021_threshold-3-5"),
                 ee.Image("users/adadebay/Tanzania_cropland_2019"),
                 ee.Image("users/eutzschn/Ethiopia_Bure_Jimma_2020_v1"),
                 ee.Image("users/izvonkov/Ethiopia_Bure_Jimma_2019_v1"),
