@@ -152,6 +152,23 @@
             "roc_auc_score": 0.9536
         }
     },
+    "Senegal_2022_v1": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/evr7pr86",
+        "test_metrics": {
+            "accuracy": 0.8475,
+            "f1_score": 0.4364,
+            "precision_score": 0.48,
+            "recall_score": 0.4,
+            "roc_auc_score": 0.8714
+        },
+        "val_metrics": {
+            "accuracy": 0.9102,
+            "f1_score": 0.6119,
+            "precision_score": 0.6212,
+            "recall_score": 0.6029,
+            "roc_auc_score": 0.9128
+        }
+    },
     "Sudan_Al_Gadaref_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/a2kkq4fs",
         "test_metrics": {
