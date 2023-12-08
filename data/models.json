@@ -271,6 +271,23 @@
             "roc_auc_score": 0.9112
         }
     },
+    "Togo_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/spekm4d0",
+        "test_metrics": {
+            "accuracy": 0.7806,
+            "f1_score": 0.7302,
+            "precision_score": 0.6345,
+            "recall_score": 0.8598,
+            "roc_auc_score": 0.887
+        },
+        "val_metrics": {
+            "accuracy": 0.8955,
+            "f1_score": 0.9028,
+            "precision_score": 0.8609,
+            "recall_score": 0.9489,
+            "roc_auc_score": 0.9684
+        }
+    },
     "Uganda_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/dlztexn6",
         "test_metrics": {
