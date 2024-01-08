@@ -422,3 +422,10 @@ eo_data_complete    1000
 ✔ training amount: 387, positive class: 20.9%
 ✔ validation amount: 294, positive class: 23.1%
 ✔ testing amount: 319, positive class: 17.6%
+
+
+
+UgandaNorthCorrective2022 (Timesteps: 19)
+----------------------------------------------------------------------------
+eo_data_exporting    615
+✖ training: 615 labels, but 0 features
