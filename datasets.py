@@ -448,6 +448,16 @@ class Uganda_NorthCEO2022(LabeledDataset):
         return df
 
 
+class UgandaNorthCorrective2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        df = pd.read_csv(raw_dir / "Uganda_North_Corrective_2022.csv")
+        df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
+        df[CLASS_PROB] = (df["Wrong value"] == 0).astype(int)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1232,6 +1242,7 @@ datasets: List[LabeledDataset] = [
     Namibia_field_samples_22_23(),
     SudanGedarefDarfurAlJazirah2022(),
     Uganda_NorthCEO2022(),
+    UgandaNorthCorrective2022(),
 ]
 
 if __name__ == "__main__":
