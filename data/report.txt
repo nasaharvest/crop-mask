@@ -427,6 +427,5 @@ eo_data_complete    1000
 
 UgandaNorthCorrective2022 (Timesteps: 19)
 ----------------------------------------------------------------------------
-eo_data_complete     387
-eo_data_exporting    228
-✖ training: 615 labels, but 387 features
+eo_data_complete    615
+✔ training amount: 615, positive class: 24.4%
