@@ -186,6 +186,23 @@
             "roc_auc_score": 0.9536
         }
     },
+    "Senegal_2022_v1": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/evr7pr86",
+        "test_metrics": {
+            "accuracy": 0.8475,
+            "f1_score": 0.4364,
+            "precision_score": 0.48,
+            "recall_score": 0.4,
+            "roc_auc_score": 0.8714
+        },
+        "val_metrics": {
+            "accuracy": 0.9102,
+            "f1_score": 0.6119,
+            "precision_score": 0.6212,
+            "recall_score": 0.6029,
+            "roc_auc_score": 0.9128
+        }
+    },
     "Sudan_Al_Gadaref_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/a2kkq4fs",
         "test_metrics": {
@@ -337,6 +354,23 @@
             "precision_score": 0.4419,
             "recall_score": 0.6333,
             "roc_auc_score": 0.8442
+        }
+    },
+    "Uganda_North_2022_V1": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/v5f8m489",
+        "test_metrics": {
+            "accuracy": 0.8018,
+            "f1_score": 0.6457,
+            "precision_score": 0.5775,
+            "recall_score": 0.7321,
+            "roc_auc_score": 0.8606
+        },
+        "val_metrics": {
+            "accuracy": 0.7982,
+            "f1_score": 0.6667,
+            "precision_score": 0.6571,
+            "recall_score": 0.6765,
+            "roc_auc_score": 0.8647
         }
     },
     "Zambia_2019": {

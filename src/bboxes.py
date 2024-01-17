@@ -16,6 +16,7 @@ bboxes = {
     "Sudan_South": BBox(min_lat=8.62, max_lat=15.788, min_lon=21.787, max_lon=36.591),
     "Togo": BBox(min_lat=6.089, max_lat=11.165, min_lon=-0.164, max_lon=1.778),
     "Uganda": BBox(min_lat=-1.63, max_lat=4.30, min_lon=29.12, max_lon=35.18),
+    "Uganda_North": BBox(min_lat=2.544, max_lat=3.794, min_lon=30.681, max_lon=32.878),
     "Hawaii": BBox(min_lat=18.9, max_lat=28.41, min_lon=-178.3, max_lon=-154.82),
     "Tanzania": BBox(min_lat=-13.794, max_lat=0.801, min_lon=28.082, max_lon=41.331),
     "Senegal": BBox(min_lat=12.3, max_lat=16.7, min_lon=-17.63, max_lon=-11.3),
