@@ -1,4 +1,21 @@
 {
+    "Ethiopia_Bure_Jimma_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/z0z89qfd",
+        "test_metrics": {
+            "accuracy": 0.8574,
+            "f1_score": 0.8044,
+            "precision_score": 0.7228,
+            "recall_score": 0.9068,
+            "roc_auc_score": 0.9365
+        },
+        "val_metrics": {
+            "accuracy": 0.8627,
+            "f1_score": 0.8362,
+            "precision_score": 0.7773,
+            "recall_score": 0.9048,
+            "roc_auc_score": 0.9393
+        }
+    },
     "Ethiopia_Bure_Jimma_2020": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/0yporfjp",
         "test_metrics": {
@@ -82,6 +99,23 @@
             "precision_score": 0.359,
             "recall_score": 0.6087,
             "roc_auc_score": 0.8784
+        }
+    },
+    "Mali_lower_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/uownf4jk",
+        "test_metrics": {
+            "accuracy": 0.738,
+            "f1_score": 0.6243,
+            "precision_score": 0.6211,
+            "recall_score": 0.6277,
+            "roc_auc_score": 0.7766
+        },
+        "val_metrics": {
+            "accuracy": 0.7818,
+            "f1_score": 0.7196,
+            "precision_score": 0.7333,
+            "recall_score": 0.7064,
+            "roc_auc_score": 0.8449
         }
     },
     "Namibia_North_2020": {
@@ -286,6 +320,23 @@
             "precision_score": 0.8092,
             "recall_score": 0.6667,
             "roc_auc_score": 0.9112
+        }
+    },
+    "Togo_2019": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/spekm4d0",
+        "test_metrics": {
+            "accuracy": 0.7806,
+            "f1_score": 0.7302,
+            "precision_score": 0.6345,
+            "recall_score": 0.8598,
+            "roc_auc_score": 0.887
+        },
+        "val_metrics": {
+            "accuracy": 0.8955,
+            "f1_score": 0.9028,
+            "precision_score": 0.8609,
+            "recall_score": 0.9489,
+            "roc_auc_score": 0.9684
         }
     },
     "Uganda_2019": {
