@@ -554,6 +554,7 @@ def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.Data
     total_px = a_j.sum()
     w_j = a_j / total_px
     am = compute_area_error_matrix(cm, w_j)
+    tn_area, fp_area, fn_area, tp_area = am.ravel()
     u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
     p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
     return pd.DataFrame(
@@ -584,6 +585,10 @@ def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.Data
             "fp": fp,
             "fn": fn,
             "tp": tp,
+            "tn_area": tn_area,
+            "fp_area": fp_area,
+            "fn_area": fn_area,
+            "tp_area": tp_area,
         },
         index=[0],
     ).round(2)
