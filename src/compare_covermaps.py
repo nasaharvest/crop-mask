@@ -483,6 +483,16 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     return test
 
 
+def compute_f1(precision, recall):
+    """
+    Calculate the F1 score from precision and recall.
+    """
+    if precision + recall == 0:
+        return 0
+    f1_score = 2 * (precision * recall) / (precision + recall)
+    return f1_score
+
+
 def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     """
     Propagates standard deviation of precision and recall to get
@@ -548,39 +558,38 @@ def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.Data
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
     """
-    report = classification_report(true, pred, output_dict=True)
     cm = confusion_matrix(true, pred)
     tn, fp, fn, tp = cm.ravel()
     total_px = a_j.sum()
     w_j = a_j / total_px
     am = compute_area_error_matrix(cm, w_j)
     tn_area, fp_area, fn_area, tp_area = am.ravel()
-    u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
-    p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
+    u_j = compute_u_j(am)
+    p_i = compute_p_i(am)
     return pd.DataFrame(
         data={
             "dataset": dataset_name,
             "country": country,
-            "crop_f1": report["1"]["f1-score"],
+            "crop_f1": compute_f1(precision=compute_u_j(am)[1], recall=compute_p_i(am)[1]),
             "std_crop_f1": compute_std_f1(
                 label=1,
-                recall_i=compute_p_i(am),
-                precision_i=compute_u_j(am),
+                recall_i=p_i,
+                precision_i=u_j,
                 std_rec_i=np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm)),
                 std_prec_i=np.sqrt(compute_var_u_j(u_j=u_j, cm=cm)),
             ),
             "accuracy": compute_acc(am),
             "std_acc": np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
-            "crop_recall_pa": compute_p_i(am)[1],
+            "crop_recall_pa": p_i[1],
             "std_crop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
-            "noncrop_recall_pa": compute_p_i(am)[0],
+            "noncrop_recall_pa": p_i[0],
             "std_noncrop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
-            "crop_precision_ua": compute_u_j(am)[1],
+            "crop_precision_ua": u_j[1],
             "std_crop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
-            "noncrop_precision_ua": compute_u_j(am)[0],
+            "noncrop_precision_ua": u_j[0],
             "std_noncrop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
-            "crop_support": report["1"]["support"],
-            "noncrop_support": report["0"]["support"],
+            "crop_support": tp+fn,
+            "noncrop_support": tn+fp,
             "tn": tn,
             "fp": fp,
             "fn": fn,
