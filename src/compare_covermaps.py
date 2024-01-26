@@ -240,21 +240,23 @@ Export.image.toCloudStorage({{
         binary_image = binary_image.rename('crop')
 
         crop_px_sum = binary_image.reduceRegion(
-            reducer=ee.Reducer.sum(),
+            reducer=ee.Reducer.sum().unweighted(),
             geometry=aoi.geometry(),
             scale=resolution,
+            crs=projection,
             maxPixels=1e12
         ).get('crop').getInfo()
 
         noncrop_px_sum = binary_image.Not().reduceRegion(
-            reducer=ee.Reducer.sum(),
+            reducer=ee.Reducer.sum().unweighted(),
             geometry=aoi.geometry(),
             scale=resolution,
+            crs=projection,
             maxPixels=1e12
         ).get('crop').getInfo()
 
         # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-        a_j = np.array([int(crop_px_sum), int(noncrop_px_sum)])
+        a_j = np.array([crop_px_sum, noncrop_px_sum])
         return a_j
 
 
