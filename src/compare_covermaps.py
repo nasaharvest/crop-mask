@@ -214,12 +214,13 @@ Export.image.toCloudStorage({{
     def __repr__(self) -> str:
         return self.title + " " + repr(self.countries)
 
-
     def compute_map_area(self, country: str, projection="EPSG:4326", resolution=10):
         """
         Calculates the area in pixels of each class in the map clipped to the country.
         """
-        aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq('ADM0_NAME', country))
+        aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
+            ee.Filter.eq("ADM0_NAME", country)
+        )
         binary_image = self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=resolution)
 
         # Convert the image to binary classes: 1 (crop), 0 (noncrop)
@@ -230,28 +231,33 @@ Export.image.toCloudStorage({{
         elif len(self.crop_labels) > 2 and self.crop_labels == list(
             range(self.crop_labels[0], self.crop_labels[-1] + 1)
         ):
-            binary_image = binary_image.gte(self.crop_labels[0]).And(binary_image.lte(self.crop_labels[-1]))
+            binary_image = binary_image.gte(self.crop_labels[0]).And(
+                binary_image.lte(self.crop_labels[-1])
+            )
         else:
             binary_image = binary_image.eq(self.crop_labels[0])
             if len(self.crop_labels) > 1:
                 for crop_value in self.crop_labels[1:]:
                     binary_image = binary_image.Or(binary_image.eq(crop_value))
 
-        binary_image = binary_image.rename('crop')
+        binary_image = binary_image.rename("crop")
 
-        crop_px_sum = binary_image.reduceRegion(
-            reducer=ee.Reducer.sum(),
-            geometry=aoi.geometry(),
-            scale=resolution,
-            maxPixels=1e12
-        ).get('crop').getInfo()
+        crop_px_sum = (
+            binary_image.reduceRegion(
+                reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=resolution, maxPixels=1e12
+            )
+            .get("crop")
+            .getInfo()
+        )
 
-        noncrop_px_sum = binary_image.Not().reduceRegion(
-            reducer=ee.Reducer.sum(),
-            geometry=aoi.geometry(),
-            scale=resolution,
-            maxPixels=1e12
-        ).get('crop').getInfo()
+        noncrop_px_sum = (
+            binary_image.Not()
+            .reduceRegion(
+                reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=resolution, maxPixels=1e12
+            )
+            .get("crop")
+            .getInfo()
+        )
 
         # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
         a_j = np.array([int(crop_px_sum), int(noncrop_px_sum)])
@@ -322,7 +328,6 @@ class TestCovermaps:
             self.sampled_maps[country] = country_test
 
         return self.sampled_maps.copy()
-
 
     def evaluate(self):
         """
