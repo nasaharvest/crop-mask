@@ -214,12 +214,13 @@ Export.image.toCloudStorage({{
     def __repr__(self) -> str:
         return self.title + " " + repr(self.countries)
 
-
     def get_binary_image(self, aoi, projection="EPSG:4326"):
         """
         Creates a binary image for a covermap in given country.
         """
-        binary_image = self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=self.resolution)
+        binary_image = (
+            self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=self.resolution)
+        )
 
         # Convert the image to binary classes: 1 (crop), 0 (noncrop)
         if self.crop_labels is None:
@@ -240,7 +241,6 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-
     def compute_map_area(self, country: str, projection="EPSG:4326"):
         """
         Calculates the area in pixels of each class in the map clipped to the country.
@@ -253,7 +253,10 @@ Export.image.toCloudStorage({{
 
         crop_px_sum = (
             binary_image.reduceRegion(
-                reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=self.resolution, maxPixels=1e12
+                reducer=ee.Reducer.sum(),
+                geometry=aoi.geometry(),
+                scale=self.resolution,
+                maxPixels=1e12,
             )
             .get("crop")
             .getInfo()
@@ -262,7 +265,10 @@ Export.image.toCloudStorage({{
         noncrop_px_sum = (
             binary_image.Not()
             .reduceRegion(
-                reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=self.resolution, maxPixels=1e12
+                reducer=ee.Reducer.sum(),
+                geometry=aoi.geometry(),
+                scale=self.resolution,
+                maxPixels=1e12,
             )
             .get("crop")
             .getInfo()
@@ -497,9 +503,7 @@ def get_ensemble_area(country: str, covermaps):
     Creates ensemble image and calculates areas.
     """
     # Create the binary map version of each map
-    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
-            ee.Filter.eq("ADM0_NAME", country)
-    )
+    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", country))
 
     binary_images = []
     for covermap in covermaps:
@@ -511,7 +515,7 @@ def get_ensemble_area(country: str, covermaps):
 
     # Threshold to binary based on majority vote
     majority_thresh = np.ceil(len(binary_images) / 2)
-    ensemble_image = sum_image.gte(majority_thresh).rename('crop')
+    ensemble_image = sum_image.gte(majority_thresh).rename("crop")
 
     # Calculate the total pixels in each class
     min_scale = min([c.resolution for c in covermaps])
