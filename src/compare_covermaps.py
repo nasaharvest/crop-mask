@@ -215,6 +215,49 @@ Export.image.toCloudStorage({{
         return self.title + " " + repr(self.countries)
 
 
+    def compute_map_area(self, country: str, projection="EPSG:4326", resolution=10):
+        """
+        Calculates the area in pixels of each class in the map clipped to the country.
+        """
+        aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq('ADM0_NAME', country))
+        binary_image = self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=resolution)
+
+        # Convert the image to binary classes: 1 (crop), 0 (noncrop)
+        if self.crop_labels is None:
+            binary_image = binary_image.gte(self.probability)
+
+        # Check if crop_labels are an ordered list
+        elif len(self.crop_labels) > 2 and self.crop_labels == list(
+            range(self.crop_labels[0], self.crop_labels[-1] + 1)
+        ):
+            binary_image = binary_image.gte(self.crop_labels[0]).And(binary_image.lte(self.crop_labels[-1]))
+        else:
+            binary_image = binary_image.eq(self.crop_labels[0])
+            if len(self.crop_labels) > 1:
+                for crop_value in self.crop_labels[1:]:
+                    binary_image = binary_image.Or(binary_image.eq(crop_value))
+
+        binary_image = binary_image.rename('crop')
+
+        crop_px_sum = binary_image.reduceRegion(
+            reducer=ee.Reducer.sum(),
+            geometry=aoi.geometry(),
+            scale=resolution,
+            maxPixels=1e12
+        ).get('crop').getInfo()
+
+        noncrop_px_sum = binary_image.Not().reduceRegion(
+            reducer=ee.Reducer.sum(),
+            geometry=aoi.geometry(),
+            scale=resolution,
+            maxPixels=1e12
+        ).get('crop').getInfo()
+
+        # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
+        a_j = np.array([int(crop_px_sum), int(noncrop_px_sum)])
+        return a_j
+
+
 class TestCovermaps:
     """
     Architecture for sampling and comparing ee maps to compare against CropHarvest testing sets.
@@ -279,6 +322,7 @@ class TestCovermaps:
             self.sampled_maps[country] = country_test
 
         return self.sampled_maps.copy()
+
 
     def evaluate(self):
         """
@@ -434,7 +478,7 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     return df
 
 
-def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
+def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
@@ -442,8 +486,8 @@ def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame
     report = classification_report(true, pred, output_dict=True)
     cm = confusion_matrix(true, pred)
     tn, fp, fn, tp = cm.ravel()
-    a_j = np.array([tn + fn, tp + fp])
-    w_j = np.array([(tn + fn) / (tn + fp + fn + tp), (tp + fp) / (tn + fp + fn + tp)])
+    total_px = a_j.sum()
+    w_j = a_j / total_px
     am = compute_area_error_matrix(cm, w_j)
     u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
     p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
