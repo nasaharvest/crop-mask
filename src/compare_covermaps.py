@@ -9,7 +9,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from shapely.geometry import GeometryCollection
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 from src.area_utils import (
     compute_acc,
@@ -256,7 +256,7 @@ Export.image.toCloudStorage({{
                 reducer=ee.Reducer.sum(),
                 geometry=aoi.geometry(),
                 scale=self.resolution,
-                maxPixels=1e12,
+                maxPixels=1e15,
             )
             .get("crop")
             .getInfo()
@@ -268,14 +268,14 @@ Export.image.toCloudStorage({{
                 reducer=ee.Reducer.sum(),
                 geometry=aoi.geometry(),
                 scale=self.resolution,
-                maxPixels=1e12,
+                maxPixels=1e15,
             )
             .get("crop")
             .getInfo()
         )
 
         # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-        a_j = np.array([crop_px_sum, noncrop_px_sum])
+        a_j = np.array([noncrop_px_sum, crop_px_sum])
         return a_j
 
 
@@ -532,7 +532,7 @@ def get_ensemble_area(country: str, covermaps):
 
     crop_px_sum = (
         ensemble_image.reduceRegion(
-            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e12
+            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e15
         )
         .get("crop")
         .getInfo()
@@ -541,7 +541,7 @@ def get_ensemble_area(country: str, covermaps):
     noncrop_px_sum = (
         ensemble_image.Not()
         .reduceRegion(
-            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e12
+            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e15
         )
         .get("crop")
         .getInfo()
@@ -553,16 +553,26 @@ def get_ensemble_area(country: str, covermaps):
     return a_j
 
 
-def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.DataFrame:
+def generate_report(dataset_name: str, country: str, true, pred, a_j, use_strat) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
     """
+    print(dataset_name)
     cm = confusion_matrix(true, pred)
+    print(cm)
     tn, fp, fn, tp = cm.ravel()
     total_px = a_j.sum()
     w_j = a_j / total_px
-    am = compute_area_error_matrix(cm, w_j)
+    print(w_j)
+    if use_strat:
+        # weight by mapped area for each class
+        am = compute_area_error_matrix(cm, w_j)
+    else:
+        # unweighted metrics
+        w_j = np.ones_like(w_j)
+        am = cm / (tn + fp + fn + tp)
+        print(am)
     tn_area, fp_area, fn_area, tp_area = am.ravel()
     u_j = compute_u_j(am)
     p_i = compute_p_i(am)
@@ -570,7 +580,7 @@ def generate_report(dataset_name: str, country: str, true, pred, a_j) -> pd.Data
         data={
             "dataset": dataset_name,
             "country": country,
-            "crop_f1": compute_f1(precision=compute_u_j(am)[1], recall=compute_p_i(am)[1]),
+            "crop_f1": compute_f1(precision=u_j[1], recall=p_i[1]),
             "std_crop_f1": compute_std_f1(
                 label=1,
                 recall_i=p_i,
