@@ -16,3 +16,4 @@ dependencies:
           - openmapflow[data]==0.2.4rc4
           - dvc[gs]
           - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34
+          - einops
