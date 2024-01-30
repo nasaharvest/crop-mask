@@ -444,7 +444,7 @@ class Encoder(nn.Module):
                 min_idx = cur_idx
                 max_idx = min_idx + increment
                 mask = torch.argwhere((kept_indices >= min_idx) & (kept_indices < max_idx))
-                groups.append(x[mask])
+                groups.append(x[mask].mean(dim=1))
                 cur_idx = max_idx
             return self.norm(torch.cat(groups, dim=1))
         return self.norm(x), kept_indices, removed_indices
