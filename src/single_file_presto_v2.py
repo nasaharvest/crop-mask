@@ -30,7 +30,7 @@ BANDS_GROUPS_IDX = OrderedDict(
 NUM_DYNAMIC_WORLD_CLASSES = 9
 
 
-Aggregate = Enum("Aggregate", ["NONE", "MEAN", "STACKED_MEAN"])
+Aggregate = Enum("Aggregate", ["NONE", "MEAN", "BAND_GROUPS_MEAN"])
 
 
 class Attention(nn.Module):
@@ -345,6 +345,23 @@ class Encoder(nn.Module):
 
         return x, kept_indices, removed_indices
 
+    def band_groups_mean(
+        self, x: torch.Tensor, kept_indices: torch.Tensor, num_timesteps: int
+    ) -> torch.Tensor:
+        x = x[:, 1:, :]  # latlon token - leave in or keep out?
+        batch_size, embedding_dim = x.shape[0], x.shape[-1]
+        cur_idx, groups = 0, []
+        for channel_group, _ in self.band_groups.items():
+            increment = num_timesteps if channel_group != "SRTM" else 1
+            min_idx = cur_idx
+            max_idx = min_idx + increment
+            mask = (kept_indices >= min_idx) & (kept_indices < max_idx)
+            # we assume kept_elements is the same for all batches
+            kept_elements = sum(mask[0, :])
+            groups.append(x[mask.bool()].view(batch_size, kept_elements, embedding_dim).mean(dim=1))
+            cur_idx = max_idx
+        return torch.cat(groups, dim=1)
+
     def forward(
         self,
         x: torch.Tensor,
@@ -437,16 +454,8 @@ class Encoder(nn.Module):
         # mask will be a boolean of shape [batch, total_num_tokens]
         if aggregate == Aggregate.MEAN:
             return self.norm(x.mean(dim=1))
-        elif aggregate == Aggregate.STACKED_MEAN:
-            cur_idx, groups = 1, []  # do we ignore latlons here?
-            for channel_group, _ in self.band_groups.items():
-                increment = num_timesteps if channel_group != "SRTM" else 1
-                min_idx = cur_idx
-                max_idx = min_idx + increment
-                mask = torch.argwhere((kept_indices >= min_idx) & (kept_indices < max_idx))
-                groups.append(x[mask].mean(dim=1))
-                cur_idx = max_idx
-            return self.norm(torch.cat(groups, dim=1))
+        elif aggregate == Aggregate.BAND_GROUPS_MEAN:
+            return self.norm(self.band_groups_mean(x, kept_indices, num_timesteps))
         return self.norm(x), kept_indices, removed_indices
 
 
@@ -758,11 +767,11 @@ class Presto(nn.Module):
         self,
         num_outputs: int,
         regression: bool = False,
-        aggregate: Aggregate = Aggregate.STACKED_MEAN,
+        aggregate: Aggregate = Aggregate.BAND_GROUPS_MEAN,
     ):
         if aggregate == Aggregate.MEAN:
             hidden_size = self.encoder.embedding_size
-        elif aggregate == Aggregate.STACKED_MEAN:
+        elif aggregate == Aggregate.BAND_GROUPS_MEAN:
             hidden_size = self.encoder_embedding_size * len(BANDS_GROUPS_IDX)
         else:
             raise ValueError
