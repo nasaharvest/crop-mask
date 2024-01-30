@@ -9,7 +9,7 @@ module_path = os.path.abspath(os.path.join(".."))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from src.single_file_presto_v2 import BANDS_GROUPS_IDX, Presto
+from src.single_file_presto_v2 import BANDS_GROUPS_IDX, Presto   # noqa: E402
 
 
 class PrestoTest(unittest.TestCase):
