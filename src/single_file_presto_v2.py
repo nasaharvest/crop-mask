@@ -358,7 +358,9 @@ class Encoder(nn.Module):
             mask = (kept_indices >= min_idx) & (kept_indices < max_idx)
             # we assume kept_elements is the same for all batches
             kept_elements = sum(mask[0, :])
-            groups.append(x[mask.bool()].view(batch_size, kept_elements, embedding_dim).mean(dim=1))
+            one_group = x[mask.bool()].view(batch_size, kept_elements, embedding_dim).mean(dim=1)
+            one_group_normed = self.norm(one_group)
+            groups.append(one_group_normed)
             cur_idx = max_idx
         return torch.cat(groups, dim=1)
 
@@ -455,7 +457,7 @@ class Encoder(nn.Module):
         if aggregate == Aggregate.MEAN:
             return self.norm(x.mean(dim=1))
         elif aggregate == Aggregate.BAND_GROUPS_MEAN:
-            return self.norm(self.band_groups_mean(x, kept_indices, num_timesteps))
+            return self.band_groups_mean(x, kept_indices, num_timesteps)
         return self.norm(x), kept_indices, removed_indices
 
 
