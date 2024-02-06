@@ -219,9 +219,7 @@ Export.image.toCloudStorage({{
         """
         Creates a binary image for a covermap in given country.
         """
-        image = (
-            self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=self.resolution)
-        )
+        image = self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=self.resolution)
 
         # Convert the image to binary classes: 1 (crop), 0 (noncrop)
         if self.crop_labels is None:
@@ -231,9 +229,7 @@ Export.image.toCloudStorage({{
         elif len(self.crop_labels) > 2 and self.crop_labels == list(
             range(self.crop_labels[0], self.crop_labels[-1] + 1)
         ):
-            binary_image = image.gte(self.crop_labels[0]).And(
-                image.lte(self.crop_labels[-1])
-            )
+            binary_image = image.gte(self.crop_labels[0]).And(image.lte(self.crop_labels[-1]))
         else:
             binary_image = image.eq(self.crop_labels[0])
             if len(self.crop_labels) > 1:
