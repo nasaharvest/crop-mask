@@ -84,6 +84,7 @@ LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
+MAX_PIXELS = 1e18
 
 
 class Covermap:
@@ -169,7 +170,7 @@ Export.image.toCloudStorage({{
     region: aoi,
     scale: 10,
     crs: "EPSG:4326",
-    maxPixels: 1e10,
+    maxPixels: {MAX_PIXELS},
     skipEmptyTiles: true
 }});"""
         return script
@@ -253,10 +254,10 @@ Export.image.toCloudStorage({{
 
         crop_px_sum = (
             binary_image.reduceRegion(
-                reducer=ee.Reducer.sum(),
+                reducer=ee.Reducer.sum().unweighted(),
                 geometry=aoi.geometry(),
                 scale=self.resolution,
-                maxPixels=1e15,
+                maxPixels=MAX_PIXELS,
             )
             .get("crop")
             .getInfo()
@@ -265,10 +266,10 @@ Export.image.toCloudStorage({{
         noncrop_px_sum = (
             binary_image.Not()
             .reduceRegion(
-                reducer=ee.Reducer.sum(),
+                reducer=ee.Reducer.sum().unweighted(),
                 geometry=aoi.geometry(),
                 scale=self.resolution,
-                maxPixels=1e15,
+                maxPixels=MAX_PIXELS,
             )
             .get("crop")
             .getInfo()
@@ -513,7 +514,9 @@ def get_ensemble_area(country: str, covermaps):
     Creates ensemble image and calculates areas.
     """
     # Create the binary map version of each map
-    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", country))
+    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
+        ee.Filter.eq("ADM0_NAME", country)
+    )
 
     binary_images = []
     for covermap in covermaps:
@@ -521,7 +524,7 @@ def get_ensemble_area(country: str, covermaps):
 
     # Create an image collection of the maps and sum
     binary_coll = ee.ImageCollection(binary_images)
-    sum_image = binary_coll.reduce(ee.Reducer.sum())
+    sum_image = binary_coll.reduce(ee.Reducer.sum()).clip(aoi)
 
     # Threshold to binary based on majority vote
     majority_thresh = np.ceil(len(binary_images) / 2)
@@ -532,7 +535,10 @@ def get_ensemble_area(country: str, covermaps):
 
     crop_px_sum = (
         ensemble_image.reduceRegion(
-            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e15
+            reducer=ee.Reducer.sum().unweighted(),
+            geometry=aoi.geometry(),
+            scale=min_scale,
+            maxPixels=MAX_PIXELS
         )
         .get("crop")
         .getInfo()
@@ -541,38 +547,37 @@ def get_ensemble_area(country: str, covermaps):
     noncrop_px_sum = (
         ensemble_image.Not()
         .reduceRegion(
-            reducer=ee.Reducer.sum(), geometry=aoi.geometry(), scale=min_scale, maxPixels=1e15
+            reducer=ee.Reducer.sum().unweighted(),
+            geometry=aoi.geometry(),
+            scale=min_scale,
+            maxPixels=MAX_PIXELS
         )
         .get("crop")
         .getInfo()
     )
 
     # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-    a_j = np.array([crop_px_sum, noncrop_px_sum])
+    a_j = np.array([noncrop_px_sum, crop_px_sum])
 
     return a_j
 
 
-def generate_report(dataset_name: str, country: str, true, pred, a_j, use_strat) -> pd.DataFrame:
+def generate_report(dataset_name: str, country: str, true, pred, a_j, area_weighted) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
     """
-    print(dataset_name)
     cm = confusion_matrix(true, pred)
-    print(cm)
     tn, fp, fn, tp = cm.ravel()
     total_px = a_j.sum()
     w_j = a_j / total_px
-    print(w_j)
-    if use_strat:
+    if area_weighted:
         # weight by mapped area for each class
         am = compute_area_error_matrix(cm, w_j)
     else:
         # unweighted metrics
         w_j = np.ones_like(w_j)
         am = cm / (tn + fp + fn + tp)
-        print(am)
     tn_area, fp_area, fn_area, tp_area = am.ravel()
     u_j = compute_u_j(am)
     p_i = compute_p_i(am)
@@ -690,7 +695,11 @@ TARGETS = {
     ),
     "digital-earth-africa": Covermap(
         "digital-earth-africa",
-        'ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered")',
+        """ee.ImageCollection([ee.Image(0)
+            .where(ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered")
+            .mosaic()
+            .eq(1), 1)]
+        )""",
         resolution=10,
         crop_labels=[1],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
