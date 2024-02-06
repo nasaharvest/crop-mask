@@ -1,6 +1,7 @@
 import math
 from collections import OrderedDict
 from copy import deepcopy
+from enum import Enum
 from typing import Optional, Tuple, Union, cast
 
 import numpy as np
@@ -27,6 +28,9 @@ BANDS_GROUPS_IDX = OrderedDict(
 )
 
 NUM_DYNAMIC_WORLD_CLASSES = 9
+
+
+Aggregate = Enum("Aggregate", ["NONE", "MEAN", "BAND_GROUPS_MEAN"])
 
 
 class Attention(nn.Module):
@@ -341,6 +345,23 @@ class Encoder(nn.Module):
 
         return x, kept_indices, removed_indices
 
+    def band_groups_mean(
+        self, x: torch.Tensor, kept_indices: torch.Tensor, num_timesteps: int
+    ) -> torch.Tensor:
+        x = x[:, 1:, :]  # latlon token - leave in or keep out?
+        batch_size, embedding_dim = x.shape[0], x.shape[-1]
+        cur_idx, groups = 0, []
+        for channel_group, _ in self.band_groups.items():
+            increment = num_timesteps if channel_group != "SRTM" else 1
+            min_idx = cur_idx
+            max_idx = min_idx + increment
+            mask = (kept_indices >= min_idx) & (kept_indices < max_idx)
+            # we assume kept_elements is the same for all batches
+            kept_elements = sum(mask[0, :])
+            groups.append(x[mask.bool()].view(batch_size, kept_elements, embedding_dim).mean(dim=1))
+            cur_idx = max_idx
+        return torch.cat(groups, dim=1)
+
     def forward(
         self,
         x: torch.Tensor,
@@ -348,13 +369,14 @@ class Encoder(nn.Module):
         latlons: torch.Tensor,
         mask: Optional[torch.Tensor] = None,
         month: Union[torch.Tensor, int] = 0,
-        eval_task: bool = True,
+        aggregate: Aggregate = Aggregate.NONE,
     ):
         device = x.device
 
         if mask is None:
             mask = torch.zeros_like(x, device=x.device).float()
 
+        num_timesteps = x.shape[1]
         months = month_to_tensor(month, x.shape[0], x.shape[1], device)
         month_embedding = self.month_embed(months)
         positional_embedding = repeat(
@@ -430,8 +452,10 @@ class Encoder(nn.Module):
             x = blk(x)
 
         # mask will be a boolean of shape [batch, total_num_tokens]
-        if eval_task:
+        if aggregate == Aggregate.MEAN:
             return self.norm(x.mean(dim=1))
+        elif aggregate == Aggregate.BAND_GROUPS_MEAN:
+            return self.norm(self.band_groups_mean(x, kept_indices, num_timesteps))
         return self.norm(x), kept_indices, removed_indices
 
 
@@ -631,7 +655,7 @@ class Decoder(nn.Module):
 
 
 class PrestoFineTuningModel(nn.Module):
-    def __init__(self, encoder, head):
+    def __init__(self, encoder, head, aggregate: Aggregate):
         super().__init__()
         self.encoder: Encoder = deepcopy(encoder)
         # make sure the model is trainable, since we can call
@@ -642,6 +666,7 @@ class PrestoFineTuningModel(nn.Module):
         self.encoder.pos_embed.requires_grad_(False)
         self.encoder.month_embed.requires_grad_(False)
         self.head = head
+        self.aggregate = aggregate
 
     def forward(
         self,
@@ -658,7 +683,7 @@ class PrestoFineTuningModel(nn.Module):
                 latlons=latlons,
                 mask=mask,
                 month=month,
-                eval_task=True,
+                aggregate=self.aggregate,
             )
         )
 
@@ -742,13 +767,22 @@ class Presto(nn.Module):
         self,
         num_outputs: int,
         regression: bool = False,
+        aggregate: Aggregate = Aggregate.BAND_GROUPS_MEAN,
     ):
+        if aggregate == Aggregate.MEAN:
+            hidden_size = self.encoder.embedding_size
+        elif aggregate == Aggregate.BAND_GROUPS_MEAN:
+            hidden_size = self.encoder_embedding_size * len(BANDS_GROUPS_IDX)
+        else:
+            raise ValueError
         head = FinetuningHead(
             num_outputs=num_outputs,
-            hidden_size=self.encoder.embedding_size,
+            hidden_size=hidden_size,
             regression=regression,
         )
-        model = PrestoFineTuningModel(self.encoder, head).to(self.encoder.pos_embed.device)
+        model = PrestoFineTuningModel(self.encoder, head, aggregate).to(
+            self.encoder.pos_embed.device
+        )
         model.train()
         return model
 
