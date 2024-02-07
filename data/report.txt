@@ -427,8 +427,8 @@ eo_data_complete    1000
 
 Uganda_NorthCEO2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    767
-eo_data_complete     233
-✖ training: 387 labels, but 93 features
-✖ validation: 294 labels, but 63 features
-✖ testing: 319 labels, but 77 features
+eo_data_complete     832
+eo_data_exporting    168
+✖ training: 387 labels, but 333 features
+✖ validation: 294 labels, but 246 features
+✖ testing: 319 labels, but 253 features
