@@ -510,9 +510,7 @@ def get_ensemble_area(country: str, covermaps):
     Creates ensemble image and calculates areas.
     """
     # Create the binary map version of each map
-    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
-        ee.Filter.eq("ADM0_NAME", country)
-    )
+    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", country))
 
     binary_images = []
     for covermap in covermaps:
@@ -534,7 +532,7 @@ def get_ensemble_area(country: str, covermaps):
             reducer=ee.Reducer.sum().unweighted(),
             geometry=aoi.geometry(),
             scale=min_scale,
-            maxPixels=MAX_PIXELS
+            maxPixels=MAX_PIXELS,
         )
         .get("crop")
         .getInfo()
@@ -546,7 +544,7 @@ def get_ensemble_area(country: str, covermaps):
             reducer=ee.Reducer.sum().unweighted(),
             geometry=aoi.geometry(),
             scale=min_scale,
-            maxPixels=MAX_PIXELS
+            maxPixels=MAX_PIXELS,
         )
         .get("crop")
         .getInfo()
@@ -558,7 +556,9 @@ def get_ensemble_area(country: str, covermaps):
     return a_j
 
 
-def generate_report(dataset_name: str, country: str, true, pred, a_j, area_weighted) -> pd.DataFrame:
+def generate_report(
+    dataset_name: str, country: str, true, pred, a_j, area_weighted
+) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
