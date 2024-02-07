@@ -238,22 +238,21 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-
-    def compute_map_area(self, country: str, projection="EPSG:4326", tile_grid=[1,1]):
+    def compute_map_area(self, country: str, projection="EPSG:4326", tile_grid=[1, 1]):
         aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
             ee.Filter.eq("ADM0_NAME", country)
         )
 
         binary_image = self.get_binary_image(aoi=aoi, projection=projection)
 
-        if tile_grid == [1,1]:
+        if tile_grid == [1, 1]:
             crop_px_sum = (
                 binary_image.reduceRegion(
                     reducer=ee.Reducer.sum().unweighted(),
                     geometry=aoi.geometry(),
                     scale=self.resolution,
                     maxPixels=MAX_PIXELS,
-                    bestEffort=True
+                    bestEffort=True,
                 )
                 .get("crop")
                 .getInfo()
@@ -265,7 +264,7 @@ Export.image.toCloudStorage({{
                     geometry=aoi.geometry(),
                     scale=self.resolution,
                     maxPixels=MAX_PIXELS,
-                    bestEffort=True
+                    bestEffort=True,
                 )
                 .get("crop")
                 .getInfo()
@@ -279,8 +278,16 @@ Export.image.toCloudStorage({{
             noncrop_sum_total = 0
             # Iterate over each tile
             for tile_geometry in tile_geometries:
-                crop_sum = compute_tile_sum(binary_image, tile_geometry, scale=self.resolution).get('crop').getInfo()
-                noncrop_sum = compute_tile_sum(binary_image.Not(), tile_geometry, scale=self.resolution).get('crop').getInfo()
+                crop_sum = (
+                    compute_tile_sum(binary_image, tile_geometry, scale=self.resolution)
+                    .get("crop")
+                    .getInfo()
+                )
+                noncrop_sum = (
+                    compute_tile_sum(binary_image.Not(), tile_geometry, scale=self.resolution)
+                    .get("crop")
+                    .getInfo()
+                )
                 # Update total sums
                 crop_sum_total += crop_sum
                 noncrop_sum_total += noncrop_sum
@@ -388,6 +395,7 @@ class TestCovermaps:
 
 # Supporting funcs
 
+
 def compute_tile_sum(binary_image, tile_geometry, scale):
     """
     Compute the sum of binary values within a tile.
@@ -396,9 +404,10 @@ def compute_tile_sum(binary_image, tile_geometry, scale):
         reducer=ee.Reducer.sum().unweighted(),
         geometry=tile_geometry,
         scale=scale,
-        maxPixels=MAX_PIXELS
+        maxPixels=MAX_PIXELS,
     )
     return sum_dict
+
 
 def create_tile_geometries(aoi, rows=10, columns=10):
     """
@@ -419,7 +428,7 @@ def create_tile_geometries(aoi, rows=10, columns=10):
     # Get the bounds of the AOI geometry
     bounds = aoi_geometry.bounds()
     boundsInfo = bounds.getInfo()  # Get information about the bounds
-    coords = boundsInfo['coordinates'][0]  # Extract the coordinates of the bounds
+    coords = boundsInfo["coordinates"][0]  # Extract the coordinates of the bounds
 
     # Extract the min and max coordinates
     x_min = coords[0][0]
@@ -576,7 +585,7 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     return df
 
 
-def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
+def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1]):
     """
     Creates ensemble image and calculates areas.
     """
@@ -598,14 +607,14 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
     # Calculate the total pixels in each class
     min_scale = min([c.resolution for c in covermaps])
 
-    if tile_grid == [1,1]:
+    if tile_grid == [1, 1]:
         crop_px_sum = (
             ensemble_image.reduceRegion(
                 reducer=ee.Reducer.sum().unweighted(),
                 geometry=aoi.geometry(),
                 scale=min_scale,
                 maxPixels=MAX_PIXELS,
-                bestEffort=True
+                bestEffort=True,
             )
             .get("crop")
             .getInfo()
@@ -617,7 +626,7 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
                 geometry=aoi.geometry(),
                 scale=min_scale,
                 maxPixels=MAX_PIXELS,
-                bestEffort=True
+                bestEffort=True,
             )
             .get("crop")
             .getInfo()
@@ -633,8 +642,16 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
 
         # Iterate over each tile
         for tile_geometry in tile_geometries:
-            crop_sum = compute_tile_sum(ensemble_image, tile_geometry, scale=min_scale).get('crop').getInfo()
-            noncrop_sum = compute_tile_sum(ensemble_image.Not(), tile_geometry, scale=min_scale).get('crop').getInfo()
+            crop_sum = (
+                compute_tile_sum(ensemble_image, tile_geometry, scale=min_scale)
+                .get("crop")
+                .getInfo()
+            )
+            noncrop_sum = (
+                compute_tile_sum(ensemble_image.Not(), tile_geometry, scale=min_scale)
+                .get("crop")
+                .getInfo()
+            )
 
             # Update total sums
             crop_sum_total += crop_sum
