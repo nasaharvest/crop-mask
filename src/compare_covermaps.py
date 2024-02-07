@@ -238,46 +238,6 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-    # def compute_map_area(self, country: str, projection="EPSG:4326"):
-    #     """
-    #     Calculates the area in pixels of each class in the map clipped to the country.
-    #     """
-    #     aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
-    #         ee.Filter.eq("ADM0_NAME", country)
-    #     )
-
-    #     binary_image = self.get_binary_image(aoi=aoi, projection=projection)
-
-    #     crop_px_sum = (
-    #         binary_image.reduceRegion(
-    #             reducer=ee.Reducer.sum().unweighted(),
-    #             geometry=aoi.geometry(),
-    #             scale=self.resolution,
-    #             maxPixels=MAX_PIXELS,
-    #             bestEffort=True
-    #         )
-    #         .get("crop")
-    #         .getInfo()
-    #     )
-
-    #     noncrop_px_sum = (
-    #         binary_image.Not()
-    #         .reduceRegion(
-    #             reducer=ee.Reducer.sum().unweighted(),
-    #             geometry=aoi.geometry(),
-    #             scale=self.resolution,
-    #             maxPixels=MAX_PIXELS,
-    #             bestEffort=True
-    #         )
-    #         .get("crop")
-    #         .getInfo()
-    #     )
-
-    #     # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-    #     a_j = np.array([noncrop_px_sum, crop_px_sum])
-    #     return a_j
-
-
 
     def compute_map_area(self, country: str, projection="EPSG:4326", tile_grid=[1,1]):
         aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
@@ -298,7 +258,6 @@ Export.image.toCloudStorage({{
                 .get("crop")
                 .getInfo()
             )
-
             noncrop_px_sum = (
                 binary_image.Not()
                 .reduceRegion(
@@ -311,21 +270,17 @@ Export.image.toCloudStorage({{
                 .get("crop")
                 .getInfo()
             )
-
             a_j = np.array([noncrop_px_sum, crop_px_sum])
 
         else:
             tile_geometries = create_tile_geometries(aoi)
-
             # Initialize sums
             crop_sum_total = 0
             noncrop_sum_total = 0
-
             # Iterate over each tile
             for tile_geometry in tile_geometries:
                 crop_sum = compute_tile_sum(binary_image, tile_geometry, scale=self.resolution).get('crop').getInfo()
                 noncrop_sum = compute_tile_sum(binary_image.Not(), tile_geometry, scale=self.resolution).get('crop').getInfo()
-
                 # Update total sums
                 crop_sum_total += crop_sum
                 noncrop_sum_total += noncrop_sum
@@ -626,9 +581,7 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
     Creates ensemble image and calculates areas.
     """
     # Create the binary map version of each map
-    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
-        ee.Filter.eq("ADM0_NAME", country)
-    )
+    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", country))
 
     binary_images = []
     for covermap in covermaps:
@@ -657,7 +610,6 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
             .get("crop")
             .getInfo()
         )
-
         noncrop_px_sum = (
             ensemble_image.Not()
             .reduceRegion(
@@ -670,7 +622,6 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
             .get("crop")
             .getInfo()
         )
-
         a_j = np.array([noncrop_px_sum, crop_px_sum])
 
     else:
@@ -694,7 +645,9 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
     return a_j
 
 
-def generate_report(dataset_name: str, country: str, true, pred, a_j, area_weighted) -> pd.DataFrame:
+def generate_report(
+    dataset_name: str, country: str, true, pred, a_j, area_weighted
+) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
