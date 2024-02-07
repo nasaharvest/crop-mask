@@ -238,41 +238,100 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-    def compute_map_area(self, country: str, projection="EPSG:4326"):
-        """
-        Calculates the area in pixels of each class in the map clipped to the country.
-        """
+    # def compute_map_area(self, country: str, projection="EPSG:4326"):
+    #     """
+    #     Calculates the area in pixels of each class in the map clipped to the country.
+    #     """
+    #     aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
+    #         ee.Filter.eq("ADM0_NAME", country)
+    #     )
+
+    #     binary_image = self.get_binary_image(aoi=aoi, projection=projection)
+
+    #     crop_px_sum = (
+    #         binary_image.reduceRegion(
+    #             reducer=ee.Reducer.sum().unweighted(),
+    #             geometry=aoi.geometry(),
+    #             scale=self.resolution,
+    #             maxPixels=MAX_PIXELS,
+    #             bestEffort=True
+    #         )
+    #         .get("crop")
+    #         .getInfo()
+    #     )
+
+    #     noncrop_px_sum = (
+    #         binary_image.Not()
+    #         .reduceRegion(
+    #             reducer=ee.Reducer.sum().unweighted(),
+    #             geometry=aoi.geometry(),
+    #             scale=self.resolution,
+    #             maxPixels=MAX_PIXELS,
+    #             bestEffort=True
+    #         )
+    #         .get("crop")
+    #         .getInfo()
+    #     )
+
+    #     # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
+    #     a_j = np.array([noncrop_px_sum, crop_px_sum])
+    #     return a_j
+
+
+
+    def compute_map_area(self, country: str, projection="EPSG:4326", tile_grid=[1,1]):
         aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
             ee.Filter.eq("ADM0_NAME", country)
         )
 
         binary_image = self.get_binary_image(aoi=aoi, projection=projection)
 
-        crop_px_sum = (
-            binary_image.reduceRegion(
-                reducer=ee.Reducer.sum().unweighted(),
-                geometry=aoi.geometry(),
-                scale=self.resolution,
-                maxPixels=MAX_PIXELS,
+        if tile_grid == [1,1]:
+            crop_px_sum = (
+                binary_image.reduceRegion(
+                    reducer=ee.Reducer.sum().unweighted(),
+                    geometry=aoi.geometry(),
+                    scale=self.resolution,
+                    maxPixels=MAX_PIXELS,
+                    bestEffort=True
+                )
+                .get("crop")
+                .getInfo()
             )
-            .get("crop")
-            .getInfo()
-        )
 
-        noncrop_px_sum = (
-            binary_image.Not()
-            .reduceRegion(
-                reducer=ee.Reducer.sum().unweighted(),
-                geometry=aoi.geometry(),
-                scale=self.resolution,
-                maxPixels=MAX_PIXELS,
+            noncrop_px_sum = (
+                binary_image.Not()
+                .reduceRegion(
+                    reducer=ee.Reducer.sum().unweighted(),
+                    geometry=aoi.geometry(),
+                    scale=self.resolution,
+                    maxPixels=MAX_PIXELS,
+                    bestEffort=True
+                )
+                .get("crop")
+                .getInfo()
             )
-            .get("crop")
-            .getInfo()
-        )
 
-        # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-        a_j = np.array([noncrop_px_sum, crop_px_sum])
+            a_j = np.array([noncrop_px_sum, crop_px_sum])
+
+        else:
+            tile_geometries = create_tile_geometries(aoi)
+
+            # Initialize sums
+            crop_sum_total = 0
+            noncrop_sum_total = 0
+
+            # Iterate over each tile
+            for tile_geometry in tile_geometries:
+                crop_sum = compute_tile_sum(binary_image, tile_geometry, scale=self.resolution).get('crop').getInfo()
+                noncrop_sum = compute_tile_sum(binary_image.Not(), tile_geometry, scale=self.resolution).get('crop').getInfo()
+
+                # Update total sums
+                crop_sum_total += crop_sum
+                noncrop_sum_total += noncrop_sum
+
+            a_j = np.array([noncrop_sum_total, crop_sum_total])
+
         return a_j
 
 
@@ -373,6 +432,63 @@ class TestCovermaps:
 
 
 # Supporting funcs
+
+def compute_tile_sum(binary_image, tile_geometry, scale):
+    """
+    Compute the sum of binary values within a tile.
+    """
+    sum_dict = binary_image.reduceRegion(
+        reducer=ee.Reducer.sum().unweighted(),
+        geometry=tile_geometry,
+        scale=scale,
+        maxPixels=MAX_PIXELS
+    )
+    return sum_dict
+
+def create_tile_geometries(aoi, rows=10, columns=10):
+    """
+    Generate a list of tile geometries as a grid over the specified AOI,
+    where the AOI is given as an ee.FeatureCollection.
+
+    Parameters:
+    aoi (ee.FeatureCollection): The area of interest as a feature collection.
+    rows (int): The number of rows in the grid.
+    columns (int): The number of columns in the grid.
+
+    Returns:
+    list of ee.Geometry: The geometries representing each tile in the grid.
+    """
+    # Convert the FeatureCollection to a Geometry that represents the union of all features
+    aoi_geometry = aoi.geometry()
+
+    # Get the bounds of the AOI geometry
+    bounds = aoi_geometry.bounds()
+    boundsInfo = bounds.getInfo()  # Get information about the bounds
+    coords = boundsInfo['coordinates'][0]  # Extract the coordinates of the bounds
+
+    # Extract the min and max coordinates
+    x_min = coords[0][0]
+    y_min = coords[0][1]
+    x_max = coords[2][0]
+    y_max = coords[2][1]
+
+    # Calculate the width and height of each tile
+    width = (x_max - x_min) / columns
+    height = (y_max - y_min) / rows
+
+    tile_geometries = []
+
+    # Create the grid of tiles
+    for i in range(columns):
+        for j in range(rows):
+            x1 = x_min + width * i
+            y1 = y_min + height * j
+            x2 = x1 + width
+            y2 = y1 + height
+            tile = ee.Geometry.Rectangle([x1, y1, x2, y2], "EPSG:4326", False)
+            tile_geometries.append(tile)
+
+    return tile_geometries
 
 
 def generate_test_data(target_paths) -> gpd.GeoDataFrame:
@@ -505,7 +621,7 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     return df
 
 
-def get_ensemble_area(country: str, covermaps):
+def get_ensemble_area(country: str, covermaps, tile_grid=[1,1]):
     """
     Creates ensemble image and calculates areas.
     """
@@ -529,31 +645,51 @@ def get_ensemble_area(country: str, covermaps):
     # Calculate the total pixels in each class
     min_scale = min([c.resolution for c in covermaps])
 
-    crop_px_sum = (
-        ensemble_image.reduceRegion(
-            reducer=ee.Reducer.sum().unweighted(),
-            geometry=aoi.geometry(),
-            scale=min_scale,
-            maxPixels=MAX_PIXELS
+    if tile_grid == [1,1]:
+        crop_px_sum = (
+            ensemble_image.reduceRegion(
+                reducer=ee.Reducer.sum().unweighted(),
+                geometry=aoi.geometry(),
+                scale=min_scale,
+                maxPixels=MAX_PIXELS,
+                bestEffort=True
+            )
+            .get("crop")
+            .getInfo()
         )
-        .get("crop")
-        .getInfo()
-    )
 
-    noncrop_px_sum = (
-        ensemble_image.Not()
-        .reduceRegion(
-            reducer=ee.Reducer.sum().unweighted(),
-            geometry=aoi.geometry(),
-            scale=min_scale,
-            maxPixels=MAX_PIXELS
+        noncrop_px_sum = (
+            ensemble_image.Not()
+            .reduceRegion(
+                reducer=ee.Reducer.sum().unweighted(),
+                geometry=aoi.geometry(),
+                scale=min_scale,
+                maxPixels=MAX_PIXELS,
+                bestEffort=True
+            )
+            .get("crop")
+            .getInfo()
         )
-        .get("crop")
-        .getInfo()
-    )
 
-    # Calculate the number of pixels that are 1 (crop) or 0 (noncrop)
-    a_j = np.array([noncrop_px_sum, crop_px_sum])
+        a_j = np.array([noncrop_px_sum, crop_px_sum])
+
+    else:
+        tile_geometries = create_tile_geometries(aoi)
+
+        # Initialize sums
+        crop_sum_total = 0
+        noncrop_sum_total = 0
+
+        # Iterate over each tile
+        for tile_geometry in tile_geometries:
+            crop_sum = compute_tile_sum(ensemble_image, tile_geometry, scale=min_scale).get('crop').getInfo()
+            noncrop_sum = compute_tile_sum(ensemble_image.Not(), tile_geometry, scale=min_scale).get('crop').getInfo()
+
+            # Update total sums
+            crop_sum_total += crop_sum
+            noncrop_sum_total += noncrop_sum
+
+        a_j = np.array([noncrop_sum_total, crop_sum_total])
 
     return a_j
 
