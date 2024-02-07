@@ -478,8 +478,8 @@ class Uganda_NorthCEO2021(LabeledDataset):
         df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
-    
-    
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
