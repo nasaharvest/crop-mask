@@ -1,0 +1,223 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var crop = 
+    /* color: #00d629 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(
+        [[23.8273135793083, 11.499708938643428],
+         [23.824910320030956, 11.498699644447164],
+         [23.823601402031688, 11.498194995992689],
+         [23.821005023705272, 11.49701747941616],
+         [23.82177749990156, 11.49766931955784],
+         [23.8208119046562, 11.501538275154541],
+         [23.819159663903026, 11.504019425224092],
+         [24.146105450996245, 11.290402281341471],
+         [24.150568646797026, 11.293853216131875],
+         [24.146835011848296, 11.296083676290404],
+         [24.13198630274185, 11.284889116494778],
+         [24.12949721277603, 11.2864883660547],
+         [24.13426081598648, 11.28728798749398],
+         [24.15520350397476, 11.302438288425403],
+         [24.138166112312163, 11.283079428618633],
+         [24.147307080634917, 11.287835095616481],
+         [24.144860906013335, 11.284384088467338],
+         [24.154774350532378, 11.282490225453794],
+         [25.23555607923419, 10.976487201503476],
+         [25.23109288343341, 10.994307749008742],
+         [25.234182788218565, 10.995066046306468],
+         [25.223411036814756, 10.995108173876952],
+         [24.416992462208096, 10.906420874865024],
+         [24.419567382862393, 10.910087048486801],
+         [24.420254028370206, 10.908696436228105],
+         [24.40643528752548, 10.898161283628905],
+         [24.448792732288663, 10.891797870761868],
+         [24.439179695179288, 10.90005763863274],
+         [24.414331710865323, 10.893272846119663],
+         [24.41364506535751, 10.896138491638277],
+         [24.414846694996182, 10.899299098081471],
+         [24.396779335071866, 10.894242111661795],
+         [24.397251403858487, 10.900184061869943],
+         [23.87057408052242, 10.868646237941316],
+         [23.872634017045858, 10.871512120263805],
+         [23.876238905961873, 10.874883711278429],
+         [23.882247054155233, 10.881626778949409],
+         [23.894606673295858, 10.878760993824045],
+         [23.901902281816366, 10.874293685602021],
+         [23.90705212312496, 10.875979470151949],
+         [23.88430699067867, 10.884829682657536],
+         [23.866282546098592, 10.883818243100333],
+         [23.922415816362264, 10.894101051906581],
+         [23.53424079829588, 11.104193890552956],
+         [23.526687697709942, 11.100656468885],
+         [23.525357322038555, 11.101246042139131],
+         [23.518576697648907, 11.10099336803312],
+         [23.515315131486798, 11.103520099253862],
+         [23.51797588282957, 11.105162462820793],
+         [23.537588195146466, 11.106004696963037],
+         [23.53625781947508, 11.110679052273431],
+         [23.544068412126446, 11.104825568483454],
+         [23.538875655473614, 11.098003374512121],
+         [23.536644057573223, 11.097119004365696],
+         [24.82761182199888, 11.57486801365657],
+         [24.82207574259214, 11.57385898967369],
+         [24.831903356422707, 11.577348515476277],
+         [24.843747991432473, 11.582519660391752],
+         [24.84906949411802, 11.58184699654563],
+         [24.857137578834816, 11.576465627519442],
+         [24.85881127726011, 11.568099074769199],
+         [24.855935949196144, 11.572051145936863],
+         [24.85181607614927, 11.564735565992443],
+         [24.835937398781105, 11.564231036190723],
+         [24.841473478187844, 11.566627544651785]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// Author: Ivan Zvonkov
+// Description: 
+//  Script for generating corrective labels for improving Sudan/Darfur_2023
+//  Takes 4 mins to execute
+//  Growing season:  June to January
+
+print("https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SU")
+
+////////////////////////////////////////////////////////
+// 1. ROIs 
+////////////////////////////////////////////////////////
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var roi = border.geometry()
+var area = ee.Number(roi.area()).divide(1e6).round()
+print("Area: " + area.getInfo() + " km2")
+
+////////////////////////////////////////////////////////
+// 2. Get Earth Observation data
+////////////////////////////////////////////////////////
+var start = ee.Date('2023-05-01');
+var end = ee.Date('2023-12-30');
+var imagery = require("users/izvonkov/eo:imagery/S2_S1_monthly")
+var image = imagery.getImage(roi, start, end)
+var bands = image.bandNames()
+print(image)
+print(bands)
+
+////////////////////////////////////////////////////////
+// 3. Display Earth Observation data
+////////////////////////////////////////////////////////
+Map.setOptions('SATELLITE');
+Map.centerObject(roi, 6);
+
+var S2display = {'1': 'June', '2': 'July', '3': 'August', '4': 'September', '5': 'October'}
+for (var i in S2display){
+  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0) 
+}
+
+////////////////////////////////////////////////////////
+// 4. Load labeled data
+////////////////////////////////////////////////////////
+var assetName = "projects/bsos-geog-harvest1/assets/harvest-reference-datasets/SudanGedarefDarfurAlJazirah2023"
+var points = ee.FeatureCollection(assetName).filterBounds(border)
+var trainingPts = points.filter(ee.Filter.or(
+  ee.Filter.eq("subset", "training"), 
+  ee.Filter.eq("subset", "validation")
+))
+var testPts = points.filter("subset == 'testing'")
+print(trainingPts)
+
+Map.addLayer(trainingPts.filter(ee.Filter.eq('class_probability', 1)), {color: 'lime'}, 'Crop Training points');
+Map.addLayer(trainingPts.filter(ee.Filter.eq('class_probability', 0)), {color: 'red'}, 'Non-crop Training points');
+
+
+// 4.1 Corrective points
+var cropPts = ee.FeatureCollection(crop.coordinates().map(function(p){
+  return ee.Feature(ee.Geometry.Point(p), {"class_probability": 1.0})
+}))
+trainingPts = trainingPts.merge(cropPts)
+
+////////////////////////////////////////////////////////
+// 5. Create labeled dataset (labels + EO imagery)
+////////////////////////////////////////////////////////
+var training = imagery.sampleRegions(image, trainingPts, 'class_probability')
+var test = imagery.sampleRegions(image, testPts, 'class_probability')
+
+////////////////////////////////////////////////////////
+// 6. Train a Random Forest Classifier
+////////////////////////////////////////////////////////
+var trainedRf = ee.Classifier.smileRandomForest({numberOfTrees: 20})
+  .setOutputMode('probability')
+  .train({
+    features: training, classProperty: 'class_probability', inputProperties: bands
+});
+var explained = trainedRf.explain();
+print('Explain:', explained);
+
+////////////////////////////////////////////////////////
+// 8. Visualize generated map
+////////////////////////////////////////////////////////
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+
+var classifiedRf = image.select(bands).classify(trainedRf).clip(roi);
+var cropProb = Map.addLayer(classifiedRf, classVis, 'Cropland V3 Probability');
+cropProb.setShown(0)
+var classVis2 = {min: 0, max: 1.0, palette: ['000000', 'green'], opacity: 0.8}
+Map.addLayer(classifiedRf.gt(0.5).selfMask(), classVis2, 'Cropland V3 Binary');
+
+// Cropland V1
+var v1 = ee.Image("users/izvonkov/Sudan/Darfur2023_cropmask_v1").clip(border);
+Map.addLayer(v1, classVis, 'Cropland V1')
+
+var v2 = ee.Image("users/izvonkov/Sudan/Darfur2023_cropmask_v2").clip(border);
+Map.addLayer(v2, classVis, 'Cropland V2')
+
+// Visualize GLAD mask
+var glad = ee.ImageCollection("users/potapovpeter/Global_cropland_2019").mosaic().clip(border).gt(0.4);
+Map.addLayer(glad, classVis, 'GLAD Cropland')
+
+////////////////////////////////////////////////////////
+// 9. Classify data using confusion matrix
+////////////////////////////////////////////////////////
+var testRf = test.classify(trainedRf.setOutputMode('CLASSIFICATION'));
+var errorMatrix = testRf.errorMatrix('class_probability', 'classification');
+
+var confusionMatrix = require("users/izvonkov/eo:utils/errorMatrix")
+confusionMatrix.display(errorMatrix, ['Non-crop', 'Crop'])
+
+
+////////////////////////////////////////////////////////
+// 10. Create NDVI time series on-click widget
+////////////////////////////////////////////////////////
+var daterange = []
+var d = start
+while (end.difference(d, 'month').gt(0).getInfo() == 1){
+  daterange.push(d.format("YY/MM")); d = d.advance(1, 'month');
+}
+var ndvi = image.select(".*_NDVI").rename(daterange)
+var title = ui.Label('Click to inspect');
+title.style().set('position', 'top-center');
+Map.add(title);
+var panel = ui.Panel();
+panel.style().set({width: '400px', position: 'bottom-right'});
+Map.add(panel);
+Map.style().set('cursor', 'crosshair');
+Map.onClick(function(coords) {
+  panel.clear();
+  console.log(coords.lat + ',' + coords.lon)
+  var point = ee.Geometry.Point(coords.lon, coords.lat);
+  var chart = ui.Chart.image.regions(ndvi, point, null, 10);
+  chart.setOptions({title: 'NDVI'});
+  panel.add(chart);
+});
+
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: border, color: 1, width: 2});
+Map.addLayer(outline, {}, 'Region Borders');
+
+////////////////////////////////////////////////////////
+// Export map to GEE asset
+////////////////////////////////////////////////////////
+Export.image.toAsset({
+  image: classifiedRf,
+  description: 'SudanDarfur2023_cropmask_v3',
+  assetId: 'Sudan/Darfur2023_cropmask_v3',
+  region: roi,
+  scale: 10,
+  maxPixels: 1e12,
+  crs: 'EPSG:4326'
+});

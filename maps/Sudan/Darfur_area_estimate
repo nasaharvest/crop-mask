@@ -1,0 +1,105 @@
+// Author: Ivan Zvonkov
+// Description: Estimate area for Darfur region
+
+// Configuration
+var imgName = "Darfur2023_cropmask_v3"
+var assetName = "SudanGedarefDarfurAlJazirah2023"
+
+var debug = 0
+var assetFolder = "projects/bsos-geog-harvest1/assets/harvest-reference-datasets/"
+var assetPath = assetFolder + assetName
+print("Map: " + imgName)
+print("Set: " + assetName)
+
+// 1. ROI
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var roi = border.geometry()
+Map.centerObject(roi, 7)
+
+
+if (debug > 0){
+  print("Area (ha)", roi.area().divide(10000))
+}
+
+// 2. Color Palettes 
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+var classVis2 = {min: 0, max: 1.0, palette: ['yellow', 'green'], opacity: 0.8}
+
+// 3. Display maps
+var img = ee.Image("users/izvonkov/Sudan/" + imgName).clip(border);
+var mask = img.gt(0.5)
+Map.addLayer(img, classVis, imgName + ' Float')
+Map.addLayer(mask.selfMask(), classVis2, imgName + ' Mask')
+
+// 4. Pixel Count Crop Area Estimate
+var args = {
+    reducer: ee.Reducer.sum().unweighted(), 
+    geometry: roi, 
+    scale: 10, 
+    maxPixels: 1e12,
+}
+var cropPixels = ee.Number(mask.reduceRegion(args).get("classification"))
+var nonCropPixels = ee.Number(mask.not().reduceRegion(args).get("classification"))
+if (debug > 0){
+  print("Crop Pixel Count:", cropPixels)
+  print("Non-crop Pixel Count:", nonCropPixels)
+}
+var pixelBasedCropArea = cropPixels.multiply(100).divide(10000)
+print("Pixel Count Crop Area Estimate (ha) ", pixelBasedCropArea)
+
+// 5. Sample Based Crop Area Estimate
+var referenceSamples = ee.FeatureCollection(assetPath).filterBounds(border)
+var cropSamples = referenceSamples.filter("class_probability == 1")
+var cropProportion = cropSamples.size().divide(referenceSamples.size())
+var totalPixels = cropPixels.add(nonCropPixels)
+if (debug > 0){
+  print("Total Pixels:", totalPixels)
+  print("Reference Crop Proportion", cropProportion)  
+}
+var totalArea = totalPixels.multiply(100).divide(10000)
+var sampleBasedCropArea = cropProportion.multiply(totalArea)
+print("Sample Based Crop Area Estimate (ha) ", sampleBasedCropArea)
+
+// 6. Prepare values for equation
+var testSamples = referenceSamples.filter("subset == 'testing'")
+// Get map classification
+testSamples = mask.sampleRegions({collection: testSamples, scale: 10})
+var W_0 = nonCropPixels.divide(totalPixels)
+var W_1 = cropPixels.divide(totalPixels)
+var n_0_ = testSamples.filter("classification == 0").size() 
+var n_1_ = testSamples.filter("classification == 1").size() 
+
+var n_01 = testSamples.filter("classification == 0").filter("class_probability == 1").size() 
+var n_11 = testSamples.filter("classification == 1").filter("class_probability == 1").size()
+var p_01 = W_0.multiply(n_01.divide(n_0_))
+var p_11 = W_1.multiply(n_11.divide(n_1_))
+
+
+// 7. Compute Confidence interval
+var numerator0 = (W_0.multiply(p_01)).subtract(p_01.pow(ee.Number(2)))
+var numerator1 = (W_1.multiply(p_11)).subtract(p_11.pow(ee.Number(2)))
+var denominator0 = n_0_.subtract(ee.Number(1))
+var denominator1 = n_1_.subtract(ee.Number(1))
+
+var sum0 = numerator0.divide(denominator0)
+var sum1 = numerator1.divide(denominator1)
+
+var standardError = (sum0.add(sum1)).sqrt()
+var standardErrorArea = totalArea.multiply(standardError)
+var confidenceInterval = ee.Number(1.96).multiply(standardErrorArea)
+print("95% Confidence Interval", confidenceInterval)
+
+// 8. Display error matrix
+var errorMatrix = testSamples.errorMatrix({
+  actual: "class_probability", predicted: "classification"
+})
+var confusionMatrix = require("users/izvonkov/eo:utils/errorMatrix")
+confusionMatrix.display(errorMatrix, ['Non-crop', 'Crop'])
+
+
+
+
+
+
