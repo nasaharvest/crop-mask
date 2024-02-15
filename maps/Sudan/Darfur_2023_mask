@@ -102,7 +102,7 @@ var crop = /* color: #00d629 */ee.Geometry.MultiPoint(
          [25.21063710720368, 11.547983690185221]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // Author: Ivan Zvonkov
-// Description: 
+// Description:
 //  Script for generating corrective labels for improving Sudan/Darfur_2023
 //  Takes 4 mins to execute
 //  Growing season:  June to January
@@ -110,7 +110,7 @@ var crop = /* color: #00d629 */ee.Geometry.MultiPoint(
 print("https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SU")
 
 ////////////////////////////////////////////////////////
-// 1. ROIs 
+// 1. ROIs
 ////////////////////////////////////////////////////////
 var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
 var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
@@ -138,7 +138,7 @@ Map.centerObject(roi, 6);
 
 var S2display = {'4': 'June', '5': 'July', '6': 'August', '7': 'September', '8': 'October'}
 for (var i in S2display){
-  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0) 
+  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0)
 }
 
 ////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ var assetName = "users/izvonkov/Sudan/GedarefDarfurAlJazirah2023"
 var points = ee.FeatureCollection(assetName).filterBounds(border)
 var trainingPts = points.filter(ee.Filter.eq("subset", "training"))
 var testPts = points.filter(ee.Filter.or(
-  ee.Filter.eq("subset", "testing"), 
+  ee.Filter.eq("subset", "testing"),
   ee.Filter.eq("subset", "validation")
 ))
 
@@ -172,7 +172,7 @@ var training = image.sampleRegions({
 })
 var test = image.sampleRegions({
   collection: testPts, properties: ['label'], scale: 10, geometries: true
-  
+
 })
 
 ////////////////////////////////////////////////////////
