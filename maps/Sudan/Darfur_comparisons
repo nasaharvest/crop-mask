@@ -7,7 +7,7 @@ var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
 var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
 var roi = border.geometry()
 
-// 2. Load palette 
+// 2. Load palette
 var palettes = require('users/gena/packages:palettes');
 var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
 var classVis2 = {min: 0, max: 1.0, palette: ['000000', 'green'], opacity: 0.8}
@@ -25,4 +25,3 @@ displayMap("Darfur2022_cropmask_v2")
 displayMap("Darfur2023_cropmask_v1")
 displayMap("Darfur2023_cropmask_v2")
 displayMap("Darfur2023_cropmask_v3")
-

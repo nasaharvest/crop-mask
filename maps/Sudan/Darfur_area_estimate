@@ -22,7 +22,7 @@ if (debug > 0){
   print("Area (ha)", roi.area().divide(10000))
 }
 
-// 2. Color Palettes 
+// 2. Color Palettes
 var palettes = require('users/gena/packages:palettes');
 var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
 var classVis2 = {min: 0, max: 1.0, palette: ['yellow', 'green'], opacity: 0.8}
@@ -35,9 +35,9 @@ Map.addLayer(mask.selfMask(), classVis2, imgName + ' Mask')
 
 // 4. Pixel Count Crop Area Estimate
 var args = {
-    reducer: ee.Reducer.sum().unweighted(), 
-    geometry: roi, 
-    scale: 10, 
+    reducer: ee.Reducer.sum().unweighted(),
+    geometry: roi,
+    scale: 10,
     maxPixels: 1e12,
 }
 var cropPixels = ee.Number(mask.reduceRegion(args).get("classification"))
@@ -56,7 +56,7 @@ var cropProportion = cropSamples.size().divide(referenceSamples.size())
 var totalPixels = cropPixels.add(nonCropPixels)
 if (debug > 0){
   print("Total Pixels:", totalPixels)
-  print("Reference Crop Proportion", cropProportion)  
+  print("Reference Crop Proportion", cropProportion)
 }
 var totalArea = totalPixels.multiply(100).divide(10000)
 var sampleBasedCropArea = cropProportion.multiply(totalArea)
@@ -68,10 +68,10 @@ var testSamples = referenceSamples.filter("subset == 'testing'")
 testSamples = mask.sampleRegions({collection: testSamples, scale: 10})
 var W_0 = nonCropPixels.divide(totalPixels)
 var W_1 = cropPixels.divide(totalPixels)
-var n_0_ = testSamples.filter("classification == 0").size() 
-var n_1_ = testSamples.filter("classification == 1").size() 
+var n_0_ = testSamples.filter("classification == 0").size()
+var n_1_ = testSamples.filter("classification == 1").size()
 
-var n_01 = testSamples.filter("classification == 0").filter("class_probability == 1").size() 
+var n_01 = testSamples.filter("classification == 0").filter("class_probability == 1").size()
 var n_11 = testSamples.filter("classification == 1").filter("class_probability == 1").size()
 var p_01 = W_0.multiply(n_01.divide(n_0_))
 var p_11 = W_1.multiply(n_11.divide(n_1_))
@@ -97,9 +97,3 @@ var errorMatrix = testSamples.errorMatrix({
 })
 var confusionMatrix = require("users/izvonkov/eo:utils/errorMatrix")
 confusionMatrix.display(errorMatrix, ['Non-crop', 'Crop'])
-
-
-
-
-
-

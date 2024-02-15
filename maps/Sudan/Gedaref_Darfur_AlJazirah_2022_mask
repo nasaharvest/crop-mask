@@ -1,5 +1,5 @@
 // Author: Ivan Zvonkov
-// Description: 
+// Description:
 //  Script for generating cropland mask for Sudan_Gedaref_Darfur_AlJazirah_2022
 //  Takes 8 min to execute
 //  Growing season:  June to January
@@ -18,7 +18,7 @@ var S2display = {
 
 var border = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois");
 
-  
+
 var roi = border.geometry()
 var area = ee.Number(roi.area()).divide(1e6).round()
 print("Area: " + area.getInfo() + " km2")
@@ -38,7 +38,7 @@ while (end.difference(d, 'month').gt(0).getInfo() == 1){
 }
 
 for (var i in S2display){
-  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0) 
+  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0)
 }
 
 // Data -> Crop/Non-crop points
@@ -46,7 +46,7 @@ var assetName = "projects/bsos-geog-harvest1/assets/harvest-reference-datasets/S
 var points = ee.FeatureCollection(assetName)
 
 var trainingPts = points.filter(ee.Filter.or(
-  ee.Filter.eq("subset", "training"), 
+  ee.Filter.eq("subset", "training"),
   ee.Filter.eq("subset", "validation")
 ))
 var testPts = points.filter("subset == 'testing'")
@@ -67,7 +67,7 @@ var worldCereal = ee.ImageCollection(
 ).filterBounds(roi).mosaic().clip(roi).eq(100).rename('crop');
 Map.addLayer(worldCereal.selfMask(), classVis, 'Cropland from WorldCereal').setShown(0)
 
-                   
+
 // // Classification -> Map
 var trainedRf = ee.Classifier.smileRandomForest({numberOfTrees: 20})
   .setOutputMode('probability')
