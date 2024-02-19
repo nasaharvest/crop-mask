@@ -427,7 +427,7 @@ class SudanGedarefDarfurAlJazirah2023(LabeledDataset):
         df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
         df[CLASS_PROB] = df[CLASS_PROB].astype(int)
-        df["num_labelers"] = 2 # Two people reviewed each point
+        df["num_labelers"] = 2  # Two people reviewed each point
         df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
             {
                 CLASS_PROB: "mean",
