@@ -419,19 +419,15 @@ class SudanGedarefDarfurAlJazirah2022(LabeledDataset):
 class SudanGedarefDarfurAlJazirah2023(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Sudan_Gedaref_Darfur_Al_Jazirah_2023"
-        df1 = pd.read_csv(
+        df = pd.read_csv(
             raw_folder / "ceo-Sudan-Feb-2023---Feb-2024-(Set-1)-sample-data-2024-02-15.csv"
         )
-        df2 = pd.read_csv(
-            raw_folder / "ceo-Sudan-Feb-2023---Feb-2024-(Set-2)-sample-data-2024-02-15.csv"
-        )
-        df = pd.concat([df1, df2])
 
         # Discard rows with no label
         df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
         df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
         df[CLASS_PROB] = df[CLASS_PROB].astype(int)
-        df["num_labelers"] = 1
+        df["num_labelers"] = 2 # Two people reviewed each point
         df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
             {
                 CLASS_PROB: "mean",
