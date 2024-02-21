@@ -278,7 +278,7 @@ Export.image.toCloudStorage({{
                   fileFormat='CSV'
                 )
                 export_task.start()
-                print(f'Export task started for {dataset_name} map of {country}. Returning null area for now.')
+                print(f'Export task started for {dataset_name}, {country}. Returning null for now.')
                 a_j = np.array([None, None])
 
             else:
