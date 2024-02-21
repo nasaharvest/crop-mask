@@ -238,7 +238,9 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-    def compute_map_area(self, country: str, dataset_name, projection="EPSG:4326", tile_grid=[1, 1], export=False):
+    def compute_map_area(
+        self, country: str, dataset_name, projection="EPSG:4326", tile_grid=[1, 1], export=False
+    ):
         aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
             ee.Filter.eq("ADM0_NAME", country)
         )
@@ -246,16 +248,13 @@ Export.image.toCloudStorage({{
         binary_image = self.get_binary_image(aoi=aoi, projection=projection)
 
         if tile_grid == [1, 1]:
-            crop_px_sum = (
-                binary_image.reduceRegion(
-                    reducer=ee.Reducer.sum().unweighted(),
-                    geometry=aoi.geometry(),
-                    scale=self.resolution,
-                    maxPixels=MAX_PIXELS,
-                    bestEffort=True,
-                )
-                .get("crop")
-            )
+            crop_px_sum = binary_image.reduceRegion(
+                reducer=ee.Reducer.sum().unweighted(),
+                geometry=aoi.geometry(),
+                scale=self.resolution,
+                maxPixels=MAX_PIXELS,
+                bestEffort=True,
+            ).get("crop")
             noncrop_px_sum = (
                 binary_image.Not()
                 .reduceRegion(
@@ -271,11 +270,11 @@ Export.image.toCloudStorage({{
             if export:
                 # export the computation and retrieve result later
                 export_task = ee.batch.Export.table.toDrive(
-                  collection = ee.FeatureCollection([
-                    ee.Feature(None, {'crop_sum': crop_px_sum, 'noncrop_sum': noncrop_px_sum})
-                  ]),
-                  description=f'Crop_NonCrop_Area_Sum_Export-{country}-{dataset_name}',
-                  fileFormat='CSV'
+                    collection=ee.FeatureCollection(
+                        [ee.Feature(None, {"crop_sum": crop_px_sum, "noncrop_sum": noncrop_px_sum})]
+                    ),
+                    description=f"Crop_NonCrop_Area_Sum_Export-{country}-{dataset_name}",
+                    fileFormat="CSV",
                 )
                 export_task.start()
                 print(f'Export task started for {dataset_name}, {country}. Returning null for now.')
@@ -622,16 +621,13 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1], export=False):
     min_scale = min([c.resolution for c in covermaps])
 
     if tile_grid == [1, 1]:
-        crop_px_sum = (
-            ensemble_image.reduceRegion(
-                reducer=ee.Reducer.sum().unweighted(),
-                geometry=aoi.geometry(),
-                scale=min_scale,
-                maxPixels=MAX_PIXELS,
-                bestEffort=True,
-            )
-            .get("crop")
-        )
+        crop_px_sum = ensemble_image.reduceRegion(
+            reducer=ee.Reducer.sum().unweighted(),
+            geometry=aoi.geometry(),
+            scale=min_scale,
+            maxPixels=MAX_PIXELS,
+            bestEffort=True,
+        ).get("crop")
         noncrop_px_sum = (
             ensemble_image.Not()
             .reduceRegion(
@@ -647,14 +643,16 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1], export=False):
         if export:
             # export the computation and retrieve result later
             export_task = ee.batch.Export.table.toDrive(
-              collection=ee.FeatureCollection([
-                ee.Feature(None, {'crop_sum': crop_px_sum, 'noncrop_sum': noncrop_px_sum})
-              ]),
-              description=f'Crop_NonCrop_Ensemble_Area_Sum_Export-{country}',
-              fileFormat='CSV'
+                collection=ee.FeatureCollection(
+                    [ee.Feature(None, {"crop_sum": crop_px_sum, "noncrop_sum": noncrop_px_sum})]
+                ),
+                description=f"Crop_NonCrop_Ensemble_Area_Sum_Export-{country}",
+                fileFormat="CSV",
             )
             export_task.start()
-            print(f'Export task started for ensemble map of {country}. Returning null area for now.')
+            print(
+                f"Export task started for ensemble map of {country}. Returning null area for now."
+            )
             a_j = np.array([None, None])
 
         else:
