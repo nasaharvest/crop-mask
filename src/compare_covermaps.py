@@ -238,7 +238,7 @@ Export.image.toCloudStorage({{
 
         return binary_image.rename("crop")
 
-    def compute_map_area(self, country: str, projection="EPSG:4326", tile_grid=[1, 1]):
+    def compute_map_area(self, country: str, dataset_name, projection="EPSG:4326", tile_grid=[1, 1], export=False):
         aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
             ee.Filter.eq("ADM0_NAME", country)
         )
@@ -255,7 +255,6 @@ Export.image.toCloudStorage({{
                     bestEffort=True,
                 )
                 .get("crop")
-                .getInfo()
             )
             noncrop_px_sum = (
                 binary_image.Not()
@@ -267,9 +266,24 @@ Export.image.toCloudStorage({{
                     bestEffort=True,
                 )
                 .get("crop")
-                .getInfo()
             )
-            a_j = np.array([noncrop_px_sum, crop_px_sum])
+
+            if export:
+                # export the computation and retrieve result later
+                export_task = ee.batch.Export.table.toDrive(
+                  collection = ee.FeatureCollection([
+                    ee.Feature(None, {'crop_sum': crop_px_sum, 'noncrop_sum': noncrop_px_sum})
+                  ]),
+                  description=f'Crop_NonCrop_Area_Sum_Export-{country}-{dataset_name}',
+                  fileFormat='CSV'
+                )
+                export_task.start()
+                print(f'Export task started for {dataset_name} map of {country}. Returning null area for now.')
+                a_j = np.array([None, None])
+
+            else:
+                # do computation in this client session
+                a_j = np.array([noncrop_px_sum.getInfo(), crop_px_sum.getInfo()])
 
         else:
             tile_geometries = create_tile_geometries(aoi)
@@ -585,7 +599,7 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     return df
 
 
-def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1]):
+def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1], export=False):
     """
     Creates ensemble image and calculates areas.
     """
@@ -617,7 +631,6 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1]):
                 bestEffort=True,
             )
             .get("crop")
-            .getInfo()
         )
         noncrop_px_sum = (
             ensemble_image.Not()
@@ -629,9 +642,24 @@ def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1]):
                 bestEffort=True,
             )
             .get("crop")
-            .getInfo()
         )
-        a_j = np.array([noncrop_px_sum, crop_px_sum])
+
+        if export:
+            # export the computation and retrieve result later
+            export_task = ee.batch.Export.table.toDrive(
+              collection=ee.FeatureCollection([
+                ee.Feature(None, {'crop_sum': crop_px_sum, 'noncrop_sum': noncrop_px_sum})
+              ]),
+              description=f'Crop_NonCrop_Ensemble_Area_Sum_Export-{country}',
+              fileFormat='CSV'
+            )
+            export_task.start()
+            print(f'Export task started for ensemble map of {country}. Returning null area for now.')
+            a_j = np.array([None, None])
+
+        else:
+            # do computation in this client session
+            a_j = np.array([noncrop_px_sum.getInfo(), crop_px_sum.getInfo()])
 
     else:
         tile_geometries = create_tile_geometries(aoi)
