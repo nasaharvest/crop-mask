@@ -9,7 +9,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from shapely.geometry import GeometryCollection
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 from src.area_utils import (
     compute_acc,
@@ -84,6 +84,7 @@ LAT = "lat"
 LON = "lon"
 CLASS_COL = "binary"
 COUNTRY_COL = "country"
+MAX_PIXELS = 1e18
 
 
 class Covermap:
@@ -169,7 +170,7 @@ Export.image.toCloudStorage({{
     region: aoi,
     scale: 10,
     crs: "EPSG:4326",
-    maxPixels: 1e10,
+    maxPixels: {MAX_PIXELS},
     skipEmptyTiles: true
 }});"""
         return script
@@ -213,6 +214,100 @@ Export.image.toCloudStorage({{
 
     def __repr__(self) -> str:
         return self.title + " " + repr(self.countries)
+
+    def get_binary_image(self, aoi, projection="EPSG:4326"):
+        """
+        Creates a binary image for a covermap in given country.
+        """
+        image = self.ee_asset.mosaic().clip(aoi).reproject(crs=projection, scale=self.resolution)
+
+        # Convert the image to binary classes: 1 (crop), 0 (noncrop)
+        if self.crop_labels is None:
+            binary_image = image.gte(self.probability)
+
+        # Check if crop_labels are an ordered list
+        elif len(self.crop_labels) > 2 and self.crop_labels == list(
+            range(self.crop_labels[0], self.crop_labels[-1] + 1)
+        ):
+            binary_image = image.gte(self.crop_labels[0]).And(image.lte(self.crop_labels[-1]))
+        else:
+            binary_image = image.eq(self.crop_labels[0])
+            if len(self.crop_labels) > 1:
+                for crop_value in self.crop_labels[1:]:
+                    binary_image = binary_image.Or(image.eq(crop_value))
+
+        return binary_image.rename("crop")
+
+    def compute_map_area(
+        self, country: str, dataset_name, projection="EPSG:4326", tile_grid=[1, 1], export=False
+    ):
+        aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(
+            ee.Filter.eq("ADM0_NAME", country)
+        )
+
+        binary_image = self.get_binary_image(aoi=aoi, projection=projection)
+
+        if tile_grid == [1, 1]:
+            crop_px_sum = binary_image.reduceRegion(
+                reducer=ee.Reducer.sum().unweighted(),
+                geometry=aoi.geometry(),
+                scale=self.resolution,
+                maxPixels=MAX_PIXELS,
+                bestEffort=True,
+            ).get("crop")
+            noncrop_px_sum = (
+                binary_image.Not()
+                .reduceRegion(
+                    reducer=ee.Reducer.sum().unweighted(),
+                    geometry=aoi.geometry(),
+                    scale=self.resolution,
+                    maxPixels=MAX_PIXELS,
+                    bestEffort=True,
+                )
+                .get("crop")
+            )
+
+            if export:
+                # export the computation and retrieve result later
+                export_task = ee.batch.Export.table.toDrive(
+                    collection=ee.FeatureCollection(
+                        [ee.Feature(None, {"crop_sum": crop_px_sum, "noncrop_sum": noncrop_px_sum})]
+                    ),
+                    description=f"Crop_NonCrop_Area_Sum_Export-{country}-{dataset_name}",
+                    fileFormat="CSV",
+                )
+                export_task.start()
+                print(f"Export task started for {dataset_name}, {country}. Returning null for now.")
+                a_j = np.array([None, None])
+
+            else:
+                # do computation in this client session
+                a_j = np.array([noncrop_px_sum.getInfo(), crop_px_sum.getInfo()])
+
+        else:
+            tile_geometries = create_tile_geometries(aoi)
+            # Initialize sums
+            crop_sum_total = 0
+            noncrop_sum_total = 0
+            # Iterate over each tile
+            for tile_geometry in tile_geometries:
+                crop_sum = (
+                    compute_tile_sum(binary_image, tile_geometry, scale=self.resolution)
+                    .get("crop")
+                    .getInfo()
+                )
+                noncrop_sum = (
+                    compute_tile_sum(binary_image.Not(), tile_geometry, scale=self.resolution)
+                    .get("crop")
+                    .getInfo()
+                )
+                # Update total sums
+                crop_sum_total += crop_sum
+                noncrop_sum_total += noncrop_sum
+
+            a_j = np.array([noncrop_sum_total, crop_sum_total])
+
+        return a_j
 
 
 class TestCovermaps:
@@ -312,6 +407,65 @@ class TestCovermaps:
 
 
 # Supporting funcs
+
+
+def compute_tile_sum(binary_image, tile_geometry, scale):
+    """
+    Compute the sum of binary values within a tile.
+    """
+    sum_dict = binary_image.reduceRegion(
+        reducer=ee.Reducer.sum().unweighted(),
+        geometry=tile_geometry,
+        scale=scale,
+        maxPixels=MAX_PIXELS,
+    )
+    return sum_dict
+
+
+def create_tile_geometries(aoi, rows=10, columns=10):
+    """
+    Generate a list of tile geometries as a grid over the specified AOI,
+    where the AOI is given as an ee.FeatureCollection.
+
+    Parameters:
+    aoi (ee.FeatureCollection): The area of interest as a feature collection.
+    rows (int): The number of rows in the grid.
+    columns (int): The number of columns in the grid.
+
+    Returns:
+    list of ee.Geometry: The geometries representing each tile in the grid.
+    """
+    # Convert the FeatureCollection to a Geometry that represents the union of all features
+    aoi_geometry = aoi.geometry()
+
+    # Get the bounds of the AOI geometry
+    bounds = aoi_geometry.bounds()
+    boundsInfo = bounds.getInfo()  # Get information about the bounds
+    coords = boundsInfo["coordinates"][0]  # Extract the coordinates of the bounds
+
+    # Extract the min and max coordinates
+    x_min = coords[0][0]
+    y_min = coords[0][1]
+    x_max = coords[2][0]
+    y_max = coords[2][1]
+
+    # Calculate the width and height of each tile
+    width = (x_max - x_min) / columns
+    height = (y_max - y_min) / rows
+
+    tile_geometries = []
+
+    # Create the grid of tiles
+    for i in range(columns):
+        for j in range(rows):
+            x1 = x_min + width * i
+            y1 = y_min + height * j
+            x2 = x1 + width
+            y2 = y1 + height
+            tile = ee.Geometry.Rectangle([x1, y1, x2, y2], "EPSG:4326", False)
+            tile_geometries.append(tile)
+
+    return tile_geometries
 
 
 def generate_test_data(target_paths) -> gpd.GeoDataFrame:
@@ -419,6 +573,16 @@ def read_test(path: str, country=None) -> gpd.GeoDataFrame:
     return test
 
 
+def compute_f1(precision, recall):
+    """
+    Calculate the F1 score from precision and recall.
+    """
+    if precision + recall == 0:
+        return 0
+    f1_score = 2 * (precision * recall) / (precision + recall)
+    return f1_score
+
+
 def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     """
     Propagates standard deviation of precision and recall to get
@@ -434,47 +598,149 @@ def compute_std_f1(label, recall_i, precision_i, std_rec_i, std_prec_i):
     return df
 
 
-def generate_report(dataset_name: str, country: str, true, pred) -> pd.DataFrame:
+def get_ensemble_area(country: str, covermaps, tile_grid=[1, 1], export=False):
+    """
+    Creates ensemble image and calculates areas.
+    """
+    # Create the binary map version of each map
+    aoi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", country))
+
+    binary_images = []
+    for covermap in covermaps:
+        binary_images.append(covermap.get_binary_image(aoi))
+
+    # Create an image collection of the maps and sum
+    binary_coll = ee.ImageCollection(binary_images)
+    sum_image = binary_coll.reduce(ee.Reducer.sum()).clip(aoi)
+
+    # Threshold to binary based on majority vote
+    majority_thresh = np.ceil(len(binary_images) / 2)
+    ensemble_image = sum_image.gte(majority_thresh).rename("crop")
+
+    # Calculate the total pixels in each class
+    min_scale = min([c.resolution for c in covermaps])
+
+    if tile_grid == [1, 1]:
+        crop_px_sum = ensemble_image.reduceRegion(
+            reducer=ee.Reducer.sum().unweighted(),
+            geometry=aoi.geometry(),
+            scale=min_scale,
+            maxPixels=MAX_PIXELS,
+            bestEffort=True,
+        ).get("crop")
+        noncrop_px_sum = (
+            ensemble_image.Not()
+            .reduceRegion(
+                reducer=ee.Reducer.sum().unweighted(),
+                geometry=aoi.geometry(),
+                scale=min_scale,
+                maxPixels=MAX_PIXELS,
+                bestEffort=True,
+            )
+            .get("crop")
+        )
+
+        if export:
+            # export the computation and retrieve result later
+            export_task = ee.batch.Export.table.toDrive(
+                collection=ee.FeatureCollection(
+                    [ee.Feature(None, {"crop_sum": crop_px_sum, "noncrop_sum": noncrop_px_sum})]
+                ),
+                description=f"Crop_NonCrop_Ensemble_Area_Sum_Export-{country}",
+                fileFormat="CSV",
+            )
+            export_task.start()
+            print(
+                f"Export task started for ensemble map of {country}. Returning null area for now."
+            )
+            a_j = np.array([None, None])
+
+        else:
+            # do computation in this client session
+            a_j = np.array([noncrop_px_sum.getInfo(), crop_px_sum.getInfo()])
+
+    else:
+        tile_geometries = create_tile_geometries(aoi)
+
+        # Initialize sums
+        crop_sum_total = 0
+        noncrop_sum_total = 0
+
+        # Iterate over each tile
+        for tile_geometry in tile_geometries:
+            crop_sum = (
+                compute_tile_sum(ensemble_image, tile_geometry, scale=min_scale)
+                .get("crop")
+                .getInfo()
+            )
+            noncrop_sum = (
+                compute_tile_sum(ensemble_image.Not(), tile_geometry, scale=min_scale)
+                .get("crop")
+                .getInfo()
+            )
+
+            # Update total sums
+            crop_sum_total += crop_sum
+            noncrop_sum_total += noncrop_sum
+
+        a_j = np.array([noncrop_sum_total, crop_sum_total])
+
+    return a_j
+
+
+def generate_report(
+    dataset_name: str, country: str, true, pred, a_j, area_weighted
+) -> pd.DataFrame:
     """
     Creates classification report on crop coverage binary values.
     Assumes 1 indicates cropland.
     """
-    report = classification_report(true, pred, output_dict=True)
     cm = confusion_matrix(true, pred)
     tn, fp, fn, tp = cm.ravel()
-    a_j = np.array([tn + fn, tp + fp])
-    w_j = np.array([(tn + fn) / (tn + fp + fn + tp), (tp + fp) / (tn + fp + fn + tp)])
-    am = compute_area_error_matrix(cm, w_j)
-    u_j = np.array([report["0"]["precision"], report["1"]["precision"]])
-    p_i = np.array([report["0"]["recall"], report["1"]["recall"]])
+    total_px = a_j.sum()
+    w_j = a_j / total_px
+    if area_weighted:
+        # weight by mapped area for each class
+        am = compute_area_error_matrix(cm, w_j)
+    else:
+        # unweighted metrics
+        w_j = np.ones_like(w_j)
+        am = cm / (tn + fp + fn + tp)
+    tn_area, fp_area, fn_area, tp_area = am.ravel()
+    u_j = compute_u_j(am)
+    p_i = compute_p_i(am)
     return pd.DataFrame(
         data={
             "dataset": dataset_name,
             "country": country,
-            "crop_f1": report["1"]["f1-score"],
+            "crop_f1": compute_f1(precision=u_j[1], recall=p_i[1]),
             "std_crop_f1": compute_std_f1(
                 label=1,
-                recall_i=compute_p_i(am),
-                precision_i=compute_u_j(am),
+                recall_i=p_i,
+                precision_i=u_j,
                 std_rec_i=np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm)),
                 std_prec_i=np.sqrt(compute_var_u_j(u_j=u_j, cm=cm)),
             ),
             "accuracy": compute_acc(am),
             "std_acc": np.sqrt(compute_var_acc(w_j=w_j, u_j=u_j, cm=cm)),
-            "crop_recall_pa": compute_p_i(am)[1],
+            "crop_recall_pa": p_i[1],
             "std_crop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[1],
-            "noncrop_recall_pa": compute_p_i(am)[0],
+            "noncrop_recall_pa": p_i[0],
             "std_noncrop_pa": np.sqrt(compute_var_p_i(p_i=p_i, u_j=u_j, a_j=a_j, cm=cm))[0],
-            "crop_precision_ua": compute_u_j(am)[1],
+            "crop_precision_ua": u_j[1],
             "std_crop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[1],
-            "noncrop_precision_ua": compute_u_j(am)[0],
+            "noncrop_precision_ua": u_j[0],
             "std_noncrop_ua": np.sqrt(compute_var_u_j(u_j=u_j, cm=cm))[0],
-            "crop_support": report["1"]["support"],
-            "noncrop_support": report["0"]["support"],
+            "crop_support": tp + fn,
+            "noncrop_support": tn + fp,
             "tn": tn,
             "fp": fp,
             "fn": fn,
             "tp": tp,
+            "tn_area": tn_area,
+            "fp_area": fp_area,
+            "fn_area": fn_area,
+            "tp_area": tp_area,
         },
         index=[0],
     ).round(2)
@@ -557,7 +823,11 @@ TARGETS = {
     ),
     "digital-earth-africa": Covermap(
         "digital-earth-africa",
-        'ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered")',
+        """ee.ImageCollection([ee.Image(0)
+            .where(ee.ImageCollection("projects/sat-io/open-datasets/DEAF/CROPLAND-EXTENT/filtered")
+            .mosaic()
+            .eq(1), 1)]
+        )""",
         resolution=10,
         crop_labels=[1],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
