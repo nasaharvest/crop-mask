@@ -825,7 +825,7 @@ TARGETS = {
         'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30")',
         resolution=30,
         crop_labels=[2],
-        year=2015, 
+        year=2015,
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
@@ -899,7 +899,7 @@ TARGETS = {
         resolution=10,
         probability=0.5,
         countries=["Togo", "Kenya", "Malawi"],
-        collection_years= [2019, 2019, 2020],
+        collection_years=[2019, 2019, 2020],
     ),
     "harvest-dev": Covermap(
         "harvest-dev",
@@ -958,6 +958,7 @@ TARGETS = {
             2020,
             2021,
             2020,
-            2019,],
+            2019,
+        ],
     ),
 }
