@@ -2,8 +2,11 @@
 // Description: Estimate area for Darfur region
 
 // Configuration
-var imgName = "Darfur2023_cropmask_v4"
-var assetName = "GedarefDarfurAlJazirah2023"
+var imgFolder = "users/hkerner_umd/Sudan/"
+var imgName = "Darfur2023_cropmask_v5"
+var img = ee.Image(imgFolder + imgName)
+var isRegionSplit = false
+var assetName = "GedarefDarfurAlJazirah2023_v2"
 
 var debug = 0
 var assetFolder = "users/izvonkov/Sudan/"
@@ -36,7 +39,7 @@ var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
 var classVis2 = {min: 0, max: 1.0, palette: ['yellow', 'green'], opacity: 0.8}
 
 // 3. Display maps
-var img = ee.Image("users/izvonkov/Sudan/" + imgName).clip(border);
+img = img.clip(border);
 var mask = img.gt(0.5)
 Map.addLayer(img, classVis, imgName + ' Float')
 Map.addLayer(mask.selfMask(), classVis2, imgName + ' Mask')
@@ -48,7 +51,9 @@ for (var key in roiDict){
   var args = {
       reducer: ee.Reducer.sum().unweighted(),
       geometry: roiDict[key],
+      crs: "EPSG:32635",
       scale: 10,
+      //crsTransform: [9.905300029869968, 0.0, 64773.159401580895, 0.0, -9.905300029869968, 1453259.3678092293],
       maxPixels: 1e12,
   }
   cropPixels[key] = ee.Number(mask.reduceRegion(args).get("classification"))
@@ -75,18 +80,22 @@ for (var key in roiDict){
     print("Reference Crop Proportion", cropProportion)
   }
   var totalArea = totalPixels.divide(10e7)
-  var sampleBasedCropArea = cropProportion.multiply(totalArea)
-  print(key + " Sample Based Crop Area Estimate (Mha) ", sampleBasedCropArea)
 
   // 6. Prepare values for equation
-  var testSamples = referenceSamples.filter(ee.Filter.or(
-    ee.Filter.eq("subset", "testing"),
-    ee.Filter.eq("subset", "validation")
-  ))
+  var testSamples = referenceSamples
+  // if (isRegionSplit == false){
+  //   testSamples = referenceSamples.filter(ee.Filter.or(
+  //     ee.Filter.eq("subset", "testing"),
+  //     ee.Filter.eq("subset", "validation")
+  //   ))
+  // }
+
   // Get map classification
   testSamples = mask.sampleRegions({collection: testSamples, scale: 10})
+
   var W_0 = nonCropPixels[key].divide(totalPixels)
   var W_1 = cropPixels[key].divide(totalPixels)
+
   var n_0_ = testSamples.filter("classification == 0").size()
   var n_1_ = testSamples.filter("classification == 1").size()
 
@@ -94,6 +103,15 @@ for (var key in roiDict){
   var n_11 = testSamples.filter("classification == 1").filter("label == 1").size()
   var p_01 = W_0.multiply(n_01.divide(n_0_))
   var p_11 = W_1.multiply(n_11.divide(n_1_))
+
+  // 7. Compute Area Estimate
+  var adjustedCropProportion = (
+      W_0.multiply(n_01.divide(n_0_)))
+    .add(
+      W_1.multiply(n_11.divide(n_1_))
+    )
+  var sampleBasedCropArea = adjustedCropProportion.multiply(totalArea)
+  print(key + " Sample Based Crop Area Estimate (Mha) ", sampleBasedCropArea)
 
   // 7. Compute Confidence interval
   var numerator0 = (W_0.multiply(p_01)).subtract(p_01.pow(ee.Number(2)))

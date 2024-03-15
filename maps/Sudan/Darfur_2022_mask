@@ -1,8 +1,5 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var crop =
-    /* color: #00d60c */
-    /* shown: false */
-    ee.Geometry.MultiPoint(
+var crop = /* color: #00d60c */ee.Geometry.MultiPoint(
         [[24.977872226034957, 11.777993374028112],
          [24.980254027640182, 11.779085678621074],
          [24.979009482657272, 11.785597404342427],
@@ -112,7 +109,47 @@ var crop =
          [24.27209862060618, 13.120391089955469],
          [24.17945596985604, 13.085413096652532],
          [24.179048274085776, 13.086552170968316],
-         [24.178082678840415, 13.088130145955894]]);
+         [24.178082678840415, 13.088130145955894],
+         [22.684244139507737, 12.380503038625545],
+         [22.23966217846671, 13.296925364872893],
+         [22.300859459350498, 13.305988164862766],
+         [22.25639916271964, 13.307951030801753],
+         [22.117090533164934, 13.159558186515504],
+         [22.122283289817766, 13.160790940637689],
+         [22.460378972265467, 14.021174067779063],
+         [22.472910252783045, 14.02044542375153],
+         [22.46329721567367, 14.0191130401173],
+         [22.452997533056482, 14.018509301236058],
+         [22.42972152801503, 13.729655285053672],
+         [22.428562813720596, 13.728258696090709]]),
+    noncrop = /* color: #ff0e0e */ee.Geometry.MultiPoint(
+        [[22.4738028691069, 14.326316789947267],
+         [22.486892049099577, 14.333094353153303],
+         [22.48783618667282, 14.337959103527723],
+         [22.490196530605925, 14.319247947612325],
+         [22.49753505447067, 14.334383314385821],
+         [22.662730065287565, 13.625499396392918],
+         [22.67985328763864, 13.636801870979074],
+         [22.68809303373239, 13.63513364306332],
+         [22.813047198769784, 13.60370646493448],
+         [22.82139423322413, 13.603080793287218],
+         [22.807339457986092, 13.604624113692982],
+         [22.80618074369166, 13.602642822150404],
+         [22.706661290041275, 12.388360717017717],
+         [22.698507374636, 12.394228904751442],
+         [22.64133352697932, 12.367126530102313],
+         [22.642213291536205, 12.369306335399731],
+         [22.563649591333416, 14.071288694334559],
+         [22.568155702478435, 14.070768348427832],
+         [22.55633252514079, 14.065460752530957],
+         [22.54680531871989, 14.073578202251985],
+         [22.47369064351228, 13.894257640819355],
+         [22.47045053502229, 13.890799862816644],
+         [22.469656601153883, 13.88811275873322],
+         [22.46922381308998, 13.889178549329127],
+         [22.46746428397621, 13.884512517576415],
+         [22.4348474468254, 13.686353881448996],
+         [22.428324314501182, 13.687875809160724]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // Author: Ivan Zvonkov
 // Description:
@@ -157,7 +194,7 @@ for (var i in S2display){
 ////////////////////////////////////////////////////////
 // 4. Load labeled data
 ////////////////////////////////////////////////////////
-var assetName = "users/izvonkov/Sudan/GedarefDarfurAlJazirah2022"
+var assetName = "users/izvonkov/Sudan/GedarefDarfurAlJazirah2022_v2"
 var points = ee.FeatureCollection(assetName).filterBounds(border)
 
 var trainingPts = points.filter(ee.Filter.eq("subset", "training"))
@@ -174,7 +211,22 @@ Map.addLayer(trainingPts.filter(ee.Filter.eq('label', 0)), {color: 'red'}, 'Non-
 var cropPts = ee.FeatureCollection(crop.coordinates().map(function(p){
   return ee.Feature(ee.Geometry.Point(p), {"label": 1.0})
 }))
+Export.table.toAsset({
+  collection: cropPts,
+  description: "SudanDarfurCorrectiveCrop2022",
+  assetId: "users/izvonkov/Sudan/DarfurCorrectiveCrop2022"
+})
 trainingPts = trainingPts.merge(cropPts)
+
+var noncropPts = ee.FeatureCollection(noncrop.coordinates().map(function(p){
+  return ee.Feature(ee.Geometry.Point(p), {"label": 0.0})
+}))
+Export.table.toAsset({
+  collection: noncropPts,
+  description: "SudanDarfurCorrectiveNonCrop2022",
+  assetId: "users/izvonkov/Sudan/DarfurCorrectiveNonCrop2022"
+})
+trainingPts = trainingPts.merge(noncropPts)
 
 ////////////////////////////////////////////////////////
 // 5. Create labeled dataset (labels + EO imagery)
@@ -272,8 +324,8 @@ Map.addLayer(outline, {}, 'Region Borders');
 ////////////////////////////////////////////////////////
 Export.image.toAsset({
   image: classifiedRf,
-  description: 'SudanDarfur2022_cropmask_v3',
-  assetId: 'Sudan/Darfur2022_cropmask_v3',
+  description: 'SudanDarfur2022_cropmask_v5',
+  assetId: 'Sudan/Darfur2022_cropmask_v5',
   region: roi,
   scale: 10,
   maxPixels: 1e12,
