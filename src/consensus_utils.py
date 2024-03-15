@@ -174,10 +174,10 @@ def create_consensus_features(consensus_dataframe: pd.DataFrame) -> pd.DataFrame
     """Creates and adds features to consensus dataframe."""
 
     # Convert analysis duration to float
-    consensus_dataframe[
-        ["set_1_analysis_duration", "set_2_analysis_duration"]
-    ] = consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(
-        tofloat
+    consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]] = (
+        consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(
+            tofloat
+        )
     )
 
     # (1)
@@ -302,10 +302,10 @@ def create_consensus_dataframe_aux(
         consensus_dataframe = df1.merge(
             df2, left_on=["plotid", "sampleid"], right_on=["plotid", "sampleid"]
         )
-        consensus_dataframe[
-            ["set_1_analysis_duration", "set_2_analysis_duration"]
-        ] = consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(
-            tofloat
+        consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]] = (
+            consensus_dataframe[["set_1_analysis_duration", "set_2_analysis_duration"]].applymap(
+                tofloat
+            )
         )
 
         rcolumns = [
