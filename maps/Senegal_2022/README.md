@@ -74,4 +74,4 @@ Total: 19.671 Mha
 
 ## Crop Map Generation
 - [Random Forest Script](https://code.earthengine.google.com/85e02a1e5fbe25d3381b3b7b011395e8)
-- [Visualizing generated maps](https://code.earthengine.google.com/1060d8796da34c0a7096a6cea0526b48)
+- [View generated maps](https://code.earthengine.google.com/b0ba4c68291c70229bccffd5de011ba1)
