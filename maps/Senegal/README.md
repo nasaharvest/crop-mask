@@ -62,16 +62,16 @@ Total: 19.671 Mha
     └── Permanent meadows & pastures: 5.6 Mha
 ```
 
-## Visual Assessment of Existing Cropland Maps
+## 2022 Visual Assessment of Existing Cropland Maps
 
-- [GEE Script Generation](maps/Senegal_2022/1_visual_assessment_existing.ipynb)
+- [GEE Script Generation](maps/Senegal/01_2022_visual_assessment_existing.ipynb)
 - [GEE Script](https://code.earthengine.google.com/79fb3f16239446a1fbb449bbe8e7c69f)
 - [Assessment](https://docs.google.com/spreadsheets/d/1ZlALIwKMC3HzI8-3L4OTEYgBdNjaHKia_0oyAM6qssw/edit?usp=sharing)
 
-## Intercomparison of Existing Cropland Maps
-- [Intercomparison Report](maps/Senegal_2022/intercomparison.ipynb)
+## 2022 Intercomparison of Existing Cropland Maps
+- [Intercomparison Report](maps/Senegal/02_2022_intercomparison.ipynb)
 - **Best performing map for 2022**: Worldcover v200
 
-## Crop Map Generation
+## 2022 Crop Map Generation
 - [Random Forest Script](https://code.earthengine.google.com/85e02a1e5fbe25d3381b3b7b011395e8)
 - [View generated maps](https://code.earthengine.google.com/b0ba4c68291c70229bccffd5de011ba1)
