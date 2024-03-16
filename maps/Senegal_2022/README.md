@@ -14,19 +14,19 @@
 
 ### Geography
 **Area** <sup>[1]</sup>
-Total: 196,722 sq km
-Land: 192,530 sq km
-Water: 4,192 sq km
+- Total: 196,722 sq km
+- Land: 192,530 sq km
+- Water: 4,192 sq km
 
 **Landscape**
 - Majority of landscape is rolling sandy plains which rise to foothills in the southeast
 - Northern border is formed by the Senegal River
 
 **Terrestrial Ecoregions** <sup>[2]</sup>
-    1. Guinean forest-savanna mosaic
-    2. Sahelian Acacia savanna
-    3. West Sudanian savanna, and
-    4. Guinean mangroves
+1. Guinean forest-savanna mosaic
+2. Sahelian Acacia savanna
+3. West Sudanian savanna, and
+4. Guinean mangroves
 
 **Climate** <sup>[1]</sup>
 - Rainy season: May to November
@@ -36,10 +36,12 @@ Water: 4,192 sq km
 ### Crop Calendars
 
 **FAO/GIEWS Crop Calendar** <sup>[3]</sup>
+
 <img src="https://www.fao.org/giews/countrybrief/country/SEN/graphics/1_2022-11-07.jpg" />
 
 
 **USDA/FAS Crop Calendar** <sup>[4]</sup>
+
 <img src="https://ipad.fas.usda.gov/countrysummary/images/SG/cropcalendar/wafrica_sg_calendar.png" />
 
 **Crop Calendar Summary Comparison**
