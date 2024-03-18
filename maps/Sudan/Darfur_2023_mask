@@ -1,0 +1,355 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var crop = /* color: #00d629 */ee.Geometry.MultiPoint(
+        [[23.8273135793083, 11.499708938643428],
+         [23.824910320030956, 11.498699644447164],
+         [23.823601402031688, 11.498194995992689],
+         [23.821005023705272, 11.49701747941616],
+         [23.82177749990156, 11.49766931955784],
+         [23.8208119046562, 11.501538275154541],
+         [23.819159663903026, 11.504019425224092],
+         [24.146105450996245, 11.290402281341471],
+         [24.150568646797026, 11.293853216131875],
+         [24.146835011848296, 11.296083676290404],
+         [24.13198630274185, 11.284889116494778],
+         [24.12949721277603, 11.2864883660547],
+         [24.13426081598648, 11.28728798749398],
+         [24.15520350397476, 11.302438288425403],
+         [24.138166112312163, 11.283079428618633],
+         [24.147307080634917, 11.287835095616481],
+         [24.144860906013335, 11.284384088467338],
+         [24.154774350532378, 11.282490225453794],
+         [25.23555607923419, 10.976487201503476],
+         [25.23109288343341, 10.994307749008742],
+         [25.234182788218565, 10.995066046306468],
+         [25.223411036814756, 10.995108173876952],
+         [24.416992462208096, 10.906420874865024],
+         [24.419567382862393, 10.910087048486801],
+         [24.420254028370206, 10.908696436228105],
+         [24.40643528752548, 10.898161283628905],
+         [24.448792732288663, 10.891797870761868],
+         [24.439179695179288, 10.90005763863274],
+         [24.414331710865323, 10.893272846119663],
+         [24.41364506535751, 10.896138491638277],
+         [24.414846694996182, 10.899299098081471],
+         [24.396779335071866, 10.894242111661795],
+         [24.397251403858487, 10.900184061869943],
+         [23.87057408052242, 10.868646237941316],
+         [23.872634017045858, 10.871512120263805],
+         [23.876238905961873, 10.874883711278429],
+         [23.882247054155233, 10.881626778949409],
+         [23.894606673295858, 10.878760993824045],
+         [23.901902281816366, 10.874293685602021],
+         [23.90705212312496, 10.875979470151949],
+         [23.88430699067867, 10.884829682657536],
+         [23.866282546098592, 10.883818243100333],
+         [23.922415816362264, 10.894101051906581],
+         [23.53424079829588, 11.104193890552956],
+         [23.526687697709942, 11.100656468885],
+         [23.525357322038555, 11.101246042139131],
+         [23.518576697648907, 11.10099336803312],
+         [23.515315131486798, 11.103520099253862],
+         [23.51797588282957, 11.105162462820793],
+         [23.537588195146466, 11.106004696963037],
+         [23.53625781947508, 11.110679052273431],
+         [23.544068412126446, 11.104825568483454],
+         [23.538875655473614, 11.098003374512121],
+         [23.536644057573223, 11.097119004365696],
+         [24.82761182199888, 11.57486801365657],
+         [24.82207574259214, 11.57385898967369],
+         [24.831903356422707, 11.577348515476277],
+         [24.843747991432473, 11.582519660391752],
+         [24.84906949411802, 11.58184699654563],
+         [24.857137578834816, 11.576465627519442],
+         [24.85881127726011, 11.568099074769199],
+         [24.855935949196144, 11.572051145936863],
+         [24.85181607614927, 11.564735565992443],
+         [24.835937398781105, 11.564231036190723],
+         [24.841473478187844, 11.566627544651785],
+         [24.828530013602307, 10.427825003094858],
+         [24.826920688193372, 10.427529557167546],
+         [24.820311725180677, 10.43118040502206],
+         [24.839151561301282, 10.42394197710894],
+         [24.822371661704114, 10.423414388320321],
+         [24.929578652470504, 10.534473069314028],
+         [24.9365984577321, 10.532176689671958],
+         [24.93833652917375, 10.532872862234216],
+         [24.9415337223195, 10.532809573884446],
+         [24.94155517999162, 10.537260822787868],
+         [24.25245663060813, 10.477378348881007],
+         [24.25395866765647, 10.477293949254857],
+         [24.27739044561057, 10.475099550905373],
+         [24.290737117668677, 10.487084152490782],
+         [24.27837749852805, 10.481218507546178],
+         [24.27318474187522, 10.483919249957081],
+         [24.237050022026587, 10.47324274016485],
+         [24.23597713842063, 10.47611235207466],
+         [24.264601673027563, 10.465857587363239],
+         [24.28013702764182, 10.466617211195198],
+         [25.058012109624674, 11.582688533422019],
+         [25.060758691655924, 11.58382364930639],
+         [25.06509314142399, 11.582856699029062],
+         [25.0628615435236, 11.573355183662773],
+         [25.06861219965153, 11.58479059623879],
+         [25.084920030462076, 11.574826678404772],
+         [25.166539175877702, 11.634307405692418],
+         [25.167697890172136, 11.637039578518939],
+         [25.20479847580788, 11.541217389692942],
+         [25.213381544655537, 11.555345040968328],
+         [25.20886684925385, 11.550170106207899],
+         [25.21061564953156, 11.551872976106525],
+         [25.216956391642768, 11.54922406290602],
+         [25.214853539775092, 11.549097923557927],
+         [25.21063710720368, 11.547983690185221],
+         [22.757174994038184, 13.455709298416517],
+         [22.753205324696143, 13.456690123469928],
+         [22.75075915007456, 13.451827696034355],
+         [22.758655573414405, 13.45671099204444],
+         [22.729204486588323, 13.460302011116408],
+         [22.716853568998257, 13.465928622110562],
+         [22.72311033998889, 13.464550971494361],
+         [22.686157417160327, 13.485473413577603],
+         [22.688195896011646, 13.480903701805659],
+         [22.682788562637622, 13.485389949305931],
+         [22.69919625013285, 13.5018908570269],
+         [22.694695801593095, 13.508734825773335],
+         [22.69684156880501, 13.509506793672008],
+         [22.37495534786683, 13.400831845533896],
+         [22.375127009243784, 13.401875514951207],
+         [22.240973770642256, 13.534128622149025],
+         [22.241789162182783, 13.534754475550283],
+         [22.21769219639299, 13.567776337225098],
+         [22.218250095868086, 13.566337071877612],
+         [22.217804203528555, 13.567255830374554],
+         [24.080864412713446, 13.000131633954776],
+         [24.079898817468084, 13.000131633954776],
+         [24.0745343994383, 12.999567125351115],
+         [24.077130777764715, 13.000863402455822],
+         [24.081937296319403, 12.999880741400567],
+         [24.045137388635077, 12.995379053541741],
+         [24.04477260820905, 12.99627810032563],
+         [24.045223219323553, 12.987914748727219],
+         [24.051166994500555, 12.991385573830268],
+         [24.041189176965155, 12.989106543537453],
+         [24.04457948915998, 12.995253604894442],
+         [24.028185827660955, 12.98783111378899],
+         [24.029494745660223, 12.987768387566831],
+         [24.022070391107, 12.988939274435353],
+         [24.027027113366522, 12.990862862308555],
+         [24.01658950924148, 12.98851274512558],
+         [24.019765244715114, 12.987446400120888],
+         [24.028176652185817, 12.986777318565206],
+         [23.999283867663923, 13.010177856334316],
+         [24.030596297967474, 12.944677497985582],
+         [24.032827895867864, 12.943924651733518],
+         [24.02643350957636, 12.94246077751279],
+         [24.040037673699896, 12.931502360416786],
+         [22.715185220793792, 12.06240029600009],
+         [22.72372537429721, 12.058182499071153],
+         [22.71886731472267, 12.061975649773542]]),
+    noncrop = /* color: #d63000 */ee.Geometry.MultiPoint(
+        [[22.56863129961571, 14.27189101278616],
+         [22.533269055963366, 14.274220087728002],
+         [22.54764569628319, 14.27708980765716],
+         [22.555842527032702, 14.274136906894835],
+         [22.56064904558739, 14.283286614321357],
+         [22.520566114068835, 14.275426206356418],
+         [22.448221168808967, 14.287665059345569],
+         [22.451504192643196, 14.281988236007209],
+         [22.470043621354133, 14.287519501561833],
+         [22.458499393754035, 14.283734966133276],
+         [24.08092157172265, 12.92588705100511],
+         [24.119802873602534, 12.936678410523216],
+         [24.07946245001855, 12.943956040574886],
+         [22.650236513207123, 12.055059292039667],
+         [22.648176576683685, 12.05407301996523],
+         [24.63660730911544, 10.668170316168766],
+         [24.628324647677452, 10.671628530588679],
+         [24.638281007540733, 10.662898572195115],
+         [24.60918440414718, 10.66623032500946]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// Author: Ivan Zvonkov
+// Description:
+//  Script for generating corrective labels for improving Sudan/Darfur_2023
+//  Takes 4 mins to execute
+//  Growing season:  June to January
+
+print("https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SU")
+
+////////////////////////////////////////////////////////
+// 1. ROIs
+////////////////////////////////////////////////////////
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var central_roi = rois.filter('NAME_1 == "Central Darfur"').geometry()
+var west_roi = rois.filter('NAME_1 == "West Darfur"').geometry()
+var south_roi = rois.filter('NAME_1 == "South Darfur"').geometry()
+var roi = border.geometry()
+var area = ee.Number(roi.area()).divide(1e6).round()
+print("Area: " + area.getInfo() + " km2")
+
+////////////////////////////////////////////////////////
+// 2. Get Earth Observation data
+////////////////////////////////////////////////////////
+var start = ee.Date('2023-03-01');
+var end = ee.Date('2023-12-30');
+var imagery = require("users/izvonkov/crop-mask:utils/S2_S1_monthly")
+var image = imagery.getImage(roi, start, end)
+var bands = image.bandNames()
+
+////////////////////////////////////////////////////////
+// 3. Display Earth Observation data
+////////////////////////////////////////////////////////
+Map.setOptions('SATELLITE');
+Map.centerObject(roi, 6);
+
+var S2display = {'4': 'June', '5': 'July', '6': 'August', '7': 'September', '8': 'October'}
+for (var i in S2display){
+  Map.addLayer(image, {bands: [i+'_B4', i+'_B3', i+'_B2'], min: 1000, max: 6000}, 'S2 ' + S2display[i]).setShown(0)
+}
+
+////////////////////////////////////////////////////////
+// 4. Load labeled data
+////////////////////////////////////////////////////////
+var assetName = "users/izvonkov/Sudan/GedarefDarfurAlJazirah2023_v2"
+var points = ee.FeatureCollection(assetName).filterBounds(border)
+var trainingPts = points.filter(ee.Filter.eq("subset", "training"))
+var testPts = points.filter(ee.Filter.or(
+  ee.Filter.eq("subset", "testing"),
+  ee.Filter.eq("subset", "validation")
+))
+
+print(trainingPts)
+
+Map.addLayer(trainingPts.filter(ee.Filter.eq('label', 1)), {color: 'lime'}, 'Crop Training points');
+Map.addLayer(trainingPts.filter(ee.Filter.eq('label', 0)), {color: 'red'}, 'Non-crop Training points');
+
+
+// 4.1 Corrective points
+var cropPts = ee.FeatureCollection(crop.coordinates().map(function(p){
+  return ee.Feature(ee.Geometry.Point(p), {"label": 1.0})
+}))
+Export.table.toAsset({
+  collection: cropPts,
+  description: "SudanDarfurCorrectiveCrop2023",
+  assetId: "users/izvonkov/Sudan/DarfurCorrectiveCrop2023"
+})
+trainingPts = trainingPts.merge(cropPts)
+
+var noncropPts = ee.FeatureCollection(noncrop.coordinates().map(function(p){
+  return ee.Feature(ee.Geometry.Point(p), {"label": 0.0})
+}))
+Export.table.toAsset({
+  collection: noncropPts,
+  description: "SudanDarfurCorrectiveNonCrop2023",
+  assetId: "users/izvonkov/Sudan/DarfurCorrectiveNonCrop2023"
+})
+trainingPts = trainingPts.merge(noncropPts)
+
+////////////////////////////////////////////////////////
+// 5. Create labeled dataset (labels + EO imagery)
+////////////////////////////////////////////////////////
+var training = image.sampleRegions({
+  collection: trainingPts, properties: ['label'], scale: 10, geometries: true
+})
+var test = image.sampleRegions({
+  collection: testPts, properties: ['label'], scale: 10, geometries: true
+
+})
+
+////////////////////////////////////////////////////////
+// 6. Train a Random Forest Classifier
+////////////////////////////////////////////////////////
+var trainedRf = ee.Classifier.smileRandomForest({numberOfTrees: 20})
+  .setOutputMode('probability')
+  .train({
+    features: training, classProperty: 'label', inputProperties: bands
+});
+var explained = trainedRf.explain();
+print('Explain:', explained);
+
+////////////////////////////////////////////////////////
+// 8. Visualize generated map
+////////////////////////////////////////////////////////
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+
+var classifiedRf = image.select(bands).classify(trainedRf).clip(roi);
+var cropProb = Map.addLayer(classifiedRf, classVis, 'Cropland V4 Probability');
+cropProb.setShown(0)
+var classVis2 = {min: 0, max: 1.0, palette: ['000000', 'green'], opacity: 0.8}
+Map.addLayer(classifiedRf.gt(0.5).selfMask(), classVis2, 'Cropland V4 Binary');
+
+// Cropland V1
+var v1 = ee.Image("users/izvonkov/Sudan/Darfur2023_cropmask_v1").clip(border);
+Map.addLayer(v1, classVis, 'Cropland V1')
+
+var v2 = ee.Image("users/izvonkov/Sudan/Darfur2023_cropmask_v2").clip(border);
+Map.addLayer(v2, classVis, 'Cropland V2')
+
+var v2 = ee.Image("users/izvonkov/Sudan/Darfur2023_cropmask_v3").clip(border);
+Map.addLayer(v2, classVis, 'Cropland V3')
+
+// Visualize GLAD mask
+var glad = ee.ImageCollection("users/potapovpeter/Global_cropland_2019").mosaic().clip(border).gt(0.4);
+Map.addLayer(glad, classVis, 'GLAD Cropland')
+
+////////////////////////////////////////////////////////
+// 9. Classify data using confusion matrix
+////////////////////////////////////////////////////////
+var trainRf = training.classify(trainedRf.setOutputMode('CLASSIFICATION'));
+var testRf = test.classify(trainedRf.setOutputMode('CLASSIFICATION'));
+
+var confusionMatrix = require("users/izvonkov/crop-mask:utils/error_matrix")
+var labels = ['Non-crop', 'Crop']
+print("Full Error Matrix")
+confusionMatrix.display(testRf.errorMatrix('label', 'classification'), labels)
+print("Central Darfur Error Matrix")
+confusionMatrix.display(testRf.filterBounds(central_roi).errorMatrix('label', 'classification'), labels);
+print("West Darfur Error Matrix")
+confusionMatrix.display(testRf.filterBounds(west_roi).errorMatrix('label', 'classification'), labels);
+print("South Darfur Error Matrix")
+confusionMatrix.display(testRf.filterBounds(south_roi).errorMatrix('label', 'classification'), labels);
+
+
+
+////////////////////////////////////////////////////////
+// 10. Create NDVI time series on-click widget
+////////////////////////////////////////////////////////
+var daterange = []
+var d = start
+while (end.difference(d, 'month').gt(0).getInfo() == 1){
+  daterange.push(d.format("YY/MM")); d = d.advance(1, 'month');
+}
+var ndvi = image.select(".*_NDVI").rename(daterange)
+var title = ui.Label('Click to inspect');
+title.style().set('position', 'top-center');
+Map.add(title);
+var panel = ui.Panel();
+panel.style().set({width: '400px', position: 'bottom-right'});
+Map.add(panel);
+Map.style().set('cursor', 'crosshair');
+Map.onClick(function(coords) {
+  panel.clear();
+  console.log(coords.lat + ',' + coords.lon)
+  var point = ee.Geometry.Point(coords.lon, coords.lat);
+  var chart = ui.Chart.image.regions(ndvi, point, null, 10);
+  chart.setOptions({title: 'NDVI'});
+  panel.add(chart);
+});
+
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: border, color: 1, width: 2});
+Map.addLayer(outline, {}, 'Region Borders');
+
+////////////////////////////////////////////////////////
+// Export map to GEE asset
+////////////////////////////////////////////////////////
+Export.image.toAsset({
+  image: classifiedRf,
+  description: 'SudanDarfur2023_cropmask_v5',
+  assetId: 'Sudan/Darfur2023_cropmask_v5',
+  region: roi,
+  scale: 10,
+  maxPixels: 1e12,
+  crs: 'EPSG:4326'
+});

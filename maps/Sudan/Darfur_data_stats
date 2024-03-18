@@ -1,0 +1,16 @@
+var year = "2022"
+var points = ee.FeatureCollection("users/izvonkov/Sudan/GedarefDarfurAlJazirah" + year + "_v2")
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var centralRoi = rois.filter('NAME_1 == "Central Darfur"').geometry()
+var westRoi = rois.filter('NAME_1 == "West Darfur"').geometry()
+var southRoi = rois.filter('NAME_1 == "South Darfur"').geometry()
+
+var allRois = rois.filter(
+  ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"]))
+).geometry()
+
+print("Total points", points.size())
+print("Darfur points", points.filterBounds(allRois).filter("subset != 'training'").size())
+print("Central points", points.filterBounds(centralRoi).filter("subset != 'training'").size())
+print("West points", points.filterBounds(westRoi).filter("subset != 'training'").size())
+print("South points", points.filterBounds(southRoi).filter("subset != 'training'").size())

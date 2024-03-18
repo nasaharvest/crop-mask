@@ -1,0 +1,63 @@
+// Author: Ivan Zvonkov
+// Description:
+//  Script for generating regional Darfur 2022/23 maps using region splits
+//  Takes 4 mins to execute
+//  Growing season:  June to January
+
+////////////////////////////////////////////////////////
+// Config
+////////////////////////////////////////////////////////
+var name = "West Darfur";
+//var name = "Central Darfur";
+//var name = "South Darfur";
+var year = "2022";
+//var year = "2023";
+var start = ee.Date('2022-05-01');
+var end = ee.Date('2023-02-28')
+// var start = ee.Date('2023-03-01');
+// var end = ee.Date('2023-12-30');
+var points = ee.FeatureCollection("users/izvonkov/Sudan/GedarefDarfurAlJazirah" + year + "_v2")
+var cropPts = ee.FeatureCollection("users/izvonkov/Sudan/DarfurCorrectiveCrop" + year)
+var nonCropPts = ee.FeatureCollection("users/izvonkov/Sudan/DarfurCorrectiveNonCrop" + year)
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var roi = border.geometry()
+var regionalRoi = rois.filter('NAME_1 == "' + name + '"').geometry()
+
+var imagery = require("users/izvonkov/crop-mask:utils/S2_S1_monthly")
+var image = imagery.getImage(roi, start, end)
+var bands = image.bandNames()
+Map.setOptions('SATELLITE');
+Map.centerObject(roi, 6);
+
+var points = points.filterBounds(border)
+var insideRegion = ee.Filter.bounds(regionalRoi)
+var trainingPts = points.filter(insideRegion.not())
+trainingPts = trainingPts.merge(cropPts).merge(nonCropPts)
+var testPts = points.filter(insideRegion)
+
+var training = image.sampleRegions({collection: trainingPts, properties: ['label'], scale: 10, geometries: true})
+var test = image.sampleRegions({collection: testPts, properties: ['label'], scale: 10, geometries: true})
+
+var trainRf = ee.Classifier.smileRandomForest({numberOfTrees: 20})
+  .setOutputMode('probability')
+  .train({features: training, classProperty: 'label', inputProperties: bands});
+
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+var classifiedMap = image.select(bands).classify(trainRf).clip(regionalRoi);
+Map.addLayer(classifiedMap, classVis, name + ' Probability');
+var confusionMatrix = require("users/izvonkov/crop-mask:utils/error_matrix")
+var testRf = test.classify(trainRf.setOutputMode('CLASSIFICATION'));
+print(name + " Error Matrix")
+confusionMatrix.display(testRf.errorMatrix('label', 'classification'), ['Non-crop', 'Crop'])
+
+Export.image.toAsset({
+  image: classifiedMap,
+  description: 'Sudan/' + name + year + '_cropmask_regionsplit_v1',
+  assetId: 'Sudan/' + name + year + '_cropmask_regionsplit_v1',
+  region: regionalRoi,
+  scale: 10,
+  maxPixels: 1e12,
+  crs: 'EPSG:4326'
+});
