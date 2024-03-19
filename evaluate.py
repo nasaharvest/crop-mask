@@ -1,6 +1,7 @@
 """
 Script to evaluate an individual model
 """
+
 from openmapflow.config import PROJECT_ROOT, DataPaths
 
 from src.pipeline_funcs import run_evaluation  # noqa: E402
