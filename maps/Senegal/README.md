@@ -4,9 +4,10 @@
 <!-- References -->
 [1]: https://www.cia.gov/the-world-factbook/countries/senegal/#geography
 [2]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5451287/
-[3]: https://www.fao.org/giews/countrybrief/country.jsp?code=SEN&lang=ES
-[4]: https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SG
-[5]: https://www.fao.org/faostat/en/#data/RL
+[3]: https://www.britannica.com/place/Senegal/Land
+[4]: https://www.fao.org/giews/countrybrief/country.jsp?code=SEN&lang=ES
+[5]: https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SG
+[6]: https://www.fao.org/faostat/en/#data/RL
 
 
 ### Admin Zones
@@ -32,15 +33,19 @@
 - Rainy season: May to November
 - Dry season: December to April
 
+**Soils** <sup>[3]</sup>
+- In northwest soils are highly favorable for peanut cultivation
+- Center and South of the country have a layer of laterite hidden under sand which affords sparse grazing in rainy season
+- Near river mouths soils are salty and favorable for grazing
 
 ### Crop Calendars
 
-**FAO/GIEWS Crop Calendar** <sup>[3]</sup>
+**FAO/GIEWS Crop Calendar** <sup>[4]</sup>
 
 <img src="https://www.fao.org/giews/countrybrief/country/SEN/graphics/1_2022-11-07.jpg" />
 
 
-**USDA/FAS Crop Calendar** <sup>[4]</sup>
+**USDA/FAS Crop Calendar** <sup>[5]</sup>
 
 <img src="https://ipad.fas.usda.gov/countrysummary/images/SG/cropcalendar/wafrica_sg_calendar.png" />
 
@@ -50,7 +55,7 @@
 - Both crop calendars show a sowing/planting period from June to August
 - Both crop calendars show a harvest period from September to February
 
-### FAO Stat Ag Land Use (2021) <sup>[5]</sup>
+### FAO Stat Ag Land Use (2021) <sup>[6]</sup>
 ```
 Total: 19.671 Mha
 └── Agricultural: 9.511 Mha (48.4% of total)
