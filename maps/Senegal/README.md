@@ -69,12 +69,12 @@ Total: 19.671 Mha
 
 ## 2022 Visual Assessment of Existing Cropland Maps
 
-- [GEE Script Generation](maps/Senegal/01_2022_visual_assessment_existing.ipynb)
+- [GEE Script Generation](01_2022_visual_assessment_existing.ipynb)
 - [GEE Script](https://code.earthengine.google.com/79fb3f16239446a1fbb449bbe8e7c69f)
 - [Assessment](https://docs.google.com/spreadsheets/d/1ZlALIwKMC3HzI8-3L4OTEYgBdNjaHKia_0oyAM6qssw/edit?usp=sharing)
 
 ## 2022 Intercomparison of Existing Cropland Maps
-- [Intercomparison Report](maps/Senegal/02_2022_intercomparison.ipynb)
+- [Intercomparison Report](02_2022_intercomparison.ipynb)
 - **Best performing map for 2022**: Worldcover v200
 
 ## 2022 Crop Map Generation

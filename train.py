@@ -1,6 +1,7 @@
 """
 Script that uses argument parameters to train an individual model
 """
+
 from argparse import ArgumentParser
 
 from datasets import datasets
