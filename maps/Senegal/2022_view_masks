@@ -1,0 +1,14 @@
+// Display Senegal cropland masks for 2022
+// Author: Ivan Zvonkov
+
+var roi = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq('ADM0_NAME', 'Senegal'));
+
+Map.centerObject(roi, 7);
+Map.setOptions("SATELLITE")
+var vis = {palette: ["yellow", "green"]}
+
+var worldcoverV200 = ee.ImageCollection("ESA/WorldCover/v200").mosaic().clip(roi).eq(40);
+Map.addLayer(worldcoverV200, vis, 'Worldcover-v200 Cropland');
+
+var randomForestV1 = ee.Image("users/izvonkov/Senegal/crop_mask_2022_v1").gt(0.5)
+Map.addLayer(randomForestV1,  vis, 'Ours: Random Forest V1 Cropland');
