@@ -75,6 +75,7 @@ Total: 19.671 Mha
 
 ## 2022 Intercomparison of Existing Cropland Maps
 - [Intercomparison Report](02_2022_intercomparison.ipynb)
+- [GEE Script with evaluated Maps for Senegal](https://code.earthengine.google.com/88df189c52f0d19ef07c7fcbca997e51)
 - **Best performing map for 2022**: Worldcover v200
 
 ## 2022 Crop Map Generation
