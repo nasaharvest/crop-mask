@@ -1,0 +1,27 @@
+// Author: Ivan Zvonkov
+// Description: Script for comparing Sudan Darfur versions
+
+
+// 1. ROI
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var roi = border.geometry()
+
+// 2. Load palette
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+var classVis2 = {min: 0, max: 1.0, palette: ['000000', 'green'], opacity: 0.8}
+
+// 3. Display maps
+function displayMap(name){
+  var v = ee.Image("users/izvonkov/Sudan/" + name).clip(border);
+  Map.addLayer(v, classVis, name + ' Float')
+  Map.addLayer(v.gt(0.5).selfMask(), classVis2, name + ' Mask')
+}
+  Map.centerObject(roi, 7)
+
+displayMap("Darfur2022_cropmask_v1")
+displayMap("Darfur2022_cropmask_v2")
+displayMap("Darfur2023_cropmask_v1")
+displayMap("Darfur2023_cropmask_v2")
+displayMap("Darfur2023_cropmask_v3")

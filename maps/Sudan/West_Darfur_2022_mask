@@ -1,0 +1,147 @@
+// Author: Ivan Zvonkov
+// Description:
+//  Script for generating Darfur maps using region splits
+//  Takes 30 mins to execute
+//  Growing season:  June to January
+
+print("https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SU")
+
+////////////////////////////////////////////////////////
+// 1. ROIs
+////////////////////////////////////////////////////////
+var rois = ee.FeatureCollection("projects/ee-gmuhawenayo/assets/rois")
+var border = rois.filter(ee.Filter.inList('NAME_1', ee.List(["Central Darfur", "West Darfur", "South Darfur"])))
+var westRoi = rois.filter('NAME_1 == "West Darfur"').geometry()
+var centralRoi = rois.filter('NAME_1 == "Central Darfur"').geometry()
+var southRoi = rois.filter('NAME_1 == "South Darfur"').geometry()
+var roi = border.geometry()
+
+////////////////////////////////////////////////////////
+// 2. Get Earth Observation data
+////////////////////////////////////////////////////////
+var start = ee.Date('2022-05-01');
+var end = ee.Date('2023-02-28');
+var imagery = require("users/izvonkov/crop-mask:utils/S2_S1_monthly")
+var image = imagery.getImage(roi, start, end)
+var bands = image.bandNames()
+
+////////////////////////////////////////////////////////
+// 3. Display Earth Observation data
+////////////////////////////////////////////////////////
+Map.setOptions('SATELLITE');
+Map.centerObject(roi, 6);
+
+////////////////////////////////////////////////////////
+// 4. Load labeled data
+////////////////////////////////////////////////////////
+var assetName = "users/izvonkov/Sudan/GedarefDarfurAlJazirah2022_v2"
+var points = ee.FeatureCollection(assetName).filterBounds(border)
+
+var insideWestDarfur = ee.Filter.bounds(westRoi)
+var insideSouthDarfur = ee.Filter.bounds(southRoi)
+var insideCentralDarfur = ee.Filter.bounds(centralRoi)
+
+var westTrainingPts = points.filter(insideWestDarfur.not())
+var westTestPts = points.filter(insideWestDarfur)
+var southTrainingPts = points.filter(insideSouthDarfur.not())
+var southTestPts = points.filter(insideSouthDarfur)
+var centralTrainingPts = points.filter(insideCentralDarfur.not())
+var centralTestPts = points.filter(insideCentralDarfur)
+
+// Load corrective points
+var cropPts = ee.FeatureCollection("users/izvonkov/Sudan/DarfurCorrectiveCrop2022")
+var nonCropPts = ee.FeatureCollection("users/izvonkov/Sudan/DarfurCorrectiveNonCrop2022")
+
+westTrainingPts = westTrainingPts.merge(cropPts).merge(nonCropPts)
+southTrainingPts = southTrainingPts.merge(cropPts).merge(nonCropPts)
+centralTrainingPts = centralTrainingPts.merge(cropPts).merge(nonCropPts)
+
+////////////////////////////////////////////////////////
+// 5. Create labeled dataset (labels + EO imagery)
+////////////////////////////////////////////////////////
+function labeledDataset(points){
+  return image.sampleRegions({
+    collection: points,
+    properties: ['label'],
+    scale: 10,
+    geometries: true
+  })
+}
+
+var westTraining = labeledDataset(westTrainingPts)
+var westTest = labeledDataset(westTestPts)
+var southTraining = labeledDataset(southTrainingPts)
+var southTest = labeledDataset(southTestPts)
+var centralTraining = labeledDataset(centralTrainingPts)
+var centralTest = labeledDataset(centralTestPts)
+
+////////////////////////////////////////////////////////
+// 6. Train a Random Forest Classifier
+////////////////////////////////////////////////////////
+function trainRf(training){
+  return ee.Classifier.smileRandomForest({numberOfTrees: 20})
+    .setOutputMode('probability')
+    .train({
+      features: training,
+      classProperty: 'label',
+      inputProperties: bands
+  });
+}
+
+var westTrainedRf = trainRf(westTraining)
+var southTrainedRf = trainRf(southTraining)
+var centralTrainedRf = trainRf(centralTraining)
+
+
+////////////////////////////////////////////////////////
+// 8. Visualize generated map
+////////////////////////////////////////////////////////
+var palettes = require('users/gena/packages:palettes');
+var classVis = {palette: palettes.cmocean.Speed[7].slice(0,-2)}
+var classVis2 = {min: 0, max: 1.0, palette: ['000000', 'green'], opacity: 0.8}
+
+var confusionMatrix = require("users/izvonkov/crop-mask:utils/error_matrix")
+var labels = ['Non-crop', 'Crop']
+
+function classifyMap(rf, test, roi, name){
+  // Predict map
+  var classifiedMap = image.select(bands).classify(rf).clip(roi);
+  var cropProb = Map.addLayer(classifiedMap, classVis, name + ' V1 Probability');
+  cropProb.setShown(0)
+  Map.addLayer(classifiedMap.gt(0.5).selfMask(), classVis2, name + ' Cropland V1 Binary');
+
+  // Error matrix
+  var testRf = test.classify(rf.setOutputMode('CLASSIFICATION'));
+
+  print(name + " Error Matrix")
+  confusionMatrix.display(testRf.errorMatrix('label', 'classification'), labels)
+
+  return classifiedMap
+}
+
+var westMap = classifyMap(westTrainedRf, westTest, westRoi, "West Darfur")
+var southMap = classifyMap(southTrainedRf, southTest, southRoi, "South Darfur")
+var centralMap = classifyMap(centralTrainedRf, centralTest, centralRoi, "Central Darfur")
+
+// Cropland V1
+var v3 = ee.Image("users/izvonkov/Sudan/Darfur2022_cropmask_v3").clip(border);
+Map.addLayer(v3, classVis, 'Cropland V3')
+
+// Visualize GLAD mask
+var glad = ee.ImageCollection("users/potapovpeter/Global_cropland_2019").mosaic().clip(border).gt(0.4);
+Map.addLayer(glad, classVis, 'GLAD Cropland')
+
+
+////////////////////////////////////////////////////////
+// Export map to GEE asset
+////////////////////////////////////////////////////////
+var combinedMap = ee.ImageCollection([westMap, southMap, centralMap]).mosaic();
+Export.image.toAsset({
+  image: combinedMap,
+  description: 'Sudan/Darfur2022_cropmask_regionsplit_v1',
+  assetId: 'Sudan/Darfur2022_cropmask_regionsplit_v1',
+  region: westRoi,
+  scale: 10,
+  maxPixels: 1e12,
+  crs: 'EPSG:4326'
+});
