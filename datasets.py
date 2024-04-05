@@ -508,7 +508,7 @@ class Uganda_NorthCEO2021(LabeledDataset):
         return df
 
 
-class Uganda_NorthCEO2019(LabeledDataset):
+class UgandaNorthCEO2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2019"
         df1 = pd.read_csv(
@@ -1326,7 +1326,7 @@ datasets: List[LabeledDataset] = [
     SudanGedarefDarfurAlJazirah2023(),
     Uganda_NorthCEO2022(),
     Uganda_NorthCEO2021(),
-    Uganda_NorthCEO2019(),
+    UgandaNorthCEO2019(),
 ]
 
 if __name__ == "__main__":
