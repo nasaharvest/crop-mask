@@ -444,7 +444,7 @@ eo_data_complete    1000
 
 
 
-Uganda_NorthCEO2019 (Timesteps: 12)
+UgandaNorthCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1000
 ✔ training amount: 387, positive class: 21.4%
