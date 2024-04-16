@@ -233,7 +233,7 @@ class NamibiaFieldBoundary2022(LabeledDataset):
         df.rename(columns={"latitude": LAT, "longitude": LON}, inplace=True)
         df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["landcover"] == 1).astype(int)
-        df[START], df[END] = date(2021, 1, 1), date(2022, 11, 30)
+        df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
         df[SUBSET] = "training"
         return df
 
@@ -335,6 +335,208 @@ class MaliStratifiedCEO2019(LabeledDataset):
         )
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.35, 0.35)
+        return df
+
+
+class NamibiaNorthStratified2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        NamibiaNorthStratified_dir = raw_dir / "Namibia_North_stratified_2020"
+        df1 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / (
+                "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-1)"
+                + "-sample-data-2023-06-22.csv"
+            )
+        )
+        df2 = pd.read_csv(
+            NamibiaNorthStratified_dir
+            / (
+                "ceo-Namibia_North-Sep-2020---Sep-2021-Stratified-sample-(Set-2)"
+                + "-sample-data-2023-06-22.csv"
+            )
+        )
+        df = pd.concat([df1, df2])
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.5, 0.5)
+        return df
+
+
+class Namibia_field_samples_22_23(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        Namibia_fld_dir = raw_dir / "Namibia_field_samples_22_23"
+        df = pd.read_csv(Namibia_fld_dir / "Namibia_fld_pts_Sep22_May23.csv")
+        df.rename(columns={"Latitude": LAT, "Longitude": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["Landcover"] == "crop").astype(int)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 3, 31)
+        df[SUBSET] = "training"
+        return df
+
+
+class SudanGedarefDarfurAlJazirah2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Sudan_Gedaref_Darfur_Al_Jazirah_2022"
+        df1 = pd.read_csv(
+            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-1)-sample-data-2024-02-15.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder / "ceo-Sudan-Feb-2022---Feb-2023-(Set-2)-sample-data-2024-02-15.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class SudanGedarefDarfurAlJazirah2023(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Sudan_Gedaref_Darfur_Al_Jazirah_2023"
+        df = pd.read_csv(
+            raw_folder / "ceo-Sudan-Feb-2023---Feb-2024-(Set-1)-sample-data-2024-02-15.csv"
+        )
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 2  # Two people reviewed each point
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        # Only keep examples with multiple labelers
+        df = df[df["num_labelers"] > 1].copy()
+        df[START], df[END] = date(2023, 1, 1), date(2023, 10, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class Uganda_NorthCEO2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North"
+        df1 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-1)-sample-data-2023-11-13.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2022---Feb-2023-(Set-2)-sample-data-2023-11-13.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class Uganda_NorthCEO2021(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2021"
+        df1 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2021---Feb-2022-(Set-1)-sample-data-2024-02-07.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2021---Feb-2022-(Set-2)-sample-data-2024-02-07.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2021, 1, 1), date(2022, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class UgandaNorthCEO2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2019"
+        df1 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2019---Feb-2020-(Set-1)-sample-data-2024-03-12.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2019---Feb-2020-(Set-2)-sample-data-2024-03-12.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
 
@@ -818,30 +1020,30 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
-    CustomLabeledDataset(
-        dataset="Argentina_Buenos_Aires",
-        country="Argentina",
-        raw_labels=(
-            RawLabels(
-                filename="bc_mapeo_del_cultivo_0.csv",
-                filter_df=lambda df: df[
-                    (
-                        df["Seleccione el cultivo principal en el lote:"].notnull()
-                        & ~df["Seleccione el cultivo principal en el lote:"].isin(
-                            ["otro", "barbecho", "sin_dato"]
-                        )
-                    )
-                ].copy(),
-                longitude_col="longitud",
-                latitude_col="latitud",
-                class_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
-                    ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
-                ),
-                train_val_test=(0.8, 0.2, 0.0),
-                start_year=2021,
-            ),
-        ),
-    ),
+    # CustomLabeledDataset(
+    #     dataset="Argentina_Buenos_Aires",
+    #     country="Argentina",
+    #     raw_labels=(
+    #         RawLabels(
+    #             filename="bc_mapeo_del_cultivo_0.csv",
+    #             filter_df=lambda df: df[
+    #                 (
+    #                     df["Seleccione el cultivo principal en el lote:"].notnull()
+    #                     & ~df["Seleccione el cultivo principal en el lote:"].isin(
+    #                         ["otro", "barbecho", "sin_dato"]
+    #                     )
+    #                 )
+    #             ].copy(),
+    #             longitude_col="longitud",
+    #             latitude_col="latitud",
+    #             class_prob=lambda df: df["Seleccione el cultivo principal en el lote:"].isin(
+    #                 ["trigo_o_cebada", "cultive_leguminosa", "maiz", "sorgo", "soja", "girasol"]
+    #             ),
+    #             train_val_test=(0.8, 0.2, 0.0),
+    #             start_year=2021,
+    #         ),
+    #     ),
+    # ),
     CustomLabeledDataset(
         dataset="Malawi_CEO_2020",
         country="Malawi",
@@ -908,7 +1110,7 @@ datasets: List[LabeledDataset] = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-1)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.6, 0.2, 0.2),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -917,7 +1119,7 @@ datasets: List[LabeledDataset] = [
                 filename="ceo-2019-Zambia-Cropland-(RCMRD-Set-2)-sample-data-2021-12-12.csv",
                 class_prob=lambda df: (df["Crop/non-crop"] == "Crop"),
                 start_year=2019,
-                train_val_test=(0.0, 0.5, 0.5),
+                train_val_test=(0.6, 0.2, 0.2),
                 latitude_col="lat",
                 longitude_col="lon",
                 filter_df=clean_ceo_data,
@@ -1072,12 +1274,45 @@ datasets: List[LabeledDataset] = [
             ),
         ),
     ),
+    CustomLabeledDataset(
+        dataset="Senegal_CEO_2022",
+        country="Senegal",
+        raw_labels=(
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-1)-sample-data-2023-08-28.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-2)-sample-data-2023-08-28.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+            RawLabels(
+                filename="ceo-Senegal-March-2022---March-2023-Stratified-sample-(Set-3)-sample-data-2023-11-26.csv",  # noqa: E501
+                class_prob=lambda df: (df["Does this pixel contain active cropland?"] == "Crop"),
+                start_year=2022,
+                train_val_test=(0.2, 0.4, 0.4),
+                latitude_col="lat",
+                longitude_col="lon",
+                filter_df=clean_ceo_data,
+            ),
+        ),
+    ),
     HawaiiAgriculturalLandUse2020(),
     KenyaCEO2019(),
     HawaiiCorrective2020(),
     HawaiiCorrectiveGuided2020(),
     MalawiCorrectiveLabels2020(),
-    NamibiaFieldBoundary2022(),
+    # NamibiaFieldBoundary2022(),
     EthiopiaTigrayGhent2021(),
     SudanBlueNileCEO2020(),
     SudanBlueNileCorrectiveLabels2019(),
@@ -1085,6 +1320,13 @@ datasets: List[LabeledDataset] = [
     SudanAlGadarefCEO2019(),
     MaliStratifiedCEO2019(),
     SudanAlGadarefCEO2020(),
+    NamibiaNorthStratified2020(),
+    Namibia_field_samples_22_23(),
+    SudanGedarefDarfurAlJazirah2022(),
+    SudanGedarefDarfurAlJazirah2023(),
+    Uganda_NorthCEO2022(),
+    Uganda_NorthCEO2021(),
+    UgandaNorthCEO2019(),
 ]
 
 if __name__ == "__main__":

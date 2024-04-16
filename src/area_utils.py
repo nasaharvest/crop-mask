@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio as rio
+from osgeo import gdal
 from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
@@ -117,7 +118,7 @@ def load_raster(
     in_raster: str, boundary: Optional[gpd.GeoDataFrame] = None
 ) -> Tuple[Optional[np.ma.core.MaskedArray], dict]:
     """
-    Chcked if the raster is projected in the correct CRS.
+    Check if the raster is projected in the correct CRS.
     If not, reproject it.
     Clip the raster to the boundary. If no boundary is provided, clip to map bounds.
     in_raster: path to the input raster
@@ -130,15 +131,12 @@ def load_raster(
             print(
                 """WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
                 and the pixel-wise areas will not be in meters.
-                \n You need to project the  project the map to using the local UTM Zone \
+                \n You need to project the map to the local UTM Zone \
                 (EPSG:XXXXX)."""
             )
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            cmd = f"gdalwarp -t_srs EPSG:{t_srs} {in_raster} -overwrite \
-                prj_{in_raster_basename} -dstnodata 255"
-            print(cmd)
-            print("Reprojecting the raster...")
-            os.system(cmd)
+            options = {"dstSRS": f"EPSG:{t_srs}", "dstNodata": 255}
+            gdal.Warp(f"prj_{in_raster_basename}", in_raster_basename, **options)
             in_raster = f"prj_{in_raster_basename}"
             return clip_raster(in_raster, boundary)
         else:
@@ -146,10 +144,12 @@ def load_raster(
             return clip_raster(in_raster, boundary)
 
 
-def binarize(raster: np.ma.core.MaskedArray, meta: dict, threshold: float = 0.5) -> np.ndarray:
+def binarize(
+    raster: np.ma.core.MaskedArray, meta: dict, threshold: Optional[float] = 0.5
+) -> np.ma.core.MaskedArray:
     raster.data[raster.data < threshold] = 0
     raster.data[((raster.data >= threshold) & (raster.data != meta["nodata"]))] = 1
-    return raster.data.astype(np.uint8)
+    return raster.astype(np.uint8)
 
 
 def cal_map_area_class(
@@ -308,12 +308,26 @@ def reference_sample_agree(
         lon, lat = row["geometry"].y, row["geometry"].x
         px, py = transform.rowcol(meta["transform"], lat, lon)
 
-        ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
-
-        if row[label_question] == "Cropland" or row[label_question] == "cropland":
-            ceo_agree_geom.loc[r, "Reference label"] = 1
-        elif row[label_question] == "Non-cropland" or row[label_question] == "non-cropland":
-            ceo_agree_geom.loc[r, "Reference label"] = 0
+        try:
+            ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
+            if (
+                row[label_question].lower() == "cropland"
+                or row[label_question].lower() == "crop"
+                or row[label_question].lower() == "planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 1
+            elif (
+                row[label_question].lower() == "non-cropland"
+                or row[label_question].lower() == "non-crop"
+                or row[label_question].lower() == "not planted"
+            ):
+                ceo_agree_geom.loc[r, "Reference label"] = 0
+        except IndexError:
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
+            ceo_agree_geom.loc[r, "Reference label"] = 255
+        except np.ma.core.MaskError:
+            ceo_agree_geom.loc[r, "Mapped class"] = 255
+            ceo_agree_geom.loc[r, "Reference label"] = 255
 
     return ceo_agree_geom
 
@@ -348,6 +362,8 @@ def compute_area_error_matrix(cm: np.ndarray, w_j: np.ndarray) -> np.ndarray:
 
     n_dotj = cm.sum(axis=0)
     area_matrix = (w_j * cm) / n_dotj
+    # if no predictions for class j, n_dotj will be 0
+    area_matrix[np.where(np.isnan(area_matrix))] = 0
     return area_matrix
 
 
@@ -366,7 +382,10 @@ def compute_u_j(am: np.ndarray) -> np.ndarray:
 
     p_jjs = np.diag(am)
     p_dotjs = am.sum(axis=0)
-    return p_jjs / p_dotjs
+    u_j = p_jjs / p_dotjs
+    # if no predictions for class j, p_dotj will be 0
+    u_j[np.where(np.isnan(u_j))] = 0
+    return u_j
 
 
 def compute_var_u_j(u_j: np.ndarray, cm: np.ndarray) -> np.ndarray:
@@ -442,6 +461,8 @@ def compute_var_p_i(
 
     # Confusion matrix divided by total number of sample units per mapped class
     cm_div = cm / n_j_su
+    # if no predictions for class j, n_j_su will be 0
+    cm_div[np.where(np.isnan(cm_div))] = 0
     cm_div_comp = 1 - cm_div
 
     # We fill the diagonals to '0' because of summation condition that i =/= j
@@ -452,8 +473,11 @@ def compute_var_p_i(
     sigma = ((n_j_px**2) * (cm_div) * (cm_div_comp) / (n_j_su - 1)).sum(axis=1)
     expr_2 = (p_i**2) * sigma
     expr_1 = (n_j_px**2) * ((1 - p_i) ** 2) * u_j * (1 - u_j) / (n_j_su - 1)
+    expr_3 = 1 / n_i_px**2
+    # convert inf to 0 (can result from divide by 0)
+    expr_3[np.where(np.isinf(expr_3))] = 0
 
-    return (1 / n_i_px**2) * (expr_1 + expr_2)
+    return expr_3 * (expr_1 + expr_2)
 
 
 def compute_acc(am: np.ndarray) -> float:

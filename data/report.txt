@@ -121,12 +121,12 @@ eo_data_export_failed        1
 
 
 
-Ethiopia (Timesteps: 24,15)
+Ethiopia (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 0.0%
-eo_data_complete     3651
-eo_data_duplicate     862
-✔ training amount: 3651, positive class: 55.1%
+eo_data_complete     3649
+eo_data_duplicate     864
+✔ training amount: 3649, positive class: 55.0%
 
 
 
@@ -140,13 +140,13 @@ eo_data_skipped      173
 
 
 
-Ethiopia_Tigray_2021 (Timesteps: 20)
+Ethiopia_Tigray_2021 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 19.0%
 eo_data_complete    718
 eo_data_skipped     168
-✔ validation amount: 354, positive class: 30.8%
-✔ testing amount: 364, positive class: 29.9%
+✔ validation amount: 351, positive class: 27.9%
+✔ testing amount: 367, positive class: 32.7%
 
 
 
@@ -167,16 +167,6 @@ eo_data_complete    938
 eo_data_skipped     262
 ✔ validation amount: 483, positive class: 25.7%
 ✔ testing amount: 455, positive class: 28.4%
-
-
-
-Argentina_Buenos_Aires (Timesteps: 15)
-----------------------------------------------------------------------------
-disagreement: 0.0%
-eo_data_complete     566
-eo_data_duplicate     92
-✔ training amount: 457, positive class: 48.1%
-✔ validation amount: 109, positive class: 45.0%
 
 
 
@@ -220,11 +210,11 @@ eo_data_duplicate      5
 Zambia_CEO_2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 disagreement: 12.2%
-eo_data_complete          2103
-eo_data_skipped            293
-eo_data_missing_values       3
-✔ validation amount: 1066, positive class: 3.6%
-✔ testing amount: 1037, positive class: 3.8%
+eo_data_complete    2106
+eo_data_skipped      293
+✔ training amount: 1270, positive class: 3.3%
+✔ validation amount: 398, positive class: 3.8%
+✔ testing amount: 438, positive class: 4.6%
 
 
 
@@ -297,6 +287,17 @@ eo_data_skipped       82
 
 
 
+Senegal_CEO_2022 (Timesteps: 19)
+----------------------------------------------------------------------------
+disagreement: 0.1%
+eo_data_complete    1499
+eo_data_skipped        1
+✔ training amount: 310, positive class: 11.0%
+✔ validation amount: 579, positive class: 11.7%
+✔ testing amount: 610, positive class: 14.8%
+
+
+
 HawaiiAgriculturalLandUse2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete     4834
@@ -331,13 +332,6 @@ MalawiCorrectiveLabels2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    4295
 ✔ training amount: 4295, positive class: 22.9%
-
-
-
-NamibiaFieldBoundary2022 (Timesteps: 23)
-----------------------------------------------------------------------------
-eo_data_complete    12451
-✔ training amount: 12451, positive class: 55.3%
 
 
 
@@ -383,15 +377,76 @@ eo_data_complete    1500
 MaliStratifiedCEO2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1350
-✔ training amount: 405, positive class: 4.9%
-✔ validation amount: 458, positive class: 5.9%
-✔ testing amount: 487, positive class: 2.3%
+✔ training amount: 401, positive class: 4.5%
+✔ validation amount: 481, positive class: 4.4%
+✔ testing amount: 468, positive class: 4.1%
 
 
 
 SudanAlGadarefCEO2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    1500
-✔ training amount: 449, positive class: 42.1%
-✔ validation amount: 518, positive class: 37.1%
-✔ testing amount: 533, positive class: 37.7%
+✔ training amount: 429, positive class: 37.5%
+✔ validation amount: 539, positive class: 40.6%
+✔ testing amount: 532, positive class: 38.0%
+
+
+
+NamibiaNorthStratified2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1350
+✔ validation amount: 681, positive class: 0.1%
+✔ testing amount: 669, positive class: 0.6%
+
+
+
+Namibia_field_samples_22_23 (Timesteps: 15)
+----------------------------------------------------------------------------
+eo_data_complete    4811
+✔ training amount: 4811, positive class: 8.3%
+
+
+
+SudanGedarefDarfurAlJazirah2022 (Timesteps: 19)
+----------------------------------------------------------------------------
+eo_data_complete    1196
+✔ training amount: 483, positive class: 27.5%
+✔ validation amount: 338, positive class: 33.4%
+✔ testing amount: 375, positive class: 34.4%
+
+
+
+SudanGedarefDarfurAlJazirah2023 (Timesteps: 10)
+----------------------------------------------------------------------------
+eo_data_complete         731
+eo_data_export_failed    465
+✔ training amount: 277, positive class: 24.5%
+✔ validation amount: 215, positive class: 28.8%
+✔ testing amount: 239, positive class: 23.4%
+
+
+
+Uganda_NorthCEO2022 (Timesteps: 19)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 20.9%
+✔ validation amount: 294, positive class: 23.1%
+✔ testing amount: 319, positive class: 17.6%
+
+
+
+Uganda_NorthCEO2021 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 16.0%
+✔ validation amount: 294, positive class: 14.3%
+✔ testing amount: 319, positive class: 17.9%
+
+
+
+UgandaNorthCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 21.4%
+✔ validation amount: 294, positive class: 15.3%
+✔ testing amount: 319, positive class: 14.1%

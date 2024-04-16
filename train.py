@@ -1,6 +1,7 @@
 """
 Script that uses argument parameters to train an individual model
 """
+
 from argparse import ArgumentParser
 
 from datasets import datasets
@@ -21,7 +22,9 @@ parser.add_argument("--input_months", type=int, default=12)
 parser.add_argument("--seed", type=int, default=42)
 
 parser.add_argument("--skip_era5", dest="skip_era5", action="store_true")
+parser.add_argument("--skip_era5_s1", dest="skip_era5_s1", action="store_true")
 parser.set_defaults(skip_era5=False)
+parser.set_defaults(skip_era5_s1=False)
 parser.add_argument("--wandb", dest="wandb", action="store_true")
 parser.set_defaults(wandb=False)
 
