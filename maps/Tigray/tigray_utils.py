@@ -46,7 +46,7 @@ def plot_map(map_array: np.ndarray) -> None:
     plt.tight_layout()
 
 
-def find_threshold(df: pd.DataFrame, fpr_threshold: float) -> float:
+def find_threshold(df: pd.DataFrame, fpr_threshold: float):
     fpr, tpr, thresholds = roc_curve(df.actual, df.probabilities)
     idx = find_nearest(fpr, fpr_threshold)
     threshold = thresholds[idx]
@@ -68,8 +68,11 @@ def binarize_map(array: np.ndarray, meta: dict, threshold: Optional[float] = 0.5
 # Adapted from 'reference_sample_agree' in area_utils.py
 def extract_from_map(
     gdf: gpd.GeoDataFrame, binary_map: np.ndarray, map_array: np.ndarray, map_meta: dict
-) -> Tuple[pd.Series]:
-    """Extracts true labels, probabilities, and predictions from corresponding map and geodataframe locations."""
+) -> Tuple[pd.Series, pd.Series, pd.Series]:
+    """
+    Extracts true labels, probabilities, and predictions from
+    corresponding map and geodataframe locations.
+    """
 
     actuals = gdf["class_probability"].astype(np.uint8)
     probabilities = pd.Series(dtype=np.float32)
