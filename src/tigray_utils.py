@@ -165,13 +165,17 @@ def calculate_indices(array : np.ndarray) -> np.ndarray:
     b2 = array[:,:,BANDS_DICT["B2"]] / 10_000
     b3 = array[:,:,BANDS_DICT["B3"]] / 10_000
     b4 = array[:,:,BANDS_DICT["B4"]] / 10_000
+    b7 = array[:,:,BANDS_DICT["B7"]] / 10_000
     b8 = array[:,:,BANDS_DICT["B8"]] / 10_000
+    b11 = array[:,:,BANDS_DICT["B11"]] / 10_000
 
     ndvi = (b8 - b4) / (b8 + b4)
+    ndvi_old = (b7 - b3) / (b7 + b3)
     gndvi = (b8 - b3) / (b8 + b3)
     evi = 2.5 * ((b8 - b4) / (b8 + 6*b4 - 7.5*b2 + 1))
     cvi = b8 - (b3 - 1)
-    return np.stack([ndvi, gndvi, evi, cvi], axis = -1)
+    bsi = ((b11 + b4) - (b8 + b2)) / ((b11 + b4) + (b8 + b2))
+    return np.stack([ndvi, ndvi_old, gndvi, evi, cvi, bsi], axis = -1)
 
 def print_report(df : pd.DataFrame) -> None:
     report = classification_report(df.actual, df.prediction)
@@ -186,14 +190,19 @@ def plot_timeseries(
 
     # Extract EO data
     data = np.array(list(df["eo_data"].apply(ast.literal_eval)))[:,START:END,:]
+    ndvi = calculate_indices(data)[...,0]
     # Plot
     fig, axes = plt.subplots(nrows = 3, ncols = 4, figsize = (22, 14))
     x = np.arange(data.shape[1])
     for ax, (b, i) in zip(axes.flatten(), BANDS_DICT.items()):
         band = data[:,:,i]
         for index, label in zip(indices, labels):
-            mean = np.mean(band[index], axis = 0)
-            std = np.std(band[index], axis = 0)
+            if b == 'NDVI':
+                mean = np.mean(ndvi[index], axis = 0)
+                std = np.std(ndvi[index], axis = 0)
+            else:
+                mean = np.mean(band[index], axis = 0)
+                std = np.std(band[index], axis = 0)
             ax.plot(mean, label = f"{label} ({index.sum()})")
             ax.fill_between(x, mean - std, mean + std, alpha = 0.25)
         ax.set_xticks(np.arange(12))
@@ -239,7 +248,7 @@ def plot_indices(df : pd.DataFrame) -> None:
     indices = [crops_idx, fallow_weeds_idx, fallow_none_idx]
     # Labels
     labels = ["Crop","Fallow Weed", "Fallow None"]
-    vegetations = ["NDVI", "GNDVI", "EVI", "GCVI", "BSI"]
+    vegetations = ["NDVI", "NDVI_OLD", "GNDVI", "EVI", "GCVI", "BSI"]
     # Plot
     fig, axes = plt.subplots(nrows = 1, ncols = 4, figsize = (22, 6))
     x = np.arange(12)
