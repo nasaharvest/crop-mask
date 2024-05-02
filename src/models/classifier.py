@@ -61,9 +61,9 @@ class Classifier(pl.LightningModule):
             global_classification_layers.append(
                 nn.Linear(
                     in_features=hparams.classifier_vector_size,
-                    out_features=1
-                    if i == (num_global_layers - 1)
-                    else hparams.classifier_vector_size,
+                    out_features=(
+                        1 if i == (num_global_layers - 1) else hparams.classifier_vector_size
+                    ),
                     bias=True if i == 0 else False,
                 )
             )
@@ -82,9 +82,9 @@ class Classifier(pl.LightningModule):
                 local_classification_layers.append(
                     nn.Linear(
                         in_features=hparams.classifier_vector_size,
-                        out_features=1
-                        if i == (num_local_layers - 1)
-                        else hparams.classifier_vector_size,
+                        out_features=(
+                            1 if i == (num_local_layers - 1) else hparams.classifier_vector_size
+                        ),
                         bias=True if i == 0 else False,
                     )
                 )

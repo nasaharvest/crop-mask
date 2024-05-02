@@ -410,9 +410,19 @@ eo_data_complete    4811
 SudanGedarefDarfurAlJazirah2022 (Timesteps: 19)
 ----------------------------------------------------------------------------
 eo_data_complete    1196
-✔ training amount: 483, positive class: 26.3%
-✔ validation amount: 338, positive class: 32.5%
-✔ testing amount: 375, positive class: 33.9%
+✔ training amount: 483, positive class: 27.5%
+✔ validation amount: 338, positive class: 33.4%
+✔ testing amount: 375, positive class: 34.4%
+
+
+
+SudanGedarefDarfurAlJazirah2023 (Timesteps: 10)
+----------------------------------------------------------------------------
+eo_data_complete         731
+eo_data_export_failed    465
+✔ training amount: 277, positive class: 24.5%
+✔ validation amount: 215, positive class: 28.8%
+✔ testing amount: 239, positive class: 23.4%
 
 
 
@@ -422,3 +432,21 @@ eo_data_complete    1000
 ✔ training amount: 387, positive class: 20.9%
 ✔ validation amount: 294, positive class: 23.1%
 ✔ testing amount: 319, positive class: 17.6%
+
+
+
+Uganda_NorthCEO2021 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 16.0%
+✔ validation amount: 294, positive class: 14.3%
+✔ testing amount: 319, positive class: 17.9%
+
+
+
+UgandaNorthCEO2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 21.4%
+✔ validation amount: 294, positive class: 15.3%
+✔ testing amount: 319, positive class: 14.1%
