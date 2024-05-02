@@ -1,6 +1,7 @@
 __author__ = "Adam Yang, Hannah Kerner"
 
 from pathlib import Path
+import re
 
 import cartopy.io.shapereader as shpreader
 import ee
@@ -55,13 +56,13 @@ NE_GDF = gpd.read_file(
 # Hold directories of test files
 TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "KenyaCEO2019.csv",
-    "Togo": DATA_PATH + "Togo.csv",
+    "Togo": DATA_PATH + "Togo_2019.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
     "Malawi": DATA_PATH + "Malawi_CEO_2020.csv",
     "Mali": DATA_PATH + "MaliStratifiedCEO2019.csv",
     "Namibia": DATA_PATH + "Namibia_CEO_2020.csv",
-    "Rwanda": DATA_PATH + "Rwanda.csv",
-    "Uganda": DATA_PATH + "Uganda.csv",
+    "Rwanda": DATA_PATH + "Rwanda_2019.csv",
+    "Uganda": DATA_PATH + "Uganda_2019.csv",
     "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
     "Senegal": DATA_PATH + "Senegal_CEO_2022.csv",
     "Hawaii": DATA_PATH + "Hawaii_CEO_2020.csv",
@@ -74,30 +75,6 @@ TEST_COUNTRIES = {
     "Tigray2021": DATA_PATH + "Ethiopia_Tigray_2021.csv",
     "Tigray2020": DATA_PATH + "Ethiopia_Tigray_2020.csv",
     "Zambia2019": DATA_PATH + "Zambia_CEO_2019.csv",
-}
-
-# Hold year of test files
-TEST_YEARS = {
-    "Kenya": 2019,
-    "Togo": 2019,
-    "Tanzania": 2019,
-    "Malawi": 2020,
-    "Mali": 2019,
-    "Namibia": 2020,
-    "Rwanda": 2019,
-    "Uganda": 2019,
-    "Zambia": 2019,
-    "Senegal": 2022,
-    "Hawaii": 2020,
-    "BlueNile2020": 2020,
-    "BlueNile2019": 2019,
-    "AlGadaref2019": 2019,
-    "GedarefDarfurAlJazirah2022": 2022,
-    "BureJimma2019": 2019,
-    "BureJimma2020": 2020,
-    "Tigray2021": 2021,
-    "Tigray2020": 2020,
-    "Zambia2019": 2019,
 }
 
 REDUCER = ee.Reducer.mode()
@@ -385,6 +362,19 @@ class TestCovermaps:
 
         return test
 
+    def get_test_years(self):
+        """
+        Returns a dictionary containing the test years for each test file.
+        """
+        test_years = {}
+        for country in TEST_COUNTRIES.keys():
+            match = re.search(r"\d{4}", TEST_COUNTRIES[country])
+            if match:
+                test_years[country] = match.group(0)
+            else:
+                test_years[country] = None
+        return test_years
+
     def extract_covermaps(self, test_df):
         """
         Groups testing points by country then extracts from each map. If map does not include
@@ -392,6 +382,8 @@ class TestCovermaps:
         each country then added to sampled_maps, where key = country and value = a dataframe of
         extracted points from maps.
         """
+        test_years = self.get_test_years()
+
         for country in self.test_countries:
             country_test = test_df.loc[test_df[COUNTRY_COL] == country].copy()
 
@@ -401,7 +393,7 @@ class TestCovermaps:
                 if country in map.countries:
                     print(f"[{country}] sampling " + map.title + "...")
 
-                    map_sampled = map.extract_test(country_test, TEST_YEARS[country]).copy()
+                    map_sampled = map.extract_test(country_test, test_years[country]).copy()
                     country_test = pd.merge(country_test, map_sampled, on=[LAT, LON], how="left")
                     country_test.drop_duplicates(
                         inplace=True
@@ -824,7 +816,7 @@ TARGETS = {
         'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
         resolution=30,
         probability=0.5,
-        years_covered=[2003, 2007, 2011, 2015, 2019],
+        years_covered=[2019],
     ),
     # "gfsad": Covermap(
     #     "gfsad",
