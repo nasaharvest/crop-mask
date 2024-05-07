@@ -30,7 +30,7 @@
 ## Sudan Agriculture
 
 ### In peacetime, impacts to agriculture include:
-- Climate change and depletion of natural resources 
+- Climate change and depletion of natural resources
 - Overdependence on rainfed production systems
 - Poorly maintained irrigation and drainage systems and farmers limited skills in modern farming practices
 - Limited access to agricultural inputs (e.g. seeds and fertilizer) and inadequate farming technologies and management
