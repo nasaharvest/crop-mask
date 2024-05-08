@@ -8,6 +8,7 @@
 [3]: https://openknowledge.fao.org/server/api/core/bitstreams/8a52a8c7-cef5-4578-95cf-a4f2616bb0c8/content
 [4]: https://ipad.fas.usda.gov/countrysummary/default.aspx?id=SU
 [5]: https://openknowledge.fao.org/server/api/core/bitstreams/ac5e9277-20a8-40fc-b7d5-5f921a7d661d/content
+[6]: https://openknowledge.fao.org/server/api/core/bitstreams/9cf3665e-d98c-45c2-af03-06404460b9e0/content
 
 ### Admin Zones:
 <img src="https://www.worldatlas.com/upload/bb/90/16/states-of-sudan-map.png" />
@@ -58,9 +59,13 @@
 - Sudan’s main crops include cotton, millet, sorghum, peanut, and wheat.
 - The main subsistence crops are sorghum (highest produced) and millet as well as wheat, corn, and barley.
 
-### Farming Practices <sup>[5]</sup>
-- The White and Blue Niles are important for irrigation as these areas produce the bulk of the country’s commercial crops.
-Predominantly rainfed agriculture
+### Farming Practices <sup>[5]</sup> <sup>[6]</sup>
+- Since 95% of Sudan's agriculture is rainfed, crop production relies on a good temporal distribution of annual rainfall
+- The White and Blue Niles are important for irrigation as these areas produce the bulk of the country’s commercial crops
+- Heavy rainfall and flash floods damage the already poorly maintained irrigation systems by flooding the canals and crop land
+- Inadequate coordination and slow decision-making processes in the management of the irrigation schedules, is to blame for untimely irrigations and consequently crop production losses.
+- Farmers have been reported (by FAO 2022) to have used seeds retained from the previous year's harvest due to the limited seed distributions by state authorities and the high market prices.
+- Agricultural operations are often delayed when agricultural machinery is not available in adequate numbers for renting, which causes operational costs to skyrocket.
 
 ### Crop Losses 2023 <sup>[3]</sup>
 - Most reported difficulty from farmers was the higher than usual price of seeds and crop pests and diseases
