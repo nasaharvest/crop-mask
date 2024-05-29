@@ -540,6 +540,17 @@ class UgandaNorthCEO2019(LabeledDataset):
         return df
 
 
+class UgandaNorthCorLabels2022(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2022_GEE_labels"
+        df = pd.read_csv(raw_folder / "UGA_2022_labels_from_GEE.csv")
+        df.rename(columns={"lat": LAT, "long": LON}, inplace=True)
+        df[CLASS_PROB] = (df["class_probability"] == 1).astype(int)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
+        df[SUBSET] = "training"
+        return df
+    
+    
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1327,6 +1338,7 @@ datasets: List[LabeledDataset] = [
     Uganda_NorthCEO2022(),
     Uganda_NorthCEO2021(),
     UgandaNorthCEO2019(),
+    UgandaNorthCorLabels2022(),
 ]
 
 if __name__ == "__main__":
