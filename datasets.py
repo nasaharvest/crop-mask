@@ -549,8 +549,8 @@ class UgandaNorthCorLabels2022(LabeledDataset):
         df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
         df[SUBSET] = "training"
         return df
-    
-    
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
