@@ -455,5 +455,6 @@ eo_data_complete    1000
 
 UgandaNorthCorLabel2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    2975
-✖ training: 2975 labels, but 0 features
+eo_data_complete     2395
+eo_data_exporting     580
+✖ training: 2975 labels, but 2395 features
