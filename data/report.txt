@@ -450,3 +450,10 @@ eo_data_complete    1000
 ✔ training amount: 387, positive class: 21.4%
 ✔ validation amount: 294, positive class: 15.3%
 ✔ testing amount: 319, positive class: 14.1%
+
+
+
+UgandaNorthCorLabel2022 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    2975
+✖ training: 2975 labels, but 0 features
