@@ -540,7 +540,7 @@ class UgandaNorthCEO2019(LabeledDataset):
         return df
 
 
-class UgandaNorthCorLabels2022(LabeledDataset):
+class UgandaNorthCorLabel2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2022_GEE_labels"
         df = pd.read_csv(raw_folder / "UGA_2022_labels_from_GEE.csv")
@@ -1338,7 +1338,7 @@ datasets: List[LabeledDataset] = [
     Uganda_NorthCEO2022(),
     Uganda_NorthCEO2021(),
     UgandaNorthCEO2019(),
-    UgandaNorthCorLabels2022(),
+    UgandaNorthCorLabel2022(),
 ]
 
 if __name__ == "__main__":
