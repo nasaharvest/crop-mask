@@ -545,6 +545,7 @@ class UgandaNorthCorLabel2022(LabeledDataset):
         raw_folder = raw_dir / "Uganda_North_2022_GEE_labels"
         df = pd.read_csv(raw_folder / "UGA_2022_labels_from_GEE.csv")
         df.rename(columns={"lat": LAT, "long": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["class_probability"] == 1).astype(int)
         df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
         df[SUBSET] = "training"
