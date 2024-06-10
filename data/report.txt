@@ -450,3 +450,12 @@ eo_data_complete    1000
 ✔ training amount: 387, positive class: 21.4%
 ✔ validation amount: 294, positive class: 15.3%
 ✔ testing amount: 319, positive class: 14.1%
+
+
+
+KenyaCropArea2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    544
+✖ training: 232 labels, but 0 features
+✖ validation: 149 labels, but 0 features
+✖ testing: 163 labels, but 0 features
