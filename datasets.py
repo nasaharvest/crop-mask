@@ -539,6 +539,7 @@ class UgandaNorthCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
+
 class RwandaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Rwanda-Crop-Area-2019"
@@ -569,6 +570,7 @@ class RwandaCropArea2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
+
 
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
@@ -1357,7 +1359,7 @@ datasets: List[LabeledDataset] = [
     Uganda_NorthCEO2022(),
     Uganda_NorthCEO2021(),
     UgandaNorthCEO2019(),
-    RwandaCropArea2019()
+    RwandaCropArea2019(),
 ]
 
 if __name__ == "__main__":
