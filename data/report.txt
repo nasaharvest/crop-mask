@@ -450,3 +450,12 @@ eo_data_complete    1000
 ✔ training amount: 387, positive class: 21.4%
 ✔ validation amount: 294, positive class: 15.3%
 ✔ testing amount: 319, positive class: 14.1%
+
+
+
+RwandaCropArea2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    525
+✖ training: 222 labels, but 0 features
+✖ validation: 145 labels, but 0 features
+✖ testing: 158 labels, but 0 features
