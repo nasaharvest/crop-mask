@@ -539,6 +539,7 @@ class UgandaNorthCEO2019(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
+
 class KenyaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Kenya_Crop_Area_2019"
@@ -550,7 +551,7 @@ class KenyaCropArea2019(LabeledDataset):
             raw_folder
             / "ceo-Kenya-Crop-Area-Estimation-Reference-Sample-2019---Set-2-sample-data-2024-06-10.csv"
         )
-        df =pd.concat([df1,df2])
+        df = pd.concat([df1, df2])
 
         # Discard rows with no label
         df = df[~df["Does this point correspond to active cropland?"].isna()].copy()
@@ -569,6 +570,7 @@ class KenyaCropArea2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
+
 
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
