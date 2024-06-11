@@ -455,7 +455,7 @@ eo_data_complete    1000
 
 KenyaCropArea2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    544
-✖ training: 232 labels, but 0 features
-✖ validation: 149 labels, but 0 features
-✖ testing: 163 labels, but 0 features
+eo_data_complete    544
+✔ training amount: 232, positive class: 23.7%
+✔ validation amount: 149, positive class: 18.1%
+✔ testing amount: 163, positive class: 20.2%
