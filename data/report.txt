@@ -455,7 +455,7 @@ eo_data_complete    1000
 
 RwandaCropArea2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    525
-✖ training: 222 labels, but 0 features
-✖ validation: 145 labels, but 0 features
-✖ testing: 158 labels, but 0 features
+eo_data_complete    525
+✔ training amount: 222, positive class: 38.3%
+✔ validation amount: 145, positive class: 31.0%
+✔ testing amount: 158, positive class: 34.8%
