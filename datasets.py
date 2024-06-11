@@ -544,13 +544,11 @@ class KenyaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Kenya_Crop_Area_2019"
         df1 = pd.read_csv(
-            raw_folder
-            / "ceo-Kenya-Crop-Area-Estimation-Reference-Sample-2019---Set-1"\
+            raw_folder / "ceo-Kenya-Crop-Area-Estimation-Reference-Sample-2019---Set-1"
             "-sample-data-2024-06-10.csv"
         )
         df2 = pd.read_csv(
-            raw_folder
-            / "ceo-Kenya-Crop-Area-Estimation-Reference-Sample-2019---Set-2"\
+            raw_folder / "ceo-Kenya-Crop-Area-Estimation-Reference-Sample-2019---Set-2"
             "-sample-data-2024-06-10.csv"
         )
         df = pd.concat([df1, df2])
