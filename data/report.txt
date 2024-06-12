@@ -457,3 +457,21 @@ UgandaNorthCorLabel2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
 eo_data_complete    2975
 ✔ training amount: 2975, positive class: 51.6%
+
+
+
+KenyaCropArea2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    544
+✔ training amount: 232, positive class: 23.7%
+✔ validation amount: 149, positive class: 18.1%
+✔ testing amount: 163, positive class: 20.2%
+
+
+
+RwandaCropArea2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    525
+✔ training amount: 222, positive class: 38.3%
+✔ validation amount: 145, positive class: 31.0%
+✔ testing amount: 158, positive class: 34.8%
