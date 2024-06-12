@@ -620,11 +620,11 @@ class MalawiCropArea2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Malawi_Crop_Area_2020"
         df1 = pd.read_csv(
-            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"\
+            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"
             "Sept-to-Sept---Set-1-sample-data-2024-06-11.csv"
         )
         df2 = pd.read_csv(
-            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"\
+            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"
             "Sept-to-Sept---Set-2-sample-data-2024-06-11.csv"
         )
         df = pd.concat([df1, df2])
@@ -652,11 +652,11 @@ class TanzaniaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Tanzania_Crop_Area_2019"
         df1 = pd.read_csv(
-            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"\
+            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"
             "-to-Sept---Set-1-sample-data-2024-06-11.csv"
         )
         df2 = pd.read_csv(
-            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"\
+            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"
             "-to-Sept---Set-2-sample-data-2024-06-11.csv"
         )
         df = pd.concat([df1, df2])
@@ -684,11 +684,11 @@ class FranceCropArea2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "France_Crop_Area_2020"
         df1 = pd.read_csv(
-            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"\
+            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"
             "(March-March)---Set-1-sample-data-2024-06-11.csv"
         )
         df2 = pd.read_csv(
-            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"\
+            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"
             "(March-March)---Set-2-sample-data-2024-06-11.csv"
         )
         df = pd.concat([df1, df2])
