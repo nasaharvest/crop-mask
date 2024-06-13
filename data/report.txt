@@ -475,3 +475,30 @@ eo_data_complete    525
 ✔ training amount: 222, positive class: 38.3%
 ✔ validation amount: 145, positive class: 31.0%
 ✔ testing amount: 158, positive class: 34.8%
+
+
+
+MalawiCropArea2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    510
+✔ training amount: 214, positive class: 15.9%
+✔ validation amount: 141, positive class: 9.9%
+✔ testing amount: 155, positive class: 13.5%
+
+
+
+TanzaniaCropArea2019 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    525
+✔ training amount: 222, positive class: 18.0%
+✔ validation amount: 145, positive class: 15.2%
+✔ testing amount: 158, positive class: 19.6%
+
+
+
+FranceCropArea2020 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    650
+✔ training amount: 265, positive class: 22.3%
+✔ validation amount: 184, positive class: 22.3%
+✔ testing amount: 201, positive class: 26.4%

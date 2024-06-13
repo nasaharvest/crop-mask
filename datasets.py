@@ -616,6 +616,102 @@ class RwandaCropArea2019(LabeledDataset):
         return df
 
 
+class MalawiCropArea2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Malawi_Crop_Area_2020"
+        df1 = pd.read_csv(
+            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"
+            "Sept-to-Sept---Set-1-sample-data-2024-06-11.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder / "ceo-Malawi-Cropland-Area-Estimation-Reference-Sample-2020-"
+            "Sept-to-Sept---Set-2-sample-data-2024-06-11.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this point correspond to active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this point correspond to active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class TanzaniaCropArea2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Tanzania_Crop_Area_2019"
+        df1 = pd.read_csv(
+            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"
+            "-to-Sept---Set-1-sample-data-2024-06-11.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder / "ceo-Tanzania-Cropland-Area-Estimation-Reference-Sample-2019-Sept"
+            "-to-Sept---Set-2-sample-data-2024-06-11.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this point correspond to active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this point correspond to active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
+class FranceCropArea2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "France_Crop_Area_2020"
+        df1 = pd.read_csv(
+            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"
+            "(March-March)---Set-1-sample-data-2024-06-11.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder / "ceo-France-Cropland-Area-Reference-Sample-2020-"
+            "(March-March)---Set-2-sample-data-2024-06-11.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this point correspond to active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this point correspond to active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+
+
 datasets: List[LabeledDataset] = [
     CustomLabeledDataset(
         dataset="geowiki_landcover_2017",
@@ -1406,6 +1502,9 @@ datasets: List[LabeledDataset] = [
     UgandaNorthCorLabel2022(),
     KenyaCropArea2019(),
     RwandaCropArea2019(),
+    MalawiCropArea2020(),
+    TanzaniaCropArea2019(),
+    FranceCropArea2020(),
 ]
 
 if __name__ == "__main__":
