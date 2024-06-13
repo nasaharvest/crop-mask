@@ -480,26 +480,26 @@ eo_data_complete    525
 
 MalawiCropArea2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    508
-eo_data_complete       2
-✖ training: 214 labels, but 1 features
-✖ validation: 141 labels, but 0 features
-✖ testing: 155 labels, but 1 features
+eo_data_complete    510
+✔ training amount: 214, positive class: 15.9%
+✔ validation amount: 141, positive class: 9.9%
+✔ testing amount: 155, positive class: 13.5%
 
 
 
 TanzaniaCropArea2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    525
-✖ training: 222 labels, but 0 features
-✖ validation: 145 labels, but 0 features
-✖ testing: 158 labels, but 0 features
+eo_data_complete    525
+✔ training amount: 222, positive class: 18.0%
+✔ validation amount: 145, positive class: 15.2%
+✔ testing amount: 158, positive class: 19.6%
 
 
 
 FranceCropArea2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    650
-✖ training: 265 labels, but 0 features
-✖ validation: 184 labels, but 0 features
-✖ testing: 201 labels, but 0 features
+eo_data_complete     602
+eo_data_exporting     48
+✖ training: 265 labels, but 251 features
+✖ validation: 184 labels, but 168 features
+✖ testing: 201 labels, but 183 features
