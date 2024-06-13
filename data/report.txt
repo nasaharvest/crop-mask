@@ -498,8 +498,7 @@ eo_data_complete    525
 
 FranceCropArea2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     602
-eo_data_exporting     48
-✖ training: 265 labels, but 251 features
-✖ validation: 184 labels, but 168 features
-✖ testing: 201 labels, but 183 features
+eo_data_complete    650
+✔ training amount: 265, positive class: 22.3%
+✔ validation amount: 184, positive class: 22.3%
+✔ testing amount: 201, positive class: 26.4%
