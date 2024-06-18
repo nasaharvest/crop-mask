@@ -1,0 +1,85 @@
+// Author: Iman Smith
+// Description:
+//  Script for generating conflict event mask for Sudan from 2020-2024
+
+var roi = ee.FeatureCollection("FAO/GAUL/2015/level0")
+  .filter(ee.Filter.eq('ADM0_NAME', 'Sudan'));
+  
+Map.centerObject(roi,5);
+
+var pointVisParams = {
+  color: 'FF0000' // Red color
+};
+
+// Add the CSV points to the map
+Map.addLayer(table, pointVisParams, 'Conflict Points');
+
+var Table = ee.FeatureCollection("projects/ee-ismith17/assets/2020-2024_SUDAN");
+
+
+// 5 km buffers //
+
+// Define the property names in the CSV file containing latitude and longitude
+var latitudeProperty = 'latitude'; 
+var longitudeProperty = 'longitude'; 
+
+// Define the buffer distance (5 km in meters)
+var bufferDistance = 5000;
+
+// Apply a buffer to each point
+var bufferedPoints = table.map(function(feature) {
+  return feature.buffer(bufferDistance);
+});
+
+var pointVisParamsB = {
+  color: 'FFA500' // Orange color
+};
+
+// Visualize the buffered points on the map
+Map.addLayer(bufferedPoints, pointVisParamsB, '5km Buffers');
+
+
+// 10 km buffers //
+
+// Define the property names in the CSV file containing latitude and longitude
+var latitudeProperty = 'latitude'; 
+var longitudeProperty = 'longitude';
+
+// Define the buffer distance (5 km in meters)
+var bufferDistance = 10000;
+
+// Apply a buffer to each point
+var bufferedPoints = table.map(function(feature) {
+  return feature.buffer(bufferDistance);
+});
+
+var pointVisParamsB10 = {
+  color: 'FFF380' // Yellow color
+};
+
+// Visualize the buffered points on the map
+Map.addLayer(bufferedPoints, pointVisParamsB10, '10km Buffers');
+
+
+// Color Code Year //
+
+// Load points (dataset)
+var points = ee.FeatureCollection('projects/ee-ismith17/assets/2020-2024_SUDAN').filterBounds(roi)
+
+
+// Filter points based on a range of years
+var AllPoints = points.filter(ee.Filter.inList("year", [2020, 2021, 2022, 2023, 2024]));
+
+// Filter points for each specific year
+var Points2020 = AllPoints.filter(ee.Filter.eq('year', 2020));
+var Points2021 = AllPoints.filter(ee.Filter.eq('year', 2021));
+var Points2022 = AllPoints.filter(ee.Filter.eq('year', 2022));
+var Points2023 = AllPoints.filter(ee.Filter.eq('year', 2023));
+var Points2024 = AllPoints.filter(ee.Filter.eq('year', 2024));
+
+
+Map.addLayer(Points2020, {color: "green"}, "2020")
+Map.addLayer(Points2021, {color: "lime"}, "2021")
+Map.addLayer(Points2022, {color: "blue"}, "2022")
+Map.addLayer(Points2023, {color: "purple"}, "2023")
+Map.addLayer(Points2024, {color: "pink"}, "2024")
