@@ -4,7 +4,7 @@
 
 var roi = ee.FeatureCollection("FAO/GAUL/2015/level0")
   .filter(ee.Filter.eq('ADM0_NAME', 'Sudan'));
-  
+
 Map.centerObject(roi,5);
 
 var pointVisParams = {
@@ -20,8 +20,8 @@ var Table = ee.FeatureCollection("projects/ee-ismith17/assets/2020-2024_SUDAN");
 // 5 km buffers //
 
 // Define the property names in the CSV file containing latitude and longitude
-var latitudeProperty = 'latitude'; 
-var longitudeProperty = 'longitude'; 
+var latitudeProperty = 'latitude';
+var longitudeProperty = 'longitude';
 
 // Define the buffer distance (5 km in meters)
 var bufferDistance = 5000;
@@ -42,7 +42,7 @@ Map.addLayer(bufferedPoints, pointVisParamsB, '5km Buffers');
 // 10 km buffers //
 
 // Define the property names in the CSV file containing latitude and longitude
-var latitudeProperty = 'latitude'; 
+var latitudeProperty = 'latitude';
 var longitudeProperty = 'longitude';
 
 // Define the buffer distance (5 km in meters)
