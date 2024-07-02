@@ -1,0 +1,136 @@
+// Author: Iman Smith
+// Description:
+// Script for generating conflict event mask for Sudan from 2020-2024
+// Updated GEE Link: https://code.earthengine.google.com/8b6898cfbdcad1c2240305e72b3d13c0
+
+var roi = ee.FeatureCollection("FAO/GAUL/2015/level0")
+  .filter(ee.Filter.eq('ADM0_NAME', 'Sudan'));
+
+Map.centerObject(roi,5);
+
+var pointVisParams = {
+  color: 'FF0000' // Red color
+};
+
+// Add the CSV points to the map
+var table = ee.FeatureCollection("projects/ee-ismith17/assets/2020-2024_SUDAN");
+
+Map.addLayer(table, pointVisParams, 'Conflict Points');
+
+
+// 5 km buffers //
+
+// Define the property names in the CSV file containing latitude and longitude
+var latitudeProperty = 'latitude';
+var longitudeProperty = 'longitude';
+
+// Define the buffer distance (5 km in meters)
+var bufferDistance = 5000;
+
+// Apply a buffer to each point
+var bufferedPoints = table.map(function(feature) {
+  return feature.buffer(bufferDistance);
+});
+
+var pointVisParamsB = {
+  color: 'FFA500' // Orange color
+};
+
+// Visualize the buffered points on the map
+Map.addLayer(bufferedPoints, pointVisParamsB, '5km Buffers');
+
+
+// 10 km buffers //
+
+// Define the buffer distance (5 km in meters)
+var bufferDistance = 10000;
+
+// Apply a buffer to each point
+var bufferedPoints = table.map(function(feature) {
+  return feature.buffer(bufferDistance);
+});
+
+var pointVisParamsB10 = {
+  color: 'FFF380' // Yellow color
+};
+
+// Visualize the buffered points on the map
+Map.addLayer(bufferedPoints, pointVisParamsB10, '10km Buffers');
+
+
+
+// Color Code Year //
+
+// Load points (dataset)
+var points = ee.FeatureCollection('projects/ee-ismith17/assets/2020-2024_SUDAN').filterBounds(roi)
+
+
+// Filter points based on a range of years
+var AllPoints = points.filter(ee.Filter.inList("year", [2020, 2021, 2022, 2023, 2024]));
+
+// Filter points for each specific year using .map() and buffer them
+var Points2020 = AllPoints.filter(ee.Filter.eq('year', 2020)).map(function(feature) {
+    var bufferedFeature = feature.buffer(bufferDistance);
+    return bufferedFeature;
+});
+
+var Points2021 = AllPoints.filter(ee.Filter.eq('year', 2021)).map(function(feature) {
+    var bufferedFeature = feature.buffer(bufferDistance);
+    return bufferedFeature;
+});
+
+var Points2022 = AllPoints.filter(ee.Filter.eq('year', 2022)).map(function(feature) {
+    var bufferedFeature = feature.buffer(bufferDistance);
+    return bufferedFeature;
+});
+
+var Points2023 = AllPoints.filter(ee.Filter.eq('year', 2023)).map(function(feature) {
+    var bufferedFeature = feature.buffer(bufferDistance);
+    return bufferedFeature;
+});
+
+var Points2024 = AllPoints.filter(ee.Filter.eq('year', 2024)).map(function(feature) {
+    var bufferedFeature = feature.buffer(bufferDistance);
+    return bufferedFeature;
+});
+
+// Combine all buffered points into a single FeatureCollection
+var bufferedPoints = ee.FeatureCollection([
+    Points2020, Points2021, Points2022, Points2023, Points2024
+]).flatten();
+
+var AllPoints = points.filter(ee.Filter.inList("year", [2020, 2021, 2022, 2023, 2024]));
+
+// Dictionary mapping years to colors
+var yearColors = ee.Dictionary({
+  '2020': 'FF0000', // red
+  '2021': '00FF00', // green
+  '2022': '0000FF', // blue
+  '2023': 'FFFF00', // yellow
+  '2024': '800080'  // purple
+});
+
+// Function to buffer features and set a color property based on the year
+var bufferAndColor = function(feature) {
+    var year = ee.Number(feature.get('year')).format();
+    var color = yearColors.get(year);
+    return feature.buffer(bufferDistance).set({
+        'style': {
+            'color': color,
+            'width': 2, // border width
+            'fillColor': ee.String(color).cat('80') // fill color with transparency
+        }
+    });
+};
+
+// Apply the function to all points
+var coloredPoints = AllPoints.map(bufferAndColor);
+
+// Create an image from the FeatureCollection
+var image = coloredPoints.style({
+    styleProperty: 'style'
+});
+
+// Visualization
+Map.centerObject(coloredPoints);
+Map.addLayer(image, {}, '2020-2024 Colored Points');
