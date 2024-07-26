@@ -474,6 +474,37 @@ class Uganda_NorthCEO2022(LabeledDataset):
         df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
+    
+class Uganda_NorthCEO2016(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2016"
+        df1 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2016---Feb-2017-(Set-1)-sample-data-2024-07-25.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2016---Feb-2017-(Set-2)-sample-data-2024-07-25.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2016, 1, 1), date(2017, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
 
 
 class Uganda_NorthCEO2021(LabeledDataset):
@@ -582,8 +613,7 @@ class KenyaCropArea2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
-
-
+    
 class RwandaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Rwanda-Crop-Area-2019"
@@ -1505,6 +1535,7 @@ datasets: List[LabeledDataset] = [
     MalawiCropArea2020(),
     TanzaniaCropArea2019(),
     FranceCropArea2020(),
+    Uganda_NorthCEO2016),
 ]
 
 if __name__ == "__main__":
