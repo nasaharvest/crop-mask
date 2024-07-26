@@ -502,3 +502,12 @@ eo_data_complete    650
 ✔ training amount: 265, positive class: 22.3%
 ✔ validation amount: 184, positive class: 22.3%
 ✔ testing amount: 201, positive class: 26.4%
+
+
+
+Uganda_NorthCEO2016 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_exporting    1000
+✖ training: 387 labels, but 0 features
+✖ validation: 294 labels, but 0 features
+✖ testing: 319 labels, but 0 features
