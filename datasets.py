@@ -1535,7 +1535,7 @@ datasets: List[LabeledDataset] = [
     MalawiCropArea2020(),
     TanzaniaCropArea2019(),
     FranceCropArea2020(),
-    Uganda_NorthCEO2016),
+    Uganda_NorthCEO2016(),
 ]
 
 if __name__ == "__main__":
