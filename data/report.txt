@@ -507,8 +507,8 @@ eo_data_complete    650
 
 Uganda_NorthCEO2016 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     598
-eo_data_exporting    402
-✖ training: 387 labels, but 241 features
-✖ validation: 294 labels, but 180 features
-✖ testing: 319 labels, but 177 features
+eo_data_complete     773
+eo_data_exporting    227
+✖ training: 387 labels, but 293 features
+✖ validation: 294 labels, but 235 features
+✖ testing: 319 labels, but 245 features
