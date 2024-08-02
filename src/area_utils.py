@@ -134,9 +134,9 @@ def load_raster(
                 \n You need to project the map to the local UTM Zone \
                 (EPSG:XXXXX)."""
             )
-    
+
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            options = gdal.WarpOptions(dstSRS=f'EPSG:{t_srs}', dstNodata=255)
+            options = gdal.WarpOptions(dstSRS=f"EPSG:{t_srs}", dstNodata=255)
             output_raster = f"prj_{in_raster_basename}"
             gdal.Warp(output_raster, in_raster, options=options)
             in_raster = output_raster
@@ -147,7 +147,7 @@ def load_raster(
             output_raster = f"nodata_{in_raster_basename}"
             gdal.Warp(output_raster, in_raster, options=options)
             in_raster = output_raster
-        
+
         return clip_raster(in_raster, boundary)
 
 
