@@ -356,6 +356,23 @@
             "roc_auc_score": 0.8442
         }
     },
+    "Uganda_North_2016_V1": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/vodv8fag",
+        "test_metrics": {
+            "accuracy": 0.8253,
+            "f1_score": 0.5085,
+            "precision_score": 0.8333,
+            "recall_score": 0.3659,
+            "roc_auc_score": 0.8771
+        },
+        "val_metrics": {
+            "accuracy": 0.8061,
+            "f1_score": 0.5152,
+            "precision_score": 0.7391,
+            "recall_score": 0.3953,
+            "roc_auc_score": 0.8431
+        }
+    },
     "Uganda_North_2019_V1": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/slmi6839",
         "test_metrics": {
