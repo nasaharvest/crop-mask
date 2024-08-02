@@ -134,14 +134,21 @@ def load_raster(
                 \n You need to project the map to the local UTM Zone \
                 (EPSG:XXXXX)."""
             )
+    
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
-            options = {"dstSRS": f"EPSG:{t_srs}", "dstNodata": 255}
-            gdal.Warp(f"prj_{in_raster_basename}", in_raster_basename, **options)
-            in_raster = f"prj_{in_raster_basename}"
-            return clip_raster(in_raster, boundary)
+            options = gdal.WarpOptions(dstSRS=f'EPSG:{t_srs}', dstNodata=255)
+            output_raster = f"prj_{in_raster_basename}"
+            gdal.Warp(output_raster, in_raster, options=options)
+            in_raster = output_raster
+
         else:
-            print("Map CRS is %s. Loading map into memory." % src.crs)
-            return clip_raster(in_raster, boundary)
+            print("Map CRS is %s. Setting nodata value to 255." % src.crs)
+            options = gdal.WarpOptions(dstNodata=255)
+            output_raster = f"nodata_{in_raster_basename}"
+            gdal.Warp(output_raster, in_raster, options=options)
+            in_raster = output_raster
+        
+        return clip_raster(in_raster, boundary)
 
 
 def binarize(
