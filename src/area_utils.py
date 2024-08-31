@@ -14,6 +14,9 @@ from rasterio.mask import mask
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
 
+import csv
+import yaml
+
 
 def gdal_reproject(target_crs: str, source_crs: str, source_fn: str, dest_fn: str) -> None:
     cmd = (
@@ -741,3 +744,189 @@ def plot_area(summary: pd.DataFrame) -> None:
 
     plt.tight_layout()
     plt.show()
+
+
+def area_estimate_pipeline(aoi_path: str, 
+                           map_path: str, 
+                           ceo_set_1: str, 
+                           ceo_set_2: str, 
+                           visual_outputs: bool
+                           ) -> dict:
+    """Returns area estimate for a particular region of interest (ROI) using cropland raster and labels.
+
+    Args:
+        aoi_path (str): The file path to the Area of Interest (AOI) ShapeFile/GeoJSON file, which defines the region for which the area estimates are computed.
+        map_path (str): The file path to the cropland raster file (.tif) that contains the land cover map of the area of interest.
+        ceo_set_1 (str): The file path to the first CEO (Collect Earth Online) set, which includes ground truth labels.
+        ceo_set_2 (str): The file path to the second CEO set, which includes additional ground truth labels for further validation or comparison.
+        visual_outputs (bool): A boolean flag indicating whether to generate visual outputs (plots, maps, etc.) to visualize the results.
+
+    Returns:
+        dict: A dictionary containing area estimates and accuracy metrics for each class in the confusion matrix.
+        
+        The dictionary has the following keys:
+            - 'user_accuracy': A list of user's accuracy values for each class.
+            - 'producer_accuracy': A list of producer's accuracy values for each class.
+            - 'area_estimates': A nested dictionary containing area estimates and 95% confidence intervals in different units:
+                - 'pr': Proportional area estimates and confidence intervals.
+                - 'px': Area estimates and confidence intervals in pixels.
+                - 'ha': Area estimates and confidence intervals in hectares.
+            - 'confidence_interval': The 95% confidence interval for each class.
+
+    """
+    aoi = gpd.read_file(aoi_path)
+    roi = aoi.dissolve()
+
+    map_array, map_meta = load_raster(map_path, roi)
+
+    if map_array.data.dtype == "uint8":
+        binary_map = map_array.data
+    else:
+        binary_map = binarize(map_array, map_meta)
+
+    crop_area_px, noncrop_area_px = cal_map_area_class(binary_map, unit='pixels')
+    crop_area_ha, noncrop_area_ha = cal_map_area_class(binary_map, unit='ha')
+    crop_area_frac, noncrop_area_frac = cal_map_area_class(binary_map, unit='fraction')
+
+    ceo_geom = reference_sample_agree(binary_map, map_meta, ceo_set_1, ceo_set_2)
+    ceo_geom = ceo_geom[ceo_geom['Mapped class'] != 255]
+
+    cm = compute_confusion_matrix(ceo_geom)
+
+    a_j = np.array([noncrop_area_px, crop_area_px], dtype = np.int64)
+
+    px_size = map_meta["transform"][0]
+
+    estimates = compute_area_estimate(cm, a_j, px_size)
+
+    if visual_outputs:
+        plt.imshow(binary_map, cmap='YlGn', vmin=0, vmax=1)
+        plt.show()
+        a_ha, err_ha = estimates["area"]["ha"]
+        u_j, err_u_j = estimates["user"]
+        p_i, err_p_i = estimates["producer"]
+        summary = create_area_estimate_summary(a_ha, err_ha, u_j, err_u_j, p_i, err_p_i, columns = ["Non-Crop", "Crop"])
+
+    return estimates
+
+
+def write_area_estimate_results_to_csv(data: dict, 
+                                       output_file: str
+                                       ) -> bool:
+    
+    """
+    Writes area estimate results to a CSV file in an easy-to-interpret format.
+
+    Args:
+        data (dict): A nested dictionary containing the area estimates and their respective confidence intervals 
+                     for different regions of interest (ROIs) and years. The dictionary structure is expected to be:
+                     {
+                        'ROI_name_1': {
+                            'year': [list of years],
+                            'crop area': [list of crop area estimates],
+                            '95%CI crop': [list of 95% confidence intervals for crop area],
+                            'Non-crop area': [list of non-crop area estimates],
+                            '95%CI noncrop': [list of 95% confidence intervals for non-crop area]
+                        },
+                        'ROI_name_2': {...},
+                        ...
+                     }
+        output_file (str): The file path where the output CSV will be saved.
+
+    Returns:
+        bool: Returns True when the CSV file is successfully written.
+
+    """
+
+    # The header based on the RoI results names(keys)
+    header = ["Year"]
+    for roi in data.keys():
+        header.extend([
+            f"{roi} crop area",
+            "95% CI",
+            f"{roi} Non-crop area",
+            "95% CI"
+        ])
+
+    with open(output_file, 'w', newline='') as file:
+        
+        writer = csv.writer(file)
+        writer.writerow(header)
+
+        years = data[list(data.keys())[0]]['year']
+
+        for i, year in enumerate(years):
+            row = [year]
+            for roi in data.keys():
+                row.append(data[roi]['crop area'][i])
+                row.append(data[roi]['95%CI crop'][i])
+                row.append(data[roi]['Non-crop area'][i])
+                row.append(data[roi]['95%CI noncrop'][i])
+            writer.writerow(row)
+
+    return True
+
+
+def run_area_estimates_config(config: dict, show_output_charts: bool = False) -> dict:
+
+    """
+    Runs area estimates for multiple regions of interest (ROIs) and compiles the results.
+
+    Args:
+        config (dict): A dictionary containing configuration information for the ROIs and their associated data. 
+                       It includes details such as the names of the ROIs, paths to boundary files, crop mask files, 
+                       CEO datasets, and the output path for saving the CSV file.
+        show_output_charts (bool): A boolean flag indicating whether to display visual output charts during processing.
+
+    Returns:
+        dict: A dictionary containing area estimates and confidence intervals for each ROI and year.
+
+    Raises:
+        Exception: If there is an error writing the results to the CSV file.
+
+    """
+    
+    all_results = {}
+    for roi in config["rois"]:
+        all_results[roi["roi_name"]] = {
+            "year": [],
+            "crop area": [],
+            "95%CI crop": [],
+            "Non-crop area": [],
+            "95%CI noncrop": []
+        }
+        roi_results = all_results[roi["roi_name"]]
+
+        for yearly_data in roi["samples_and_cropmap"]:
+
+            print("\n" * 3 + f"_____ Running for {roi['roi_name']}, {yearly_data['year']} _____")
+            
+            # Call the function for yearly estimate
+            estimates = area_estimate_pipeline(
+                                                aoi_path=roi["roi_boundary_path"],
+                                                map_path=yearly_data["crop_mask_path"],
+                                                ceo_set_1=yearly_data["set1_labels_path"],
+                                                ceo_set_2=yearly_data["set2_labels_path"],
+                                                visual_outputs=show_output_charts
+                                            )
+
+            a_ha, err_ha = estimates["area"]["ha"]
+            a_ha, err_ha = a_ha.round(2), err_ha.round(2)
+
+            non_crop_area = a_ha[0]
+            crop_area = a_ha[1]
+            non_crop_area_err = err_ha[0]
+            crop_area_err = err_ha[1]
+
+            # Keep yearly results
+            roi_results["year"].append(yearly_data["year"])
+            roi_results["crop area"].append(crop_area)
+            roi_results["95%CI crop"].append(crop_area_err)
+            roi_results["Non-crop area"].append(non_crop_area)
+            roi_results["95%CI noncrop"].append(non_crop_area_err)
+
+    if write_area_estimate_results_to_csv(all_results, config["output_path"]):
+        return all_results
+    
+    else:
+        raise Exception("Error Writing Estimates to CSV")
