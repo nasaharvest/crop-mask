@@ -570,7 +570,6 @@ class UgandaNorthCEO2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
-    
 
 
 class UgandaNorthCEO2020(LabeledDataset):
@@ -603,8 +602,8 @@ class UgandaNorthCEO2020(LabeledDataset):
         df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
-    
-    
+
+
 class UgandaNorthCorLabel2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2022_GEE_labels"
