@@ -570,8 +570,41 @@ class UgandaNorthCEO2019(LabeledDataset):
         df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
+    
 
 
+class UgandaNorthCEO2020(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2020"
+        df1 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2020---Feb-2021-(Set-1)-sample-data-2024-09-07.csv"
+        )
+        df2 = pd.read_csv(
+            raw_folder
+            / "ceo-UNHCR-North-Uganda-Feb-2020---Feb-2021-(Set-2)-sample-data-2024-09-07.csv"
+        )
+        df = pd.concat([df1, df2])
+
+        # Discard rows with no label
+        df = df[~df["Does this pixel contain active cropland?"].isna()].copy()
+        df[CLASS_PROB] = df["Does this pixel contain active cropland?"] == "Crop"
+        df[CLASS_PROB] = df[CLASS_PROB].astype(int)
+        df["num_labelers"] = 1
+        df = df.groupby([LON, LAT], as_index=False, sort=False).agg(
+            {
+                CLASS_PROB: "mean",
+                "num_labelers": "sum",
+                "plotid": join_unique,
+                "sampleid": join_unique,
+                "email": join_unique,
+            }
+        )
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
+        df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
+        return df
+    
+    
 class UgandaNorthCorLabel2022(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2022_GEE_labels"
@@ -1538,6 +1571,7 @@ datasets: List[LabeledDataset] = [
     TanzaniaCropArea2019(),
     FranceCropArea2020(),
     Uganda_NorthCEO2016(),
+    UgandaNorthCEO2020(),
 ]
 
 if __name__ == "__main__":
