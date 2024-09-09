@@ -517,8 +517,8 @@ eo_data_export_failed    227
 
 UgandaNorthCEO2020 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    712
-eo_data_complete     288
-✖ training: 387 labels, but 118 features
-✖ validation: 294 labels, but 82 features
-✖ testing: 319 labels, but 88 features
+eo_data_complete     661
+eo_data_exporting    339
+✖ training: 387 labels, but 244 features
+✖ validation: 294 labels, but 203 features
+✖ testing: 319 labels, but 214 features
