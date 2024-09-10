@@ -1602,11 +1602,7 @@ datasets: List[LabeledDataset] = [
     TanzaniaCropArea2019(),
     FranceCropArea2020(),
     Uganda_NorthCEO2016(),
-<<<<<<< HEAD
     UgandaNorthCEO2020(),
-=======
-    Uganda_NorthCEO2017(),
->>>>>>> master
 ]
 
 if __name__ == "__main__":
