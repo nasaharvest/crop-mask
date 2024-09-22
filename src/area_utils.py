@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple, Union
 import cartopy.io.shapereader as shpreader
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import pandas as pd
 import rasterio as rio
@@ -15,6 +16,38 @@ from rasterio import transform
 from rasterio.mask import mask
 from shapely.geometry import box
 from sklearn.metrics import confusion_matrix
+
+
+def plot_confusion_matrix(cm, labels, datatype="d") -> None:
+    """Pretty prints confusion matrix.
+
+    Expects row 'Reference' and column 'Prediction/Map' ordered confusion matrix.
+
+    Args:
+        cm:
+            Confusion matrix of reference and map samples expressed in terms of
+            sample counts, n[i,j]. Row-column ordered reference-row, map-column.
+        labels:
+            List-like containing labels in same order as confusion matrix. For
+            example:
+
+            ["Stable NP", "PGain", "PLoss", "Stable P"]
+
+            ["Non-Crop", "Crop"]
+
+    """
+
+    _, ax = plt.subplots(nrows=1, ncols=1)
+    sns.heatmap(cm, cmap="crest", annot=True, fmt=datatype, cbar=False, 
+                square=True, ax=ax, annot_kws={"size": 20})
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_coords(0.50, 1.125)
+    ax.yaxis.set_label_coords(-0.125, 0.50)
+    ax.set_xticklabels(labels=labels, fontsize=16)
+    ax.set_yticklabels(labels=labels, fontsize=16)
+    ax.set_xlabel("Map", fontsize=20)
+    ax.set_ylabel("Reference", fontsize=20)
+    plt.tight_layout()
 
 
 def gdal_reproject(target_crs: str, source_crs: str, source_fn: str, dest_fn: str) -> None:
@@ -177,7 +210,7 @@ def cal_map_area_class(
         crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
         noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
         print(
-            f"Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
+            f"[Pixel counting] Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
         )
 
@@ -192,7 +225,7 @@ def cal_map_area_class(
     elif unit == "fraction":
         crop_area = int(crop_px[0].shape[0]) / total
         noncrop_area = int(noncrop_px[0].shape[0]) / total
-        print(f"Crop area: {crop_area:.2f} fraction, Non-crop area: {noncrop_area:.2f} fraction")
+        print(f"[Fraction] Crop area: {crop_area:.2f}, Non-crop area: {noncrop_area:.2f}")
         assert crop_area + noncrop_area == 1
 
     else:
@@ -776,7 +809,7 @@ def area_estimate_pipeline(
     map_array, map_meta = load_raster(map_path, roi)
 
     if map_array.data.dtype == "uint8":
-        binary_map = map_array.data
+        binary_map = map_array
     else:
         binary_map = binarize(map_array, map_meta)
 
@@ -790,6 +823,9 @@ def area_estimate_pipeline(
     cm = compute_confusion_matrix(ceo_geom)
 
     a_j = np.array([noncrop_area_px, crop_area_px], dtype=np.int64)
+    total_px = a_j.sum()
+    w_j = a_j / total_px
+    am = compute_area_error_matrix(cm, w_j)
 
     px_size = map_meta["transform"][0]
 
@@ -798,12 +834,15 @@ def area_estimate_pipeline(
     if visual_outputs:
         plt.imshow(binary_map, cmap="YlGn", vmin=0, vmax=1)
         plt.show()
+        plot_confusion_matrix(cm, ["Non-crop", "Crop"])
+        plot_confusion_matrix(am, ["Non-crop", "Crop"], datatype="0.2f")
         a_ha, err_ha = estimates["area"]["ha"]
         u_j, err_u_j = estimates["user"]
         p_i, err_p_i = estimates["producer"]
         summary = create_area_estimate_summary(
             a_ha, err_ha, u_j, err_u_j, p_i, err_p_i, columns=["Non-Crop", "Crop"]
         )
+        print(summary)
 
     return estimates
 
