@@ -1,0 +1,63 @@
+rois:
+
+  - roi_name: AlJazirah
+    roi_boundary_path: '../data/shapefiles/aljazirah_boundary.zip'
+    samples_and_cropmap:
+      - year: 2022
+        set1_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_AlJazirah_2022_dw_may_march_cropmask-32637-cropped.tif'
+      - year: 2023
+        set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_AlJazirah_2023_dw_may_march_cropmask-32637-cropped.tif'
+
+  - roi_name: AlQadarif
+    roi_boundary_path: '../data/shapefiles/alqadarif_boundary.zip'
+    samples_and_cropmap:
+      - year: 2022
+        set1_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_AlQadarif_2022_dw_may_march_cropmask-32637-cropped.tif'
+      - year: 2023
+        set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_AlQadarif_2023_dw_may_march_cropmask-32637-cropped.tif'
+
+  - roi_name: WestDarfur
+    roi_boundary_path: '../data/shapefiles/westdarfur_boundary.zip'
+    samples_and_cropmap:
+      - year: 2022
+        set1_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_WestDarfur_2022_dw_may_march_cropmask-32635-cropped.tif'
+      - year: 2023
+        set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_WestDarfur_2023_dw_may_march_cropmask-32635-cropped.tif'
+
+  - roi_name: CentralDarfur
+    roi_boundary_path: '../data/shapefiles/centraldarfur_boundary.zip'
+    samples_and_cropmap:
+      - year: 2022
+        set1_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_CentralDarfur_2022_dw_may_march_cropmask-32635-cropped.tif'
+      - year: 2023
+        set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_CentralDarfur_2023_dw_may_march_cropmask-32635-cropped.tif'
+
+  - roi_name: SouthDarfur
+    roi_boundary_path: '../data/shapefiles/southdarfur_boundary.zip'
+    samples_and_cropmap:
+      - year: 2022
+        set1_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2022_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_SouthDarfur_2022_dw_may_march_cropmask-32635-cropped.tif'
+      - year: 2023
+        set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
+        crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_SouthDarfur_2023_dw_may_march_cropmask-32635-cropped.tif'
+
+output_path: '../maps/Sudan/area-sudan-22sept2024.csv'
