@@ -1,4 +1,4 @@
-rois: 
+rois:
 
   - roi_name: AlJazirah
     roi_boundary_path: '../data/shapefiles/aljazirah_boundary.zip'
@@ -11,7 +11,7 @@ rois:
         set1_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
         set2_labels_path: '../maps/Sudan/sudan_2023_updated22sept2024.csv'
         crop_mask_path: '../maps/Sudan/rasters/Sudan_dw_AlJazirah_2023_dw_may_march_cropmask-32637-cropped.tif'
-  
+
   - roi_name: AlQadarif
     roi_boundary_path: '../data/shapefiles/alqadarif_boundary.zip'
     samples_and_cropmap:
