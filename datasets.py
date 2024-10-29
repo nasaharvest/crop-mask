@@ -539,6 +539,7 @@ class Uganda_NorthCEO2017(LabeledDataset):
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
+
 class Uganda_NorthCEO2020(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2020"
