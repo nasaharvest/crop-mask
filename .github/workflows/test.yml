@@ -15,11 +15,11 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.ref }}
     - name: Setup environment
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
-        cache-env: true
+        cache-environment: true
     - name: Run unit tests
       run: python -m unittest
 
