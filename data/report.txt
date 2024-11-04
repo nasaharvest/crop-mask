@@ -400,38 +400,38 @@ eo_data_complete    1350
 
 
 
-Namibia_field_samples_22_23 (Timesteps: 15)
+Namibia_field_samples_22_23 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete    4811
-✔ training amount: 4811, positive class: 8.3%
+eo_data_exporting    4811
+✖ training: 4811 labels, but 0 features
 
 
 
-SudanGedarefDarfurAlJazirah2022 (Timesteps: 19)
+SudanGedarefDarfurAlJazirah2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete    1196
-✔ training amount: 483, positive class: 27.5%
-✔ validation amount: 338, positive class: 33.4%
-✔ testing amount: 375, positive class: 34.4%
+eo_data_exporting    1196
+✖ training: 483 labels, but 0 features
+✖ validation: 338 labels, but 0 features
+✖ testing: 375 labels, but 0 features
 
 
 
-SudanGedarefDarfurAlJazirah2023 (Timesteps: 10)
+SudanGedarefDarfurAlJazirah2023 (Timesteps: 19)
 ----------------------------------------------------------------------------
-eo_data_complete         731
-eo_data_export_failed    465
-✔ training amount: 277, positive class: 24.5%
-✔ validation amount: 215, positive class: 28.8%
-✔ testing amount: 239, positive class: 23.4%
+eo_data_exporting    1196
+✖ training: 494 labels, but 0 features
+✖ validation: 346 labels, but 0 features
+✖ testing: 356 labels, but 0 features
 
 
 
-Uganda_NorthCEO2022 (Timesteps: 19)
+Uganda_NorthCEO2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete    1000
-✔ training amount: 387, positive class: 20.9%
-✔ validation amount: 294, positive class: 23.1%
-✔ testing amount: 319, positive class: 17.6%
+eo_data_exporting    996
+eo_data_complete       4
+✖ training: 403 labels, but 1 features
+✖ validation: 287 labels, but 2 features
+✖ testing: 310 labels, but 1 features
 
 
 
