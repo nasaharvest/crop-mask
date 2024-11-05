@@ -402,18 +402,19 @@ eo_data_complete    1350
 
 Namibia_field_samples_22_23 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    4495
-eo_data_complete      316
-✖ training: 4811 labels, but 316 features
+eo_data_exporting    2826
+eo_data_complete     1985
+✖ training: 4811 labels, but 1985 features
 
 
 
 SudanGedarefDarfurAlJazirah2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    1196
-✖ training: 483 labels, but 0 features
-✖ validation: 338 labels, but 0 features
-✖ testing: 375 labels, but 0 features
+eo_data_exporting    1170
+eo_data_complete       26
+✖ training: 483 labels, but 9 features
+✖ validation: 338 labels, but 7 features
+✖ testing: 375 labels, but 10 features
 
 
 
@@ -428,11 +429,11 @@ eo_data_exporting    1196
 
 Uganda_NorthCEO2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    996
-eo_data_complete       4
-✖ training: 403 labels, but 1 features
-✖ validation: 287 labels, but 2 features
-✖ testing: 310 labels, but 1 features
+eo_data_exporting    983
+eo_data_complete      17
+✖ training: 403 labels, but 5 features
+✖ validation: 287 labels, but 7 features
+✖ testing: 310 labels, but 5 features
 
 
 
