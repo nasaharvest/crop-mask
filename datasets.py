@@ -381,7 +381,7 @@ class Namibia_field_samples_22_23(LabeledDataset):
         df.rename(columns={"Latitude": LAT, "Longitude": LON}, inplace=True)
         df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
         df[CLASS_PROB] = (df["Landcover"] == "crop").astype(int)
-        df[START], df[END] = date(2022, 1, 1), date(2023, 3, 31)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
         df[SUBSET] = "training"
         return df
 
@@ -411,7 +411,7 @@ class SudanGedarefDarfurAlJazirah2022(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
@@ -439,7 +439,7 @@ class SudanGedarefDarfurAlJazirah2023(LabeledDataset):
         )
         # Only keep examples with multiple labelers
         df = df[df["num_labelers"] > 1].copy()
-        df[START], df[END] = date(2023, 1, 1), date(2023, 10, 31)
+        df[START], df[END] = date(2023, 1, 1), date(2024, 7, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
@@ -471,7 +471,7 @@ class Uganda_NorthCEO2022(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2022, 1, 1), date(2023, 7, 31)
+        df[START], df[END] = date(2022, 1, 1), date(2023, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 

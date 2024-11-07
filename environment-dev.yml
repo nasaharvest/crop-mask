@@ -14,6 +14,7 @@ dependencies:
           - pytorch-lightning==0.7.1 # lots of API changes
           - wandb
           - openmapflow[data]==0.2.4rc4
+          - geopandas==0.9.0
           - dvc[gs]
           - fsspec==2022.11.0 # https://github.com/iterative/dvc-azure/issues/34
           - einops
