@@ -359,7 +359,9 @@ def reference_sample_agree(
         px, py = transform.rowcol(meta["transform"], lat, lon)
 
         try:
-            ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[px, py])
+
+            ceo_agree_geom.loc[r, "Mapped class"] = int(binary_map[int(px), int(py)])
+
             if (
                 row[label_question].lower() == "cropland"
                 or row[label_question].lower() == "crop"
