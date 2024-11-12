@@ -104,6 +104,8 @@ jobs:
         environment-file: environment-dev.yml
         environment-name: landcover-mapping
         cache-environment: true
+    - name: Install seaborn
+      run: pip install seaborn
     - uses: google-github-actions/auth@v0
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
