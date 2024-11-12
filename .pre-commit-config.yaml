@@ -24,4 +24,4 @@ repos:
     hooks:
     -   id: mypy
         args: [--no-strict-optional]
-        additional_dependencies: [types-requests, types-python-dateutil]
+        additional_dependencies: [types-requests, types-python-dateutil, types-PyYAML]
