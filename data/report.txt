@@ -409,30 +409,27 @@ eo_data_complete    4811
 
 SudanGedarefDarfurAlJazirah2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     1062
-eo_data_exporting     134
-✖ training: 483 labels, but 431 features
-✖ validation: 338 labels, but 296 features
-✖ testing: 375 labels, but 335 features
+eo_data_complete         1062
+eo_data_export_failed     134
+✔ training amount: 431, positive class: 24.6%
+✔ validation amount: 296, positive class: 29.1%
+✔ testing amount: 335, positive class: 31.6%
 
 
 
 SudanGedarefDarfurAlJazirah2023 (Timesteps: 19)
 ----------------------------------------------------------------------------
-eo_data_exporting    1196
-✖ training: 494 labels, but 0 features
-✖ validation: 346 labels, but 0 features
-✖ testing: 356 labels, but 0 features
+eo_data_export_failed    1196
 
 
 
 Uganda_NorthCEO2022 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_complete     989
-eo_data_exporting     11
-✖ training: 403 labels, but 399 features
-✖ validation: 287 labels, but 281 features
-✖ testing: 310 labels, but 309 features
+eo_data_complete         989
+eo_data_export_failed     11
+✔ training amount: 399, positive class: 21.3%
+✔ validation amount: 281, positive class: 21.4%
+✔ testing amount: 309, positive class: 19.4%
 
 
 
