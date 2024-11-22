@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import rasterio as rio
 import seaborn as sns
-import yaml
 from osgeo import gdal
 from rasterio import transform
 from rasterio.mask import mask
@@ -218,7 +217,8 @@ def cal_map_area_class(
         crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
         noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
         print(
-            f"[Pixel counting] Crop area: {crop_area:.2f} ha, Non-crop area: {noncrop_area:.2f} ha \n \
+            f"[Pixel counting] Crop area: {crop_area:.2f} ha, \
+                Non-crop area: {noncrop_area:.2f} ha \n \
              Total area: {crop_area + noncrop_area:.2f} ha"
         )
 
@@ -226,7 +226,8 @@ def cal_map_area_class(
         crop_area = int(crop_px[0].shape[0])
         noncrop_area = int(noncrop_px[0].shape[0])
         print(
-            f"Crop pixels count: {crop_area}, Non-crop pixels count: {noncrop_area} pixels \n \
+            f"Crop pixels count: {crop_area}, \
+            Non-crop pixels count: {noncrop_area} pixels \n \
             Total counts: {crop_area + noncrop_area} pixels"
         )
 
@@ -791,22 +792,30 @@ def plot_area(summary: pd.DataFrame) -> None:
 def area_estimate_pipeline(
     aoi_path: str, map_path: str, ceo_set_1: str, ceo_set_2: str, visual_outputs: bool
 ) -> dict:
-    """Returns area estimate for a particular region of interest (ROI) using cropland raster and labels.
+    """
+    Returns area estimate for a region of interest (ROI) using cropland raster and labels.
 
     Args:
-        aoi_path (str): The file path to the Area of Interest (AOI) ShapeFile/GeoJSON file, which defines the region for which the area estimates are computed.
-        map_path (str): The file path to the cropland raster file (.tif) that contains the land cover map of the area of interest.
-        ceo_set_1 (str): The file path to the first CEO (Collect Earth Online) set, which includes ground truth labels.
-        ceo_set_2 (str): The file path to the second CEO set, which includes additional ground truth labels for further validation or comparison.
-        visual_outputs (bool): A boolean flag indicating whether to generate visual outputs (plots, maps, etc.) to visualize the results.
+        aoi_path (str): The file path to the Area of Interest (AOI) ShapeFile/GeoJSON file,
+            which defines the region for which the area estimates are computed.
+        map_path (str): The file path to the cropland raster file (.tif) that contains
+            the land cover map of the area of interest.
+        ceo_set_1 (str): The file path to the first CEO (Collect Earth Online) set,
+            which includes ground truth labels.
+        ceo_set_2 (str): The file path to the second CEO set, which includes additional
+            ground truth labels for further validation or comparison.
+        visual_outputs (bool): A boolean flag indicating whether to generate visual outputs
+            (plots, maps, etc.) to visualize the results.
 
     Returns:
-        dict: A dictionary containing area estimates and accuracy metrics for each class in the confusion matrix.
+        dict: A dictionary containing area estimates and accuracy metrics for each class in the
+            confusion matrix.
 
         The dictionary has the following keys:
             - 'user_accuracy': A list of user's accuracy values for each class.
             - 'producer_accuracy': A list of producer's accuracy values for each class.
-            - 'area_estimates': A nested dictionary containing area estimates and 95% confidence intervals in different units:
+            - 'area_estimates': A nested dictionary containing area estimates and 95% confidence
+                intervals in different units:
                 - 'pr': Proportional area estimates and confidence intervals.
                 - 'px': Area estimates and confidence intervals in pixels.
                 - 'ha': Area estimates and confidence intervals in hectares.
@@ -862,8 +871,9 @@ def write_area_estimate_results_to_csv(data: dict, output_file: str) -> bool:
     Writes area estimate results to a CSV file in an easy-to-interpret format.
 
     Args:
-        data (dict): A nested dictionary containing the area estimates and their respective confidence intervals
-                     for different regions of interest (ROIs) and years. The dictionary structure is expected to be:
+        data (dict): A nested dictionary containing the area estimates and their respective
+                     confidence intervals for different regions of interest (ROIs) and years.
+                     The dictionary structure is expected to be:
                      {
                         'ROI_name_1': {
                             'year': [list of years],
@@ -911,10 +921,12 @@ def run_area_estimates_config(config: dict, show_output_charts: bool = False) ->
     Runs area estimates for multiple regions of interest (ROIs) and compiles the results.
 
     Args:
-        config (dict): A dictionary containing configuration information for the ROIs and their associated data.
-                       It includes details such as the names of the ROIs, paths to boundary files, crop mask files,
-                       CEO datasets, and the output path for saving the CSV file.
-        show_output_charts (bool): A boolean flag indicating whether to display visual output charts during processing.
+        config (dict): A dictionary containing configuration information for the ROIs and their
+                       associated data.It includes details such as the names of the ROIs, paths
+                       to boundary files, crop mask files, CEO datasets, and the output path for
+                       saving the CSV file.
+        show_output_charts (bool): A boolean flag indicating whether to display visual output charts
+                                   during processing.
 
     Returns:
         dict: A dictionary containing area estimates and confidence intervals for each ROI and year.
@@ -924,7 +936,7 @@ def run_area_estimates_config(config: dict, show_output_charts: bool = False) ->
 
     """
 
-    all_results = {}
+    all_results: dict = {}
     for roi in config["rois"]:
         all_results[roi["roi_name"]] = {
             "year": [],
