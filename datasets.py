@@ -545,11 +545,11 @@ class Uganda_NorthCEO2020(LabeledDataset):
         raw_folder = raw_dir / "Uganda_North_2020"
         df1 = pd.read_csv(
             raw_folder
-            / "ceo-UNHCR-North-Uganda-Feb-2019---Feb-2020-(Set-1)-sample-data-2024-10-01.csv"
+            / "ceo-UNHCR-North-Uganda-Feb-2020---Feb-2021-(Set-1)-sample-data-2024-11-27.csv"
         )
         df2 = pd.read_csv(
             raw_folder
-            / "ceo-UNHCR-North-Uganda-Feb-2019---Feb-2020-(Set-2)-sample-data-2024-10-01.csv"
+            / "ceo-UNHCR-North-Uganda-Feb-2020---Feb-2021-(Set-2)-sample-data-2024-11-27.csv"
         )
         df = pd.concat([df1, df2])
 
