@@ -567,7 +567,7 @@ class Uganda_NorthCEO2020(LabeledDataset):
                 "email": join_unique,
             }
         )
-        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[START], df[END] = date(2020, 1, 1), date(2021, 12, 31)
         df[SUBSET] = train_val_test_split(df.index, 0.3, 0.3)
         return df
 
