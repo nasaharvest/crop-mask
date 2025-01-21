@@ -808,6 +808,56 @@
             12
         ]
     },
+    "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Malawi_CEO_2020,Malawi_CEO_2019,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019,Namibia_corrective_labels_2020,Malawi_corrected,Namibia_CEO_2020,Namibia_WFP,Sudan_Blue_Nile_CEO_2019,Hawaii_CEO_2020,Senegal_CEO_2022,HawaiiAgriculturalLandUse2020,KenyaCEO2019,HawaiiCorrective2020,HawaiiCorrectiveGuided2020,MalawiCorrectiveLabels2020,SudanBlueNileCEO2020,SudanBlueNileCorrectiveLabels2019,EthiopiaTigrayCorrective2020,SudanAlGadarefCEO2019,MaliStratifiedCEO2019,SudanAlGadarefCEO2020,NamibiaNorthStratified2020,Namibia_field_samples_22_23,SudanGedarefDarfurAlJazirah2022,SudanGedarefDarfurAlJazirah2023,Uganda_NorthCEO2022,Uganda_NorthCEO2021,UgandaNorthCEO2019,UgandaNorthCorLabel2022,KenyaCropArea2019,RwandaCropArea2019,MalawiCropArea2020,TanzaniaCropArea2019,FranceCropArea2020,Uganda_NorthCEO2016,Uganda_NorthCEO2017,Uganda_NorthCEO2020,Uganda_NorthCEO2018_February_2022": {
+        "normalizing_dict": {
+            "mean": [
+                -11.264004415102375,
+                -18.288907523744633,
+                1445.7771897639232,
+                1413.1944268620603,
+                1429.6553505322256,
+                1669.3725700556256,
+                2435.496116366863,
+                2815.894765795881,
+                2705.6321186679156,
+                3081.6893815348462,
+                855.3281749371124,
+                2528.439358070884,
+                1691.8959107858618,
+                291.0796071434037,
+                0.013985725279578521,
+                862.3492621690456,
+                5.463305619750457,
+                0.3400079923833901
+            ],
+            "std": [
+                4.102300050078688,
+                5.001513267434389,
+                969.6326625788136,
+                945.4508144445535,
+                1138.7257066661134,
+                1088.0559955998722,
+                1035.0682999090088,
+                1103.1898402737363,
+                1063.4833193912843,
+                1136.0170949740689,
+                655.7905157017731,
+                1192.788542195344,
+                1096.0890319846942,
+                34.03354716807802,
+                0.04140740670509165,
+                624.5244212658562,
+                6.909012100754503,
+                0.22750385324241815
+            ]
+        },
+        "train_num_timesteps": [
+            12
+        ],
+        "val_num_timesteps": [
+            12
+        ]
+    },
     "geowiki_landcover_2017,Kenya,Mali,Mali_lower_CEO_2019,Mali_upper_CEO_2019,Togo,Rwanda,Uganda,open_buildings,digitalearthafrica_eastern,digitalearthafrica_sahel,Ethiopia,Ethiopia_Tigray_2020,Ethiopia_Tigray_2021,Ethiopia_Bure_Jimma_2019,Ethiopia_Bure_Jimma_2020,Malawi_CEO_2020,Malawi_CEO_2019,Malawi_FAO,Malawi_FAO_corrected,Zambia_CEO_2019,Tanzania_CEO_2019,Namibia_corrective_labels_2020,Malawi_corrected,Namibia_CEO_2020,Namibia_WFP,Sudan_Blue_Nile_CEO_2019,Hawaii_CEO_2020,Senegal_CEO_2022,HawaiiAgriculturalLandUse2020,KenyaCEO2019,HawaiiCorrective2020,HawaiiCorrectiveGuided2020,MalawiCorrectiveLabels2020,SudanBlueNileCEO2020,SudanBlueNileCorrectiveLabels2019,EthiopiaTigrayCorrective2020,SudanAlGadarefCEO2019,MaliStratifiedCEO2019,SudanAlGadarefCEO2020,NamibiaNorthStratified2020,Namibia_field_samples_22_23,SudanGedarefDarfurAlJazirah2022,SudanGedarefDarfurAlJazirah2023,Uganda_NorthCEO2022,Uganda_NorthCEO2021,UgandaNorthCEO2019,UgandaNorthCorLabel2022,KenyaCropArea2019,RwandaCropArea2019,MalawiCropArea2020,TanzaniaCropArea2019,FranceCropArea2020,Uganda_NorthCEO2016,Uganda_NorthCEO2017,Uganda_NorthCEO2020_February_2022": {
         "normalizing_dict": {
             "mean": [
