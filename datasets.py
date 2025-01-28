@@ -679,6 +679,7 @@ class UgandaNorthCorLabel2022(LabeledDataset):
         df[SUBSET] = "training"
         return df
 
+
 class UgandaNorthCorLabel2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Uganda_North_2019_GEE_labels"
