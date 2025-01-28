@@ -542,6 +542,6 @@ eo_data_complete    1000
 
 UgandaNorthCorLabel2019 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    2361
-eo_data_complete      271
-✖ training: 2632 labels, but 271 features
+eo_data_exporting    2110
+eo_data_complete      522
+✖ training: 2632 labels, but 522 features
