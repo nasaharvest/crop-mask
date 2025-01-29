@@ -680,6 +680,18 @@ class UgandaNorthCorLabel2022(LabeledDataset):
         return df
 
 
+class UgandaNorthCorLabel2019(LabeledDataset):
+    def load_labels(self) -> pd.DataFrame:
+        raw_folder = raw_dir / "Uganda_North_2019_GEE_labels"
+        df = pd.read_csv(raw_folder / "Uganda_North_2019_GEE_labels.csv")
+        df.rename(columns={"lat": LAT, "long": LON}, inplace=True)
+        df = df.drop_duplicates(subset=[LAT, LON]).reset_index(drop=True)
+        df[CLASS_PROB] = (df["class_probability"] == 1).astype(int)
+        df[START], df[END] = date(2019, 1, 1), date(2020, 12, 31)
+        df[SUBSET] = "training"
+        return df
+
+
 class KenyaCropArea2019(LabeledDataset):
     def load_labels(self) -> pd.DataFrame:
         raw_folder = raw_dir / "Kenya_Crop_Area_2019"
@@ -1637,6 +1649,7 @@ datasets: List[LabeledDataset] = [
     Uganda_NorthCEO2017(),
     Uganda_NorthCEO2020(),
     Uganda_NorthCEO2018(),
+    UgandaNorthCorLabel2019(),
 ]
 
 if __name__ == "__main__":
