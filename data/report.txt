@@ -550,8 +550,7 @@ eo_data_duplicate       1
 
 Uganda_NorthCEO2023 (Timesteps: 24)
 ----------------------------------------------------------------------------
-eo_data_exporting    794
-eo_data_complete     206
-✖ training: 387 labels, but 81 features
-✖ validation: 294 labels, but 56 features
-✖ testing: 319 labels, but 69 features
+eo_data_complete    1000
+✔ training amount: 387, positive class: 7.2%
+✔ validation amount: 294, positive class: 5.4%
+✔ testing amount: 319, positive class: 4.1%
