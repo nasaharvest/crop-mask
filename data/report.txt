@@ -545,3 +545,12 @@ UgandaNorthCorLabel2019 (Timesteps: 24)
 eo_data_complete     2631
 eo_data_duplicate       1
 ✔ training amount: 2631, positive class: 44.6%
+
+
+
+Uganda_NorthCEO2023 (Timesteps: 24)
+----------------------------------------------------------------------------
+eo_data_complete    1000
+✔ training amount: 387, positive class: 7.2%
+✔ validation amount: 294, positive class: 5.4%
+✔ testing amount: 319, positive class: 4.1%
