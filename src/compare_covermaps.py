@@ -106,6 +106,8 @@ class Covermap:
         title: str,
         ee_asset_str: str,
         resolution: int,
+        year=None,
+        collection_years=None,
         countries=None,
         probability=None,
         crop_labels=None,
@@ -115,6 +117,8 @@ class Covermap:
         self.ee_asset_str = ee_asset_str
         self.ee_asset = eval(ee_asset_str.replace("\n", "").replace(" ", ""))
         self.resolution = resolution
+        self.year = year
+        self.collection_years = collection_years
 
         assert (probability is None) ^ (
             crop_labels is None
@@ -755,18 +759,21 @@ TARGETS = {
         .filterDate("2019-01-01", "2019-12-31")""",
         resolution=100,
         crop_labels=[40],
+        year=2019,
     ),
     "worldcover-v100": Covermap(
         "worldcover-v100",
         'ee.ImageCollection("ESA/WorldCover/v100")',
         resolution=10,
         crop_labels=[40],
+        year=2020,
     ),
     "worldcover-v200": Covermap(
         "worldcover-v200",
         'ee.ImageCollection("ESA/WorldCover/v200")',
         resolution=10,
         crop_labels=[40],
+        year=2021,
     ),
     "worldcereal-v100": Covermap(
         "worldcereal-v100",
@@ -778,12 +785,14 @@ TARGETS = {
         )""",
         resolution=10,
         crop_labels=[100],
+        year=2021,
     ),
     "glad": Covermap(
         "glad",
         'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
         resolution=30,
         probability=0.5,
+        year=2019,
     ),
     # "gfsad": Covermap(
     #     "gfsad",
@@ -797,6 +806,7 @@ TARGETS = {
         resolution=1000,
         probability=100,
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        year=2017,
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
@@ -808,18 +818,21 @@ TARGETS = {
         )""",
         resolution=10,
         crop_labels=[4],
+        year=2019,
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
         'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30")',
         resolution=30,
         crop_labels=[2],
+        year=2015,
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
         'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30")',
         resolution=30,
         crop_labels=[2, 3],
+        year=2015,
     ),
     "digital-earth-africa": Covermap(
         "digital-earth-africa",
@@ -831,6 +844,7 @@ TARGETS = {
         resolution=10,
         crop_labels=[1],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        year=2019,
     ),
     "esa-cci-africa": Covermap(
         "esa-cci-africa",
@@ -840,6 +854,7 @@ TARGETS = {
         resolution=20,
         crop_labels=[4],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        year=2016,
     ),
     "globcover-v23": Covermap(
         "globcover-v23",
@@ -848,6 +863,7 @@ TARGETS = {
         )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
+        year=2009,
     ),
     "globcover-v22": Covermap(
         "globcover-v22",
@@ -856,6 +872,7 @@ TARGETS = {
         )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
+        year=2005,
     ),
     "esri-lulc": Covermap(
         "esri-lulc",
@@ -864,6 +881,7 @@ TARGETS = {
         ).filter(ee.Filter.date("2019-01-01", "2020-01-01"))""",
         resolution=10,
         crop_labels=[5],
+        year=2019,
     ),
     "nabil-etal-2021": Covermap(
         "nabil-etal-2021",
@@ -873,6 +891,7 @@ TARGETS = {
         resolution=30,
         crop_labels=[2],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        year=2017,
     ),
     "harvest-crop-maps": Covermap(
         "harvest-crop-maps",
@@ -880,6 +899,7 @@ TARGETS = {
         resolution=10,
         probability=0.5,
         countries=["Togo", "Kenya", "Malawi"],
+        collection_years=[2019, 2019, 2020],
     ),
     "harvest-dev": Covermap(
         "harvest-dev",
@@ -924,6 +944,21 @@ TARGETS = {
             "Tigray2021",
             "Tigray2020",
             "Rwanda",
+        ],
+        collection_years=[
+            2019,
+            2020,
+            2019,
+            2019,
+            2019,
+            2020,
+            2019,
+            2019,
+            2019,
+            2020,
+            2021,
+            2020,
+            2019,
         ],
     ),
 }
