@@ -1,5 +1,6 @@
 __author__ = "Adam Yang, Hannah Kerner"
 
+import re
 from pathlib import Path
 
 import cartopy.io.shapereader as shpreader
@@ -55,13 +56,13 @@ NE_GDF = gpd.read_file(
 # Hold directories of test files
 TEST_COUNTRIES = {
     "Kenya": DATA_PATH + "KenyaCEO2019.csv",
-    "Togo": DATA_PATH + "Togo.csv",
+    "Togo": DATA_PATH + "Togo_2019.csv",
     "Tanzania": DATA_PATH + "Tanzania_CEO_2019.csv",
     "Malawi": DATA_PATH + "Malawi_CEO_2020.csv",
     "Mali": DATA_PATH + "MaliStratifiedCEO2019.csv",
     "Namibia": DATA_PATH + "Namibia_CEO_2020.csv",
-    "Rwanda": DATA_PATH + "Rwanda.csv",
-    "Uganda": DATA_PATH + "Uganda.csv",
+    "Rwanda": DATA_PATH + "Rwanda_2019.csv",
+    "Uganda": DATA_PATH + "Uganda_2019.csv",
     "Zambia": DATA_PATH + "Zambia_CEO_2019.csv",
     "Senegal": DATA_PATH + "Senegal_CEO_2022.csv",
     "Hawaii": DATA_PATH + "Hawaii_CEO_2020.csv",
@@ -109,12 +110,14 @@ class Covermap:
         countries=None,
         probability=None,
         crop_labels=None,
+        years_covered=[],
     ) -> None:
         self.title = title
         self.title_safe = title.replace("-", "_")
         self.ee_asset_str = ee_asset_str
         self.ee_asset = eval(ee_asset_str.replace("\n", "").replace(" ", ""))
         self.resolution = resolution
+        self.years_covered = years_covered
 
         assert (probability is None) ^ (
             crop_labels is None
@@ -175,13 +178,23 @@ Export.image.toCloudStorage({{
 }});"""
         return script
 
-    def extract_test(self, test: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    def extract_test(self, test: gpd.GeoDataFrame, year: int) -> gpd.GeoDataFrame:
         # Extract from countries that are covered by map
         test_points = test.loc[test[COUNTRY_COL].isin(self.countries)].copy()
 
         test_coll = ee.FeatureCollection(
             test_points.apply(lambda x: create_point(x), axis=1).to_list()
         )
+
+        if len(self.years_covered) > 1:
+            year_diff = [abs(y - year) for y in self.years_covered]
+            nearest_year_idx = min(enumerate(year_diff), key=lambda x: x[1])[0]
+            nearest_year = self.years_covered[nearest_year_idx]
+            self.ee_asset_str = self.ee_asset_str.replace("2019-01-01", "%s-01-01" % nearest_year)
+            self.ee_asset_str = self.ee_asset_str.replace("2019-12-31", "%s-12-31" % nearest_year)
+            self.ee_asset = eval(self.ee_asset_str.replace("\n", "").replace(" ", ""))
+            print("using closest map year (%s) to test year (%s)" % (nearest_year, year))
+
         sampled = extract_points(ic=self.ee_asset, fc=test_coll, resolution=self.resolution)
         if len(sampled) != len(test_points):
             print(
@@ -349,6 +362,19 @@ class TestCovermaps:
 
         return test
 
+    def get_test_years(self):
+        """
+        Returns a dictionary containing the test years for each test file.
+        """
+        test_years = {}
+        for country in TEST_COUNTRIES.keys():
+            match = re.search(r"\d{4}", TEST_COUNTRIES[country])
+            if match:
+                test_years[country] = match.group(0)
+            else:
+                test_years[country] = None
+        return test_years
+
     def extract_covermaps(self, test_df):
         """
         Groups testing points by country then extracts from each map. If map does not include
@@ -356,6 +382,8 @@ class TestCovermaps:
         each country then added to sampled_maps, where key = country and value = a dataframe of
         extracted points from maps.
         """
+        test_years = self.get_test_years()
+
         for country in self.test_countries:
             country_test = test_df.loc[test_df[COUNTRY_COL] == country].copy()
 
@@ -365,7 +393,7 @@ class TestCovermaps:
                 if country in map.countries:
                     print(f"[{country}] sampling " + map.title + "...")
 
-                    map_sampled = map.extract_test(country_test).copy()
+                    map_sampled = map.extract_test(country_test, test_years[country]).copy()
                     country_test = pd.merge(country_test, map_sampled, on=[LAT, LON], how="left")
                     country_test.drop_duplicates(
                         inplace=True
@@ -755,18 +783,21 @@ TARGETS = {
         .filterDate("2019-01-01", "2019-12-31")""",
         resolution=100,
         crop_labels=[40],
+        years_covered=[2015, 2016, 2017, 2018, 2019],
     ),
     "worldcover-v100": Covermap(
         "worldcover-v100",
         'ee.ImageCollection("ESA/WorldCover/v100")',
         resolution=10,
         crop_labels=[40],
+        years_covered=[2020],
     ),
     "worldcover-v200": Covermap(
         "worldcover-v200",
         'ee.ImageCollection("ESA/WorldCover/v200")',
         resolution=10,
         crop_labels=[40],
+        years_covered=[2021],
     ),
     "worldcereal-v100": Covermap(
         "worldcereal-v100",
@@ -778,18 +809,21 @@ TARGETS = {
         )""",
         resolution=10,
         crop_labels=[100],
+        years_covered=[2020],
     ),
     "glad": Covermap(
         "glad",
         'ee.ImageCollection("users/potapovpeter/Global_cropland_2019")',
         resolution=30,
         probability=0.5,
+        years_covered=[2019],
     ),
     # "gfsad": Covermap(
     #     "gfsad",
     #     ee.ImageCollection(ee.Image("USGS/GFSAD1000_V1")),
     #     resolution=1000,
     #     crop_labels=[1, 2, 3, 4, 5],
+    #     years_covered=[2010],
     # ),
     "asap": Covermap(
         "asap",
@@ -797,29 +831,33 @@ TARGETS = {
         resolution=1000,
         probability=100,
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        years_covered=[2017],
     ),
     "dynamicworld": Covermap(
         "dynamicworld",
         """ee.ImageCollection(
             ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
-            .filter(ee.Filter.date("2019-01-01", "2020-01-01"))
+            .filter(ee.Filter.date("2019-01-01", "2019-12-31"))
             .select(["label"])
             .mode()
         )""",
         resolution=10,
         crop_labels=[4],
+        years_covered=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023],
     ),
     "gfsad-gcep": Covermap(
         "gfsad-gcep",
         'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/GCEP30")',
         resolution=30,
         crop_labels=[2],
+        years_covered=[2015],
     ),
     "gfsad-lgrip": Covermap(
         "gfsad-lgrip",
         'ee.ImageCollection("projects/sat-io/open-datasets/GFSAD/LGRIP30")',
         resolution=30,
         crop_labels=[2, 3],
+        years_covered=[2015],
     ),
     "digital-earth-africa": Covermap(
         "digital-earth-africa",
@@ -831,6 +869,7 @@ TARGETS = {
         resolution=10,
         crop_labels=[1],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        years_covered=[2019],
     ),
     "esa-cci-africa": Covermap(
         "esa-cci-africa",
@@ -840,6 +879,7 @@ TARGETS = {
         resolution=20,
         crop_labels=[4],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        years_covered=[2016],
     ),
     "globcover-v23": Covermap(
         "globcover-v23",
@@ -848,6 +888,7 @@ TARGETS = {
         )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
+        years_covered=[2009],
     ),
     "globcover-v22": Covermap(
         "globcover-v22",
@@ -856,14 +897,16 @@ TARGETS = {
         )""",
         resolution=300,
         crop_labels=[11, 14, 20, 30],
+        years_covered=[2005],
     ),
     "esri-lulc": Covermap(
         "esri-lulc",
         """ee.ImageCollection(
             "projects/sat-io/open-datasets/landcover/ESRI_Global-LULC_10m_TS"
-        ).filter(ee.Filter.date("2019-01-01", "2020-01-01"))""",
+        ).filter(ee.Filter.date("2019-01-01", "2019-12-31"))""",
         resolution=10,
         crop_labels=[5],
+        years_covered=[2017, 2018, 2019, 2020, 2021, 2022],
     ),
     "nabil-etal-2021": Covermap(
         "nabil-etal-2021",
@@ -873,6 +916,7 @@ TARGETS = {
         resolution=30,
         crop_labels=[2],
         countries=[country for country in TEST_COUNTRIES.keys() if country != "Hawaii"],
+        years_covered=[2016],
     ),
     "harvest-crop-maps": Covermap(
         "harvest-crop-maps",
