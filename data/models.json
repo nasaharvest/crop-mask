@@ -475,6 +475,23 @@
             "roc_auc_score": 0.9045
         }
     },
+    "Uganda_North_2023": {
+        "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/kryqbgjg",
+        "test_metrics": {
+            "accuracy": 0.8415,
+            "f1_score": 0.2759,
+            "precision_score": 0.1778,
+            "recall_score": 0.6154,
+            "roc_auc_score": 0.8526
+        },
+        "val_metrics": {
+            "accuracy": 0.8288,
+            "f1_score": 0.3714,
+            "precision_score": 0.2407,
+            "recall_score": 0.8125,
+            "roc_auc_score": 0.8908
+        }
+    },
     "Zambia_2019": {
         "params": "https://wandb.ai/nasa-harvest/crop-mask/runs/rnhjdn44",
         "test_metrics": {
