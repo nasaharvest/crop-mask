@@ -104,10 +104,8 @@ def load_ne(country_code: str, regions_of_interest: List[str]) -> gpd.GeoDataFra
         if len(regions_not_found) > 0:
             condition = ne_gdf["adm1_code"].str.startswith(country_code)
             boundary = None
-            print(
-                f"WARNING: {regions_not_found} was not found. Please select \
-                regions only seen in below plot."
-            )
+            print(f"WARNING: {regions_not_found} was not found. Please select \
+                regions only seen in below plot.")
             ne_gdf[condition].plot(
                 column="name",
                 legend=True,
@@ -170,12 +168,10 @@ def load_raster(
 
     with rio.open(in_raster) as src:
         if src.meta["crs"] == "EPSG:4326":
-            print(
-                """WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
+            print("""WARNING: The map CRS is EPSG:4326. This means the map unit is degrees \
                 and the pixel-wise areas will not be in meters.
                 \n You need to project the map to the local UTM Zone \
-                (EPSG:XXXXX)."""
-            )
+                (EPSG:XXXXX).""")
 
             t_srs = input("Input EPSG Code; EPSG:XXXX:")
             options = gdal.WarpOptions(dstSRS=f"EPSG:{t_srs}", dstNodata=255)
@@ -216,20 +212,16 @@ def cal_map_area_class(
     if unit == "ha":
         crop_area = crop_px[0].shape[0] * (px_size * px_size) / 10000
         noncrop_area = noncrop_px[0].shape[0] * (px_size * px_size) / 10000
-        print(
-            f"[Pixel counting] Crop area: {crop_area:.2f} ha, \
+        print(f"[Pixel counting] Crop area: {crop_area:.2f} ha, \
                 Non-crop area: {noncrop_area:.2f} ha \n \
-             Total area: {crop_area + noncrop_area:.2f} ha"
-        )
+             Total area: {crop_area + noncrop_area:.2f} ha")
 
     elif unit == "pixels":
         crop_area = int(crop_px[0].shape[0])
         noncrop_area = int(noncrop_px[0].shape[0])
-        print(
-            f"Crop pixels count: {crop_area}, \
+        print(f"Crop pixels count: {crop_area}, \
             Non-crop pixels count: {noncrop_area} pixels \n \
-            Total counts: {crop_area + noncrop_area} pixels"
-        )
+            Total counts: {crop_area + noncrop_area} pixels")
 
     elif unit == "fraction":
         crop_area = int(crop_px[0].shape[0]) / total
