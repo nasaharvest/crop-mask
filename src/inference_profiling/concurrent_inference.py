@@ -43,8 +43,6 @@ if __name__ == "__main__":
         results = pool.map(inference_service, img_list)
     end_time = time.time()
 
-    print(
-        f"""For {len(img_list)} parallel requests,the program finished in {end_time - start_time}
-              seconds"""
-    )
+    print(f"""For {len(img_list)} parallel requests,the program finished in {end_time - start_time}
+              seconds""")
     print(list(results))
